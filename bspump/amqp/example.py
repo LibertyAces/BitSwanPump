@@ -1,4 +1,4 @@
-class PipelineWithRabbitMQ(bspump.Pipeline):
+class PipelineWithAMQP(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		# Create queue
