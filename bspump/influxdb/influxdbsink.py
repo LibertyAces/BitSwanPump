@@ -13,7 +13,7 @@ L = logging.getLogger(__name__)
 
 # TODO: Restructure data: { "measurement": "location", "tag_set": "location=us-midwest", "field_set": "temperature=82", "timestamp": 1465839830100400200 }
 # TODO: Check when there are more data to be sent
-class InfluxDriver(object):
+class InfluxDBDriver(object):
 
 	def __init__(self, app):
 		self.url = asab.Config["influx"]["url"].strip()
@@ -61,7 +61,7 @@ class InfluxDriver(object):
 		future.set_result("done")
 
 
-class InfluxSink(bspump.Sink):
+class InfluxDBSink(bspump.Sink):
 
 	def __init__(self, app, pipeline, driver):
 		super().__init__(app, pipeline)
@@ -75,8 +75,3 @@ class InfluxSink(bspump.Sink):
 		# Passing the processed line to the driver
 		self._driver.consume(wire_line)
 
-
-class JSONStringToDictProcessor(bspump.Processor):
-
-	def on_consume(self, data):
-		return json.loads(data)
