@@ -4,10 +4,10 @@ import asab
 import bspump
 
 
-class TCPDriver(asyncio.Protocol):
+class TCPStreamProtocol(asyncio.Protocol):
 
-	def __init__(self, queue):
-		self.queue = queue
+	def __init__(self, source):
+		self._source = source
 
 	def connection_made(self, transport):
 		peername = transport.get_extra_info('peername')
@@ -16,26 +16,18 @@ class TCPDriver(asyncio.Protocol):
 
 	def data_received(self, data):
 		message = data.decode()
-		print("data_received - 1", self.queue, self.queue.qsize(), message)
-		self.queue.put_nowait(message)
-		print("data_received - 2", self.queue, self.queue.qsize(), message)
+		self._source.process(data)
 
 
-class Source(bspump.Source):
+class TCPStreamSource(bspump.Source):
 
-	def __init__(self, app, pipeline, queue):
-		super().__init__(app, pipeline)
-		self.queue = queue
-
-
-	async def get(self):
-		event = await self.queue.get()
-		return event
+	async def start(self):
+		self.server = await app.Loop.create_server(lambda: TCPStreamProtocol(self), '127.0.0.1', 8888)
 
 
-class Sink(bspump.Sink):
+class PrintSink(bspump.Sink):
 
-	def on_consume(self, data):
+	def process(self, data):
 		print(">>>", data)
 
 
@@ -43,18 +35,11 @@ class SamplePipeline(bspump.Pipeline):
 
 
 	def __init__(self, app, pipeline_id):
-		self.queue = asyncio.Queue(maxsize=1000, loop=app.Loop)
-
-		coro = app.Loop.create_server(lambda: TCPDriver(self.queue), '127.0.0.1', 8888)
-		self.driver = app.Loop.run_until_complete(coro)
-
 		super().__init__(app, pipeline_id)
 
-
-	def construct(self, app):
-		self.set_source(Source(app, self, self.queue))
+		self.set_source(TCPStreamSource(app, self))
 		#self.append_processor(enrich)
-		self.append_processor(Sink(app, self))
+		self.append_processor(PrintSink(app, self))
 
 
 

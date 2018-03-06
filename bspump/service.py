@@ -1,5 +1,12 @@
+import logging
 import asyncio
 import asab
+
+#
+
+L = logging.getLogger(__file__)
+
+#
 
 class BSPumpService(asab.Service):
 
@@ -15,11 +22,15 @@ class BSPumpService(asab.Service):
 
 
 	async def main(self):
-		futures = []
-		for pl in self.Pipelines:
-			future = asyncio.Future()
-			asyncio.ensure_future(pl.process(future))
-			futures.append(future)
+		# Start all pipelines
+		if len(self.Pipelines) > 0:
+			futures = []
+			for p in self.Pipelines:
+				f = asyncio.ensure_future(p.start())
+				futures.append(f)
 
-		await asyncio.wait(futures)
-
+			s, f = await asyncio.wait(futures, return_when=asyncio.FIRST_EXCEPTION)
+			if len(f) == 0:
+				L.info("{} pipeline(s) started".format(len(s)))
+			else:
+				L.error("{} pipeline(s) started, {} failed to start!".format(len(s), len(f)))
