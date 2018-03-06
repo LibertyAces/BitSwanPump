@@ -41,6 +41,12 @@ class Pipeline(abc.ABC):
 		self.Source._append_processor(processor)
 
 
+	def construct(self, source, *processors):
+		self.set_source(source)
+		for processor in processors:
+			self.append_processor(processor)
+
+
 	# Stream processing
 
 	async def start(self):
