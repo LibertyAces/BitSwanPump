@@ -40,10 +40,10 @@ class RabbitMQSource(bspump.Source):
 	def _on_consume_message(self, channel, method, properties, body):
 		print("_on_consume_message")
 		self.queue.put_nowait({
-			channel: channel,
-			method: method,
-			properties: properties,
-			body: body
+			"channel": channel,
+			"method": method,
+			"properties": properties,
+			"body": body
 		})
 
 	async def get(self):
