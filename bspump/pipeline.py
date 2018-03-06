@@ -7,7 +7,7 @@ class Pipeline(abc.ABC):
 
 	def __init__(self, app, pipeline_id):
 
-		self.id = pipeline_id
+		self.Id = pipeline_id
 
 		# List of processors
 		self.Source = None

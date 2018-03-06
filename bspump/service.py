@@ -13,19 +13,20 @@ class BSPumpService(asab.Service):
 	def __init__(self, app):
 		super().__init__(app)
 
-		# Set of pipelines
-		self.Pipelines = set()
+		self.Pipelines = dict()
 
 
 	def add_pipeline(self, pipeline):
-		self.Pipelines.add(pipeline)
+		if pipeline.Id in self.Pipelines:
+			raise RuntimeError("Pipeline with id '{}' is already registered".format(pipeline.Id))
+		self.Pipelines[pipeline.Id] = pipeline
 
 
 	async def main(self):
 		# Start all pipelines
 		if len(self.Pipelines) > 0:
 			futures = []
-			for p in self.Pipelines:
+			for p in self.Pipelines.values():
 				f = asyncio.ensure_future(p.start())
 				futures.append(f)
 
