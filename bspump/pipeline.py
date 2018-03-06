@@ -11,7 +11,6 @@ class Pipeline(abc.ABC):
 
 		# List of processors
 		self.Source = None
-		self.Processors = []
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
@@ -20,38 +19,30 @@ class Pipeline(abc.ABC):
 
 		self.Config = None # TODO ...
 
-		self.construct(app)
-
 
 	# Pipeline construction
 
-	@abc.abstractmethod
-	def construct(self, app):
-		pass
-
-
 	def set_source(self, source):
+		"""
+		Must be called first in construction phase
+		"""
 		assert(self.Source is None)
 		assert(isinstance(source, Source))
 		self.Source = source
 
 
 	def append_processor(self, processor):
-		#TODO: Check if possible: self.Processors[0] is Source, self.Processors[-1] is Sink, no processors after Sink, ...
+		"""
+		Must be called after set_source, last processor has to be sink
+		"""
+		assert(self.Source is not None)
+		#TODO: Check if possible: self.Processors[-1] is Sink, no processors after Sink, ...
 		#TODO: Check if fitting
-		self.Processors.append(processor)
+		self.Source._append_processor(processor)
 
 
 	# Stream processing
 
-	async def process(self, future):
+	async def start(self):
+		return await self.Source.start()
 
-		while True: #TODO: This is where you need to implement grace finish
-			print("Pipeline.process - 1")
-			data = await self.Source.get()	
-			print("Pipeline.process - 2", data)
-
-			for processor in self.Processors:
-				data = processor.on_consume(data)
-
-		future.set_result('xxxx')
