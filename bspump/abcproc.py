@@ -17,12 +17,13 @@ class Source(abc.ABC):
 		
 
 	def process(self, event):
-		self.Pipeline.Metrics.add("event.processed")
+		self.Pipeline.Metrics.add("pipeline.{}.event_processed".format(self.Pipeline.Id))
 
 		for processor in self.Pipeline.Processors:
-			data = processor.process(data)
-		if data is not None:
-			raise RuntimeError("Incomplete pipeline, data are not consumed by Sink")
+			event = processor.process(event)
+
+		if event is not None:
+			raise RuntimeError("Incomplete pipeline, event is not consumed by Sink")
 
 	@abc.abstractmethod
 	async def start(self):

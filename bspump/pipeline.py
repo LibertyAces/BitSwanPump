@@ -15,7 +15,7 @@ class Pipeline(abc.ABC):
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
-		self.Metrics = asab.Metrics(app)
+		self.Metrics = app.Metrics
 
 		self.State = 'y' # 'r' .. red, 'y' .. yellow, 'g' .. green
 
