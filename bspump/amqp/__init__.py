@@ -5,7 +5,7 @@ from .source import AMQPSource
 asab.Config.add_defaults(
 	{
 		'amqp' : {
-			'uri': 'amqp://localhost/',
+			'url': 'amqp://localhost/',
 			'queue': 'i.q',
 			'error_exchange': 'error',
 			'appname': 'bspump.py', # For a AMQP client properties

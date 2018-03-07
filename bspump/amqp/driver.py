@@ -17,10 +17,13 @@ class AMQPDriver(object):
 		self.Connection = None
 		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
 		self.ConnectionEvent.clear()
-		self._conf_reconnect_delay = float(Config['amqp']['reconnect_delay'])
 
 		self.PubSub = PubSub(app)
 		self.Loop = app.Loop
+
+		self._conf_reconnect_delay = float(Config['amqp']['reconnect_delay'])
+		self._conf_url = Config['amqp']['url']
+		self._conf_appname = Config['amqp']['appname']
 
 		self._reconnect();
 
@@ -31,10 +34,10 @@ class AMQPDriver(object):
 				self.Connection.close()
 			self.Connection = None
 
-		parameters = pika.URLParameters(Config['amqp']['uri'])
+		parameters = pika.URLParameters(self._conf_url)
 		if parameters.client_properties is None:
 			parameters.client_properties = dict()
-		parameters.client_properties['application'] = Config['amqp']['appname']
+		parameters.client_properties['application'] = self._conf_appname
 
 		self.Connection = pika.adapters.asyncio_connection.AsyncioConnection(
 			parameters = parameters,
