@@ -3,7 +3,6 @@ import logging
 import bspump
 import asyncio
 import aiohttp
-import json
 
 #
 
@@ -12,7 +11,6 @@ L = logging.getLogger(__name__)
 #
 
 # TODO: Restructure data: { "measurement": "location", "tag_set": "location=us-midwest", "field_set": "temperature=82", "timestamp": 1465839830100400200 }
-# TODO: Check when there are more data to be sent
 class InfluxDBDriver(object):
 
 	def __init__(self, app):
@@ -56,7 +54,6 @@ class InfluxDBDriver(object):
 				async with session.post(self.url, data=output_bucket) as resp:
 					if resp.status != 204:
 						L.error("Failed to insert a line into InfluxDB: {}".format(resp.status))
-						return
 		# Finishing the future
 		future.set_result("done")
 
@@ -67,7 +64,7 @@ class InfluxDBSink(bspump.Sink):
 		super().__init__(app, pipeline)
 		self._driver = driver
 
-	def on_consume(self, data):
+	def process(self, data):
 		# Getting information from the data
 		# Working with only one line
 		wire_line = "{},{} {} {}\n".format(
