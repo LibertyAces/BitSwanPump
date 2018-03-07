@@ -64,11 +64,11 @@ class InfluxDBSink(bspump.Sink):
 		super().__init__(app, pipeline)
 		self._driver = driver
 
-	def process(self, data):
+	def process(self, event):
 		# Getting information from the data
 		# Working with only one line
 		wire_line = "{},{} {} {}\n".format(
-			data['measurement'], data['tag_set'], data['field_set'], int(data['timestamp']))
+			event['measurement'], event['tag_set'], event['field_set'], int(event['timestamp']))
 		# Passing the processed line to the driver
 		self._driver.consume(wire_line)
 

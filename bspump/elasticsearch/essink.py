@@ -63,14 +63,15 @@ class ElasticSearchDriver(object):
 				break
 		future.set_result("done")
 
+
 class ElasticSearchSink(bspump.Sink):
 
 	def __init__(self, app, pipeline, driver):
 		super().__init__(app, pipeline)
 		self._driver = driver
 
-	def on_consume(self, data):
+	def process(self, event):
 		# Processing data by line
 		wire_line = "{},{} {} {}\n".format(
-			data['measurement'], data['tag_set'], data['field_set'], int(data['timestamp']))
+			event['measurement'], event['tag_set'], event['field_set'], int(event['timestamp']))
 		self._driver.consume(wire_line)

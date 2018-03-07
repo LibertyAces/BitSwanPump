@@ -6,20 +6,20 @@ class ProcessorBase(abc.ABC):
 		pass
 
 	@abc.abstractmethod
-	def process(self, data):
+	def process(self, event):
 		pass
 
 
 class Source(abc.ABC):
 
 	def __init__(self, app, pipeline):
-		self.Processors = []
+		self.Pipeline = pipeline
+		
 
-	def _append_processor(self, processor):
-		self.Processors.append(processor)
+	def process(self, event):
+		self.Pipeline.Metrics.add("event.processed")
 
-	def process(self, data):
-		for processor in self.Processors:
+		for processor in self.Pipeline.Processors:
 			data = processor.process(data)
 		if data is not None:
 			raise RuntimeError("Incomplete pipeline, data are not consumed by Sink")

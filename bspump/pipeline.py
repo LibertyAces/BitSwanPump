@@ -11,9 +11,11 @@ class Pipeline(abc.ABC):
 
 		# List of processors
 		self.Source = None
+		self.Processors = []
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
+		self.Metrics = asab.Metrics(app)
 
 		self.State = 'y' # 'r' .. red, 'y' .. yellow, 'g' .. green
 
@@ -23,22 +25,15 @@ class Pipeline(abc.ABC):
 	# Pipeline construction
 
 	def set_source(self, source):
-		"""
-		Must be called first in construction phase
-		"""
 		assert(self.Source is None)
 		assert(isinstance(source, Source))
 		self.Source = source
 
 
 	def append_processor(self, processor):
-		"""
-		Must be called after set_source, last processor has to be sink
-		"""
-		assert(self.Source is not None)
 		#TODO: Check if possible: self.Processors[-1] is Sink, no processors after Sink, ...
 		#TODO: Check if fitting
-		self.Source._append_processor(processor)
+		self.Processors.append(processor)
 
 
 	def construct(self, source, *processors):
