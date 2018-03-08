@@ -5,8 +5,6 @@ import asyncio
 import aiohttp
 import json
 
-from asab import Config
-from asab import PubSub
 
 ###
 
@@ -14,20 +12,11 @@ L = logging.getLogger(__name__)
 
 ###
 
-
-Config.add_defaults({
-	'elasticsearch': {
-		'url': "http://localhost:9200/",
-		'bulk_out_max_size': 1,
-		'rollover_mechanism': "time_based", 
-		'timeout': 300,
-	}
-})
-
 class ElasticSearchDriver(object):
 
 	def __init__(self, app):
 		self.output_queue = asyncio.Queue(maxsize=1000, loop=app.Loop)
+
 		self.url = Config['elasticsearch']['url'].strip()
 		if self.url[-1] != '/': self.url += '/'
 		self.url_bulk = self.url + '_bulk'
@@ -37,7 +26,7 @@ class ElasticSearchDriver(object):
 
 		self.timeout = float(Config['elasticsearch']['timeout'])
 		self.rollover_type = Config['elasticsearch']['rollover_mechanism']
-		#self.max_index_size = int(Config['elasticsearch']['max_index_size'])
+		self.max_index_size = int(Config['elasticsearch']['max_index_size'])
 
 		app.PubSub.subscribe("Application.tick!", self.flush)
 		app.PubSub.subscribe("Application.exit!", self.flush)
@@ -53,39 +42,28 @@ class ElasticSearchDriver(object):
 
 	def flush(self, event_name=None):
 		if len(self.bulk_out) == 0:
-			print("bulk size 0")
 			return
-		print(len(self.bulk_out))
+
 		self.output_queue.put_nowait(self.bulk_out)
 		self.bulk_out = ""
 
 	async def _submit(self, future):
-		try:
-			while True:
-				bulk_out = await self.output_queue.get()
-				async with aiohttp.ClientSession() as session:
-					print(session)
-					async with session.post(self.url_bulk, data=bulk_out, headers={'Content-Type': 'application/json'}, timeout=self.timeout) as resp:
-						print(resp)
-						if resp.status_code != 200:
-							print("esp.status_code != 200")
+		while True:
+			bulk_out = await self.output_queue.get()
+			async with aiohttp.ClientSession() as session:
+				async with session.post('', data=bulk_out) as resp:
+					if resp.status_code != 200:
+						L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status_code, resp.text))
+						raise RuntimeError("Failed to insert document into ElasticSearch")
+
+					else:
+						respj = json.loads(resp.text)
+						if respj.get('errors', True) != False:
 							L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status_code, resp.text))
 							raise RuntimeError("Failed to insert document into ElasticSearch")
 
-						else:
-							print("aaaaaaaaa")
-							respj = json.loads(resp.text)
-							if respj.get('errors', True) != False:
-								L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status_code, resp.text))
-								raise RuntimeError("Failed to insert document into ElasticSearch")
-
-					break
-		except:
-			L.exception("Error in ElasticSearch driver")
-			raise
-
+				break
 		future.set_result("done")
-
 
 	def update_index(self, es_type, version, es_index_period, orig_index=None):		
 		if self.rollover_type == 'index_size_based':
@@ -141,23 +119,11 @@ class ElasticSearchDriver(object):
 
 class ElasticSearchSink(bspump.Sink):
 
-	def __init__(self, app, pipeline, driver, es_type="xdr", es_index="index"):
+	def __init__(self, app, pipeline, driver):
 		super().__init__(app, pipeline)
-		self.es_index = es_index
-		self.es_type = es_type
-		app.PubSub.subscribe("onTick", self.refresh_index())
 		self._driver = driver
 
-	def refresh_index(self):
-		pass
-
 	def process(self, event):
-		{
-			"@timestamp": "adsf"
-		}
-		print(event)
-		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self.es_index, self.es_type, json.dumps(event))
-		print(data)
+		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(es_index, es_type, json.dumps(obj))
 		self._driver.consume(data)
-		print("ok")
 

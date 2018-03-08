@@ -6,16 +6,6 @@ from bspump.amqp import AMQPDriver
 from bspump.amqp import AMQPSource
 
 
-
-class DummySource(Source):
-	def __init__(self, app, pipeline):
-		super().__init__(app, pipeline)
-
-	async def start(self):
-		self.process({
-			"@timestamp": "blabla",
-		})
-
 class PrintSink(bspump.Sink):
 	def process(self, data):
 		print(">>>", data)
