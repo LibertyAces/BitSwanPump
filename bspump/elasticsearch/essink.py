@@ -17,9 +17,9 @@ class ElasticSearchDriver(object):
 	def __init__(self, app):
 		self.output_queue = asyncio.Queue(maxsize=1000, loop=app.Loop)
 
-		self.uri = Config['elasticsearch']['uri'].strip()
-		if self.uri[-1] != '/': self.uri += '/'
-		self.uri_bulk = self.uri + '_bulk'
+		self.url = Config['elasticsearch']['url'].strip()
+		if self.url[-1] != '/': self.url += '/'
+		self.url_bulk = self.url + '_bulk'
 
 		self.bulk_out_max_size = int(Config['elasticsearch']['bulk_out_max_size'])
 		self.bulk_out = ""
@@ -81,8 +81,8 @@ class ElasticSearchDriver(object):
 		
 		if orig_index is not None:
 			# Get actual size of the currently active index
-			uri_get_index_size = self.uri + '{}/_stats/store'.format(orig_index)
-			stats = self.session.get(uri_get_index_size, timeout=self.timeout)
+			url_get_index_size = self.url + '{}/_stats/store'.format(orig_index)
+			stats = self.session.get(url_get_index_size, timeout=self.timeout)
 			data = stats.json()
 
 			if data.get('_all') is None:
