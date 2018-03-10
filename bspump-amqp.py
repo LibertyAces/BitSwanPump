@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import asyncio
-import asab
 import bspump
 import bspump.socket
 import bspump.common
