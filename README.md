@@ -11,34 +11,34 @@ import bspump.amqp
 
 class SamplePipeline1(bspump.Pipeline):
 
-	def __init__(self, app, pipeline_id, driver):
-		super().__init__(app, pipeline_id)
-		self.build(
-			bspump.socket.TCPStreamSource(app, self),
-			bspump.amqp.AMQPSink(app, self, driver)
-		)
+    def __init__(self, app, pipeline_id, driver):
+        super().__init__(app, pipeline_id)
+        self.build(
+            bspump.socket.TCPStreamSource(app, self),
+            bspump.amqp.AMQPSink(app, self, driver)
+        )
 
 class SamplePipeline2(bspump.Pipeline):
 
-	def __init__(self, app, pipeline_id, driver):
-		super().__init__(app, pipeline_id)
-		self.build(
-			bspump.amqp.AMQPSource(app, self, driver),
-			bspump.common.PPrintSink(app, self)
-		)
+    def __init__(self, app, pipeline_id, driver):
+        super().__init__(app, pipeline_id)
+        self.build(
+            bspump.amqp.AMQPSource(app, self, driver),
+            bspump.common.PPrintSink(app, self)
+        )
 
 if __name__ == '__main__':
-	app = bspump.BSPumpApplication()
+    app = bspump.BSPumpApplication()
 
-	amqp_driver = bspump.amqp.AMQPDriver(app)
-	svc = app.get_service("bspump.PumpService")
+    amqp_driver = bspump.amqp.AMQPDriver(app)
+    svc = app.get_service("bspump.PumpService")
 
-	svc.add_pipelines(
-		SamplePipeline1(app, 'SamplePipeline1', amqp_driver),
-		SamplePipeline2(app, 'SamplePipeline2', amqp_driver),
-	)
+    svc.add_pipelines(
+        SamplePipeline1(app, 'SamplePipeline1', amqp_driver),
+        SamplePipeline2(app, 'SamplePipeline2', amqp_driver),
+    )
 
-	app.run()
+    app.run()
 ```
 
 
