@@ -8,7 +8,7 @@ class SamplePipeline1(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id, driver):
 		super().__init__(app, pipeline_id)
-		self.construct(
+		self.build(
 			bspump.socket.TCPStreamSource(app, self),
 			bspump.amqp.AMQPSink(app, self, driver)
 		)
@@ -17,7 +17,7 @@ class SamplePipeline2(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id, driver):
 		super().__init__(app, pipeline_id)
-		self.construct(
+		self.build(
 			bspump.amqp.AMQPSource(app, self, driver),
 			bspump.common.PPrintSink(app, self)
 		)

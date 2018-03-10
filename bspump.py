@@ -11,7 +11,7 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.construct(
+		self.build(
 			bspump.socket.TCPStreamSource(app, self),
 			bspump.common.JSON2DictProcessor(app, self),
 			bspump.common.PPrintSink(app, self)

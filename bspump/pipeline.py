@@ -36,7 +36,7 @@ class Pipeline(abc.ABC):
 		self.Processors.append(processor)
 
 
-	def construct(self, source, *processors):
+	def build(self, source, *processors):
 		self.set_source(source)
 		for processor in processors:
 			self.append_processor(processor)
