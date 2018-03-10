@@ -2,29 +2,46 @@
 import asyncio
 import asab
 import bspump
-from bspump.amqp import AMQPDriver
-from bspump.amqp import AMQPSource
+import bspump.socket
+import bspump.common
+import bspump.amqp
 
 
-class PrintSink(bspump.Sink):
-	def process(self, data):
-		print(">>>", data)
+class SamplePipeline1(bspump.Pipeline):
 
-
-class SamplePipeline(bspump.Pipeline):
-
-	def __init__(self, app, pipeline_id):
+	def __init__(self, app, pipeline_id, driver):
 		super().__init__(app, pipeline_id)
-		self.driver = AMQPDriver(app)
-		self.set_source(AMQPSource(app, self, self.driver))
-		self.append_processor(PrintSink(app, self))
+
+		self.driver = driver
+
+		self.construct(
+			bspump.socket.TCPStreamSource(app, self),
+			bspump.amqp.AMQPSink(app, self, self.driver)
+		)
+
+
+class SamplePipeline2(bspump.Pipeline):
+
+	def __init__(self, app, pipeline_id, driver):
+		super().__init__(app, pipeline_id)
+
+		self.driver = driver
+
+		self.construct(
+			bspump.amqp.AMQPSource(app, self, self.driver),
+			bspump.common.PPrintSink(app, self)
+		)
 
 
 if __name__ == '__main__':
 	app = bspump.BSPumpApplication()
 
-	pl = SamplePipeline(app, 'mypipeline')
+	amqp_driver = bspump.amqp.AMQPDriver(app)
 	svc = app.get_service("bspump.PumpService")
-	svc.add_pipeline(pl)
+
+	svc.add_pipelines(
+		SamplePipeline1(app, 'SamplePipeline1', amqp_driver),
+		SamplePipeline2(app, 'SamplePipeline2', amqp_driver),
+	)
 
 	app.run()

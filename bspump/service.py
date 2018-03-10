@@ -22,6 +22,11 @@ class BSPumpService(asab.Service):
 		self.Pipelines[pipeline.Id] = pipeline
 
 
+	def add_pipelines(self, *pipelines):
+		for pipeline in pipelines:
+			self.add_pipeline(pipeline)
+	
+
 	async def main(self):
 		# Start all pipelines
 		if len(self.Pipelines) > 0:
