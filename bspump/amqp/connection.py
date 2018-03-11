@@ -6,7 +6,7 @@ import pika.adapters.asyncio_connection
 from asab import Config
 from asab import PubSub
 
-from ..abcproc import Connection
+from ..abc.connection import Connection
 
 #
 
@@ -16,8 +16,17 @@ L = logging.getLogger(__name__)
 
 class AMQPConnection(Connection):
 
-	def __init__(self, app):
-		super().__init__(app)
+
+	ConfigDefaults = {
+		'url': 'amqp://localhost/',
+		'appname': 'bspump.py',
+		'reconnect_delay': 10.0,
+	}
+
+
+	def __init__(self, app, connection_id):
+		super().__init__(app, connection_id)
+		assert(self.Config['type'] == 'amqp')
 
 		self.Connection = None
 		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
@@ -25,10 +34,6 @@ class AMQPConnection(Connection):
 
 		self.PubSub = PubSub(app)
 		self.Loop = app.Loop
-
-		self._conf_reconnect_delay = float(Config['amqp']['reconnect_delay'])
-		self._conf_url = Config['amqp']['url']
-		self._conf_appname = Config['amqp']['appname']
 
 		self._reconnect();
 
@@ -39,10 +44,10 @@ class AMQPConnection(Connection):
 				self.Connection.close()
 			self.Connection = None
 
-		parameters = pika.URLParameters(self._conf_url)
+		parameters = pika.URLParameters(self.Config['url'])
 		if parameters.client_properties is None:
 			parameters.client_properties = dict()
-		parameters.client_properties['application'] = self._conf_appname
+		parameters.client_properties['application'] = self.Config['appname']
 
 		self.Connection = pika.adapters.asyncio_connection.AsyncioConnection(
 			parameters = parameters,
@@ -63,12 +68,12 @@ class AMQPConnection(Connection):
 		L.warn("AMQP disconnected ({}): {}".format(code, reason))
 		self.ConnectionEvent.clear()
 		self.PubSub.publish("AMQPConnection.close!")
-		self.Loop.call_later(self._conf_reconnect_delay, self._reconnect)
+		self.Loop.call_later(float(self.Config['reconnect_delay']), self._reconnect)
 
 
 	def _on_connection_open_error(self, connection, error_message=None):
 		L.error("AMQP error: {}".format(error_message if error_message is not None else 'Generic error'))
 		self.ConnectionEvent.clear()
 		self.PubSub.publish("AMQPConnection.open_error!")
-		self.Loop.call_later(self._conf_reconnect_delay, self._reconnect)
+		self.Loop.call_later(float(self.Config['reconnect_delay']), self._reconnect)
 
