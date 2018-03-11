@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
 ## High-level architecture
 
-![Schema of BSPump high-level achitecture](./doc/_static/asab_arch.png)
+![Schema of BSPump high-level achitecture](./doc/_static/bspump-architecture.png)
 
 
 ## Licence
