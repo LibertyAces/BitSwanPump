@@ -1,11 +1,4 @@
-import logging
 from asab import Config
-
-#
-
-L = logging.getLogger(__name__)
-
-#
 
 class ConfigObject(object):
 

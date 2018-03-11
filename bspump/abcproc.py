@@ -1,12 +1,5 @@
-import logging
 import abc
 from .abc.config import ConfigObject
-
-#
-
-L = logging.getLogger(__name__)
-
-#
 
 class ProcessorBase(abc.ABC, ConfigObject):
 
