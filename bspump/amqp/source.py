@@ -5,10 +5,10 @@ from ..abcproc import Source
 
 class AMQPSource(Source):
 
-	def __init__(self, app, pipeline, driver):
+	def __init__(self, app, pipeline, connection):
 		super().__init__(app, pipeline)
 
-		self._driver = driver
+		self._connection = connection
 		self._channel = None
 		self._started = False
 		self._consumer_tag = None
@@ -17,18 +17,18 @@ class AMQPSource(Source):
 		self._conf_error_exchange = asab.Config['amqp']['error_exchange']
 		self._conf_queue = asab.Config['amqp']['queue']
 
-		self._driver.PubSub.subscribe("AMQPDriver.connection_open!", self._on_connection_open)
+		self._connection.PubSub.subscribe("AMQPConnection.open!", self._on_connection_open)
 
 
 	async def start(self):
-		await self._driver.ConnectionEvent.wait()
-		self._channel = self._driver.Connection.channel(on_open_callback=self._on_channel_open)
+		await self._connection.ConnectionEvent.wait()
+		self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
 		self._consumer_tag = None
 
 
 	def _on_connection_open(self, event_name):
 		if self._started:
-			self._channel = self._driver.Connection.channel(on_open_callback=self._on_channel_open)
+			self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
 			self._consumer_tag = None
 
 	def _on_channel_open(self, channel):

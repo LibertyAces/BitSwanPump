@@ -35,3 +35,9 @@ class Processor(ProcessorBase):
 
 class Sink(ProcessorBase):
 	pass
+
+
+class Connection(abc.ABC):
+	
+	def __init__(self, app):
+		pass

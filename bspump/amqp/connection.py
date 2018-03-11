@@ -5,15 +5,20 @@ import pika.adapters.asyncio_connection
 
 from asab import Config
 from asab import PubSub
+
+from ..abcproc import Connection
+
 #
 
 L = logging.getLogger(__name__)
 
 #
 
-class AMQPDriver(object):
+class AMQPConnection(Connection):
 
 	def __init__(self, app):
+		super().__init__(app)
+
 		self.Connection = None
 		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
 		self.ConnectionEvent.clear()
@@ -52,18 +57,18 @@ class AMQPDriver(object):
 	def _on_connection_open(self, connection):
 		L.info("AMQP connected")
 		self.ConnectionEvent.set()
-		self.PubSub.publish("AMQPDriver.connection_open!")
+		self.PubSub.publish("AMQPConnection.open!")
 
 	def _on_connection_close(self, connection, code, reason):
 		L.warn("AMQP disconnected ({}): {}".format(code, reason))
 		self.ConnectionEvent.clear()
-		self.PubSub.publish("AMQPDriver.connection_close!")
+		self.PubSub.publish("AMQPConnection.close!")
 		self.Loop.call_later(self._conf_reconnect_delay, self._reconnect)
 
 
 	def _on_connection_open_error(self, connection, error_message=None):
 		L.error("AMQP error: {}".format(error_message if error_message is not None else 'Generic error'))
 		self.ConnectionEvent.clear()
-		self.PubSub.publish("AMQPDriver.connection_open_error!")
+		self.PubSub.publish("AMQPConnection.open_error!")
 		self.Loop.call_later(self._conf_reconnect_delay, self._reconnect)
 
