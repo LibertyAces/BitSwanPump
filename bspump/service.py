@@ -34,7 +34,7 @@ class BSPumpService(asab.Service):
 	# Connections
 
 	def add_connection(self, connection):
-		self.Connections[connection.ConnectionId] = connection
+		self.Connections[connection.Id] = connection
 
 	def add_connections(self, *connections):
 		for connection in connections:

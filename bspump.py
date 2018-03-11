@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	# Construct and register Pipeline
-	pl = SamplePipeline(app, 'mypipeline')
+	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
 
 	app.run()

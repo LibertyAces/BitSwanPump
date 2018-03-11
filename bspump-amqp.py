@@ -6,19 +6,19 @@ import bspump.amqp
 
 class SamplePipeline1(bspump.Pipeline):
 
-	def __init__(self, app, pipeline_id, amqp_connection):
+	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.socket.TCPStreamSource(app, self),
-			bspump.amqp.AMQPSink(app, self, amqp_connection)
+			bspump.amqp.AMQPSink(app, self, "AMQPConnection1")
 		)
 
 class SamplePipeline2(bspump.Pipeline):
 
-	def __init__(self, app, pipeline_id, amqp_connection):
+	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.amqp.AMQPSource(app, self, amqp_connection),
+			bspump.amqp.AMQPSource(app, self, "AMQPConnection1"),
 			bspump.common.PPrintSink(app, self)
 		)
 
@@ -32,8 +32,8 @@ if __name__ == '__main__':
 	)
 
 	svc.add_pipelines(
-		SamplePipeline1(app, 'SamplePipeline1', "AMQPConnection1"),
-		SamplePipeline2(app, 'SamplePipeline2', "AMQPConnection1"),
+		SamplePipeline1(app, "SamplePipeline1"),
+		SamplePipeline2(app, "SamplePipeline2"),
 	)
 
 	app.run()

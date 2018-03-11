@@ -26,7 +26,6 @@ class AMQPConnection(Connection):
 
 	def __init__(self, app, connection_id):
 		super().__init__(app, connection_id)
-		assert(self.Config['type'] == 'amqp')
 
 		self.Connection = None
 		self.ConnectionEvent = asyncio.Event(loop=app.Loop)

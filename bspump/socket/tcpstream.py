@@ -1,14 +1,14 @@
 import asyncio
 from .. import Source
 
+
 class _TCPStreamProtocol(asyncio.Protocol):
 
 	def __init__(self, source):
 		self._source = source
 
 	def connection_made(self, transport):
-		peername = transport.get_extra_info('peername')
-		print('Connection from {}'.format(peername))
+		#TODO: peername = transport.get_extra_info('peername')
 		self._transport = transport
 
 	def data_received(self, data):
@@ -19,9 +19,20 @@ class _TCPStreamProtocol(asyncio.Protocol):
 class TCPStreamSource(Source):
 
 
-	def __init__(self, app, pipeline):
-		super().__init__(app, pipeline)
+	ConfigDefaults = {
+		'host': '127.0.0.1',
+		'port': 8888,
+	}
+
+
+	def __init__(self, app, pipeline, id=None):
+		super().__init__(app, pipeline, id=id)
+
 		self.Loop = app.Loop
 
+
 	async def start(self):
-		self._server = await self.Loop.create_server(lambda: _TCPStreamProtocol(self), '127.0.0.1', 8888)
+		self._server = await self.Loop.create_server(
+			lambda: _TCPStreamProtocol(self),
+			self.Config['host'], int(self.Config['port'])
+		)

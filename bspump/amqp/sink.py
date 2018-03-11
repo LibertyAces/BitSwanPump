@@ -4,11 +4,21 @@ from .. import Sink
 
 class AMQPSink(Sink):
 
-	def __init__(self, app, pipeline, connection):
-		super().__init__(app, pipeline)
+
+	ConfigDefaults = {
+		'exchange': 'amq.direct',
+		'content_type': 'text/plain',
+	}
+
+
+	def __init__(self, app, pipeline, connection, id=None):
+		super().__init__(app, pipeline, id)
 
 		self._connection = pipeline.get_connection(app, connection)
 		self._channel = None
+		self._exchange = self.Config['exchange']
+		self._content_type = self.Config['content_type']
+
 
 		app.PubSub.subscribe_all(self)
 
@@ -43,10 +53,10 @@ class AMQPSink(Sink):
 
 		try:
 			self._channel.basic_publish(
-				'amq.direct',
+				self._exchange,
 				'test_routing_key',
 				event,
-				pika.BasicProperties(content_type='text/plain', delivery_mode=1)
+				pika.BasicProperties(content_type=self._content_type, delivery_mode=1)
 			)
 		except pika.exceptions.ChannelClosed:
 			self._channel = None
