@@ -12,9 +12,6 @@ class ProcessorBase(abc.ABC, ConfigObject):
 
 	def __init__(self, app, pipeline, id=None):
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__))
-		if self.Config['type'] != self.__class__.__name__:
-			L.error("Expected type '{}' is not '{}' found in the configuration".format(self.__class__.__name__, self.Config['type']))
-			raise RuntimeError("Configuration error")
 
 		self.Id = id
 		self.Pipeline = pipeline
@@ -28,9 +25,6 @@ class Source(abc.ABC, ConfigObject):
 
 	def __init__(self, app, pipeline, id=None):
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__))
-		if self.Config['type'] != self.__class__.__name__:
-			L.error("Expected type '{}' is not '{}' found in the configuration".format(self.__class__.__name__, self.Config['type']))
-			raise RuntimeError("Configuration error")
 
 		self.Id = id
 		self.Pipeline = pipeline

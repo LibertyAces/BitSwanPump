@@ -20,7 +20,3 @@ class ConfigObject(object):
 		if Config.has_section(config_section_name):
 			for key, value in Config.items(config_section_name):
 				self.Config[key] = value
-
-		if 'type' not in self.Config:
-			L.error("Configuration section '{}' doesn't contain 'type' key.".format(config_section_name))
-			raise RuntimeError("Incorrect configuration")
