@@ -8,7 +8,7 @@ class AMQPSource(Source):
 	def __init__(self, app, pipeline, connection):
 		super().__init__(app, pipeline)
 
-		self._connection = connection
+		self._connection = pipeline.get_connection(app, connection)
 		self._channel = None
 		self._started = False
 		self._consumer_tag = None

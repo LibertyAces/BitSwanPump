@@ -7,7 +7,7 @@ class AMQPSink(Sink):
 	def __init__(self, app, pipeline, connection):
 		super().__init__(app, pipeline)
 
-		self._connection = connection
+		self._connection = pipeline.get_connection(app, connection)
 		self._channel = None
 
 		app.PubSub.subscribe_all(self)

@@ -1,6 +1,7 @@
 import abc
 import asab
 from .abcproc import Source
+from .abc.connection import Connection
 
 class Pipeline(abc.ABC):
 
@@ -20,6 +21,12 @@ class Pipeline(abc.ABC):
 		self.State = 'y' # 'r' .. red, 'y' .. yellow, 'g' .. green
 
 		self.Config = None # TODO ...
+
+
+	def get_connection(self, app, connection_id):
+		if isinstance(connection_id, Connection): return connection_id
+		svc = app.get_service("bspump.PumpService")
+		return svc.get_connection(connection_id)
 
 
 	# Pipeline construction

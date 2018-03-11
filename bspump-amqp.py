@@ -26,11 +26,14 @@ if __name__ == '__main__':
 	app = bspump.BSPumpApplication()
 
 	svc = app.get_service("bspump.PumpService")
-	amqp_connection = bspump.amqp.AMQPConnection(app, "conn1")
+
+	svc.add_connection(
+		bspump.amqp.AMQPConnection(app, "AMQPConnection1")
+	)
 
 	svc.add_pipelines(
-		SamplePipeline1(app, 'SamplePipeline1', amqp_connection),
-		SamplePipeline2(app, 'SamplePipeline2', amqp_connection),
+		SamplePipeline1(app, 'SamplePipeline1', "AMQPConnection1"),
+		SamplePipeline2(app, 'SamplePipeline2', "AMQPConnection1"),
 	)
 
 	app.run()
