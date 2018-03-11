@@ -56,6 +56,12 @@ if __name__ == '__main__':
 ```
 
 
+
+## High-level architecture
+
+![Schema of BSPump high-level achitecture](./doc/_static/asab_arch.png)
+
+
 ## Licence
 
 BSPump is an open-source software, available under BSD 3-Clause License.
