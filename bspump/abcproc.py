@@ -7,14 +7,13 @@ class ProcessorBase(abc.ABC):
 
 	@abc.abstractmethod
 	def process(self, event):
-		pass
+		raise NotImplemented()
 
 
 class Source(abc.ABC):
 
 	def __init__(self, app, pipeline):
 		self.Pipeline = pipeline
-		
 
 	def process(self, event):
 		self.Pipeline.Metrics.add("pipeline.{}.event_processed".format(self.Pipeline.Id))
@@ -27,7 +26,7 @@ class Source(abc.ABC):
 
 	@abc.abstractmethod
 	async def start(self):
-		pass
+		raise NotImplemented()
 
 
 class Processor(ProcessorBase):
