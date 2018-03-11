@@ -10,8 +10,8 @@ L = logging.getLogger(__name__)
 
 class ProcessorBase(abc.ABC, ConfigObject):
 
-	def __init__(self, app, pipeline, id=None):
-		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__))
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
 		self.Id = id
 		self.Pipeline = pipeline
@@ -23,8 +23,8 @@ class ProcessorBase(abc.ABC, ConfigObject):
 
 class Source(abc.ABC, ConfigObject):
 
-	def __init__(self, app, pipeline, id=None):
-		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__))
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
 		self.Id = id
 		self.Pipeline = pipeline

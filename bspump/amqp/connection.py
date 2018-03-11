@@ -24,8 +24,8 @@ class AMQPConnection(Connection):
 	}
 
 
-	def __init__(self, app, connection_id):
-		super().__init__(app, connection_id)
+	def __init__(self, app, connection_id, config=None):
+		super().__init__(app, connection_id, config=config)
 
 		self.Connection = None
 		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
