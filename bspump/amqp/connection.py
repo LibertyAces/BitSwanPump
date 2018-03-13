@@ -1,9 +1,9 @@
 import asyncio
 import logging
+
 import pika
 import pika.adapters.asyncio_connection
 
-from asab import Config
 from asab import PubSub
 
 from ..abc.connection import Connection
