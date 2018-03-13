@@ -5,9 +5,7 @@ import asab
 import bspump
 import bspump.socket
 import bspump.common
-from bspump.elasticsearch import ElasticSearchSink
-from bspump.elasticsearch import ElasticSearchDriver
-from bspump import Source 
+import bspump.elasticsearch
 
 ###
 
@@ -15,26 +13,20 @@ L = logging.getLogger(__name__)
 
 ###
 
-class SampleSource(Source):
-	def __init__(self, app, pipeline):
-		super().__init__(app, pipeline)
-
-	async def start(self):
-		try:
-			self.process({
-				"@timestamp": "timestamp",
-				"message": "blablabla",
-			})
-		except:
-			L.exeption("Error in pipeline")
-
 class SamplePipeline(bspump.Pipeline):
+
+	'''
+	Test this pipeline by
+	$ echo '{"Ahoj":"svete"}' |  nc localhost 7000
+	'''
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
-
-		self.set_source(SampleSource(app, self))
-		self.append_processor(ElasticSearchSink(app, self, driver=ElasticSearchDriver(app)))
+		self.build(
+			bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
+			bspump.common.JSON2DictProcessor(app, self),
+			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection1")
+		)
 
 
 if __name__ == '__main__':
@@ -42,8 +34,12 @@ if __name__ == '__main__':
 
 	svc = app.get_service("bspump.PumpService")
 
+	svc.add_connection(
+		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection1")
+	)
+
 	# Construct and register Pipeline
-	pl = SamplePipeline(app, 'mypipeline')
+	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
 
 	app.run()

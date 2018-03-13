@@ -1,2 +1,2 @@
-from .essink import ElasticSearchSink
-from .essink import ElasticSearchDriver
+from .connection import ElasticSearchConnection
+from .sink import ElasticSearchSink
