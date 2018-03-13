@@ -11,8 +11,8 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.construct(
-			bspump.socket.TCPStreamSource(app, self),
+		self.build(
+			bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
 			bspump.common.JSON2DictProcessor(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	# Construct and register Pipeline
-	pl = SamplePipeline(app, 'mypipeline')
+	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
 
 	app.run()

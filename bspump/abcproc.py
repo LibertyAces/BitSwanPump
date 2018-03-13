@@ -1,20 +1,26 @@
 import abc
+from .abc.config import ConfigObject
 
-class ProcessorBase(abc.ABC):
+class ProcessorBase(abc.ABC, ConfigObject):
 
-	def __init__(self, app, pipeline):
-		pass
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
+
+		self.Id = id
+		self.Pipeline = pipeline
 
 	@abc.abstractmethod
 	def process(self, event):
-		pass
+		raise NotImplemented()
 
 
-class Source(abc.ABC):
+class Source(abc.ABC, ConfigObject):
 
-	def __init__(self, app, pipeline):
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
+
+		self.Id = id
 		self.Pipeline = pipeline
-		
 
 	def process(self, event):
 		self.Pipeline.Metrics.add("pipeline.{}.event_processed".format(self.Pipeline.Id))
@@ -27,7 +33,7 @@ class Source(abc.ABC):
 
 	@abc.abstractmethod
 	async def start(self):
-		pass
+		raise NotImplemented()
 
 
 class Processor(ProcessorBase):
