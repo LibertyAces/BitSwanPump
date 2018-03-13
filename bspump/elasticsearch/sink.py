@@ -1,7 +1,8 @@
 import logging
 import json
-import pprint
+import asyncio
 import time
+import requests
 
 import asab
 from .. import Sink
@@ -15,12 +16,13 @@ class ElasticSearchSink(Sink):
 
 
 	ConfigDefaults = {
-		"index_prefix" : "bs_",
+		"index_prefix" : "xdr_",
 		"doctype": "doc",
 		"version": "18031",
 		"time_period": "d",
-		"rollover_mechanism": 'time_based',
-		"max_index_size": 30*1024*1024*1024, # this is 30GB
+		"rollover_mechanism": 'size',
+		"max_index_size": 30*1024*1024*1024, #This is 30GB
+		"timeout": 30
 
 	}
 
@@ -35,6 +37,7 @@ class ElasticSearchSink(Sink):
 		self._rollover_mechanism = self.Config['rollover_mechanism']
 		self._max_index_size = int(self.Config['max_index_size'])
 		self._time_period = self.parse_index_period(self.Config['time_period'])
+		self.timeout = self.Config['timeout']
 
 		self._connection = pipeline.locate_connection(app, connection)
 		
@@ -49,48 +52,45 @@ class ElasticSearchSink(Sink):
 
 
 	def _refresh_index(self, event_name=None):
-		#TODO: implement index update
-
 		if self._rollover_mechanism == 'size':
-			self.index_size_based_update()
+			self._refresh_index_size_based()
 		elif self._rollover_mechanism == 'time':
 			self._refresh_index_time_based()
 		elif self._rollover_mechanism == 'fixed':
 			self._index = self._index_prefix
 		else: 
-			print(self._rollover_mechanism)
-			#L.error("Invalid rollover mechanism: '{}'. Allowed values are 'index_size_based' or 'time_based'.").format(self._rollover_mechanism)
+			L.error("Invalid rollover mechanism:. Allowed values are 'size', 'time' and 'fixed'.")
 			raise RuntimeError("Index rollover failed.")
 
 
 	def _refresh_index_size_based(self):
 		url_get_index_size = self._connection.url + '{}*/_stats/store'.format(self._index_prefix)
-		stats = self.session.get(url_get_index_size, timeout=self.timeout)
-		data = stats.json()
 
-		# if orig_index is not None:
-		# 	# Get actual size of the currently active index
+		with requests.Session() as session:
+			response = session.get(url_get_index_size, timeout=self.timeout)
 
-		# 	if data.get('_all') is None:
-		# 		current_index_size = 0
-		# 	else:
-		# 		current_index_size = data['_all']['primaries']['store']['size_in_bytes']
-		# else:
-		# 	current_index_size = 0
+		if response.status_code != 200:
+			L.error("Failed to get indices' statistics from ElasticSearch.")
 
-		# if (orig_index is None) or (current_index_size >= self.max_index_size):
-		# 	# Roll over to a new index
-		# 	seqno = int((time.time() - 1500000000) / es_index_period)
-		# 	new_es_index = self._generate_es_index(es_type, version, seqno)
+		data = response.json()
 
-		# 	if new_es_index == orig_index:
-		# 		L.warning("ElasticSearch index name update resulted in original name, decrease es_index_period value.")
+		if data["_shards"]["failed"] != 0:
+			L.warning("There was one or more failed shards in the query.")
 
-		# 	return new_es_index 		
+		# Create a list of indices and sort them 
+		ls = []
+		for index_name, index_stats in data['indices'].items():
+			ls.append(index_name)
 
-		# else:
-		# 	return orig_index
+		sorted_ls = sorted(ls, key=lambda item: item.split('_')[-1], reverse=True)
 
+		if data['indices'][sorted_ls[0]]['primaries']['store']['size_in_bytes'] > self._max_index_size:
+			split_index = self._index.rsplit('_',1)
+			split_index[1] =int(split_index[1]) + 1
+			self._index = split_index[0] + str(split_index[1])
+
+		if self._index is None:
+			self._index = self._index_prefix
 
 	def _refresh_index_time_based(self):
 		seqno = int((time.time() - 1500000000) / self._time_period)
