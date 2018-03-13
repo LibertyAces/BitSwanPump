@@ -1,12 +1,10 @@
-import asab
 import logging
-import bspump
-import asyncio
-import aiohttp
 import json
+import asyncio
 
-from asab import Config
-from asab import PubSub
+import aiohttp
+import asab
+import bspump
 
 ###
 
@@ -15,7 +13,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-Config.add_defaults({
+asab.Config.add_defaults({
 	'elasticsearch': {
 		'url': "http://localhost:9200/",
 		'bulk_out_max_size': 1,
@@ -28,16 +26,16 @@ class ElasticSearchDriver(object):
 
 	def __init__(self, app):
 		self.output_queue = asyncio.Queue(maxsize=1000, loop=app.Loop)
-		self.url = Config['elasticsearch']['url'].strip()
+		self.url = asab.Config['elasticsearch']['url'].strip()
 		if self.url[-1] != '/': self.url += '/'
 		self.url_bulk = self.url + '_bulk'
 
-		self.bulk_out_max_size = int(Config['elasticsearch']['bulk_out_max_size'])
+		self.bulk_out_max_size = int(asab.Config['elasticsearch']['bulk_out_max_size'])
 		self.bulk_out = ""
 
-		self.timeout = float(Config['elasticsearch']['timeout'])
-		self.rollover_type = Config['elasticsearch']['rollover_mechanism']
-		#self.max_index_size = int(Config['elasticsearch']['max_index_size'])
+		self.timeout = float(asab.Config['elasticsearch']['timeout'])
+		self.rollover_type = asab.Config['elasticsearch']['rollover_mechanism']
+		#self.max_index_size = int(asab.Config['elasticsearch']['max_index_size'])
 
 		app.PubSub.subscribe("Application.tick!", self.flush)
 		app.PubSub.subscribe("Application.exit!", self.flush)
@@ -55,9 +53,10 @@ class ElasticSearchDriver(object):
 
 	def flush(self, event_name=None):
 		if len(self.bulk_out) == 0:
-			print("bulk size 0")
+			#TODO: Add this event to metrics
 			return
-		print(len(self.bulk_out))
+
+		#TODO: Add this event to metrics
 		self.output_queue.put_nowait(self.bulk_out)
 		self.bulk_out = ""
 
@@ -67,17 +66,18 @@ class ElasticSearchDriver(object):
 			while True:
 				bulk_out = await self.output_queue.get()
 				async with aiohttp.ClientSession() as session:
-					print(session)
 					async with session.post(self.url_bulk, data=bulk_out, headers={'Content-Type': 'application/json'}, timeout=self.timeout) as resp:
 						if resp.status != 200:
-							L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status_code, resp.text))
+							resp_body = await resp.text()
+							L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status, resp_body))
 							raise RuntimeError("Failed to insert document into ElasticSearch")
 
 						else:
-							print(resp.text())
-							respj = json.loads(resp.text())
+							resp_body = await resp.text()
+							respj = json.loads(resp_body)
 							if respj.get('errors', True) != False:
-								L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status_code, resp.text))
+								#TODO: Iterate thru respj['items'] and display only status != 201 items in L.error()
+								L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status, resp_body))
 								raise RuntimeError("Failed to insert document into ElasticSearch")
 
 					break
@@ -101,11 +101,8 @@ class ElasticSearchSink(bspump.Sink):
 		pass
 
 	def process(self, event):
-		print(event)
 		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self.es_index, self.es_type, json.dumps(event))
-		print(data)
 		self._driver.consume(data)
-		print("ok")
 
 
 
