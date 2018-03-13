@@ -23,10 +23,10 @@ class Pipeline(abc.ABC):
 		self.Config = None # TODO ...
 
 
-	def get_connection(self, app, connection_id):
+	def locate_connection(self, app, connection_id):
 		if isinstance(connection_id, Connection): return connection_id
 		svc = app.get_service("bspump.PumpService")
-		return svc.get_connection(connection_id)
+		return svc.locate_connection(connection_id)
 
 
 	# Pipeline construction

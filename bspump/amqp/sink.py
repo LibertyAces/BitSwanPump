@@ -1,5 +1,7 @@
 import pika
+
 import asab
+
 from .. import Sink
 
 class AMQPSink(Sink):
@@ -14,7 +16,7 @@ class AMQPSink(Sink):
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self._connection = pipeline.get_connection(app, connection)
+		self._connection = pipeline.locate_connection(app, connection)
 		self._channel = None
 		self._exchange = self.Config['exchange']
 		self._content_type = self.Config['content_type']

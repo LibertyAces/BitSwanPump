@@ -40,7 +40,7 @@ class BSPumpService(asab.Service):
 		for connection in connections:
 			self.add_connection(connection)
 
-	def get_connection(self, connection_id):
+	def locate_connection(self, connection_id):
 		if isinstance(connection_id, Connection): return connection_id
 		try:
 			return self.Connections[connection_id]
