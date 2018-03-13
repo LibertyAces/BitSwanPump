@@ -45,11 +45,13 @@ class ElasticSearchDriver(object):
 		future = asyncio.Future()
 		asyncio.ensure_future(self._submit(future))
 
+
 	def consume(self, data):
 		self.bulk_out += data
 
 		if len(self.bulk_out) > self.bulk_out_max_size:
 			self.flush()
+
 
 	def flush(self, event_name=None):
 		if len(self.bulk_out) == 0:
@@ -59,6 +61,7 @@ class ElasticSearchDriver(object):
 		self.output_queue.put_nowait(self.bulk_out)
 		self.bulk_out = ""
 
+
 	async def _submit(self, future):
 		try:
 			while True:
@@ -66,15 +69,13 @@ class ElasticSearchDriver(object):
 				async with aiohttp.ClientSession() as session:
 					print(session)
 					async with session.post(self.url_bulk, data=bulk_out, headers={'Content-Type': 'application/json'}, timeout=self.timeout) as resp:
-						print(resp)
-						if resp.status_code != 200:
-							print("esp.status_code != 200")
+						if resp.status != 200:
 							L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status_code, resp.text))
 							raise RuntimeError("Failed to insert document into ElasticSearch")
 
 						else:
-							print("aaaaaaaaa")
-							respj = json.loads(resp.text)
+							print(resp.text())
+							respj = json.loads(resp.text())
 							if respj.get('errors', True) != False:
 								L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status_code, resp.text))
 								raise RuntimeError("Failed to insert document into ElasticSearch")
@@ -87,6 +88,28 @@ class ElasticSearchDriver(object):
 		future.set_result("done")
 
 
+class ElasticSearchSink(bspump.Sink):
+
+	def __init__(self, app, pipeline, driver, es_type="xdr", es_index="index"):
+		super().__init__(app, pipeline)
+		self.es_index = es_index
+		self.es_type = es_type
+		app.PubSub.subscribe("onTick", self.refresh_index())
+		self._driver = driver
+
+	def refresh_index(self):
+		pass
+
+	def process(self, event):
+		print(event)
+		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self.es_index, self.es_type, json.dumps(event))
+		print(data)
+		self._driver.consume(data)
+		print("ok")
+
+
+
+	#TODO: implement index update
 	def update_index(self, es_type, version, es_index_period, orig_index=None):		
 		if self.rollover_type == 'index_size_based':
 			return self.index_size_based_update(es_type, version, es_index_period, orig_index)
@@ -137,27 +160,3 @@ class ElasticSearchDriver(object):
 		elif value == 'm': return 60*60*24*28 # 28 days
 
 		return int(value) # Otherwise use value in seconds
-
-
-class ElasticSearchSink(bspump.Sink):
-
-	def __init__(self, app, pipeline, driver, es_type="xdr", es_index="index"):
-		super().__init__(app, pipeline)
-		self.es_index = es_index
-		self.es_type = es_type
-		app.PubSub.subscribe("onTick", self.refresh_index())
-		self._driver = driver
-
-	def refresh_index(self):
-		pass
-
-	def process(self, event):
-		{
-			"@timestamp": "adsf"
-		}
-		print(event)
-		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self.es_index, self.es_type, json.dumps(event))
-		print(data)
-		self._driver.consume(data)
-		print("ok")
-
