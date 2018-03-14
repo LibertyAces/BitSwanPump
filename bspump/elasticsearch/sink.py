@@ -84,10 +84,11 @@ class ElasticSearchSink(Sink):
 
 		sorted_ls = sorted(ls, key=lambda item: item.split('_')[-1], reverse=True)
 
-		if (data['indices'][sorted_ls[0]]['primaries']['store']['size_in_bytes'] > self._max_index_size)  and (self._index is not None):
-			split_index = self._index.rsplit('_',1)
-			split_index[1] =int(split_index[1]) + 1
-			self._index = split_index[0] + str(split_index[1])
+		if len(sorted_ls) > 0:
+			if (data['indices'][sorted_ls[0]]['primaries']['store']['size_in_bytes'] > self._max_index_size)  and (self._index is not None):
+				split_index = self._index.rsplit('_',1)
+				split_index[1] =int(split_index[1]) + 1
+				self._index = split_index[0] + str(split_index[1])
 
 		if self._index is None:
 			self._index = self._index_prefix
