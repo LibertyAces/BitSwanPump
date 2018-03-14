@@ -1,7 +1,7 @@
 import json
 from .. import Processor
 
-class JSON2DictProcessor(Processor):
+class JSONParserProcessor(Processor):
 
 	def process(self, event):
 		return json.loads(event)

@@ -13,7 +13,7 @@ class SamplePipeline(bspump.Pipeline):
 
 		self.build(
 			bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
-			bspump.common.JSON2DictProcessor(app, self),
+			bspump.common.JSONParserProcessor(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
 

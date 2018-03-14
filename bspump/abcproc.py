@@ -27,6 +27,8 @@ class Source(abc.ABC, ConfigObject):
 
 		for processor in self.Pipeline.Processors:
 			event = processor.process(event)
+			if event is None: # Event has been consumed on the way
+				return
 
 		if event is not None:
 			raise RuntimeError("Incomplete pipeline, event is not consumed by Sink")

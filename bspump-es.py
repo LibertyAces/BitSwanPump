@@ -24,7 +24,7 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
-			bspump.common.JSON2DictProcessor(app, self),
+			bspump.common.JSONParserProcessor(app, self),
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection1")
 		)
 
