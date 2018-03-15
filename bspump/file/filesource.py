@@ -34,3 +34,17 @@ class FileSource(Source):
 	async def start(self):
 		# Run the reading of the file
 		asyncio.ensure_future(self.process_file_coro(), loop=self.Loop)
+
+
+class FileBlockSource(Source):
+
+	ConfigDefaults = {
+		'path': '',
+	}
+
+	async def start(self):
+		filename = self.Config['path']
+		with open(filename, "rb") as f:
+			event = f.read()
+
+		self.process(event)
