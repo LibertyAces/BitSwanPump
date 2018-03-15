@@ -1,6 +1,7 @@
 import abc
+import types
 import asab
-from .abcproc import Source
+from .abcproc import Source, Generator
 from .abc.connection import Connection
 
 class Pipeline(abc.ABC):
@@ -12,13 +13,33 @@ class Pipeline(abc.ABC):
 
 		# List of processors
 		self.Source = None
-		self.Processors = []
+		self.Processors = [[]]
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
 		self.Metrics = app.Metrics
 
 		self.State = 'y' # 'r' .. red, 'y' .. yellow, 'g' .. green
+
+
+	def process(self, event, pindex=0):
+
+		self.Metrics.add("pipeline.{}.event_processed".format(self.Id))
+
+		for processor in self.Processors[pindex]:
+			event = processor.process(event)
+			if event is None: # Event has been consumed on the way
+				return
+
+		if event is not None:
+
+			# If the event is generator and there is more in the processor pipeline, then enumerate generator
+			if isinstance(event, types.GeneratorType) and len(self.Processors) > pindex:
+				for gevent in event:
+					self.process(gevent, pindex+1)
+
+			else:
+				raise RuntimeError("Incomplete pipeline, event `{}` is not consumed by Sink".format(event))
 
 
 	def locate_connection(self, app, connection_id):
@@ -39,9 +60,12 @@ class Pipeline(abc.ABC):
 
 
 	def append_processor(self, processor):
-		#TODO: Check if possible: self.Processors[-1] is Sink, no processors after Sink, ...
+		#TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
 		#TODO: Check if fitting
-		self.Processors.append(processor)
+		self.Processors[-1].append(processor)
+
+		if isinstance(processor, Generator):
+			self.Processors.append([])
 
 
 	def build(self, source, *processors):

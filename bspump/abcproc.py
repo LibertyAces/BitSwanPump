@@ -3,11 +3,13 @@ from .abc.config import ConfigObject
 
 class ProcessorBase(abc.ABC, ConfigObject):
 
+
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
 		self.Id = id
 		self.Pipeline = pipeline
+
 
 	@abc.abstractmethod
 	def process(self, event):
@@ -16,22 +18,18 @@ class ProcessorBase(abc.ABC, ConfigObject):
 
 class Source(abc.ABC, ConfigObject):
 
+
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
 		self.Id = id
 		self.Pipeline = pipeline
 
+
 	def process(self, event):
-		self.Pipeline.Metrics.add("pipeline.{}.event_processed".format(self.Pipeline.Id))
+		return self.Pipeline.process(event)
 
-		for processor in self.Pipeline.Processors:
-			event = processor.process(event)
-			if event is None: # Event has been consumed on the way
-				return
 
-		if event is not None:
-			raise RuntimeError("Incomplete pipeline, event is not consumed by Sink")
 
 	@abc.abstractmethod
 	async def start(self):
@@ -43,4 +41,8 @@ class Processor(ProcessorBase):
 
 
 class Sink(ProcessorBase):
+	pass
+
+
+class Generator(ProcessorBase):
 	pass
