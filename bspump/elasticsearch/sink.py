@@ -16,9 +16,8 @@ class ElasticSearchSink(Sink):
 
 
 	ConfigDefaults = {
-		"index_prefix" : "xdr_",
+		"index_prefix" : "bspump_",
 		"doctype": "doc",
-		"version": "18031",
 		"time_period": "d",
 		"rollover_mechanism": 'size',
 		"max_index_size": 30*1024*1024*1024, #This is 30GB
@@ -33,7 +32,6 @@ class ElasticSearchSink(Sink):
 		self._index = None
 		self._index_prefix = self.Config['index_prefix']
 		self._doctype = self.Config['doctype']
-		self._version = self.Config['version']
 		self._rollover_mechanism = self.Config['rollover_mechanism']
 		self._max_index_size = int(self.Config['max_index_size'])
 		self._time_period = self.parse_index_period(self.Config['time_period'])
@@ -82,16 +80,16 @@ class ElasticSearchSink(Sink):
 		for index_name, index_stats in data['indices'].items():
 			ls.append(index_name)
 
-		sorted_ls = sorted(ls, key=lambda item: item.split('_')[-1], reverse=True)
+		sorted_ls = sorted(ls, key=lambda item: item.rsplit('_', 1)[-1], reverse=True)
 
 		if len(sorted_ls) > 0:
 			if (data['indices'][sorted_ls[0]]['primaries']['store']['size_in_bytes'] > self._max_index_size)  and (self._index is not None):
-				split_index = self._index.rsplit('_',1)
-				split_index[1] =int(split_index[1]) + 1
-				self._index = split_index[0] + str(split_index[1])
+				_ , split_index = self._index.rsplit('_',1)
+				split_index =int(split_index) + 1
+				self._index = self._index_prefix + '{:05}'.format(split_index[1])
 
 		if self._index is None:
-			self._index = self._index_prefix
+			self._index = self._index_prefix + '{:05}'.format(1)
 
 	def _refresh_index_time_based(self):
 		seqno = int((time.time() - 1500000000) / self._time_period)

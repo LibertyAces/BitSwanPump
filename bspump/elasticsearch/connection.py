@@ -1,7 +1,6 @@
 import asyncio
 import aiohttp
 import logging
-import pprint
 import json
 
 from asab import Config
@@ -105,7 +104,6 @@ class ElasticSearchConnection(Connection):
 					else:
 						resp_body = await resp.text()
 						respj = json.loads(resp_body)
-						pprint.pprint(respj)
 						if respj.get('errors', True) != False:
 							#TODO: Iterate thru respj['items'] and display only status != 201 items in L.error()
 							L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status, resp_body))
