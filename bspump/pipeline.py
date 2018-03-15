@@ -13,33 +13,32 @@ class Pipeline(abc.ABC):
 
 		# List of processors
 		self.Source = None
-		self.Processors = [[]]
+		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
 		self.Metrics = app.Metrics
 
-		self.State = 'y' # 'r' .. red, 'y' .. yellow, 'g' .. green
 
-
-	def process(self, event, pindex=0):
+	def process(self, event, depth=0):
 
 		self.Metrics.add("pipeline.{}.event_processed".format(self.Id))
 
-		for processor in self.Processors[pindex]:
+		for processor in self.Processors[depth]:
 			event = processor.process(event)
 			if event is None: # Event has been consumed on the way
 				return
 
-		if event is not None:
+		if event is None:
+			return
 
-			# If the event is generator and there is more in the processor pipeline, then enumerate generator
-			if isinstance(event, types.GeneratorType) and len(self.Processors) > pindex:
-				for gevent in event:
-					self.process(gevent, pindex+1)
+		# If the event is generator and there is more in the processor pipeline, then enumerate generator
+		if isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
+			for gevent in event:
+				self.process(gevent, depth+1)
 
-			else:
-				raise RuntimeError("Incomplete pipeline, event `{}` is not consumed by Sink".format(event))
+		else:
+			raise RuntimeError("Incomplete pipeline, event `{}` is not consumed by Sink".format(event))
 
 
 	def locate_connection(self, app, connection_id):
