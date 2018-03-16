@@ -41,6 +41,11 @@ class Pipeline(abc.ABC):
 			raise RuntimeError("Incomplete pipeline, event `{}` is not consumed by Sink".format(event))
 
 
+	async def is_running(self):
+		#TODO: Await running state ...
+		return
+
+
 	def locate_connection(self, app, connection_id):
 		if isinstance(connection_id, Connection): return connection_id
 		svc = app.get_service("bspump.PumpService")
