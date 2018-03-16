@@ -1,12 +1,11 @@
 import abc
 import json
-from .config import ConfigObject
+from asab.abc.singleton import Singleton
 
 
-class Lookup(abc.ABC, ConfigObject):
+class Lookup(metaclass=Singleton):
 
-	def __init__(self, app, lookup_id):
-		super().__init__("lookup:{}".format(lookup_id), config=None)
+	def __init__(self):
 		self.lookup={}
 		self.load()
 
