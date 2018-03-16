@@ -27,9 +27,8 @@ class Source(abc.ABC, ConfigObject):
 
 
 	def process(self, event):
+		#TODO: Assert that pipeline is running
 		return self.Pipeline.process(event)
-
-
 
 	@abc.abstractmethod
 	async def start(self):
