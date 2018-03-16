@@ -9,7 +9,7 @@ L = logging.getLogger(__file__)
 #
 
 
-class FileSource(Source):
+class FileLineSource(Source):
 
 	ConfigDefaults = {
 		'path': '',

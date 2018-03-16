@@ -1,2 +1,2 @@
-from .filesource import FileSource
+from .filesource import FileLineSource
 from .filesource import FileBlockSource
