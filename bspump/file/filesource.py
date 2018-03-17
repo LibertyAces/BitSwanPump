@@ -28,7 +28,7 @@ class FileLineSource(Source):
 		filename = self.Config['path']
 		mode = self.Config['mode']
 
-		await self.Pipeline.is_running()
+		await self.Pipeline.ready()
 
 		try:
 			f = open(filename, mode)
@@ -36,7 +36,7 @@ class FileLineSource(Source):
 			L.error("The specified file {} could not be opened.".format(self.Config['path']))
 		
 		for line in f:
-			await self.Pipeline.is_running()
+			await self.Pipeline.ready()
 			self.process(line)
 
 
@@ -53,12 +53,18 @@ class FileBlockSource(Source):
 	}
 
 
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+		self.Loop = app.Loop
+		self._future = None
+
+
 	async def _read_file(self):
 		
 		filename = self.Config['path']
 		mode = self.Config['mode']
 
-		await self.Pipeline.is_running()
+		await self.Pipeline.ready()
 
 		with open(filename, mode) as f:
 			event = f.read()
@@ -68,4 +74,4 @@ class FileBlockSource(Source):
 
 
 	async def start(self):
-		asyncio.ensure_future(self._read_file(), loop=self.Loop)
+		self._future = asyncio.ensure_future(self._read_file(), loop=self.Loop)

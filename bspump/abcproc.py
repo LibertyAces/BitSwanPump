@@ -27,8 +27,10 @@ class Source(abc.ABC, ConfigObject):
 
 
 	def process(self, event):
-		#TODO: Assert that pipeline is running
+		if not self.Pipeline._ready.is_set():
+			raise RuntimeError("Pipeline is not ready to process events")
 		return self.Pipeline.process(event)
+
 
 	@abc.abstractmethod
 	async def start(self):

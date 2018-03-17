@@ -1,4 +1,5 @@
 import abc
+import asyncio
 import types
 import asab
 from .abcproc import Source, Generator
@@ -20,8 +21,11 @@ class Pipeline(abc.ABC):
 		self.Metrics = app.Metrics
 
 
-	def process(self, event, depth=0):
+		self._ready = asyncio.Event(loop = app.Loop)
+		self._ready.clear()
 
+
+	def process(self, event, depth=0):
 		self.Metrics.add("pipeline.{}.event_processed".format(self.Id))
 
 		for processor in self.Processors[depth]:
@@ -41,9 +45,8 @@ class Pipeline(abc.ABC):
 			raise RuntimeError("Incomplete pipeline, event `{}` is not consumed by Sink".format(event))
 
 
-	async def is_running(self):
-		#TODO: Await running state ...
-		return
+	async def ready(self):
+		await self._ready.wait()
 
 
 	def locate_connection(self, app, connection_id):
@@ -81,5 +84,6 @@ class Pipeline(abc.ABC):
 	# Stream processing
 
 	async def start(self):
-		return await self.Source.start()
-
+		self._ready.set()
+		ret = await self.Source.start()
+		return ret
