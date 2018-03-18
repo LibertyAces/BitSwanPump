@@ -24,7 +24,6 @@ class FileLineSource(Source):
 
 
 	async def _read_file(self):
-		
 		filename = self.Config['path']
 		mode = self.Config['mode']
 

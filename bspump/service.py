@@ -52,14 +52,7 @@ class BSPumpService(asab.Service):
 
 	async def main(self):
 		# Start all pipelines
-		if len(self.Pipelines) > 0:
-			futures = []
-			for p in self.Pipelines.values():
-				f = asyncio.ensure_future(p.start())
-				futures.append(f)
+		if len(self.Pipelines) == 0: return
 
-			s, f = await asyncio.wait(futures, return_when=asyncio.FIRST_EXCEPTION)
-			if len(f) == 0:
-				L.info("{} pipeline(s) started".format(len(s)))
-			else:
-				L.error("{} pipeline(s) started, {} failed to start!".format(len(s), len(f)))
+		# Start all pipelines
+		return asyncio.gather(*[p.start() for p in self.Pipelines.values()])
