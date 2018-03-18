@@ -13,7 +13,7 @@ class Pipeline(abc.ABC):
 		self.Id = pipeline_id
 		self.Loop = app.Loop
 
-		self.Source = []
+		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
 
 		# Publish-Subscribe for this pipeline
@@ -62,9 +62,9 @@ class Pipeline(abc.ABC):
 
 	def set_source(self, source):
 		if isinstance(source, Source):
-			self.Source.append(source)
+			self.Sources.append(source)
 		else:
-			self.Source.extend(source)
+			self.Sources.extend(source)
 
 
 	def append_processor(self, processor):
@@ -87,4 +87,4 @@ class Pipeline(abc.ABC):
 	async def start(self):
 		self._ready.set()
 		# Start all sources
-		return asyncio.gather(*[s.start() for s in self.Source], loop=self.Loop)
+		return asyncio.gather(*[s.start() for s in self.Sources], loop=self.Loop)
