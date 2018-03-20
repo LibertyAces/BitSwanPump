@@ -34,7 +34,7 @@ class Pipeline(abc.ABC):
 		self._ready.clear()
 
 
-	def _set_error(self, exc, event):
+	def set_error(self, exc, event):
 		'''
 		If called with `exc is None`, then reset error (aka recovery)
 		'''
@@ -55,7 +55,7 @@ class Pipeline(abc.ABC):
 				L.warning("Error on a pipeline is already set!")
 			
 			self._error = (exc, event)
-			L.warning("Pipeline '{}' stopped due to a processing error".format(self.Id))
+			L.warning("Pipeline '{}' stopped due to a processing error: {}".format(self.Id, exc))
 
 			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
 			self._evaluate_ready()
@@ -94,7 +94,7 @@ class Pipeline(abc.ABC):
 			except Exception as e:
 				if depth > 0: raise # Handle error on the top level
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))
-				self._set_error(e, event)
+				self.set_error(e, event)
 				return False
 
 			if event is None: # Event has been consumed on the way
@@ -113,7 +113,7 @@ class Pipeline(abc.ABC):
 				raise ProcessingError("Incomplete pipeline, event '{}' is not consumed by a Sink".format(event))
 			except Exception as e:
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.__class__.__name__, depth))
-				self._set_error(e, event)
+				self.set_error(e, event)
 				return False
 
 		return True
