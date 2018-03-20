@@ -97,6 +97,8 @@ class FileLineSource(Source):
 			self.Pipeline.set_error(ProcessingError("The file '{}' could not be read.".format(filename)), None)
 			return
 
+		L.debug("Processing file '{}'".format(filename))
+
 		try:
 			for line in f:
 				await self.Pipeline.ready()
