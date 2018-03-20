@@ -30,7 +30,20 @@ class FileLineSource(Source):
 		await self.Pipeline.ready()
 
 		try:
-			f = open(filename, mode)
+			if filename.endswith(".gz"):
+				import gzip
+				f = gzip.open(filename, 'rb')
+
+			elif filename.endswith(".bz2"):
+				import bz2
+				f = bz2.open(filename, 'rb')
+
+			elif filename.endswith(".xz") or filename.endswith(".lzma"):
+				import lzma
+				f = lzma.open(filename, 'rb')
+			else:
+				f = open(filename, 'rb')
+
 		except IOError:
 			L.error("The specified file {} could not be opened.".format(self.Config['path']))
 		
@@ -38,6 +51,7 @@ class FileLineSource(Source):
 			await self.Pipeline.ready()
 			self.process(line)
 
+		f.close()
 
 	async def start(self):
 		self._future = asyncio.ensure_future(self._read_file(), loop=self.Loop)
