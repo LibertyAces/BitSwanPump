@@ -4,6 +4,8 @@ from .. import Source
 
 class _TCPStreamProtocol(asyncio.Protocol):
 
+	#TODO: Respect pipeline is_ready
+
 	def __init__(self, source):
 		self._source = source
 
