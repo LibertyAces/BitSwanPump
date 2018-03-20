@@ -36,7 +36,8 @@ class Pipeline(abc.ABC):
 		self._ready = asyncio.Event(loop = app.Loop)
 		self._ready.clear()
 
-		self._chillout_trigger = 100
+		# Chillout is used to break a pipeline processing to smaller tasks that allows other event in event loop to be processed
+		self._chillout_trigger = 10000
 		self._chillout_counter = 0
 
 
