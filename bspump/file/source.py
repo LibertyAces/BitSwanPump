@@ -106,6 +106,8 @@ class FileLineSource(Source):
 		finally:
 			f.close()
 
+		self.Pipeline.flush()
+
 		# Ensure that we iterate to a next file quickly
 		self.Loop.call_soon(self._on_health_check, 'file.read!')
 

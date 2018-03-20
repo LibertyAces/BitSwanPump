@@ -99,6 +99,10 @@ class Pipeline(abc.ABC):
 				self.PubSub.publish("bspump.pipeline.not_ready!", pipeline=self)
 
 
+	async def ready(self):
+		await self._ready.wait()
+
+
 	def process(self, event, depth=0):
 		if depth == 0:
 			self.Metrics.add("bspump.pipeline.event_in.{}".format(self.Id))
@@ -134,8 +138,10 @@ class Pipeline(abc.ABC):
 		return True
 
 
-	async def ready(self):
-		await self._ready.wait()
+	def flush(self):
+		# Ensure that all buffers etc. are flushed
+		#TODO: This ...
+		pass
 
 
 	def locate_connection(self, app, connection_id):
