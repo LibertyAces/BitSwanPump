@@ -1,9 +1,17 @@
 import abc
 import asyncio
 import types
+import logging
 import asab
 from .abcproc import Source, Generator
 from .abc.connection import Connection
+from .exception import ProcessingError
+
+#
+
+L = logging.getLogger(__name__)
+
+#
 
 class Pipeline(abc.ABC):
 
@@ -20,21 +28,79 @@ class Pipeline(abc.ABC):
 		self.PubSub = asab.PubSub(app)
 		self.Metrics = app.Metrics
 
+		self._error = None # None if not in error state otherwise there is a tuple (exception, event)
 
 		self._ready = asyncio.Event(loop = app.Loop)
 		self._ready.clear()
 
 
+	def _set_error(self, exc, event):
+		'''
+		If called with `exc is None`, then reset error (aka recovery)
+		'''
+		if not self.catch_error(exc, event):
+			self.Metrics.add("bspump.pipeline.warning.{}".format(self.Id))
+			self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
+			return
+
+		self.Metrics.add("bspump.pipeline.error.{}".format(self.Id))
+
+		if exc is None:
+			if self._error is not None:
+				self._error = None
+				self._evaluate_ready()
+
+		else:
+			if (self._error is not None):
+				L.warning("Error on a pipeline is already set!")
+			
+			self._error = (exc, event)
+			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
+
+			self._evaluate_ready()
+
+
+	def catch_error(self, exception, event):
+		'''
+		Override to evaluate on the pipeline processing error.
+		Return True for hard errors (stop the pipeline processing) or False for soft errors that will be ignored 
+		'''
+		return True
+
+
+	def _evaluate_ready(self):
+		orig_ready = self._ready.is_set()
+
+		# Do we observed an error?
+		new_ready = self._error is None
+
+		if orig_ready != new_ready:
+			if new_ready:
+				self._ready.set()
+				self.PubSub.publish("bspump.pipeline.ready!", pipeline=self)
+			else:
+				self._ready.clear()
+				self.PubSub.publish("bspump.pipeline.not_ready!", pipeline=self)
+
+
 	def process(self, event, depth=0):
-		self.Metrics.add("pipeline.{}.event_processed".format(self.Id))
+		if depth == 0:
+			self.Metrics.add("bspump.pipeline.event_in.{}".format(self.Id))
 
 		for processor in self.Processors[depth]:
-			event = processor.process(event)
+			try:
+				event = processor.process(event)
+			except Exception as e:
+				if depth > 0: raise # Handle error on the top level
+				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))
+				self._set_error(e, event)
+				return False
+
 			if event is None: # Event has been consumed on the way
-				return
+				return True
 
 		if event is None:
-			return
+			return True
 
 		# If the event is generator and there is more in the processor pipeline, then enumerate generator
 		if isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
@@ -42,7 +108,14 @@ class Pipeline(abc.ABC):
 				self.process(gevent, depth+1)
 
 		else:
-			raise RuntimeError("Incomplete pipeline, event `{}` is not consumed by Sink".format(event))
+			try:
+				raise ProcessingError("Incomplete pipeline, event '{}' is not consumed by a Sink".format(event))
+			except Exception as e:
+				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.__class__.__name__, depth))
+				self._set_error(e, event)
+				return False
+
+		return True
 
 
 	async def ready(self):
@@ -85,6 +158,6 @@ class Pipeline(abc.ABC):
 	# Stream processing
 
 	async def start(self):
-		self._ready.set()
 		# Start all sources
-		return asyncio.gather(*[s.start() for s in self.Sources], loop=self.Loop)
+		asyncio.gather(*[s.start() for s in self.Sources], loop=self.Loop)
+		self._evaluate_ready()

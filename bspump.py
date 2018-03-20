@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
+import json
 import asab
 import bspump
 import bspump.socket
@@ -16,6 +17,11 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.common.JSONParserProcessor(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
+
+	def catch_error(self, exception, event):
+		if isinstance(exception, json.decoder.JSONDecodeError):
+			return False
+		return True
 
 
 if __name__ == '__main__':
