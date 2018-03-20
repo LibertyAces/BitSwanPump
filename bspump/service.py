@@ -12,8 +12,8 @@ L = logging.getLogger(__file__)
 
 class BSPumpService(asab.Service):
 
-	def __init__(self, app):
-		super().__init__(app)
+	def __init__(self, app, service_name="bspump.PumpService"):
+		super().__init__(app, service_name)
 
 		self.Pipelines = dict()
 		self.Connections = dict()

@@ -8,7 +8,6 @@ class BSPumpApplication(asab.Application):
 		super().__init__()
 
 		self.PumpService = BSPumpService(self)
-		self.register_service("bspump.PumpService", self.PumpService)
 
 	async def main(self):
 		await self.PumpService.main()
