@@ -41,7 +41,7 @@ class ElasticSearchConnection(Connection):
 		self._timeout = float(self.Config['timeout'])
 
 		self.PubSub = app.PubSub
-		self.PubSub.subscribe("Application.tick!/10", self._on_tick)
+		self.PubSub.subscribe("Application.tick/10!", self._on_tick)
 		self.PubSub.subscribe("Application.exit!", self._on_exit)
 
 		self._future = asyncio.ensure_future(self._submit())
