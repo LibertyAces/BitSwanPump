@@ -37,7 +37,7 @@ class FileLineSource(Source):
 		self.post = self.Config['post']
 		if self.post not in ['delete', 'exit', 'move']:
 			L.warning("Incorrect/unknown 'post' configuration value '{}' - defaulting to 'move'".format(self.post))
-			self.post = move
+			self.post = 'move'
 
 
 	def _on_health_check(self, message_type):
