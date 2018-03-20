@@ -69,7 +69,7 @@ class FileLineSource(Source):
 		self.path = "" # TODO: Enhance
 
 		self._future = asyncio.ensure_future(
-			self._read_file(self.filename, self.mode),
+			self._read_file(filename, self.mode),
 			loop=self.Loop
 		)
 
