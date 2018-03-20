@@ -51,14 +51,14 @@ class ElasticSearchSink(Sink):
 		
 		ret = self._connection.consume(data)
 		if ret == False:
-			self.Pipeline.throttle(True)
+			self.Pipeline.throttle(self, True)
 
 
 	def _connection_unpause(self, event_name, connection):
 		if connection != self._connection:
 			return
 
-		self.Pipeline.throttle(False)
+		self.Pipeline.throttle(self, False)
 
 
 	def _refresh_index(self, event_name=None):

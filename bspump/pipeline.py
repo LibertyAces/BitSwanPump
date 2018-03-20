@@ -30,6 +30,8 @@ class Pipeline(abc.ABC):
 
 		self._error = None # None if not in error state otherwise there is a tuple (exception, event)
 
+		self._throttles = set()
+
 		self._ready = asyncio.Event(loop = app.Loop)
 		self._ready.clear()
 
@@ -69,9 +71,14 @@ class Pipeline(abc.ABC):
 		return True
 
 
-	def throttle(self, enable=True):
+	def throttle(self, who, enable=True):
 		L.warning("Throttle: {}".format(enable))
-		pass
+		if enable:
+			self._throttles.add(who)
+		else:
+			self._throttles.remove(who)
+
+		self._evaluate_ready()
 
 
 	def _evaluate_ready(self):
@@ -79,6 +86,9 @@ class Pipeline(abc.ABC):
 
 		# Do we observed an error?
 		new_ready = self._error is None
+		# Are we throttled
+		if new_ready:
+			new_ready = len(self._throttles) == 0 
 
 		if orig_ready != new_ready:
 			if new_ready:

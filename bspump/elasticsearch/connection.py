@@ -100,7 +100,7 @@ class ElasticSearchConnection(Connection):
 				break
 
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
-				self.PubSub.publish("ElasticSearchConnection.unpause!", self, asynchronous=True)
+				self.PubSub.publish("ElasticSearchConnection.unpause!", self, asynchronously=True)
 
 			#TODO: if exception happends, save bulk_out somewhere for a future resend
 
