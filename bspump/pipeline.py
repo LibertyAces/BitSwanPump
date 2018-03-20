@@ -35,6 +35,9 @@ class Pipeline(abc.ABC):
 		self._ready = asyncio.Event(loop = app.Loop)
 		self._ready.clear()
 
+		self._chillout_trigger = 100
+		self._chillout_counter = 0
+
 
 	def set_error(self, exc, event):
 		'''
@@ -100,6 +103,11 @@ class Pipeline(abc.ABC):
 
 
 	async def ready(self):
+		self._chillout_counter += 1
+		if self._chillout_counter == self._chillout_trigger:
+			self._chillout_counter = 0
+			await asyncio.sleep(0.0001, loop = self.Loop)
+
 		await self._ready.wait()
 
 
