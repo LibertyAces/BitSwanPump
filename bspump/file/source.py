@@ -1,6 +1,7 @@
 import logging
 import asyncio
 from .. import Source
+from .. import ProcessingError
 
 #
 
@@ -23,9 +24,17 @@ class FileLineSource(Source):
 		self._future = None
 
 
+	async def _filename_set(self):
+		print("Awaiting filename")
+		await asyncio.sleep(5)
+
+
 	async def _read_file(self):
 		filename = self.Config['path']
 		mode = self.Config['mode']
+
+		while filename is None or filename == "":
+			await self._filename_set()
 
 		await self.Pipeline.ready()
 
@@ -41,11 +50,13 @@ class FileLineSource(Source):
 			elif filename.endswith(".xz") or filename.endswith(".lzma"):
 				import lzma
 				f = lzma.open(filename, mode)
+
 			else:
 				f = open(filename, mode)
 
-		except IOError:
-			L.error("The specified file {} could not be opened.".format(self.Config['path']))
+		except:
+			self.Pipeline.set_error(ProcessingError("The file '{}' could not be read.".format(filename)), None)
+			return
 
 		try:
 			for line in f:
@@ -53,6 +64,7 @@ class FileLineSource(Source):
 				self.process(line)
 		finally:
 			f.close()
+
 
 	async def start(self):
 		self._future = asyncio.ensure_future(self._read_file(), loop=self.Loop)
