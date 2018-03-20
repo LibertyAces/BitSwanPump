@@ -49,7 +49,7 @@ class FileLineSource(Source):
 		self.mode = self.Config['mode']
 
 
-	def _on_health_check(self, event_name):
+	def _on_health_check(self, message_type):
 		if self._future is not None:
 			if not self._future.done():
 				# We are still processing a file
@@ -105,11 +105,11 @@ class FileLineSource(Source):
 			f.close()
 
 		# Ensure that we iterate to a next file quickly
-		self.Loop.call_soon(self._on_health_check, 'file.read')
+		self.Loop.call_soon(self._on_health_check, 'file.read!')
 
 
 	async def start(self):
-		self._on_health_check('pipeline.started')
+		self._on_health_check('pipeline.started!')
 
 
 class FileBlockSource(Source):
