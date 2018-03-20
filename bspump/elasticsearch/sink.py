@@ -41,7 +41,8 @@ class ElasticSearchSink(Sink):
 		self._connection = pipeline.locate_connection(app, connection)
 		
 		app.PubSub.subscribe("Application.tick/600!", self._refresh_index)
-		app.PubSub.subscribe("ElasticSearchConnection.unpause!", self._connection_unpause)
+		app.PubSub.subscribe("ElasticSearchConnection.pause!", self._connection_throttle)
+		app.PubSub.subscribe("ElasticSearchConnection.unpause!", self._connection_throttle)
 		self._refresh_index("simulated")
 		assert(self._index is not None)
 
@@ -50,15 +51,18 @@ class ElasticSearchSink(Sink):
 		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self._index, self._doctype, json.dumps(event))
 		
 		ret = self._connection.consume(data)
-		if ret == False:
-			self.Pipeline.throttle(self, True)
 
 
-	def _connection_unpause(self, event_name, connection):
+	def _connection_throttle(self, event_name, connection):
 		if connection != self._connection:
 			return
 
-		self.Pipeline.throttle(self, False)
+		if event_name == "ElasticSearchConnection.pause!":
+			self.Pipeline.throttle(self, True)
+		elif event_name == "ElasticSearchConnection.unpause!":
+			self.Pipeline.throttle(self, False)
+		else:
+			raise RuntimeError("Unexpected event name '{}'".format(event_name))
 
 
 	def _refresh_index(self, event_name=None):

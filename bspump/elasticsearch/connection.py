@@ -54,9 +54,7 @@ class ElasticSearchConnection(Connection):
 			self.flush()
 			assert self._output_queue.qsize() <= self._output_queue_max_size
 			if self._output_queue.qsize() == self._output_queue_max_size:
-				return False
-
-		return True
+				self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
 
 	async def _on_exit(self, event_name):
