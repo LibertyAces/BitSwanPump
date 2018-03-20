@@ -1,4 +1,3 @@
-import sys
 import os
 import logging
 import asyncio
@@ -22,12 +21,13 @@ class FileLineSource(Source):
 		'path': '',
 		'mode': 'rb',
 		'max_open': "1", # Maximum of the open file sources
-		'post': "exit", # one of 'delete', 'exit' and 'move'
+		'post': "stop", # one of 'delete', 'stop' and 'move'
 	}
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
+		self.App = app
 		self.Loop = app.Loop
 		self._future = None
 		app.PubSub.subscribe("Application.tick/10!", self._on_health_check)
@@ -35,7 +35,7 @@ class FileLineSource(Source):
 		self.path = self.Config['path']
 		self.mode = self.Config['mode']
 		self.post = self.Config['post']
-		if self.post not in ['delete', 'exit', 'move']:
+		if self.post not in ['delete', 'stop', 'move']:
 			L.warning("Incorrect/unknown 'post' configuration value '{}' - defaulting to 'move'".format(self.post))
 			self.post = 'move'
 
@@ -123,9 +123,10 @@ class FileLineSource(Source):
 		try:
 			if self.post == "delete":
 				os.unlink(locked_filename)
-			elif self.post == "exit":
+			elif self.post == "stop":
 				os.rename(locked_filename, filename)
-				sys.exit(0)
+				self.App.stop()
+				return
 			else:
 				os.rename(locked_filename, filename + '-processed')
 		except Exception as e:
