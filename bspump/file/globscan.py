@@ -3,6 +3,7 @@ import os.path
 import subprocess
 import platform
 
+
 if platform.system() == "Windows":
 	def _is_file_open(fname):
 		#TODO: Provide implementation of _is_file_open() for Windows
@@ -11,6 +12,7 @@ else:
 	def _is_file_open(fname):
 		result = subprocess.run(['lsof', fname], stdout=subprocess.PIPE)
 		return len(result.stdout) != 0
+
 
 def _glob_scan(path):
 	if path is None: return None
