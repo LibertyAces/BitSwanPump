@@ -69,6 +69,11 @@ class Pipeline(abc.ABC):
 		return True
 
 
+	def throttle(self, enable=True):
+		L.warning("Throttle: {}".format(enable))
+		pass
+
+
 	def _evaluate_ready(self):
 		orig_ready = self._ready.is_set()
 

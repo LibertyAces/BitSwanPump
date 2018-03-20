@@ -28,7 +28,8 @@ class ElasticSearchConnection(Connection):
 	def __init__(self, app, connection_id, config=None):
 		super().__init__(app, connection_id, config=config)
 
-		self._output_queue = asyncio.Queue(maxsize=int(self.Config['output_queue_max_size']), loop=app.Loop)
+		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+		self._output_queue = asyncio.Queue(maxsize=self._output_queue_max_size, loop=app.Loop)
 		self.url = self.Config['url'].strip()
 		if self.url[-1] != '/': self.url += '/'
 		self._url_bulk = self.url + '_bulk'
@@ -39,8 +40,9 @@ class ElasticSearchConnection(Connection):
 
 		self._timeout = float(self.Config['timeout'])
 
-		app.PubSub.subscribe("Application.tick!/10", self._on_tick)
-		app.PubSub.subscribe("Application.exit!", self._on_exit)
+		self.PubSub = app.PubSub
+		self.PubSub.subscribe("Application.tick!/10", self._on_tick)
+		self.PubSub.subscribe("Application.exit!", self._on_exit)
 
 		self._future = asyncio.ensure_future(self._submit())
 
@@ -50,6 +52,11 @@ class ElasticSearchConnection(Connection):
 
 		if len(self._bulk_out) > self._bulk_out_max_size:
 			self.flush()
+			assert self._output_queue.qsize() <= self._output_queue_max_size
+			if self._output_queue.qsize() == self._output_queue_max_size:
+				return False
+
+		return True
 
 
 	async def _on_exit(self, event_name):
@@ -91,6 +98,9 @@ class ElasticSearchConnection(Connection):
 			bulk_out = await self._output_queue.get()
 			if bulk_out is None:
 				break
+
+			if self._output_queue.qsize() == self._output_queue_max_size - 1:
+				self.PubSub.publish("ElasticSearchConnection.unpause!", self, asynchronous=True)
 
 			#TODO: if exception happends, save bulk_out somewhere for a future resend
 

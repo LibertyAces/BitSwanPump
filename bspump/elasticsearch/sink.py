@@ -41,13 +41,24 @@ class ElasticSearchSink(Sink):
 		self._connection = pipeline.locate_connection(app, connection)
 		
 		app.PubSub.subscribe("Application.tick/600!", self._refresh_index)
+		app.PubSub.subscribe("ElasticSearchConnection.unpause!", self._connection_unpause)
 		self._refresh_index("simulated")
 		assert(self._index is not None)
 
 
 	def process(self, event):
 		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self._index, self._doctype, json.dumps(event))
-		self._connection.consume(data)
+		
+		ret = self._connection.consume(data)
+		if ret == False:
+			self.Pipeline.throttle(True)
+
+
+	def _connection_unpause(self, event_name, connection):
+		if connection != self._connection:
+			return
+
+		self.Pipeline.throttle(False)
 
 
 	def _refresh_index(self, event_name=None):
