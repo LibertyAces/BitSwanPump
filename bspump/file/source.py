@@ -1,5 +1,8 @@
+import os.path
 import logging
+import glob
 import asyncio
+import asab
 from .. import Source
 from .. import ProcessingError
 
@@ -8,6 +11,24 @@ from .. import ProcessingError
 L = logging.getLogger(__file__)
 
 #
+
+def _scan_for_file(path):
+	if path is None: return None
+	if path == "": return None
+
+	filelist = glob.glob(path)
+	filelist.sort()
+	while len(filelist) > 0:
+		fname = filelist.pop()
+		if not os.path.isfile(fname): continue
+
+		#TODO: Validate thru lsof ...
+
+		return fname
+
+	return None
+
+
 
 class FileLineSource(Source):
 
@@ -22,20 +43,38 @@ class FileLineSource(Source):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop
 		self._future = None
+		app.PubSub.subscribe("Application.tick/10!", self._on_health_check)
+
+		self.path = self.Config['path']
+		self.mode = self.Config['mode']
 
 
-	async def _filename_set(self):
-		print("Awaiting filename")
-		await asyncio.sleep(5)
+	def _on_health_check(self, event_name):
+		if self._future is not None:
+			if not self._future.done():
+				# We are still processing a file
+				return
+
+			try:
+				self._future.result()
+			except:
+				L.exception("Unexpected error when reading file")
+
+			self._future = None
+
+		assert(self._future is None)
+
+		filename = _scan_for_file(self.path)
+		if filename is None: return # No file to read
+		self.path = "" # TODO: Enhance
+
+		self._future = asyncio.ensure_future(
+			self._read_file(self.filename, self.mode),
+			loop=self.Loop
+		)
 
 
-	async def _read_file(self):
-		filename = self.Config['path']
-		mode = self.Config['mode']
-
-		while filename is None or filename == "":
-			await self._filename_set()
-
+	async def _read_file(self, filename, mode):
 		await self.Pipeline.ready()
 
 		try:
@@ -65,9 +104,12 @@ class FileLineSource(Source):
 		finally:
 			f.close()
 
+		# Ensure that we iterate to a next file quickly
+		self.Loop.call_soon(self._on_health_check, 'file.read')
+
 
 	async def start(self):
-		self._future = asyncio.ensure_future(self._read_file(), loop=self.Loop)
+		self._on_health_check('pipeline.started')
 
 
 class FileBlockSource(Source):
