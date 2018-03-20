@@ -55,8 +55,9 @@ class Pipeline(abc.ABC):
 				L.warning("Error on a pipeline is already set!")
 			
 			self._error = (exc, event)
-			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
+			L.warning("Pipeline '{}' stopped due to a processing error".format(self.Id))
 
+			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
 			self._evaluate_ready()
 
 
