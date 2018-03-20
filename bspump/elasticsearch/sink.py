@@ -49,8 +49,11 @@ class ElasticSearchSink(Sink):
 
 	def process(self, event):
 		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self._index, self._doctype, json.dumps(event))
-		
 		ret = self._connection.consume(data)
+
+
+	def flush(self):
+		self._connection.flush()
 
 
 	def _connection_throttle(self, event_name, connection):

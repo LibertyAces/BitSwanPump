@@ -2,6 +2,7 @@ import abc
 import asyncio
 import types
 import logging
+import itertools
 import asab
 from .abcproc import Source, Generator
 from .abc.connection import Connection
@@ -89,7 +90,8 @@ class Pipeline(abc.ABC):
 
 		# Do we observed an error?
 		new_ready = self._error is None
-		# Are we throttled
+
+		# Are we throttled?
 		if new_ready:
 			new_ready = len(self._throttles) == 0 
 
@@ -148,8 +150,8 @@ class Pipeline(abc.ABC):
 
 	def flush(self):
 		# Ensure that all buffers etc. are flushed
-		#TODO: This ...
-		pass
+		for processor in itertools.chain.from_iterable(self.Processors):
+			processor.flush()
 
 
 	def locate_connection(self, app, connection_id):

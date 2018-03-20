@@ -16,6 +16,13 @@ class ProcessorBase(abc.ABC, ConfigObject):
 		raise NotImplemented()
 
 
+	def flush(self):
+		'''
+		Override this to handle request to flush all buffers
+		'''
+		pass
+
+
 class Source(abc.ABC, ConfigObject):
 
 
