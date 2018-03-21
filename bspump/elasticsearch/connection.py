@@ -40,11 +40,13 @@ class ElasticSearchConnection(Connection):
 
 		self._timeout = float(self.Config['timeout'])
 
+		self.Loop = app.Loop
+
 		self.PubSub = app.PubSub
 		self.PubSub.subscribe("Application.tick/10!", self._on_tick)
 		self.PubSub.subscribe("Application.exit!", self._on_exit)
 
-		self._future = asyncio.ensure_future(self._submit())
+		self._future = asyncio.ensure_future(self._submit(), loop = self.Loop)
 
 
 	def consume(self, data):
@@ -75,7 +77,7 @@ class ElasticSearchConnection(Connection):
 				L.exception("ElasticSearch error observed, restoring the order")
 
 			# Start _submit() future again
-			self._future = asyncio.ensure_future(self._submit())			
+			self._future = asyncio.ensure_future(self._submit(), loop = self.Loop)			
 
 		self.flush()
 
