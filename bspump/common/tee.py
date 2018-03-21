@@ -11,6 +11,31 @@ L = logging.getLogger(__name__)
 
 class TeeProcessor(Processor):
 
+	'''
+
+class SamplePipeline(bspump.Pipeline):
+
+	def __init__(self, app, pipeline_id):
+		super().__init__(app, pipeline_id)
+
+		self.build(
+			bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
+			bspump.common.TeeProcessor(app, self, "SampleInternalPipeline.*InternalSource"),
+			bspump.common.PPrintSink(app, self)
+		)
+
+
+class SampleInternalPipeline(bspump.Pipeline):
+
+	def __init__(self, app, pipeline_id):
+		super().__init__(app, pipeline_id)
+
+		self.build(
+			bspump.common.InternalSource(app, self),
+			bspump.common.PPrintSink(app, self)
+		)
+
+	'''
 
 	ConfigDefaults = {
 	}

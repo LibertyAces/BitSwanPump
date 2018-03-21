@@ -4,6 +4,9 @@ from ..abcproc import Source
 
 class InternalSource(Source):
 
+	'''
+See TeeProcessor for details.
+	'''
 
 	ConfigDefaults = {
 	}
