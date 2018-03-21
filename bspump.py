@@ -19,7 +19,7 @@ class SamplePipeline(bspump.Pipeline):
 				bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
 			],
 			#bspump.common.JSONParserProcessor(app, self),
-			bspump.common.TeeProcessor(app, self, "SampleInternalPipeline"),
+			bspump.common.TeeProcessor(app, self, "SampleInternalPipeline.*InternalSource"),
 			bspump.common.PPrintSink(app, self)
 		)
 

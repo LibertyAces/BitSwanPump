@@ -1,7 +1,13 @@
+import logging
 import copy
 from ..abcproc import Processor
 from .internal import InternalSource
 
+#
+
+L = logging.getLogger(__name__)
+
+#
 
 class TeeProcessor(Processor):
 
@@ -21,15 +27,16 @@ class TeeProcessor(Processor):
 
 	def start(self):
 		if self.Source is None:
-			target = self._svc.Pipelines.get(self._target)
-			#TODO: Handle None
+			source = self._svc.locate(self._target)
+			if source is None:
+				L.warning("TeeProcessor '{}' cannot find source '{}'".format(self.Id, self._target))
+				return
 
-			for source in target.Sources:
-				if not isinstance(source, InternalSource): continue
-				self.Source = source
-				break
+			if not isinstance(source, InternalSource):
+				L.warning("TeeProcessor '{}' require InternalSource as target, not '{}'".format(self.Id, self._target))
+				return
 
-			#TODO: Handle self.Source is None
+			self.Source = source
 
 
 	def process(self, event):
