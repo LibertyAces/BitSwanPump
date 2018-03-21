@@ -1,1 +1,2 @@
-from .influxdbsink import InfluxDBSink, InfluxDBDriver
+from .sink import InfluxDBSink
+from .connection import InfluxDBConnection
