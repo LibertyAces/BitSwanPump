@@ -19,6 +19,23 @@ class BSPumpService(asab.Service):
 		self.Connections = dict()
 
 
+	def locate(self, address):
+		p, t = address.split('.', 1)
+		pipeline = self.Pipelines.get(p)
+		if pipeline is None:
+			return None
+
+		if t[:1] == '*':
+			for source in pipeline.Sources:
+				if source.Id == t[1:]:
+					return source
+		else:
+			#TODO: Find Processor by Id
+			raise NotImplemented("TODO")
+
+		return None
+
+
 	# Pipelines
 
 	def add_pipeline(self, pipeline):
