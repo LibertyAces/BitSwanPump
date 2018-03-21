@@ -72,6 +72,24 @@ class Pipeline(abc.ABC):
 		'''
 		Override to evaluate on the pipeline processing error.
 		Return True for hard errors (stop the pipeline processing) or False for soft errors that will be ignored 
+
+
+class SampleInternalPipeline(bspump.Pipeline):
+
+	def __init__(self, app, pipeline_id):
+		super().__init__(app, pipeline_id)
+
+		self.build(
+			bspump.common.InternalSource(app, self),
+			bspump.common.JSONParserProcessor(app, self),
+			bspump.common.PPrintSink(app, self)
+		)
+
+	def catch_error(self, exception, event):
+		if isinstance(exception, json.decoder.JSONDecodeError):
+			return False
+		return True
+
 		'''
 		return True
 
