@@ -23,18 +23,19 @@ class InfluxDBSink(Sink):
 		app.PubSub.subscribe("InfluxDBConnection.unpause!", self._connection_throttle)		
 
 
-	def process(self, line):
+	# TODO: Restructure data: { "measurement": "location", "tag_set": "location=us-midwest", "field_set": "temperature=82", "timestamp": 1465839830100400200 }
+	def process(self, event):
 
-		if isinstance(line, tuple):
-			measurement, tag_set, field_set, timestamp = line
+		if isinstance(event, tuple):
+			measurement, tag_set, field_set, timestamp = event
 			wire_line = "{},{} {} {}\n".format(measurement, tag_set, field_set, int(timestamp * 1e9))
 
-		elif isinstance(line, bytes):
+		elif isinstance(event, bytes):
 			measurement = 'line'
-			wire_line = line.decode('utf-8')
+			wire_line = event.decode('utf-8')
 			if wire_line[-1:] != '\n': wire_line += '\n'
 
-		# Passing the processed line to the connection
+		# Passing the processed event to the connection
 		self._connection.consume(wire_line)
 
 
