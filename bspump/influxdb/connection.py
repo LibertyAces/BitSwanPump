@@ -112,9 +112,7 @@ class InfluxDBConnection(Connection):
 					else:
 						resp_body = await resp.text()
 						print("resp_body: '{}'".format(resp_body))
-
 						respj = json.loads(resp_body)
-						print("jsem tady")
 						if respj.get('errors', True) != False:
 							#TODO: Iterate thru respj['items'] and display only status != 201 items in L.error()
 							L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
