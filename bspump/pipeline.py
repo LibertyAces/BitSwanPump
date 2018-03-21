@@ -153,7 +153,8 @@ class Pipeline(abc.ABC):
 		# Ensure that all buffers etc. are flushed
 		for processor in itertools.chain.from_iterable(self.Processors):
 			processor.flush()
-			self.PubSub.publish("bspump.pipeline.flush!", pipeline=self)
+
+		self.PubSub.publish("bspump.pipeline.flush!", pipeline=self)
 
 
 	def locate_connection(self, app, connection_id):
