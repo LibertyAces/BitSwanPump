@@ -24,15 +24,6 @@ class InfluxDBSink(Sink):
 
 
 	def process(self, line):
-		{
-			"measurement" : "cpu_load_short",
-			"tag_set": "ads=fd,gd=dfs",
-			"field_set": "value=0.64",
-			"timestamp": "1434055562000000000"
-		}
-		
-		# Getting information from the data
-		# Working with only one line
 
 		if isinstance(line, tuple):
 			measurement, tag_set, field_set, timestamp = line
@@ -43,7 +34,6 @@ class InfluxDBSink(Sink):
 			wire_line = line.decode('utf-8')
 			if wire_line[-1:] != '\n': wire_line += '\n'
 
-		print("#######")
 		# Passing the processed line to the connection
 		self._connection.consume(wire_line)
 
