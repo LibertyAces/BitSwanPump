@@ -17,7 +17,7 @@ class SamplePipeline(bspump.Pipeline):
 
 	'''
 	Test this pipeline by
-	$ echo '{"Ahoj":"svete"}' |  nc localhost 7000
+	$ echo 'metrix,tag1=value1,tag2=value2 value=1 1434055562000000000' |  nc localhost 7000
 	'''
 
 	def __init__(self, app, pipeline_id):
