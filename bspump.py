@@ -3,6 +3,7 @@ import asyncio
 import json
 import asab
 import bspump
+import bspump.file
 import bspump.socket
 import bspump.common
 
@@ -13,8 +14,12 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
-			bspump.common.JSONParserProcessor(app, self),
+			[
+				#bspump.file.FileLineSource(app, self, config={'path': './services'}),
+				bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
+				bspump.common.InternalSource(app, self),
+			],
+			#bspump.common.JSONParserProcessor(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
 
