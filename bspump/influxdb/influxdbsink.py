@@ -1,3 +1,5 @@
+#TODO: Obsoleted file, remove after Mar 2018
+
 import asab
 import logging
 import bspump
@@ -6,11 +8,11 @@ import aiohttp
 
 #
 
+
 L = logging.getLogger(__name__)
 
 #
 
-# TODO: Restructure data: { "measurement": "location", "tag_set": "location=us-midwest", "field_set": "temperature=82", "timestamp": 1465839830100400200 }
 class InfluxDBDriver(object):
 
 	def __init__(self, app):
