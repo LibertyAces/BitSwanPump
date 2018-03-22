@@ -109,7 +109,10 @@ class FileLineSource(Source):
 				self.process(line)
 		except:
 			try:
-				os.rename(locked_filename, filename + '-failed')
+				if self.post == "stop":
+					os.rename(locked_filename, filename)
+				else:
+					os.rename(locked_filename, filename + '-failed')
 			except:
 				L.exception("Error when finalizing the file '{}'".format(filename))
 			raise
