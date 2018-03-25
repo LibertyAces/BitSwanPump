@@ -104,6 +104,8 @@ class ElasticSearchConnection(Connection):
 
 			#TODO: if exception happends, save bulk_out somewhere for a future resend
 
+			L.debug("Sending bulk request (size: {}) to {}".format(len(bulk_out), self._url_bulk))
+
 			async with aiohttp.ClientSession() as session:
 				async with session.post(self._url_bulk, data=bulk_out, headers={'Content-Type': 'application/json'}, timeout=self._timeout) as resp:
 					if resp.status != 200:
@@ -118,3 +120,5 @@ class ElasticSearchConnection(Connection):
 							#TODO: Iterate thru respj['items'] and display only status != 201 items in L.error()
 							L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status, resp_body))
 							raise RuntimeError("Failed to insert document into ElasticSearch")
+						else:
+							L.debug("Bulk POST finished successfully")
