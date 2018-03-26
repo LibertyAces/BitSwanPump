@@ -19,9 +19,9 @@ class MySQLConnection(Connection):
 	ConfigDefaults = {
 		'host': 'localhost',
 		'port': 3306,
-		'user': 'root',
-		'password': 'root',
-		'db': 'test',
+		'user': '',
+		'password': '',
+		'db': '',
 		'reconnect_delay': 1.0,
 	}
 
