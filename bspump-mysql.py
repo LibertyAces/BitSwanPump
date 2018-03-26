@@ -24,7 +24,7 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.socket.MySQLRowSource(app, self, config={
+			bspump.mysql.MySQLRowSource(app, self, "MySQLConnection1", config={
 				'query':'SELECT * FROM pet;'}),
 			bspump.common.PPrintSink(app, self),
 		)
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 	)
 
 	# Construct and register Pipeline
-	#pl = SamplePipeline(app, 'SamplePipeline')
-	#svc.add_pipeline(pl)
+	pl = SamplePipeline(app, 'SamplePipeline')
+	svc.add_pipeline(pl)
 
 	app.run()

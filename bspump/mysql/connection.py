@@ -35,10 +35,8 @@ class MySQLConnection(Connection):
 		self.PubSub = PubSub(app)
 		self.Loop = app.Loop
 
-		self.Loop.create_task(self._reconnect())
 
-
-	async def _reconnect(self):
+	async def open(self):
 		try:
 			self.Connection = await create_pool(host='127.0.0.1', port=3306,
 						user='root', password='root',
@@ -48,7 +46,12 @@ class MySQLConnection(Connection):
 			self.Loop.create_task(self._reconnect())
 			return
 
+
+	async def close(self):
+		self.Connection.close()
+		await self.Connection.wait_closed()
+
 	
-	def get(self):
-		return self.Connection.get()
+	def acquire(self):
+		return self.Connection.acquire()
 
