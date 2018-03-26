@@ -35,16 +35,23 @@ class MySQLConnection(Connection):
 		self.PubSub = PubSub(app)
 		self.Loop = app.Loop
 
+		self._host = self.Config['host']
+		self._port = self.Config['port']
+		self._user = self.Config['user']
+		self._password = self.Config['password']
+		self._db = self.Config['db']
+		self._reconnect_delay = self.Config['reconnect_delay']
+
 
 	async def open(self):
 		try:
-			self.Connection = await create_pool(host='127.0.0.1', port=3306,
-						user='root', password='root',
-						db='test', loop=self.Loop)
+			self.Connection = await create_pool(host=self._host, port=self._port,
+						user=self._user, password=self._password,
+						db=self._db, loop=self.Loop)
 		except pymysql.err.OperationalError:
-			await asyncio.sleep(1)
-			self.Loop.create_task(self._reconnect())
-			return
+			# TODO: remove sleep
+			await asyncio.sleep(self._reconnect_delay)
+			self.Loop.create_task(self.open())
 
 
 	async def close(self):
