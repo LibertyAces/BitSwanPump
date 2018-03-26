@@ -15,7 +15,7 @@ class MySQLRowSource(Source):
 		# Listen for connection open
 
 		# Await MySQL rows
-		await self._connection.open()
+		await self._connection.ConnectionEvent.wait()
 
 		async with self._connection.acquire() as conn:
 			async with conn.cursor() as cur:
@@ -26,10 +26,7 @@ class MySQLRowSource(Source):
 					_r = await cur.fetchone()
 					if _r is None:
 						break
-					for i, val in enumerate(_r):
-						row[cur.description[i][0]] = val
-					self.process(row)
-
-
-		await self._connection.close()
+					# for i, val in enumerate(_r):
+					# 	row[cur.description[i][0]] = val
+					self.process(_r)
 
