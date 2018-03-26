@@ -61,6 +61,9 @@ class MySQLConnection(Connection):
 
 
 	async def close(self):
+		if self.Connection is None:
+			return
+		self.ConnectionEvent.clear()
 		self.Connection.close()
 		await self.Connection.wait_closed()
 
