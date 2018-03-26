@@ -82,11 +82,10 @@ class InfluxDBConnection(Connection):
 
 		assert(self._output_bucket is not None)
 		self._output_queue.put_nowait(self._output_bucket)
+		self._output_bucket = ""
 
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.PubSub.publish("InfluxDBConnection.pause!", self)
-
-		self._output_bucket = ""
 
 
 	async def _submit(self):
