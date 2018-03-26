@@ -29,7 +29,7 @@ class ElasticSearchConnection(Connection):
 		super().__init__(app, connection_id, config=config)
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
-		self._output_queue = asyncio.Queue(maxsize=self._output_queue_max_size, loop=app.Loop)
+		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self.url = self.Config['url'].strip()
 		if self.url[-1] != '/': self.url += '/'
 		self._url_bulk = self.url + '_bulk'
@@ -54,9 +54,6 @@ class ElasticSearchConnection(Connection):
 
 		if len(self._bulk_out) > self._bulk_out_max_size:
 			self.flush()
-			assert self._output_queue.qsize() <= self._output_queue_max_size
-			if self._output_queue.qsize() == self._output_queue_max_size:
-				self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
 
 	async def _on_exit(self, event_name):
@@ -90,6 +87,11 @@ class ElasticSearchConnection(Connection):
 		#TODO: Add this event to metrics
 		assert(self._bulk_out is not None)
 		self._output_queue.put_nowait(self._bulk_out)
+
+		#Signalize need for throttling
+		if self._output_queue.qsize() == self._output_queue_max_size:
+			self.PubSub.publish("ElasticSearchConnection.pause!", self)
+
 		self._bulk_out = ""
 
 
