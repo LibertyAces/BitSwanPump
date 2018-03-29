@@ -44,7 +44,7 @@ class InfluxDBConnection(Connection):
 		app.PubSub.subscribe("Application.tick!", self._on_tick)
 		app.PubSub.subscribe("Application.exit!", self._on_exit)
 
-		self._future = asyncio.ensure_future(self._submit())
+		self._future = asyncio.ensure_future(self._loader())
 
 
 	def consume(self, data):
@@ -57,12 +57,12 @@ class InfluxDBConnection(Connection):
 		self._started = False
 		self.flush()
 		await self._output_queue.put(None) # By sending None via queue, we signalize end of life
-		await self._future # Wait till the _submit() terminates
+		await self._future # Wait till the _loader() terminates
 
 
 	def _on_tick(self, event_name):
 		if self._started and self._future.done():
-			# Ups, _submit() task crashed during runtime, we need to restart it
+			# Ups, _loader() task crashed during runtime, we need to restart it
 			try:
 				r = self._future.result()
 				# This error should never happen
@@ -71,7 +71,7 @@ class InfluxDBConnection(Connection):
 				L.exception("Influx error observed, restoring the order")
 
 
-			self._future = asyncio.ensure_future(self._submit())			
+			self._future = asyncio.ensure_future(self._loader())			
 
 		self.flush()
 
@@ -88,7 +88,7 @@ class InfluxDBConnection(Connection):
 			self.PubSub.publish("InfluxDBConnection.pause!", self)
 
 
-	async def _submit(self):
+	async def _loader(self):
 
 		# A cycle that regularly sends buckets if there are any
 		while self._started:
