@@ -55,9 +55,11 @@ class MySQLConnection(Connection):
 		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
 		app.PubSub.subscribe("Application.tick!", self._on_health_check)
 
+		self._query_queue = asyncio.Queue(loop=app.Loop)
+
 
 	def _on_application_stop(self, message_type, counter):
-		self.RequestCloseConnectionEvent.set()
+		self._query_queue.put_nowait(None)
 
 
 	def _on_health_check(self, message_type):
@@ -100,7 +102,7 @@ class MySQLConnection(Connection):
 
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
-				await self.RequestCloseConnectionEvent.wait()
+				await self._loader()
 		except socket.timeout:
 			# Socket timeout not implemented in aiomysql as it sets a keepalive to the connection
 			# it has been placed as an issue on GitHub: https://github.com/aio-libs/aiomysql/issues/257
@@ -115,3 +117,13 @@ class MySQLConnection(Connection):
 		assert(self._conn_pool is not None)
 		return self._conn_pool.acquire()
 
+
+	def consume(self, query, values):
+		self._query_queue.put_nowait((query, values))
+
+
+	async def _loader(self):
+		while True:
+			item = await self._query_queue.get()
+			if item is None:
+				break
