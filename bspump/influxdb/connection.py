@@ -36,7 +36,7 @@ class InfluxDBConnection(Connection):
 		self._output_bucket_max_size = self.Config["output_bucket_max_size"]
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 
-		self._output_queue = asyncio.Queue(self._output_queue_max_size, loop=app.Loop)
+		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._started = True
 
 		self._output_bucket = ""
@@ -51,9 +51,6 @@ class InfluxDBConnection(Connection):
 		self._output_bucket += data
 		if len(self._output_bucket) > self._output_bucket_max_size:
 			self.flush()
-			assert self._output_queue.qsize() <= self._output_queue_max_size
-			if self._output_queue.qsize() == self._output_queue_max_size:
-				self.PubSub.publish("InfluxDBConnection.pause!", self)
 
 
 	async def _on_exit(self, event_name):
@@ -85,8 +82,10 @@ class InfluxDBConnection(Connection):
 
 		assert(self._output_bucket is not None)
 		self._output_queue.put_nowait(self._output_bucket)
-		#TODO: Handle queue full
 		self._output_bucket = ""
+
+		if self._output_queue.qsize() == self._output_queue_max_size:
+			self.PubSub.publish("InfluxDBConnection.pause!", self)
 
 
 	async def _submit(self):
