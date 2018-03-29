@@ -1,32 +1,46 @@
 import asab
 import asyncio
+import logging
 from ..abcproc import Source
 
+#
 
-class MySQLRowSource(Source):
+L = logging.getLogger(__name__)
+
+#
+
+class MySQLSource(Source):
 	
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
+		self.Loop = app.Loop
 		self._connection = pipeline.locate_connection(app, connection)
 		self._query = self.Config['query']
+		self.App = app
 
 
 	async def start(self):
-		# Listen for connection open
 
-		# Await MySQL rows
+		# Await connection open
 		await self._connection.ConnectionEvent.wait()
+		try:
+			async with self._connection.acquire() as conn:
+				try:
+					async with conn.cursor() as cur:
+						await cur.execute(self._query)
+						event = {}
+						while True:
+							await self.Pipeline.ready()
+							row = await cur.fetchone()
+							if row is None:
+								break
 
-		async with self._connection.acquire() as conn:
-			async with conn.cursor() as cur:
-				await cur.execute(self._query)
-				row = {}
-				while True:
-					await self.Pipeline.ready()
-					_r = await cur.fetchone()
-					if _r is None:
-						break
-					# for i, val in enumerate(_r):
-					# 	row[cur.description[i][0]] = val
-					self.process(_r)
-
+							# This is how event is transformed to a dictionary
+							for i, val in enumerate(row):
+								event[cur.description[i][0]] = val
+							self.process(event)
+				except Exception as e:
+					L.exception("Unexpected error when processing MySQL query.")
+		except Exception as e:
+			L.exception("Couldn't acquire connection")
+		self.App.stop()

@@ -1,2 +1,2 @@
 from .connection import MySQLConnection
-from .source import MySQLRowSource
+from .source import MySQLSource
