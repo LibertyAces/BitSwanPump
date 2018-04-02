@@ -128,19 +128,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 	async def ready(self):
 		'''
-		Can be used in source:
-
-		```
-		await self.Pipeline.ready()
-		```
-
-		or
-
-		```
-		while await self.Pipeline.ready():
-			...
-		```
-
+		Can be used in source: `await self.Pipeline.ready()`
 		'''
 
 		self._chillout_counter += 1

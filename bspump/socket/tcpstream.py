@@ -28,7 +28,8 @@ class TCPStreamSource(Source):
 		self.Writers.add(writer)
 
 		try:
-			while await self.Pipeline.ready():
+			while True:
+				await self.Pipeline.ready()
 				data = await reader.readline()
 				# End of stream detected
 				if len(data) == 0:
