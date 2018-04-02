@@ -224,3 +224,22 @@ class SampleInternalPipeline(bspump.Pipeline):
 		# Stop all started sources
 		for source in self.Sources:
 			await source.stop()
+
+
+	# Rest API
+
+	def rest_get(self):
+		rest = {
+			'Id': self.Id,
+			'Ready': self._ready.is_set(),
+			'Sources': [source.Id for source in self.Sources],
+			'Processors': [],
+		}
+
+		for l, processors in enumerate(self.Processors):
+			rest['Processors'].append([processor.Id for processor in processors])
+
+		if self._error:
+			rest['error'] = self._error
+
+		return rest

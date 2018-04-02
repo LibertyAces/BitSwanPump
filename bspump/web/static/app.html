@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" ng-app="BSPumpWebApp">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>BSPump</title>
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">		
+	</head>
+	<body>
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<div class="container">
+				<span class="navbar-brand">BSPump</span>
+			</div>
+		</nav>
+
+		<div class="container mt-3">
+			<h2>Pipelines</h2>
+			<table class="table" ng-controller="PipelineList">
+				<col width="1">
+				<col width="1">
+				<col width="1">
+				<thead>
+					<tr>
+						<th scope="col">Id</th>
+						<th scope="col">&nbsp;</th>
+						<th scope="col">&nbsp;</th>
+						<th scope="col">Controls</th>
+   					</tr>
+				</thead>
+				<tbody ng-repeat="pipeline in pipelines">
+					<tr>
+						<td style="padding-right: 1.5em;">
+							{{pipeline['Id']}}
+						</td>
+						<td style="padding-right: 1.5em;">
+							<span ng-style="{ color: pipeline['Ready'] ? 'green' : 'red' }">⬤</span>
+						</td>
+						<td style="padding-right: 3em;" class="text-center">
+							<div ng-repeat="source in pipeline.Sources">{{source}}</div>
+							<span> ↓ </span>
+							<div ng-repeat="processor_level in pipeline.Processors">
+								<div ng-repeat="processor in processor_level">{{processor}}
+								<br/><span ng-if="!$last"> ↓ </span>
+								</div>
+							</div>
+						</td>
+						<td>-</td>
+					</tr>
+					<tr class="bg-light">
+						<td colspan="4"><code><pre>{{pipeline}}</pre></code></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script>
+
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.9/angular.min.js" integrity="sha256-7ngBGhPctUEyXLD6ha53TFUaqhBCnXFOi712aqBq094=" crossorigin="anonymous"></script>
+
+		<script src="static/app.js"></script>
+
+	</body>
+</html>
