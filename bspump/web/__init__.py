@@ -15,6 +15,12 @@ async def pipelines(request):
 	return json_response(request, svc.Pipelines)
 
 
+async def trigger(request):
+	app = request.app['app']
+	app.PubSub.publish("mymessage!")
+	return json_response(request, {'ok': 1})
+
+
 def initialize_web(app):
 	from module_web import Module
 	app.add_module(Module)
@@ -26,6 +32,7 @@ def initialize_web(app):
 
 	svc.WebApp.router.add_get('/', index)
 	svc.WebApp.router.add_get('/pipelines', pipelines)
+	svc.WebApp.router.add_get('/trigger', trigger)
 	svc.WebApp.router.add_static('/static/', path=static_dir, name='static')
 
 	return svc

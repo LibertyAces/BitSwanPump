@@ -18,4 +18,4 @@ class BSPumpApplication(asab.Application):
 
 
 	async def main(self):
-		await self.PumpService.main()
+		self.PumpService.start()
