@@ -6,7 +6,6 @@ from ..abc.source import Source
 
 class AMQPSource(Source):
 
-	#TODO: Implement support for Pipeline throttling / await self.Pipeline.ready()
 
 	ConfigDefaults = {
 		'queue': 'q',
@@ -20,7 +19,11 @@ class AMQPSource(Source):
 
 		self._connection = pipeline.locate_connection(app, connection)
 		self._channel = None
+		self._channel_ready = asyncio.Event(loop=app.Loop)
+		self._channel_ready.clear()
 		self._error_exchange = self.Config['error_exchange']
+		self._queue = asyncio.Queue(loop=app.Loop)
+
 
 
 	async def main(self):
@@ -28,21 +31,40 @@ class AMQPSource(Source):
 		self._connection.PubSub.subscribe("AMQPConnection.close!", self._on_connection_close)
 
 		if self._connection.ConnectionEvent.is_set() and self._channel is None:
-			self._on_connection_open("simulated!")
+			self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
+			self._channel_ready.set()
 
-		await self.stopped()
+		try:
+			while 1:
+				await self._channel_ready.wait()
+				await self.Pipeline.ready()
+				method, properties, body = await self._queue.get()
+				self.process(body)
+				self._channel.basic_ack(method.delivery_tag)
+
+		except asyncio.CancelledError:
+			pass
+
+		# Requeue rest of the messages
+		while not self._queue.empty():
+			method, properties, body = await self._queue.get()
+			self._channel.basic_nack(method.delivery_tag, requeue=True)
 
 		if self._channel is not None:
 			self._channel.close()
+			self._channel = None
+			self._channel_ready.clear()
 
 
 	def _on_connection_open(self, event_name):
 		assert self._channel is None
 		self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
+		self._channel_ready.set()
 
 
 	def _on_connection_close(self, event_name):
 		self._channel = None
+		self._channel_ready.clear()
 
 
 	def _on_channel_open(self, channel):
@@ -55,16 +77,6 @@ class AMQPSource(Source):
 
 	def _on_consume_message(self, channel, method, properties, body):
 		try:
-			self.process(body)
+			self._queue.put_nowait((method, properties, body))
 		except:
-			L.exception("Error when consuming message, message moved to error queue)")
-			channel.basic_publish(
-				self._error_exchange,
-				method.exchange,
-				body,
-				properties=properties
-			)
-			channel.basic_nack(method.delivery_tag, requeue=False)
-
-		else:
-			channel.basic_ack(method.delivery_tag)
+			channel.basic_nack(method.delivery_tag, requeue=True)
