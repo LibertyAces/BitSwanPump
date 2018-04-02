@@ -57,8 +57,7 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	# Construct timer trigger
-	ptrg = bspump.trigger.OpportunisticTrigger(app)
-	#ptrg = bspump.trigger.RunOnceTrigger(app)
+	ptrg = bspump.trigger.PubSubTrigger(app, "mymessage!")
 	
 
 	# Construct and register Pipeline
