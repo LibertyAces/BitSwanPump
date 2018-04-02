@@ -19,6 +19,7 @@ class AMQPSink(Sink):
 
 		self._connection = pipeline.locate_connection(app, connection)
 		self._channel = None
+		self.Pipeline.throttle(self, True)
 		self._exchange = self.Config['exchange']
 		self._content_type = self.Config['content_type']
 		self._routing_key = self.Config['routing_key']
@@ -43,9 +44,11 @@ class AMQPSink(Sink):
 
 	def _on_connection_close(self, event_name):
 		self._channel = None
+		self.Pipeline.throttle(self, True)
 
 	def _on_channel_open(self, channel):
 		self._channel = channel
+		self.Pipeline.throttle(self, False)
 
 
 	def process(self, event):
@@ -61,3 +64,5 @@ class AMQPSink(Sink):
 			)
 		except pika.exceptions.ChannelClosed:
 			self._channel = None
+			self.Pipeline.throttle(self, True)
+			raise

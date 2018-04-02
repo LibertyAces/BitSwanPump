@@ -75,3 +75,60 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 		except asyncio.CancelledError:
 			pass
+
+#
+
+class TriggerSource(Source):
+
+	'''
+	This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
+	You need to provide a trigger class and implement cycle() method.
+
+	You also may overload the main() method to provide additional parameters for a cycle() method.
+
+	async def main(self):
+		async with aiohttp.ClientSession(loop=self.Loop) as session:
+			await super().main(session)
+
+
+	async def cycle(self, session):
+		session.get(...)
+
+	'''
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+
+		self.TriggerEvent = asyncio.Event(loop=app.Loop)
+		self.TriggerEvent.clear()
+		self.Triggers = set()
+
+
+	def trigger(self, trigger):
+		trigger.add(self)
+		self.Triggers.add(trigger)
+		return self
+
+
+	async def main(self, *args, **kwags):
+		while True:
+			# Wait for pipeline is ready
+			await self.Pipeline.ready()
+
+			# Wait for a trigger
+			await self.TriggerEvent.wait()
+
+			# Execute one cycle
+			try:
+				await self.cycle(*args, **kwags)
+			except Exception as e:
+				self.Pipeline.set_error(e, None)
+
+			self.TriggerEvent.clear()
+			for trigger in self.Triggers:
+				trigger.done()
+
+
+	@abc.abstractmethod
+	async def cycle(self, *args, **kwags):
+		raise NotImplemented()

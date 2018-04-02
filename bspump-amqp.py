@@ -3,6 +3,9 @@ import bspump
 import bspump.socket
 import bspump.common
 import bspump.amqp
+import bspump.file
+import bspump.trigger
+
 
 class SamplePipeline1(bspump.Pipeline):
 
@@ -13,19 +16,25 @@ class SamplePipeline1(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
+
+		self.trigger = bspump.trigger.OpportunisticTrigger(app)
+
 		self.build(
-			bspump.socket.TCPStreamSource(app, self),
+			#bspump.socket.TCPStreamSource(app, self),
+			bspump.file.FileLineSource(app, self, config={'path': './services'}).trigger(self.trigger),
 			bspump.amqp.AMQPSink(app, self, "AMQPConnection1")
 		)
+
 
 class SamplePipeline2(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.amqp.AMQPSource(app, self, "AMQPConnection1"),
-			bspump.common.PPrintSink(app, self)
+			bspump.amqp.AMQPSource(app, self, "AMQPConnection1", config={'queue': 'teskalabs.q'}),
+			bspump.common.NullSink(app, self)
 		)
+
 
 if __name__ == '__main__':
 	app = bspump.BSPumpApplication()

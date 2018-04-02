@@ -6,17 +6,20 @@ import bspump
 import bspump.file
 import bspump.socket
 import bspump.common
+import bspump.http
+import bspump.trigger
 
 
 class SamplePipeline(bspump.Pipeline):
 
-	def __init__(self, app, pipeline_id):
+	def __init__(self, app, pipeline_id, trigger):
 		super().__init__(app, pipeline_id)
 
 		self.build(
 			[
 				#bspump.file.FileLineSource(app, self, config={'path': './services'}),
-				bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
+				#bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
+				bspump.http.HTTPClientSource(app, self).trigger(trigger)
 			],
 			#bspump.common.JSONParserProcessor(app, self),
 			bspump.common.TeeProcessor(app, self, "SampleInternalPipeline.*TeeSource"),
@@ -53,8 +56,13 @@ if __name__ == '__main__':
 	app = bspump.BSPumpApplication()
 	svc = app.get_service("bspump.PumpService")
 
+	# Construct timer trigger
+	ptrg = bspump.trigger.OpportunisticTrigger(app)
+	#ptrg = bspump.trigger.RunOnceTrigger(app)
+	
+
 	# Construct and register Pipeline
-	pl = SamplePipeline(app, 'SamplePipeline')
+	pl = SamplePipeline(app, 'SamplePipeline', ptrg)
 	svc.add_pipeline(pl)
 
 	# Construct and register Pipeline
