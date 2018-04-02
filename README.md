@@ -3,10 +3,11 @@
 ## Principles
 
  * Write once, use many times
+ * Schema-less
+ * Orthogonal
+ * High performance
  * Simple to use and well documented, so anyone can write their own stream processor
  * Sliding time window
- * Schema-less
- * High performance
  * Asynchronous via Python 3.5+ `async`/`await` and `asyncio`
  * [Event-driven Architecture](https://en.wikipedia.org/wiki/Event-driven_architecture) / [Reactor pattern](https://en.wikipedia.org/wiki/Reactor_pattern)
  * Single-threaded core but compatible with threads
