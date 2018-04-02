@@ -10,6 +10,7 @@ class AMQPSink(Sink):
 	ConfigDefaults = {
 		'exchange': 'amq.direct',
 		'content_type': 'text/plain',
+		'routing_key': ''
 	}
 
 
@@ -20,7 +21,7 @@ class AMQPSink(Sink):
 		self._channel = None
 		self._exchange = self.Config['exchange']
 		self._content_type = self.Config['content_type']
-
+		self._routing_key = self.Config['routing_key']
 
 		app.PubSub.subscribe_all(self)
 
@@ -42,11 +43,9 @@ class AMQPSink(Sink):
 
 	def _on_connection_close(self, event_name):
 		self._channel = None
-		print("Close!")
 
 	def _on_channel_open(self, channel):
 		self._channel = channel
-		print("Open!")
 
 
 	def process(self, event):
@@ -56,7 +55,7 @@ class AMQPSink(Sink):
 		try:
 			self._channel.basic_publish(
 				self._exchange,
-				'test_routing_key',
+				self._routing_key,
 				event,
 				pika.BasicProperties(content_type=self._content_type, delivery_mode=1)
 			)
