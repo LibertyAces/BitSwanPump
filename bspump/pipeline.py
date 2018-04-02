@@ -25,6 +25,8 @@ class Pipeline(abc.ABC):
 
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
+		self._source_coros = [] # List of source main() coroutines
+
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
@@ -125,12 +127,29 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 
 	async def ready(self):
+		'''
+		Can be used in source:
+
+		```
+		await self.Pipeline.ready()
+		```
+
+		or
+
+		```
+		while await self.Pipeline.ready():
+			...
+		```
+
+		'''
+
 		self._chillout_counter += 1
 		if self._chillout_counter == self._chillout_trigger:
 			self._chillout_counter = 0
 			await asyncio.sleep(0.0001, loop = self.Loop)
 
 		await self._ready.wait()
+		return True
 
 
 	def process(self, event, depth=0):
@@ -185,7 +204,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 		return connection
 
 
-	# Pipeline construction
+	# Construction
 
 	def set_source(self, source):
 		if isinstance(source, Source):
@@ -209,11 +228,19 @@ class SampleInternalPipeline(bspump.Pipeline):
 			self.append_processor(processor)
 
 
-	# Stream processing
+	# Lifecycle ...
 
-	async def start(self):
+	def start(self):
+		self.PubSub.publish("bspump.pipeline.start!", pipeline=self)
 
-		# Start all sources
-		asyncio.gather(*[s.start() for s in self.Sources], loop=self.Loop)
+		# Start all non-started sources
+		for source in self.Sources:
+			source.start(self.Loop)
 
 		self._evaluate_ready()
+
+
+	async def stop(self):
+		# Stop all started sources
+		for source in self.Sources:
+			await source.stop()

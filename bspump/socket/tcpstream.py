@@ -1,22 +1,12 @@
+import logging
 import asyncio
 from ..abc.source import Source
 
+#
 
-class _TCPStreamProtocol(asyncio.Protocol):
+L = logging.getLogger(__name__)
 
-	#TODO: Respect pipeline is_ready
-
-	def __init__(self, source):
-		self._source = source
-
-	def connection_made(self, transport):
-		#TODO: peername = transport.get_extra_info('peername')
-		self._transport = transport
-
-	def data_received(self, data):
-		message = data.decode()
-		self._source.process(data)
-
+#
 
 class TCPStreamSource(Source):
 
@@ -31,10 +21,45 @@ class TCPStreamSource(Source):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Loop = app.Loop
+		self.Writers = set()
 
 
-	async def start(self):
-		self._server = await self.Loop.create_server(
-			lambda: _TCPStreamProtocol(self),
-			self.Config['host'], int(self.Config['port'])
+	async def _handler(self, reader, writer):
+		self.Writers.add(writer)
+
+		try:
+			while await self.Pipeline.ready():
+				data = await reader.readline()
+				# End of stream detected
+				if len(data) == 0:
+					writer.close()
+					break
+				self.process(data)
+
+		finally:
+			self.Writers.remove(writer)
+
+
+	async def main(self):
+		# Start server
+		server = await asyncio.start_server(
+			self._handler,
+			self.Config['host'], int(self.Config['port']),
+			loop=self.Loop
 		)
+
+		await self.stopped()
+
+		# Close server
+		server.close()
+		await server.wait_closed()
+
+		# Close peer connections
+		for writer in self.Writers:
+			L.warning("Source '{}' closes connection to {}".format(
+				self.Id,
+				writer.transport.get_extra_info('peername'))
+			)
+			if writer.can_write_eof():
+				writer.write_eof()
+			writer.close()

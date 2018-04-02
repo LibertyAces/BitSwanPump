@@ -6,6 +6,7 @@ from ..abc.source import Source
 
 class AMQPSource(Source):
 
+	#TODO: Implement support for Pipeline throttling / await self.Pipeline.ready()
 
 	ConfigDefaults = {
 		'queue': 'q',
@@ -19,31 +20,38 @@ class AMQPSource(Source):
 
 		self._connection = pipeline.locate_connection(app, connection)
 		self._channel = None
-		self._started = False
-		self._consumer_tag = None
 		self._error_exchange = self.Config['error_exchange']
 
+
+	async def main(self):
 		self._connection.PubSub.subscribe("AMQPConnection.open!", self._on_connection_open)
+		self._connection.PubSub.subscribe("AMQPConnection.close!", self._on_connection_close)
 
+		if self._connection.ConnectionEvent.is_set() and self._channel is None:
+			self._on_connection_open("simulated!")
 
-	async def start(self):
-		await self._connection.ConnectionEvent.wait()
-		self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
-		self._consumer_tag = None
+		await self.stopped()
+
+		if self._channel is not None:
+			self._channel.close()
 
 
 	def _on_connection_open(self, event_name):
-		if self._started:
-			self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
-			self._consumer_tag = None
+		assert self._channel is None
+		self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
+
+
+	def _on_connection_close(self, event_name):
+		self._channel = None
+
 
 	def _on_channel_open(self, channel):
-		# Set Qoq
 		channel.basic_qos(self._on_qos_applied, prefetch_count=int(self.Config['prefetch_count']));
 
+
 	def _on_qos_applied(self, channel):
-		self._consumer_tag = self._channel.basic_consume(self._on_consume_message, self.Config['queue'])
-		self._started = True
+		self._channel.basic_consume(self._on_consume_message, self.Config['queue'])
+
 
 	def _on_consume_message(self, channel, method, properties, body):
 		try:

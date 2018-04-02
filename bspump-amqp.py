@@ -6,6 +6,11 @@ import bspump.amqp
 
 class SamplePipeline1(bspump.Pipeline):
 
+	'''
+	To test this pipeline, use:
+	nc -v 127.0.0.1 7000
+	'''
+
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(

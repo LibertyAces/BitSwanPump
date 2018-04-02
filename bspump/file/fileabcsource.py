@@ -49,7 +49,7 @@ class FileABCSource(Source):
 		raise NotImplemented()
 
 
-	async def start(self):
+	async def main(self):
 		self._on_health_check('pipeline.started!')
 
 

@@ -67,9 +67,13 @@ class BSPumpService(asab.Service):
 
 	#
 
-	async def main(self):
+	def start(self):
 		# Start all pipelines
-		if len(self.Pipelines) == 0: return
+		for pipeline in self.Pipelines.values():
+			pipeline.start()
 
-		# Start all pipelines
-		return asyncio.gather(*[p.start() for p in self.Pipelines.values()])
+
+	async def finalize(self, app):
+		# Stop all started pipelines
+		if len(self.Pipelines) > 0:
+			await asyncio.gather(*[pipeline.stop() for pipeline in self.Pipelines.values()], loop=app.Loop)
