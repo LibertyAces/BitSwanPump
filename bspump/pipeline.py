@@ -187,14 +187,6 @@ class SampleInternalPipeline(bspump.Pipeline):
 		return True
 
 
-	def flush(self):
-		# Ensure that all buffers etc. are flushed
-		for processor in itertools.chain.from_iterable(self.Processors):
-			processor.flush()
-
-		self.PubSub.publish("bspump.pipeline.flush!", pipeline=self)
-
-
 	def locate_connection(self, app, connection_id):
 		if isinstance(connection_id, Connection): return connection_id
 		svc = app.get_service("bspump.PumpService")

@@ -52,10 +52,6 @@ class ElasticSearchSink(Sink):
 		ret = self._connection.consume(data)
 
 
-	def flush(self):
-		self._connection.flush()
-
-
 	def _connection_throttle(self, event_name, connection):
 		if connection != self._connection:
 			return

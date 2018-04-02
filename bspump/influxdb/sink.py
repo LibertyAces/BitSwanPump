@@ -39,9 +39,6 @@ class InfluxDBSink(Sink):
 		self._connection.consume(wire_line)
 
 
-	def flush(self):
-		self._connection.flush()
-
 
 	def _connection_throttle(self, event_name, connection):
 		if connection != self._connection:

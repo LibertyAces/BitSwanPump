@@ -133,7 +133,6 @@ class FileABCSource(Source):
 			f.close()
 
 		L.debug("File '{}' processed {}".format(filename, "succefully"))
-		self.Pipeline.flush()
 
 		# Finalize
 		try:
