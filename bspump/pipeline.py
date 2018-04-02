@@ -4,7 +4,8 @@ import types
 import logging
 import itertools
 import asab
-from .abcproc import Source, Generator
+from .abc.source import Source
+from .abc.generator import Generator
 from .abc.connection import Connection
 from .exception import ProcessingError
 

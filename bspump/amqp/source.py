@@ -1,6 +1,7 @@
 import asab
 import asyncio
-from ..abcproc import Source
+
+from ..abc.source import Source
 
 
 class AMQPSource(Source):

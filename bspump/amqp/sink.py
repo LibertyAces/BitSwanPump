@@ -2,7 +2,7 @@ import pika
 
 import asab
 
-from .. import Sink
+from ..abc.sink import Sink
 
 class AMQPSink(Sink):
 

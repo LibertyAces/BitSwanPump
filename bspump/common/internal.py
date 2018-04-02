@@ -1,5 +1,5 @@
 import asyncio
-from ..abcproc import Source
+from ..abc.source import Source
 
 
 class InternalSource(Source):

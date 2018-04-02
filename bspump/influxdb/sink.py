@@ -5,7 +5,7 @@ import aiohttp
 import asab
 import bspump
 
-from .. import Sink
+from ..abc.sink import Sink
 
 #
 

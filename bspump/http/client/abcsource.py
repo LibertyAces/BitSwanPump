@@ -2,7 +2,7 @@ import abc
 import logging
 import asyncio
 import aiohttp
-from ... import Source
+from ...abc.source import Source
 
 #
 

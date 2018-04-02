@@ -1,4 +1,4 @@
-from .. import Sink
+from ..abc.sink import Sink
 
 class NullSink(Sink):
 

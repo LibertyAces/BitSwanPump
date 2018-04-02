@@ -1,4 +1,4 @@
-from . abcsource import HTTPABCClientSource
+from .abcsource import HTTPABCClientSource
 
 ###
 

@@ -1,5 +1,6 @@
 import pprint
-from .. import Sink, Processor
+from ..abc.sink import Sink
+from ..abc.processor import Processor
 
 class PrintSink(Sink):
 

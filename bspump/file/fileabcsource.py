@@ -4,7 +4,7 @@ import logging
 import asyncio
 import asab
 
-from .. import Source
+from ..abc.source import Source
 from .. import ProcessingError
 
 from .globscan import _glob_scan

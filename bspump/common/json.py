@@ -1,5 +1,5 @@
 import json
-from .. import Processor
+from ..abc.processor import Processor
 
 class JSONParserProcessor(Processor):
 

@@ -1,5 +1,5 @@
 import asyncio
-from .. import Source
+from ..abc.source import Source
 
 
 class _TCPStreamProtocol(asyncio.Protocol):

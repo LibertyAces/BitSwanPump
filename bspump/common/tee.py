@@ -1,6 +1,6 @@
 import logging
 import copy
-from ..abcproc import Processor
+from ..abc.processor import Processor
 from .internal import InternalSource
 
 #
