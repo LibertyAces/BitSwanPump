@@ -212,9 +212,6 @@ class SampleInternalPipeline(bspump.Pipeline):
 	# Stream processing
 
 	async def start(self):
-		# Start all processors
-		for processor in itertools.chain.from_iterable(self.Processors):
-			processor.start()
 
 		# Start all sources
 		asyncio.gather(*[s.start() for s in self.Sources], loop=self.Loop)

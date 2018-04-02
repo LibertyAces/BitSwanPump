@@ -16,18 +16,12 @@ class ProcessorBase(abc.ABC, ConfigObject):
 		raise NotImplemented()
 
 
-	def start(self):
-		'''
-		Override this to handle request to start
-		'''
-		pass
-
-
 	def flush(self):
 		'''
 		Override this to handle request to flush all buffers
 		'''
 		pass
+
 
 class Processor(ProcessorBase):
 	pass
