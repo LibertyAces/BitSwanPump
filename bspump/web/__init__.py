@@ -22,7 +22,7 @@ async def trigger(request):
 
 
 def initialize_web(app):
-	from module_web import Module
+	from asab.web import Module
 	app.add_module(Module)
 
 	svc = app.get_service("asab.WebService")
