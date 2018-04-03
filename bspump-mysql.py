@@ -14,6 +14,16 @@ L = logging.getLogger(__name__)
 
 ###
 
+class Encryptor(bspump.Processor):
+	def process(self, event):
+		event["name"] = event["name"]+"encrypted!"
+		return event
+
+class Decryptor(bspump.Processor):
+	def process(self, event):
+		event["name"] = event["name"][:-len("encrypted!")]
+		return event
+
 class SamplePipeline(bspump.Pipeline):
 
 	'''
@@ -25,10 +35,10 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.mysql.MySQLSource(app, self, "MySQLConnection1", config={
-				'query':'SELECT birth, death, name, owner, sex, species FROM pet;'}),
-			# bspump.common.PPrintSink(app, self),
+				'query':'SELECT id, name FROM pet WHERE enc=true;'}),
+			Decryptor(app, self),
 			bspump.mysql.MySQLSink(app, self, "MySQLConnection1", config={
-				'query': 'INSERT INTO pet (birth, death, name, owner, sex, species) values ({birth},{death},{name},{owner},{sex},{species})'
+				'query': 'UPDATE pet SET enc=true, name={name} WHERE id={id}'
 				})
 		)
 
