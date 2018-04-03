@@ -1,7 +1,7 @@
 import asab
 import asyncio
 import logging
-from ..abcproc import Source
+from ..abc.source import Source
 
 #
 
@@ -19,7 +19,7 @@ class MySQLSource(Source):
 		self.App = app
 
 
-	async def start(self):
+	async def main(self):
 
 		# Await connection open
 		await self._connection.ConnectionEvent.wait()
