@@ -26,6 +26,7 @@ class MySQLConnection(Connection):
 		'db': '',
 		'connect_timeout': 1,
 		'reconnect_delay': 5.0,
+		'output_queue_max_size': 3,
 	}
 
 	def __init__(self, app, connection_id, config=None):
@@ -46,6 +47,9 @@ class MySQLConnection(Connection):
 		self._connect_timeout = self.Config['connect_timeout']
 		self._db = self.Config['db']
 		self._reconnect_delay = self.Config['reconnect_delay']
+		self._output_queue_max_size = self.Config['output_queue_max_size']
+
+
 
 		self._conn_future = None
 		self._connection_request = False
@@ -55,11 +59,11 @@ class MySQLConnection(Connection):
 		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
 		app.PubSub.subscribe("Application.tick!", self._on_health_check)
 
-		self._query_queue = asyncio.Queue(loop=app.Loop)
+		self._output_queue = asyncio.Queue(loop=app.Loop)
 
 
 	def _on_application_stop(self, message_type, counter):
-		self._query_queue.put_nowait(None)
+		self._output_queue.put_nowait(None)
 
 
 	def _on_health_check(self, message_type):
@@ -118,12 +122,30 @@ class MySQLConnection(Connection):
 		return self._conn_pool.acquire()
 
 
-	def consume(self, query, values):
-		self._query_queue.put_nowait((query, values))
+	def consume(self, query):
+		self._output_queue.put_nowait(query)
+		if self._output_queue.qsize() == self._output_queue_max_size:
+			self.PubSub.publish("MySQLConnection.pause!", self)
 
 
 	async def _loader(self):
 		while True:
-			item = await self._query_queue.get()
-			if item is None:
+			query = await self._output_queue.get()
+
+			if query is None:
 				break
+
+			if self._output_queue.qsize() == self._output_queue_max_size - 1:
+					self.PubSub.publish("MySQLConnection.unpause!", self, asynchronously=True)
+
+			try:
+				async with self.acquire() as conn:
+					try:
+						async with conn.cursor() as cur:
+							await cur.execute(query)
+							await conn.commit()
+					except Exception as e:
+						L.exception("Unexpected error when processing MySQL query.")
+			except Exception as e:
+				L.exception("Couldn't acquire connection")
+

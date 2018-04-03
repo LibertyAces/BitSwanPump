@@ -25,11 +25,11 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.mysql.MySQLSource(app, self, "MySQLConnection1", config={
-				'query':'SELECT * FROM pet;'}),
-			bspump.common.PPrintSink(app, self),
-			# bspump.mysql.MySQLSink(app, self, "asdf", config={
-			# 	'query': 'INSERT INTO pet values {event}'
-			# 	})
+				'query':'SELECT birth, death, name, owner, sex, species FROM pet;'}),
+			# bspump.common.PPrintSink(app, self),
+			bspump.mysql.MySQLSink(app, self, "MySQLConnection1", config={
+				'query': 'INSERT INTO pet (birth, death, name, owner, sex, species) values ({birth},{death},{name},{owner},{sex},{species})'
+				})
 		)
 
 
