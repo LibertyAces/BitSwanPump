@@ -1,7 +1,7 @@
 import asab
 import asyncio
 import logging
-from ..abc.source import Source
+from ..abc.source import TriggerSource
 
 #
 
@@ -9,7 +9,7 @@ L = logging.getLogger(__name__)
 
 #
 
-class MySQLSource(Source):
+class MySQLSource(TriggerSource):
 	
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -20,27 +20,27 @@ class MySQLSource(Source):
 
 
 	async def main(self):
-
-		# Await connection open
 		await self._connection.ConnectionEvent.wait()
-		try:
-			async with self._connection.acquire() as conn:
-				try:
-					async with conn.cursor() as cur:
-						await cur.execute(self._query)
-						event = {}
-						while True:
-							await self.Pipeline.ready()
-							row = await cur.fetchone()
-							if row is None:
-								break
+		async with self._connection.acquire() as connection:
+			await super().main(connection)
 
-							# This is how event is transformed to a dictionary
-							for i, val in enumerate(row):
-								event[cur.description[i][0]] = val
-							self.process(event)
-				except Exception as e:
-					L.exception("Unexpected error when processing MySQL query.")
+
+	async def cycle(self, connection):
+		try:
+			async with connection.cursor() as cur:
+				await cur.execute(self._query)
+				event = {}
+				while True:
+					await self.Pipeline.ready()
+					row = await cur.fetchone()
+					if row is None:
+						break
+
+					# Transform row to an event object
+					for i, val in enumerate(row):
+						event[cur.description[i][0]] = val
+
+					# Pass event to the pipeline
+					self.process(event)
 		except Exception as e:
-			L.exception("Couldn't acquire connection")
-		self.App.stop()
+			L.exception("Unexpected error when processing MySQL query.")
