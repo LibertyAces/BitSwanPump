@@ -23,7 +23,7 @@ class SamplePipeline(bspump.Pipeline):
 				bspump.http.HTTPClientSource(app, self).trigger(trigger),
 			],
 			#bspump.common.JSONParserProcessor(app, self),
-			bspump.common.TeeProcessor(app, self, "SampleInternalPipeline.*TeeSource"),
+			bspump.common.TeeProcessor(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
 
@@ -40,7 +40,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 		self.build(
 			[
-				bspump.common.TeeSource(app, self),
+				bspump.common.TeeSource(app, self).bind("SamplePipeline.TeeProcessor"),
 			],
 			#bspump.common.JSONParserProcessor(app, self),
 			bspump.common.PPrintSink(app, self)

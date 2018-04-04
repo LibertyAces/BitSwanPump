@@ -52,7 +52,7 @@ class SamplePipeline(bspump.Pipeline):
 
 		self.build(
 			bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
-			bspump.common.TeeProcessor(app, self, "SampleTeePipeline.*TeeSource"),
+			bspump.common.TeeProcessor(app, self).bind("SampleTeePipeline.*TeeSource"),
 			bspump.common.PPrintSink(app, self)
 		)
 
@@ -69,7 +69,40 @@ class SampleTeePipeline(bspump.Pipeline):
 
 	'''
 
-	pass
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+
+		self.Targets = []
+		self._svc = app.get_service("bspump.PumpService")
+
+
+	def bind(self, target):
+		self.Targets.append(target)
+		return self
+
+
+	async def main(self):
+
+		unbind_processor = []
+		for target in self.Targets:
+			processor = self._svc.locate(target)
+			if processor is None:
+				L.warning("TeeSource '{}' cannot find processor '{}'".format(self.Id, target))
+				return
+
+			if not isinstance(processor, TeeProcessor):
+				L.warning("TeeSource '{}' requires TeeProcessor as target, not '{}'".format(self.Id, target))
+				return
+
+			processor.bind(self)
+			unbind_processor.append(processor)
+
+		try:
+			await super().main()
+		finally:
+			for processor in unbind_processor:
+				processor.unbind(self)
+
 
 #
 
@@ -83,29 +116,51 @@ class TeeProcessor(Processor):
 	}
 
 
-	def __init__(self, app, pipeline, target, id=None, config=None):
+	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self.Source = None
+		self.Sources = None
+		self.Targets = []
 
-		self._target = target
 		self._svc = app.get_service("bspump.PumpService")
 
 
+	def bind(self, target):
+		'''
+		Target can be a bspump.PumpService.locate() string or an instance of TeeSource object.
+		'''
+		self.Sources = None # Trigger location of the target sources
+		self.Targets.append(target)
+		return self
+
+
+	def unbind(self, target):
+		self.Sources = None # Trigger location of the target sources
+		self.Targets.remove(target)
+		return self
+
+
 	def process(self, event):
-		if self.Source is None:
-			source = self._svc.locate(self._target)
-			if source is None:
-				L.warning("TeeProcessor '{}' cannot find internal source '{}'".format(self.Id, self._target))
-				return
+		if self.Sources is None:
+			self.Sources = []
+			for target in self.Targets:
+				if isinstance(target, TeeSource):
+					# If we received direct reference to a target source, use that
+					source = target
+				else:
+					source = self._svc.locate(target)
+					if source is None:
+						L.warning("TeeProcessor '{}' cannot find source '{}'".format(self.Id, target))
+						return
+					if not isinstance(source, TeeSource):
+						L.warning("TeeProcessor '{}' requires TeeSource as target, not '{}'".format(self.Id, target))
+						return
 
-			if not isinstance(source, TeeSource):
-				L.warning("TeeProcessor '{}' require InternalSource as target, not '{}'".format(self.Id, self._target))
-				return
+				self.Sources.append(source)
 
-			self.Source = source
-
-		event_copy = copy.deepcopy(event)
-		self.Source.put(event_copy)
 		#TODO: Throttle pipeline if queue is getting full & unthrottle when getting empty
+		for source in self.Sources:
+			event_copy = copy.deepcopy(event)
+			source.put(event_copy)
+
 		return event
