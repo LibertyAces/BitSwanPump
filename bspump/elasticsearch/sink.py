@@ -5,7 +5,7 @@ import time
 import requests
 
 import asab
-from ..abc.Sink import Sink
+from ..abc.sink import Sink
 
 #
 
