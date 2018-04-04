@@ -30,8 +30,9 @@ class BSPumpService(asab.Service):
 				if source.Id == t[1:]:
 					return source
 		else:
-			#TODO: Find Processor by Id
-			raise NotImplemented("TODO")
+			for processor in pipeline.iter_processors():
+				if processor.Id == t:
+					return processor
 
 		return None
 
