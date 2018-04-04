@@ -3,10 +3,8 @@ import logging
 import asyncio
 import asab
 import bspump
-import bspump.socket
-import bspump.common
-import bspump.influxdb
 import bspump.mysql
+import bspump.trigger
 
 ###
 
@@ -14,40 +12,75 @@ L = logging.getLogger(__name__)
 
 ###
 
-class Encryptor(bspump.Processor):
+
+class ReverseProcessor(bspump.Processor):
 	def process(self, event):
-		event["name"] = event["name"]+"encrypted!"
+		for key in event.keys():
+			if isinstance(event[key], str):
+				event[key] = event[key][::-1]
 		return event
 
-class Decryptor(bspump.Processor):
+
+class ToggleCaseProcessor(bspump.Processor):
 	def process(self, event):
-		event["name"] = event["name"][:-len("encrypted!")]
+		for key in event.keys():
+			if isinstance(event[key], str):
+				if event[key].islower():
+					event[key] = event[key].upper()
+				else:
+					event[key] = event[key].lower()
 		return event
+
 
 class SamplePipeline(bspump.Pipeline):
-
-	'''
-	Test this pipeline by
-	$ echo 'metrix,tag1=value1,tag2=value2 value=1 1434055562000000000' |  nc localhost 7000
-	'''
-
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.mysql.MySQLSource(app, self, "MySQLConnection1", config={
-				'query':'SELECT id, name FROM pet WHERE enc=true;'}),
-			Decryptor(app, self),
+			bspump.mysql.MySQLSource(app, self, "MySQLConnection1",
+				config={'query':'SELECT id, name, surname FROM people;'}
+			).trigger(
+				bspump.trigger.PubSubTrigger(app, "runmysqlpipeline!")
+			),
+			ReverseProcessor(app, self),
+			ToggleCaseProcessor(app, self),
 			bspump.mysql.MySQLSink(app, self, "MySQLConnection1", config={
-				'query': 'UPDATE pet SET enc=true, name={name} WHERE id={id}'
+				'query': 'UPDATE people SET name={name}, surname={surname} WHERE id={id};'
 				})
 		)
 
 
 if __name__ == '__main__':
-	app = bspump.BSPumpApplication()
+	""" This is a sample bspump application with pipeline that implements MySQL source and sink
 
+		## Try it out
+		
+		Insert some sample data in your database
+		```
+			mysql> create database sampledb;
+			mysql> use sampledb;
+			mysql> CREATE TABLE people (id MEDIUMINT NOT NULL AUTO_INCREMENT,name CHAR(30), surname CHAR(30), PRIMARY KEY (id));
+			mysql> INSERT INTO people (name, surname) VALUES ("john", "doe"),("juan", "perez"),("wop", "wops");
+		```
+
+		Configure bspump in `./etc/site.conf`
+		```
+			[connection:MySQLConnection1]
+			user=username
+			password=password
+			db=sampledb
+		```
+
+		Run bspump
+		```
+		./bspump-mysql.py -c ./etc/site.conf
+		```
+
+);
+	"""
+	app = bspump.BSPumpApplication()
 	svc = app.get_service("bspump.PumpService")
 
+	# Create connection
 	svc.add_connection(
 		bspump.mysql.MySQLConnection(app, "MySQLConnection1")
 	)
@@ -55,5 +88,8 @@ if __name__ == '__main__':
 	# Construct and register Pipeline
 	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
+
+	# This is how pipeline is triggered:
+	app.PubSub.publish("runmysqlpipeline!", asynchronously=True)
 
 	app.run()
