@@ -112,7 +112,7 @@ class MySQLConnection(Connection):
 			# it has been placed as an issue on GitHub: https://github.com/aio-libs/aiomysql/issues/257
 			L.exception("MySQL connection timeout")
 			pass
-		except Exception:
+		except BaseException:
 			L.exception("Unexpected MySQL connection error")
 			raise
 
@@ -144,8 +144,8 @@ class MySQLConnection(Connection):
 						async with conn.cursor() as cur:
 							await cur.execute(query)
 							await conn.commit()
-					except Exception as e:
+					except BaseException as e:
 						L.exception("Unexpected error when processing MySQL query.")
-			except Exception as e:
+			except BaseBaseException as e:
 				L.exception("Couldn't acquire connection")
 

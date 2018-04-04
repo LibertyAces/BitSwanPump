@@ -121,7 +121,7 @@ class TriggerSource(Source):
 			# Execute one cycle
 			try:
 				await self.cycle(*args, **kwags)
-			except Exception as e:
+			except BaseException as e:
 				self.Pipeline.set_error(e, None)
 
 			self.TriggerEvent.clear()

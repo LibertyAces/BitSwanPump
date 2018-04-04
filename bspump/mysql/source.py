@@ -42,5 +42,5 @@ class MySQLSource(TriggerSource):
 
 					# Pass event to the pipeline
 					self.process(event)
-		except Exception as e:
+		except BaseException as e:
 			L.exception("Unexpected error when processing MySQL query.")

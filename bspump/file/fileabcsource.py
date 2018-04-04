@@ -49,7 +49,7 @@ class FileABCSource(TriggerSource):
 			os.rename(filename, locked_filename)
 		except FileNotFoundError:
 			return
-		except Exception as e:
+		except BaseException as e:
 			L.exception("Error when locking the file '{}'".format(filename))
 			self.Pipeline.set_error(e, None)
 			return
@@ -102,7 +102,7 @@ class FileABCSource(TriggerSource):
 				os.rename(locked_filename, filename)
 			else:
 				os.rename(locked_filename, filename + '-processed')
-		except Exception as e:
+		except BaseException as e:
 			L.exception("Error when finalizing the file '{}'".format(filename))
 			self.Pipeline.set_error(e, None)
 			return
