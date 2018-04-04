@@ -2,6 +2,8 @@ import logging
 import json
 import asyncio
 import time
+
+#TODO: Remove dependency on requests
 import requests
 
 import asab
