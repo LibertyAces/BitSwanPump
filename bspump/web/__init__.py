@@ -21,6 +21,15 @@ async def trigger(request):
 	return json_response(request, {'ok': 1})
 
 
+async def internal(request):
+	app = request.app['app']
+	svc = app.get_service("bspump.PumpService")
+	source = svc.locate("SampleInternalPipeline.*InternalSource")
+	source.put({"event": "example"})
+	return json_response(request, {'ok': 1})
+
+
+
 def initialize_web(app):
 	from asab.web import Module
 	app.add_module(Module)
@@ -33,6 +42,7 @@ def initialize_web(app):
 	svc.WebApp.router.add_get('/', index)
 	svc.WebApp.router.add_get('/pipelines', pipelines)
 	svc.WebApp.router.add_get('/trigger', trigger)
+	svc.WebApp.router.add_get('/internal', trigger)
 	svc.WebApp.router.add_static('/static/', path=static_dir, name='static')
 
 	return svc

@@ -19,7 +19,8 @@ class SamplePipeline(bspump.Pipeline):
 			[
 				#bspump.file.FileLineSource(app, self, config={'path': './services'}),
 				#bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
-				bspump.http.HTTPClientSource(app, self).trigger(trigger)
+				bspump.common.InternalSource(app, self),
+				bspump.http.HTTPClientSource(app, self).trigger(trigger),
 			],
 			#bspump.common.JSONParserProcessor(app, self),
 			bspump.common.TeeProcessor(app, self, "SampleInternalPipeline.*TeeSource"),

@@ -10,7 +10,38 @@ L = logging.getLogger(__name__)
 
 #
 
-class TeeSource(Source):
+class InternalSource(Source):
+
+
+	ConfigDefaults = {
+	}
+
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+		self.Loop = app.Loop 
+		self.Queue = asyncio.Queue(loop=self.Loop) #TODO: Max size (etc.)
+
+
+	def put(self, event):
+		self.Queue.put_nowait(event)
+
+
+	async def main(self):
+		try:
+
+			while 1:
+				await self.Pipeline.ready()
+				event = await self.Queue.get()
+				self.process(event)
+
+		except asyncio.CancelledError:
+			if self.Queue.qsize() > 0:
+				L.warning("Source '{}' stopped with {} events in a queue".format(self.Id, self.Queue.qsize()))
+
+#
+
+class TeeSource(InternalSource):
 
 	'''
 
@@ -38,31 +69,7 @@ class SampleTeePipeline(bspump.Pipeline):
 
 	'''
 
-	ConfigDefaults = {
-	}
-
-
-	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
-		self.Loop = app.Loop 
-		self.Queue = asyncio.Queue(loop=self.Loop) #TODO: Max size (etc.)
-
-
-	def put_nowait(self, event):
-		self.Queue.put_nowait(event)
-
-
-	async def main(self):
-		try:
-
-			while 1:
-				await self.Pipeline.ready()
-				event = await self.Queue.get()
-				self.process(event)
-
-		except asyncio.CancelledError:
-			if self.Queue.qsize() > 0:
-				L.warning("Internal source '{}' stopped with {} events in a queue".format(self.Id, self.Queue.qsize()))
+	pass
 
 #
 
@@ -99,6 +106,6 @@ class TeeProcessor(Processor):
 			self.Source = source
 
 		event_copy = copy.deepcopy(event)
-		self.Source.put_nowait(event_copy)
+		self.Source.put(event_copy)
 		#TODO: Throttle pipeline if queue is getting full & unthrottle when getting empty
 		return event
