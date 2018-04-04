@@ -208,6 +208,15 @@ class SampleInternalPipeline(bspump.Pipeline):
 			self.append_processor(processor)
 
 
+	def iter_processors(self):
+		'''
+		Iterate thru all processors.
+		'''
+		for processors in self.Processors:
+			for processor in processors:
+				yield processor
+
+
 	# Lifecycle ...
 
 	def start(self):
