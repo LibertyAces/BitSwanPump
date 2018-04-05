@@ -84,3 +84,8 @@ class AMQPSource(Source):
 			self._queue.put_nowait((method, properties, body))
 		except:
 			channel.basic_nack(method.delivery_tag, requeue=True)
+
+class AMQPFullMessageSource(AMQPSource):
+
+	def process_message(self, method, properties, body):
+		self.process((method, properties, body))
