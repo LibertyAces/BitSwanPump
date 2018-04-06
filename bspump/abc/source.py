@@ -104,7 +104,10 @@ class TriggerSource(Source):
 		self.Triggers = set()
 
 
-	def trigger(self, trigger):
+	def on(self, trigger):
+		'''
+		Add trigger
+		'''
 		trigger.add(self)
 		self.Triggers.add(trigger)
 		return self
