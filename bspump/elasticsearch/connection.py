@@ -136,7 +136,7 @@ class ElasticSearchConnection(Connection):
 				if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("ElasticSearchConnection.unpause!", self, asynchronously=True)
 
-				#TODO: if exception happends, save bulk_out back to queue for a future resend (don't foget throttling)
+				#TODO: if exception happens, save bulk_out back to queue for a future resend (don't foget throttling)
 
 				L.debug("Sending bulk request (size: {}) to {}".format(len(bulk_out), url))
 			
@@ -150,8 +150,12 @@ class ElasticSearchConnection(Connection):
 						resp_body = await resp.text()
 						respj = json.loads(resp_body)
 						if respj.get('errors', True) != False:
-							#TODO: Iterate thru respj['items'] and display only status != 201 items in L.error()
-							L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status, resp_body))
+
+							L.error("Failed to insert bulk into ElasticSearch status: {}".format(resp.status))
+							for item in respj['items']:
+								if item['index']['status'] != 201:
+									L.error(" - {} Failed document detail: '{}'".format(item['index']['status'], item))
+
 							raise RuntimeError("Failed to insert document into ElasticSearch")
 						else:
 							L.debug("Bulk POST finished successfully")
