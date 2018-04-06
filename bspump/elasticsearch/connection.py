@@ -136,7 +136,7 @@ class ElasticSearchConnection(Connection):
 				if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("ElasticSearchConnection.unpause!", self, asynchronously=True)
 
-				#TODO: if exception happens, save bulk_out back to queue for a future resend (don't foget throttling)
+				#TODO: if exception happens, save bulk_out back to queue for a future resend (don't forget throttling)
 
 				L.debug("Sending bulk request (size: {}) to {}".format(len(bulk_out), url))
 			
