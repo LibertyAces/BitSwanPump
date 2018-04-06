@@ -3,7 +3,8 @@ import logging
 import asyncio
 import asab
 import bspump
-import bspump.socket
+import bspump.file
+import bspump.trigger
 import bspump.common
 import bspump.elasticsearch
 
@@ -15,15 +16,11 @@ L = logging.getLogger(__name__)
 
 class SamplePipeline(bspump.Pipeline):
 
-	'''
-	Test this pipeline by
-	$ echo '{"Ahoj":"svete"}' |  nc localhost 7000
-	'''
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.socket.FileLineSource(app, self,).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.file.FileLineSource(app, self, config={'path':'test.json'}).on(bspump.trigger.RunOnceTrigger(app)),
 			bspump.common.JSONParserProcessor(app, self),
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection1")
 		)
