@@ -1,10 +1,9 @@
+import abc
 import logging
 import json
 import asyncio
 import time
-
-#TODO: Remove dependency on requests
-import requests
+import aiohttp
 
 import asab
 from ..abc.sink import Sink
@@ -32,25 +31,27 @@ class ElasticSearchSink(Sink):
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self._index = None
-		self._index_prefix = self.Config['index_prefix']
 		self._doctype = self.Config['doctype']
-		self._rollover_mechanism = self.Config['rollover_mechanism']
-		self._max_index_size = int(self.Config['max_index_size'])
-		self._time_period = self.parse_index_period(self.Config['time_period'])
-		self.timeout = self.Config['timeout']
 
 		self._connection = pipeline.locate_connection(app, connection)
-		
-		app.PubSub.subscribe("Application.tick/600!", self._refresh_index)
+
+		ro = self.Config['rollover_mechanism']
+		if ro == 'time':
+			self._rollover_mechanism = ElasticSearchTimeRollover(app, self)
+		elif ro == 'size':
+			self._rollover_mechanism = ElasticSearchSizeRollover(app, self,  self._connection)
+		else:
+			if ro != 'fixed':
+				L.warning("Unknown rollover mechanism: '{}', defaulting to fixed".format(ro))
+			self._rollover_mechanism = ElasticSearchFixedRollover(app, self)
+
 		app.PubSub.subscribe("ElasticSearchConnection.pause!", self._connection_throttle)
 		app.PubSub.subscribe("ElasticSearchConnection.unpause!", self._connection_throttle)
-		self._refresh_index("simulated")
-		assert(self._index is not None)
-
+	
 
 	def process(self, event):
-		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self._index, self._doctype, json.dumps(event))
+		assert self._rollover_mechanism.Index is not None
+		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self._rollover_mechanism.Index, self._doctype, json.dumps(event))
 		ret = self._connection.consume(data)
 
 
@@ -65,29 +66,79 @@ class ElasticSearchSink(Sink):
 		else:
 			raise RuntimeError("Unexpected event name '{}'".format(event_name))
 
+###
 
-	def _refresh_index(self, event_name=None):
-		if self._rollover_mechanism == 'size':
-			self._refresh_index_size_based()
-		elif self._rollover_mechanism == 'time':
-			self._refresh_index_time_based()
-		elif self._rollover_mechanism == 'fixed':
-			self._index = self._index_prefix
-		else: 
-			L.error("Invalid rollover mechanism:. Allowed values are 'size', 'time' and 'fixed'.")
-			raise RuntimeError("Index rollover failed.")
+class ElasticSearchBaseRollover(abc.ABC):
+
+	def __init__(self, app, essink):
+		asyncio.ensure_future(self.refresh_index(), loop=app.Loop)
+		app.PubSub.subscribe("Application.tick/600!", self.refresh_index)
+
+		# Throttle pipeline till we have index resolved
+		self.Pipeline = essink.Pipeline
+		self.Pipeline.throttle(self, True)
+		self.Throttled = True
+
+		self.IndexPrefix = essink.Config['index_prefix']
+		self.Index = None
+
+		self.Timeout = essink.Config['timeout']
 
 
-	def _refresh_index_size_based(self):
-		url_get_index_size = self._connection.url + '{}*/_stats/store'.format(self._index_prefix)
+	@abc.abstractmethod
+	async def refresh_index(self, event_name=None):
+		if (self.Throttled == True) and (self.Index is not None):
+			self.Pipeline.throttle(self, False)
 
-		with requests.Session() as session:
-			response = session.get(url_get_index_size, timeout=self.timeout)
 
-		if response.status_code != 200:
+class ElasticSearchFixedRollover(ElasticSearchBaseRollover):
+	
+	async def refresh_index(self, event_name=None):
+		self.Index = self.IndexPrefix
+		return await super().refresh_index(event_name)
+
+
+class ElasticSearchTimeRollover(ElasticSearchBaseRollover):
+
+	def __init__(self, app, essink):
+		super().__init__(app, essink)
+		self.TimePeriod = self.parse_index_period(essink.Config['time_period'])
+
+
+	async def refresh_index(self, event_name=None):
+		seqno = int((time.time() - 1500000000) / self.TimePeriod)
+		self.Index = "{}{:05}".format(self.IndexPrefix, seqno)
+		return await super().refresh_index(event_name)
+
+
+	def parse_index_period(self, value):
+		if value == 'd': return 60*60*24 # 1 day
+		elif value == 'w': return 60*60*24*7 # 7 days
+		elif value == 'm': return 60*60*24*28 # 28 days
+
+		return int(value) # Otherwise use value in seconds
+
+
+class ElasticSearchSizeRollover(ElasticSearchBaseRollover):
+
+	def __init__(self, app, essink, connection):
+		super().__init__(app, essink)
+		self.MaxIndexSize = int(essink.Config['max_index_size'])
+		self.Connection = connection
+
+
+	async def refresh_index(self, event_name=None):
+
+		url_get_index_size = self.Connection.get_url() + '{}*/_stats/store'.format(self.IndexPrefix)
+
+		async with aiohttp.ClientSession() as session:
+			response = await session.get(url_get_index_size, timeout=self.Timeout)
+
+		if response.status != 200:
 			L.error("Failed to get indices' statistics from ElasticSearch.")
 
-		data = response.json()
+		resp_body = await response.text()
+		data = json.loads(resp_body)
 
 		if data["_shards"]["failed"] != 0:
 			L.warning("There was one or more failed shards in the query.")
@@ -100,22 +151,13 @@ class ElasticSearchSink(Sink):
 		sorted_ls = sorted(ls, key=lambda item: item.rsplit('_', 1)[-1], reverse=True)
 
 		if len(sorted_ls) > 0:
-			if (data['indices'][sorted_ls[0]]['primaries']['store']['size_in_bytes'] > self._max_index_size)  and (self._index is not None):
-				_ , split_index = self._index.rsplit('_',1)
+			if (data['indices'][sorted_ls[0]]['primaries']['store']['size_in_bytes'] > self.MaxIndexSize)  and (self.Index is not None):
+				_ , split_index = self.Index.rsplit('_',1)
 				split_index =int(split_index) + 1
-				self._index = self._index_prefix + '{:05}'.format(split_index[1])
+				self.Index = self.IndexPrefix + '{:05}'.format(split_index[1])
 
-		if self._index is None:
-			self._index = self._index_prefix + '{:05}'.format(1)
+		if self.Index is None:
+			self.Index = self.IndexPrefix + '{:05}'.format(1)
 
-	def _refresh_index_time_based(self):
-		seqno = int((time.time() - 1500000000) / self._time_period)
-		self._index = "{}{:05}".format(self._index_prefix, seqno)
+		return await super().refresh_index(event_name)
 
-
-	def parse_index_period(self, value):
-		if value == 'd': return 60*60*24 # 1 day
-		elif value == 'w': return 60*60*24*7 # 7 days
-		elif value == 'm': return 60*60*24*28 # 28 days
-
-		return int(value) # Otherwise use value in seconds
