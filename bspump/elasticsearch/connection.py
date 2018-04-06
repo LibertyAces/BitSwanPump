@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import logging
 import json
+import random
 
 from asab import Config
 
@@ -59,6 +60,10 @@ class ElasticSearchConnection(Connection):
 				self._futures.append((url+'_bulk', None))
 
 		self._on_tick("simulated!")
+
+
+	def get_url(self):
+		return random.choice(self.node_urls)
 
 
 	def consume(self, data):
