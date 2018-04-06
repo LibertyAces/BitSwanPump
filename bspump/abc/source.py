@@ -121,11 +121,17 @@ class TriggerSource(Source):
 			# Wait for a trigger
 			await self.TriggerEvent.wait()
 
+			# Send begin on a cycle event
+			self.Pipeline.PubSub.publish("bspump.pipeline.cycle_begin!", pipeline=self.Pipeline)
+
 			# Execute one cycle
 			try:
 				await self.cycle(*args, **kwags)
 			except BaseException as e:
 				self.Pipeline.set_error(e, None)
+
+			# Send end of a cycle event
+			self.Pipeline.PubSub.publish("bspump.pipeline.cycle_end!", pipeline=self.Pipeline)
 
 			self.TriggerEvent.clear()
 			for trigger in self.Triggers:
