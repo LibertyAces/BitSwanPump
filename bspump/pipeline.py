@@ -18,9 +18,9 @@ L = logging.getLogger(__name__)
 class Pipeline(abc.ABC):
 
 
-	def __init__(self, app, pipeline_id):
+	def __init__(self, app, id=None):
 
-		self.Id = pipeline_id
+		self.Id = id if id is not None else self.__class__.__name__
 		self.Loop = app.Loop
 
 		self.Sources = []
