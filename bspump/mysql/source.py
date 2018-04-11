@@ -1,6 +1,7 @@
 import asab
 import asyncio
 import logging
+import aiomysql.cursors
 from ..abc.source import TriggerSource
 
 #
@@ -27,7 +28,7 @@ class MySQLSource(TriggerSource):
 
 	async def cycle(self, connection):
 		try:
-			async with connection.cursor() as cur:
+			async with connection.cursor(cursor=aiomysql.cursors.SSCursor) as cur:
 				await cur.execute(self._query)
 				event = {}
 				while True:
