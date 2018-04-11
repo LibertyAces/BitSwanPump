@@ -34,8 +34,6 @@ class MySQLConnection(Connection):
 
 		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
 		self.ConnectionEvent.clear()
-		self.RequestCloseConnectionEvent = asyncio.Event(loop=app.Loop)
-		self.RequestCloseConnectionEvent.clear()
 
 		self.PubSub = PubSub(app)
 		self.Loop = app.Loop
@@ -94,7 +92,6 @@ class MySQLConnection(Connection):
 
 	async def _connection(self):
 		try:
-			self.RequestCloseConnectionEvent.clear()
 			async with create_pool(
 				host=self._host,
 				port=self._port,
