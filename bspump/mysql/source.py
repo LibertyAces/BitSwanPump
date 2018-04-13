@@ -20,28 +20,24 @@ class MySQLSource(TriggerSource):
 		self.App = app
 
 
-	async def main(self):
+	async def cycle(self):
 		await self._connection.ConnectionEvent.wait()
 		async with self._connection.acquire() as connection:
-			await super().main(connection)
+			try:
+				async with connection.cursor(cursor=aiomysql.cursors.SSCursor) as cur:
+					await cur.execute(self._query)
+					event = {}
+					while True:
+						await self.Pipeline.ready()
+						row = await cur.fetchone()
+						if row is None:
+							break
 
+						# Transform row to an event object
+						for i, val in enumerate(row):
+							event[cur.description[i][0]] = val
 
-	async def cycle(self, connection):
-		try:
-			async with connection.cursor(cursor=aiomysql.cursors.SSCursor) as cur:
-				await cur.execute(self._query)
-				event = {}
-				while True:
-					await self.Pipeline.ready()
-					row = await cur.fetchone()
-					if row is None:
-						break
-
-					# Transform row to an event object
-					for i, val in enumerate(row):
-						event[cur.description[i][0]] = val
-
-					# Pass event to the pipeline
-					self.process(event)
-		except BaseException as e:
-			L.exception("Unexpected error when processing MySQL query.")
+						# Pass event to the pipeline
+						self.process(event)
+			except BaseException as e:
+				L.exception("Unexpected error when processing MySQL query.")
