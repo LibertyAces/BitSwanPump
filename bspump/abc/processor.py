@@ -12,7 +12,7 @@ class ProcessorBase(abc.ABC, ConfigObject):
 
 
 	@abc.abstractmethod
-	def process(self, event):
+	def process(self, context, event):
 		raise NotImplemented()
 
 

@@ -43,6 +43,8 @@ class Pipeline(abc.ABC):
 		self._chillout_trigger = 10000
 		self._chillout_counter = 0
 
+		self._context = {}
+
 
 	def set_error(self, exc, event):
 		'''
@@ -140,13 +142,19 @@ class SampleInternalPipeline(bspump.Pipeline):
 		return True
 
 
-	def process(self, event, depth=0):
+	def process(self, event, depth=0, context=None):
+
 		if depth == 0:
 			self.Metrics.add("bspump.pipeline.event_in.{}".format(self.Id))
+			if context is None:
+				context = self._context.copy()
+			else:
+				context.update(self._context)
+
 
 		for processor in self.Processors[depth]:
 			try:
-				event = processor.process(event)
+				event = processor.process(event, context=context)
 			except BaseException as e:
 				if depth > 0: raise # Handle error on the top level
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))
@@ -162,7 +170,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 		# If the event is generator and there is more in the processor pipeline, then enumerate generator
 		if isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
 			for gevent in event:
-				self.process(gevent, depth+1)
+				self.process(gevent, depth+1, context.copy())
 
 		else:
 			try:

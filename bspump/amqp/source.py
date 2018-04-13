@@ -57,7 +57,11 @@ class AMQPSource(Source):
 
 
 	def process_message(self, method, properties, body):
-		self.process(body)
+		context = {
+			'ampq:method': method,
+			'ampq:properties': properties
+		}
+		self.process(body, context=context)
 
 
 	def _on_connection_open(self, event_name):
