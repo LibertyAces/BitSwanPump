@@ -28,7 +28,6 @@ class MySQLSink(Sink):
 
 		# Prepare values for mysql query
 		for col in values.keys():
-			print(type(values[col]))
 			# NULL values
 			if values[col] is None:
 				values[col] = "NULL"

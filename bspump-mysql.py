@@ -38,7 +38,7 @@ class SamplePipeline(bspump.Pipeline):
 		self.build(
 			bspump.mysql.MySQLSource(app, self, "MySQLConnection1",
 				config={'query':'SELECT id, name, surname FROM people;'}
-			).trigger(
+			).on(
 				bspump.trigger.PubSubTrigger(app, "runmysqlpipeline!")
 			),
 			ReverseProcessor(app, self),
