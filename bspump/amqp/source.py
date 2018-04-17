@@ -58,8 +58,8 @@ class AMQPSource(Source):
 
 	def process_message(self, method, properties, body):
 		context = {
-			'ampq:method': method,
-			'ampq:properties': properties
+			'amqp:method': method,
+			'amqp:properties': properties
 		}
 		self.process(body, context=context)
 
