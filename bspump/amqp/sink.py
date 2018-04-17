@@ -51,7 +51,7 @@ class AMQPSink(Sink):
 		self.Pipeline.throttle(self, False)
 
 
-	def process(self, event):
+	def process(self, context, event):
 		if self._channel is None:
 			raise RuntimeError("AMQP channel is not open")
 

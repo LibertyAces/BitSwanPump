@@ -154,7 +154,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 		for processor in self.Processors[depth]:
 			try:
-				event = processor.process(event, context=context)
+				event = processor.process(context, event)
 			except BaseException as e:
 				if depth > 0: raise # Handle error on the top level
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))

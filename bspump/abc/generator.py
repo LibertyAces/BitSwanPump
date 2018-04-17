@@ -6,7 +6,7 @@ class Generator(ProcessorBase):
 
 	class GeneratingProcessor(bspump.Generator):
 
-		def process(self, event):
+		def process(self, context, event):
 
 			def generate(items):
 				for item in items:

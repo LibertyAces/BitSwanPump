@@ -23,7 +23,7 @@ class MySQLSink(Sink):
 		# self.Pipeline.throttle(self, True)
 
 
-	def process(self, event):
+	def process(self, context, event):
 		values = event
 
 		# Prepare values for mysql query

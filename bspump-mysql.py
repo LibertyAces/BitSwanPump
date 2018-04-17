@@ -14,7 +14,7 @@ L = logging.getLogger(__name__)
 
 
 class ReverseProcessor(bspump.Processor):
-	def process(self, event):
+	def process(self, context, event):
 		for key in event.keys():
 			if isinstance(event[key], str):
 				event[key] = event[key][::-1]
@@ -22,7 +22,7 @@ class ReverseProcessor(bspump.Processor):
 
 
 class ToggleCaseProcessor(bspump.Processor):
-	def process(self, event):
+	def process(self, context, event):
 		for key in event.keys():
 			if isinstance(event[key], str):
 				if event[key].islower():

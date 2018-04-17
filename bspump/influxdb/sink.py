@@ -24,7 +24,7 @@ class InfluxDBSink(Sink):
 
 
 	# TODO: Restructure data: { "measurement": "location", "tag_set": "location=us-midwest", "field_set": "temperature=82", "timestamp": 1465839830100400200 }
-	def process(self, event):
+	def process(self, context, event):
 
 		if isinstance(event, tuple):
 			measurement, tag_set, field_set, timestamp = event

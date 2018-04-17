@@ -49,7 +49,7 @@ class ElasticSearchSink(Sink):
 		app.PubSub.subscribe("ElasticSearchConnection.unpause!", self._connection_throttle)
 	
 
-	def process(self, event):
+	def process(self, context, event):
 		assert self._rollover_mechanism.Index is not None
 		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self._rollover_mechanism.Index, self._doctype, json.dumps(event))
 		ret = self._connection.consume(data)

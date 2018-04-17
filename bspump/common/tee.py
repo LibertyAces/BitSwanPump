@@ -140,7 +140,7 @@ class TeeProcessor(Processor):
 		return self
 
 
-	def process(self, event):
+	def process(self, context, event):
 		if self.Sources is None:
 			self.Sources = []
 			for target in self.Targets:

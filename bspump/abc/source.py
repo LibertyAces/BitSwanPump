@@ -28,7 +28,7 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		self.MainCoro = None # Contains a main coroutine `main()` if Pipeline is started
 
 
-	def process(self, event):
+	def process(self, event, context=None):
 		'''
 		This method is used to emit event into a pipeline.
 		It is synchronous function.
@@ -37,7 +37,7 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		'''
 		if not self.Pipeline._ready.is_set():
 			raise RuntimeError("Pipeline is not ready to process events")
-		return self.Pipeline.process(event)
+		return self.Pipeline.process(event, context=context)
 
 
 	def start(self, loop):
