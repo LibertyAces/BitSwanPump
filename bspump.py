@@ -20,7 +20,7 @@ class SamplePipeline(bspump.Pipeline):
 				#bspump.file.FileLineSource(app, self, config={'path': './services'}),
 				#bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
 				bspump.common.InternalSource(app, self),
-				bspump.http.HTTPClientSource(app, self).trigger(trigger),
+				bspump.http.HTTPClientSource(app, self).on(trigger),
 			],
 			#bspump.common.JSONParserProcessor(app, self),
 			bspump.common.TeeProcessor(app, self),
