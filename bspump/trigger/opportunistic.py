@@ -1,4 +1,6 @@
 import asyncio
+
+import asab
 from .trigger import Trigger
 
 ###
@@ -15,16 +17,19 @@ class OpportunisticTrigger(Trigger):
 
 		self.Loop = app.Loop
 		self.ChilldownPeriod = chilldown_period # Seconds
+		self.LastFireAt = 0
+
+		app.PubSub.subscribe("Application.tick/10!", self.on_tick)
 
 		if run_immediately:
 			self.Loop.call_soon(self.on_tick)
-		else:
-			self.Loop.call_at(self.Loop.time() + self.Period, self.on_tick)
 
 
-	def on_tick(self):
+	def on_tick(self, event_type="simulated"):
 		now = self.Loop.time()
-		self.Loop.call_at(now + self.ChilldownPeriod, self.on_tick)
+		if (now < (self.LastFireAt + self.ChilldownPeriod)):
+			return 
+		self.LastFireAt = now
 
 		self.fire()
 
