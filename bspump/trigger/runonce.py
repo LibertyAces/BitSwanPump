@@ -12,5 +12,5 @@ class RunOnceTrigger(Trigger):
 		self.App.Loop.call_soon(self.fire)
 
 
-	def done(self):
+	def done(self, trigger_source):
 		self.App.stop()

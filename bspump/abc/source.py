@@ -135,7 +135,7 @@ class TriggerSource(Source):
 
 			self.TriggerEvent.clear()
 			for trigger in self.Triggers:
-				trigger.done()
+				trigger.done(self)
 
 
 	@abc.abstractmethod

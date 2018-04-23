@@ -45,7 +45,7 @@ class Trigger(abc.ABC):
 				to_trigger -= 1
 
 
-	def done(self):
+	def done(self, trigger_source):
 		'''
 		Called by TriggerSource when cycle is completed.
 		'''

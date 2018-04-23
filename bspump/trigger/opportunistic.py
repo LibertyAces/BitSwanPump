@@ -29,5 +29,5 @@ class OpportunisticTrigger(Trigger):
 		self.fire()
 
 
-	def done(self):
+	def done(self, trigger_source):
 		self.Loop.call_soon(self.on_tick)
