@@ -7,6 +7,7 @@ import bspump.file
 import bspump.socket
 import bspump.common
 import bspump.http
+import bspump.crypto
 import bspump.trigger
 
 
@@ -18,11 +19,13 @@ class SamplePipeline(bspump.Pipeline):
 		self.build(
 			[
 				#bspump.file.FileLineSource(app, self, config={'path': './services'}),
-				#bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
+				bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
 				bspump.common.InternalSource(app, self),
 				bspump.http.HTTPClientSource(app, self).on(trigger),
 			],
 			#bspump.common.JSONParserProcessor(app, self),
+			bspump.crypto.EncryptAESProcessor(app, self),
+			bspump.crypto.DecryptAESProcessor(app, self),
 			bspump.common.TeeProcessor(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
