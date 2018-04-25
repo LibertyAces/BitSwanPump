@@ -38,6 +38,6 @@ class MySQLSource(TriggerSource):
 							event[cur.description[i][0]] = val
 
 						# Pass event to the pipeline
-						self.process(event)
+						await self.process(event)
 			except BaseException as e:
 				L.exception("Unexpected error when processing MySQL query.")

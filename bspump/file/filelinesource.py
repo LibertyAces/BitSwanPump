@@ -11,8 +11,7 @@ class FileLineSource(FileABCSource):
 
 	async def read(self, filename, f):
 		for line in f:
-			await self.Pipeline.ready()
-			self.process(line)
+			await self.process(line)
 
 #
 
@@ -48,8 +47,7 @@ class FileMultiLineSource(FileABCSource):
 
 		for line in f:
 			if line.startswith(self._separator) and latch is not None:
-				await self.Pipeline.ready()
-				self.process(latch)
+				await self.process(latch)
 				latch = line
 
 			else:
@@ -59,6 +57,5 @@ class FileMultiLineSource(FileABCSource):
 					latch = latch + b'\n' + line
 
 		if latch is not None:
-			await self.Pipeline.ready()
-			self.process(latch)
+			await self.process(latch)
 

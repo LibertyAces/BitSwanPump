@@ -23,17 +23,20 @@ class InternalSource(Source):
 		self.Queue = asyncio.Queue(loop=self.Loop) #TODO: Max size (etc.)
 
 
-	def put(self, event):
-		self.Queue.put_nowait(event)
+	def put(self, context, event):
+		'''
+		Context can be empty dictionary if is not provided
+		'''
+		self.Queue.put_nowait((context,event))
 
 
 	async def main(self):
 		try:
 
-			while 1:
+			while True:
 				await self.Pipeline.ready()
-				event = await self.Queue.get()
-				self.process(event)
+				context, event = await self.Queue.get()
+				await self.process(event, context={'ancestor':context})
 
 		except asyncio.CancelledError:
 			if self.Queue.qsize() > 0:
@@ -160,7 +163,9 @@ class TeeProcessor(Processor):
 
 		#TODO: Throttle pipeline if queue is getting full & unthrottle when getting empty
 		for source in self.Sources:
-			event_copy = copy.deepcopy(event)
-			source.put(event_copy)
+			source.put(
+				copy.deepcopy(context),
+				copy.deepcopy(event)
+			)
 
 		return event

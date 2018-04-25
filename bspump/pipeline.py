@@ -134,7 +134,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 		'''
 
 		self._chillout_counter += 1
-		if self._chillout_counter == self._chillout_trigger:
+		if self._chillout_counter >= self._chillout_trigger:
 			self._chillout_counter = 0
 			await asyncio.sleep(0.0001, loop = self.Loop)
 

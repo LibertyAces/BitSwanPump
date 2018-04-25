@@ -28,15 +28,13 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		self.MainCoro = None # Contains a main coroutine `main()` if Pipeline is started
 
 
-	def process(self, event, context=None):
+	async def process(self, event, context=None):
 		'''
 		This method is used to emit event into a pipeline.
-		It is synchronous function.
-		If the pipeline is not ready, the error is thrown.
-		Call `await self.Pipeline.ready()` prior processing the event.
 		'''
-		if not self.Pipeline._ready.is_set():
-			raise RuntimeError("Pipeline is not ready to process events")
+		while not self.Pipeline._ready.is_set():
+			await self.Pipeline.ready()
+
 		return self.Pipeline.process(event, context=context)
 
 

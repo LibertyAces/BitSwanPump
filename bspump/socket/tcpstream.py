@@ -35,7 +35,7 @@ class TCPStreamSource(Source):
 				if len(data) == 0:
 					writer.close()
 					break
-				self.process(data)
+				await self.process(data)
 
 		finally:
 			self.Writers.remove(writer)
