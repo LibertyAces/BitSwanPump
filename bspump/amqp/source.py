@@ -39,7 +39,7 @@ class AMQPSource(Source):
 				await self._channel_ready.wait()
 				await self.Pipeline.ready()
 				method, properties, body = await self._queue.get()
-				self.process_message(method, properties, body)
+				await self.process_message(method, properties, body)
 				self._channel.basic_ack(method.delivery_tag)
 
 		except asyncio.CancelledError:
@@ -56,12 +56,12 @@ class AMQPSource(Source):
 			self._channel_ready.clear()
 
 
-	def process_message(self, method, properties, body):
+	async def process_message(self, method, properties, body):
 		context = {
 			'amqp:method': method,
 			'amqp:properties': properties
 		}
-		self.process(body, context=context)
+		await self.process(body, context=context)
 
 
 	def _on_connection_open(self, event_name):
