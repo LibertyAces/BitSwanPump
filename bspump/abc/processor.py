@@ -16,5 +16,13 @@ class ProcessorBase(abc.ABC, ConfigObject):
 		raise NotImplemented()
 
 
+	def rest_get(self):
+		return {
+			"Id": self.Id,
+			"Class": self.__class__.__name__,
+			"PipelineId": self.Pipeline.Id,
+		}
+
+
 class Processor(ProcessorBase):
 	pass

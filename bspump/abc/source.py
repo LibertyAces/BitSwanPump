@@ -74,6 +74,13 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		except asyncio.CancelledError:
 			pass
 
+
+	def rest_get(self):
+		return {
+			"Id": self.Id,
+			"Class": self.__class__.__name__
+		}
+
 #
 
 class TriggerSource(Source):
@@ -139,3 +146,8 @@ class TriggerSource(Source):
 	@abc.abstractmethod
 	async def cycle(self, *args, **kwags):
 		raise NotImplemented()
+
+	def rest_get(self):
+		return super().rest_get().update({
+			"triggered": self.TriggerEvent.is_set()
+		})

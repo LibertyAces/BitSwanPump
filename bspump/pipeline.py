@@ -249,12 +249,12 @@ class SampleInternalPipeline(bspump.Pipeline):
 		rest = {
 			'Id': self.Id,
 			'Ready': self._ready.is_set(),
-			'Sources': [source.Id for source in self.Sources],
+			'Sources': self.Sources,
 			'Processors': [],
 		}
 
 		for l, processors in enumerate(self.Processors):
-			rest['Processors'].append([processor.Id for processor in processors])
+			rest['Processors'].append(processors)
 
 		if self._error:
 			rest['error'] = self._error
