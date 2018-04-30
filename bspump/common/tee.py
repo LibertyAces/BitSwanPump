@@ -27,7 +27,11 @@ class InternalSource(Source):
 		'''
 		Context can be empty dictionary if is not provided
 		'''
-		self.Queue.put_nowait((context,event))
+
+		self.Queue.put_nowait((
+			copy.deepcopy(context),
+			copy.deepcopy(event)
+		))
 
 
 	async def main(self):
@@ -163,9 +167,6 @@ class TeeProcessor(Processor):
 
 		#TODO: Throttle pipeline if queue is getting full & unthrottle when getting empty
 		for source in self.Sources:
-			source.put(
-				copy.deepcopy(context),
-				copy.deepcopy(event)
-			)
+			source.put(context, event)
 
 		return event
