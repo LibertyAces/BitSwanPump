@@ -63,7 +63,7 @@ class BSPumpService(asab.Service):
 		try:
 			return self.Connections[connection_id]
 		except KeyError:
-			raise KeyError("Cannot find connection id '{}'".format(connection_id))
+			raise KeyError("Cannot find connection id '{}' (did you call add_connection() ?)".format(connection_id))
 
 
 	#
