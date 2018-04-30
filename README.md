@@ -1,5 +1,7 @@
 # BSPump: A real-time stream processor for Python 3.5+
 
+[![Join the chat at https://gitter.im/TeskaLabs/bspump](https://badges.gitter.im/TeskaLabs/bspump.svg)](https://gitter.im/TeskaLabs/bspump?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## Principles
 
  * Write once, use many times
