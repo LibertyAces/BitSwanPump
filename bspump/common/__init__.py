@@ -4,4 +4,5 @@ from .null import NullSink
 from .tee import TeeProcessor
 from .tee import TeeSource
 from .tee import InternalSource
+from .tee import InternalRoutingSink
 from .hexlify import HexlifyProcessor
