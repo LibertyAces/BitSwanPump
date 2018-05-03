@@ -22,6 +22,8 @@ class FileABCSource(TriggerSource):
 		'path': '',
 		'mode': 'rb',
 		'post': 'move', # one of 'delete', 'noop' and 'move'
+		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
+		'include': '', # glob of filenames that should be included
 	}
 
 
@@ -34,10 +36,12 @@ class FileABCSource(TriggerSource):
 		if self.post not in ['delete', 'noop', 'move']:
 			L.warning("Incorrect/unknown 'post' configuration value '{}' - defaulting to 'move'".format(self.post))
 			self.post = 'move'
+		self.include = self.Config['include']
+		self.exclude = self.Config['exclude']
 
 
 	async def cycle(self):
-		filename = _glob_scan(self.path)
+		filename = _glob_scan(self.path, exclude=self.exclude, include=self.include)
 		if filename is None:
 			self.Pipeline.PubSub.publish("bspump.file_source.no_files!")
 			return # No file to read

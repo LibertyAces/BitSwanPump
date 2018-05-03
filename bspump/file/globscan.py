@@ -2,6 +2,7 @@ import glob
 import os.path
 import subprocess
 import platform
+import fnmatch
 
 
 if platform.system() == "Windows":
@@ -14,7 +15,7 @@ else:
 		return len(result.stdout) != 0
 
 
-def _glob_scan(path):
+def _glob_scan(path, exclude='', include=''):
 	if path is None: return None
 	if path == "": return None
 
@@ -25,7 +26,16 @@ def _glob_scan(path):
 		if fname.endswith('-locked'): continue
 		if fname.endswith('-processed'): continue
 		if not os.path.isfile(fname): continue
-		if _is_file_open(fname): continue
+
+		if exclude != "":
+			if fnmatch.fnmatch(fname, exclude):
+				continue
+		if include != "":
+			if not fnmatch.fnmatch(fname, include):
+				continue
+
+		if _is_file_open(fname):
+			continue
 
 		return fname
 
