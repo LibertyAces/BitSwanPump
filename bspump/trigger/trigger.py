@@ -7,6 +7,8 @@ class Trigger(abc.ABC):
 	def __init__(self, app, max_triggered=None, id=None):
 		self.Id = self.Id = id if id is not None else self.__class__.__name__
 		self.Sources = set()
+		self.Paused = False
+		self.LastFireAt = 0
 
 		self._max_triggered = max_triggered
 
@@ -20,6 +22,11 @@ class Trigger(abc.ABC):
 
 
 	def fire(self):
+		if self.Paused:
+			return
+
+		self.LastFireAt = self.Loop.time()
+
 		if self._max_triggered is None:
 			for source in self.Sources:
 				source.TriggerEvent.set()
@@ -50,3 +57,7 @@ class Trigger(abc.ABC):
 		Called by TriggerSource when cycle is completed.
 		'''
 		pass
+
+
+	def pause(self, pause=True):
+		self.Paused = pause

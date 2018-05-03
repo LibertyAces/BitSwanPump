@@ -38,7 +38,9 @@ class FileABCSource(TriggerSource):
 
 	async def cycle(self):
 		filename = _glob_scan(self.path)
-		if filename is None: return # No file to read
+		if filename is None:
+			self.Pipeline.PubSub.publish("bspump.file_source.no_files!")
+			return # No file to read
 
 		await self.Pipeline.ready()
 

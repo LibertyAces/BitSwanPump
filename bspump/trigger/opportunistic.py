@@ -17,7 +17,6 @@ class OpportunisticTrigger(Trigger):
 
 		self.Loop = app.Loop
 		self.ChilldownPeriod = chilldown_period # Seconds
-		self.LastFireAt = 0
 
 		app.PubSub.subscribe("Application.tick/10!", self.on_tick)
 
@@ -25,11 +24,16 @@ class OpportunisticTrigger(Trigger):
 			self.Loop.call_soon(self.on_tick)
 
 
+	def pause(self, pause=True):
+		super().pause(pause)
+		if not self.Paused:
+			self.Loop.call_soon(self.on_tick)
+
+
 	def on_tick(self, event_type="simulated"):
 		now = self.Loop.time()
 		if (now < (self.LastFireAt + self.ChilldownPeriod)):
 			return 
-		self.LastFireAt = now
 
 		self.fire()
 
