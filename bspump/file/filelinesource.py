@@ -11,7 +11,9 @@ class FileLineSource(FileABCSource):
 
 	async def read(self, filename, f):
 		for line in f:
-			await self.process(line)
+			await self.process(line, {
+				"filename": filename
+			})
 
 #
 
@@ -57,5 +59,7 @@ class FileMultiLineSource(FileABCSource):
 					latch = latch + b'\n' + line
 
 		if latch is not None:
-			await self.process(latch)
+			await self.process(latch, {
+				"filename": filename
+			})
 
