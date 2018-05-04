@@ -5,7 +5,7 @@ class Trigger(abc.ABC):
 
 
 	def __init__(self, app, max_triggered=None, id=None):
-		self.Id = self.Id = id if id is not None else self.__class__.__name__
+		self.Id = id if id is not None else self.__class__.__name__
 		self.Sources = set()
 		self.Paused = False
 		self.LastFireAt = 0
