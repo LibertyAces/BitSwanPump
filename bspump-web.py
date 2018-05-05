@@ -12,27 +12,22 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
+		self.WebServiceSource = bspump.http.WebServiceSource(app, self)
+		self.WebServiceSink = bspump.http.WebServiceSink(app, self)
+
 		self.build(
-			bspump.http.WebServiceSource(app, self),
-			bspump.http.WebServiceSink(app, self)
+			self.WebServiceSource,
+			self.WebServiceSink
 		)
 
 
-class WebAdapter(object):
-
-
-	def __init__(self, app):
-		svc = app.get_service("bspump.PumpService")
-		self.WebServiceSource = svc.locate('SamplePipeline.*WebServiceSource')
-		self.WebServiceSink = svc.locate('SamplePipeline.WebServiceSink')
-
-
-	async def endpoint(self, request):
+	async def webservice(self, request):
 		response = await self.WebServiceSink.response(request)
 		async with response:
 			data = await request.read()
 			await self.WebServiceSource.put({self.WebServiceSink.CONTEXT_RESPONSE_ID:response.Id}, data, request)
 		return response
+
 
 
 if __name__ == '__main__':
@@ -47,9 +42,6 @@ if __name__ == '__main__':
 	# Locate web service
 	websvc = app.get_service("asab.WebService")
 
-	# Construct web adapter
-	wa = WebAdapter(app)
-
-	websvc.WebApp.router.add_post('/bspump/sp', wa.endpoint)
+	websvc.WebApp.router.add_post('/bspump/sp', pl.webservice)
 
 	app.run()
