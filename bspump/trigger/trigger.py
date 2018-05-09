@@ -61,3 +61,5 @@ class Trigger(abc.ABC):
 
 	def pause(self, pause=True):
 		self.Paused = pause
+		for source in self.Sources:
+			source.Pipeline.PubSub.publish("bspump.trigger.pause!", pause=pause, asynchronously=True)
