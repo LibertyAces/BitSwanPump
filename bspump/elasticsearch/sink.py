@@ -77,7 +77,7 @@ class ElasticSearchBaseRollover(abc.ABC):
 		# Throttle pipeline till we have index resolved
 		self.Pipeline = essink.Pipeline
 		self.Pipeline.throttle(self, True)
-		self.Throttled = True
+		self.InitThrottled = True
 
 		self.IndexPrefix = essink.Config['index_prefix']
 		self.Index = None
@@ -87,8 +87,9 @@ class ElasticSearchBaseRollover(abc.ABC):
 
 	@abc.abstractmethod
 	async def refresh_index(self, event_name=None):
-		if (self.Throttled == True) and (self.Index is not None):
+		if (self.InitThrottled == True) and (self.Index is not None):
 			self.Pipeline.throttle(self, False)
+			self.InitThrottled = False
 
 
 class ElasticSearchFixedRollover(ElasticSearchBaseRollover):
