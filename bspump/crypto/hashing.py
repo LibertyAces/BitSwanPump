@@ -11,7 +11,7 @@ L = logging.getLogger(__name__)
 
 #
 
-class HashingProcessor(Processor):
+class HashingBaseProcessor(Processor):
 
 	ConfigDefaults = {
 		"algorithm" : "sha256",
@@ -49,7 +49,27 @@ class HashingProcessor(Processor):
 			raise RuntimeError("Unknown hashing algorithm '{}'".format(self.Config['algorithm']))
 
 
+
+class HashingProcessor(HashingBaseProcessor):
+
+	'''
+	Create hash of the event.
+	'''
+
 	def process(self, context, event):
 		digest = hashes.Hash(self.Algorithm, self.Backend)
 		digest.update(event)
 		return digest.finalize()
+
+
+class CoHashingProcessor(HashingBaseProcessor):
+
+	'''
+	Put hash of the event into a context.
+	'''
+
+	def process(self, context, event):
+		digest = hashes.Hash(self.Algorithm, self.Backend)
+		digest.update(event)
+		context['hash': digest.finalize()]
+		return event
