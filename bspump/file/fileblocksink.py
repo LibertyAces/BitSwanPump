@@ -10,7 +10,7 @@ L = logging.getLogger(__file__)
 class FileBlockSink(Sink):
 
 	ConfigDefaults = {
-		'filename': '',
+		'path': '',
 	}
 
 
@@ -18,7 +18,7 @@ class FileBlockSink(Sink):
 		'''
 		Override this method to gain control over output file name.
 		'''
-		return self.Config['filename']
+		return self.Config['path']
 
 
 	def process(self, context, event):
