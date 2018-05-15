@@ -9,6 +9,7 @@ class Trigger(abc.ABC):
 		self.Sources = set()
 		self.Paused = False
 		self.LastFireAt = 0
+		self.Loop = app.Loop
 
 		self._max_triggered = max_triggered
 

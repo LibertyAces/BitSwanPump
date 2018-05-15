@@ -14,8 +14,6 @@ class OpportunisticTrigger(Trigger):
 
 	def __init__(self, app, id=None, run_immediately=True, chilldown_period=5):
 		super().__init__(app, id)
-
-		self.Loop = app.Loop
 		self.ChilldownPeriod = chilldown_period # Seconds
 
 		app.PubSub.subscribe("Application.tick/10!", self.on_tick)

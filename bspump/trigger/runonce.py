@@ -9,7 +9,7 @@ class RunOnceTrigger(Trigger):
 	def __init__(self, app, id=None):
 		super().__init__(app, id)
 		self.App = app
-		self.App.Loop.call_soon(self.fire)
+		self.Loop.call_soon(self.fire)
 
 
 	def done(self, trigger_source):
