@@ -14,7 +14,11 @@ class ConfigObject(object):
 		for base_class in inspect.getmro(self.__class__):
 			if not hasattr(base_class, 'ConfigDefaults'): continue
 			if len(base_class.ConfigDefaults) == 0: continue
-			self.Config.update(base_class.ConfigDefaults)
+
+			# Merge config defaults of each base class in the 'inheritance' way
+			for k, v in base_class.ConfigDefaults.items():
+				if k not in self.Config:
+					self.Config[k] = v
 
 		if config is not None:
 			self.Config.update(config)
