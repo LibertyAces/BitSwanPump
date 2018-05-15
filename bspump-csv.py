@@ -19,7 +19,8 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.file.FileCSVSource(app, self, config={'path': 'sample.csv'}).on(bspump.trigger.RunOnceTrigger(app)),
-			bspump.common.PPrintSink(app, self)
+			bspump.common.PPrintProcessor(app, self),
+			bspump.file.FileCSVSink(app, self, config={'path': 'out.csv'})
 		)
 
 
