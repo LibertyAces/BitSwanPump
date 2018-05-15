@@ -21,6 +21,7 @@ class FileABCSource(TriggerSource):
 	ConfigDefaults = {
 		'path': '',
 		'mode': 'rb',
+		'newline': None,
 		'post': 'move', # one of 'delete', 'noop' and 'move'
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
@@ -32,6 +33,7 @@ class FileABCSource(TriggerSource):
 
 		self.path = self.Config['path']
 		self.mode = self.Config['mode']
+		self.newline = self.Config['newline']
 		self.post = self.Config['post']
 		if self.post not in ['delete', 'noop', 'move']:
 			L.warning("Incorrect/unknown 'post' configuration value '{}' - defaulting to 'move'".format(self.post))
@@ -74,7 +76,7 @@ class FileABCSource(TriggerSource):
 				f = lzma.open(locked_filename, self.mode)
 
 			else:
-				f = open(locked_filename, self.mode)
+				f = open(locked_filename, self.mode, newline=self.newline)
 
 		except:
 			self.Pipeline.set_error(ProcessingError("The file '{}' could not be read.".format(filename)), None)
