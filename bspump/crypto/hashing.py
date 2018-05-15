@@ -71,5 +71,5 @@ class CoHashingProcessor(HashingBaseProcessor):
 	def process(self, context, event):
 		digest = hashes.Hash(self.Algorithm, self.Backend)
 		digest.update(event)
-		context['hash': digest.finalize()]
+		context['hash'] = digest.finalize()
 		return event

@@ -1,6 +1,6 @@
 from .aes import EncryptAESProcessor
 from .aes import DecryptAESProcessor
-from .hashing import HashingProcessor
+from .hashing import HashingProcessor, CoHashingProcessor
 
 '''
 Test AES
