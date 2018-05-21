@@ -83,10 +83,17 @@ class FileABCSource(TriggerSource):
 			return
 
 		L.debug("Processing file '{}'".format(filename))
+		result_exc 	= None
+		result 		= None
 
 		try:
-			await self.read(filename, f)
-		except:
+			result = await self.read(filename, f)
+		except Exception as e:
+			result_exc = e
+		finally:
+			f.close()
+
+		if not result:
 			try:
 				if self.post == "noop":
 					# When we should stop, rename file back to original
@@ -96,9 +103,11 @@ class FileABCSource(TriggerSource):
 					os.rename(locked_filename, filename + '-failed')
 			except:
 				L.exception("Error when finalizing the file '{}'".format(filename))
-			raise
-		finally:
-			f.close()
+
+			if result_exc is not None:
+				raise result_exc
+			else:
+				return
 
 		L.debug("File '{}' processed {}".format(filename, "succefully"))
 

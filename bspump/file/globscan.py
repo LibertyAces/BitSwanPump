@@ -11,6 +11,7 @@ if platform.system() == "Windows":
 		return False
 else:
 	def _is_file_open(fname):
+		return False
 		result = subprocess.run(['lsof', fname], stdout=subprocess.PIPE)
 		return len(result.stdout) != 0
 
@@ -24,6 +25,7 @@ def _glob_scan(path, exclude='', include=''):
 	while len(filelist) > 0:
 		fname = filelist.pop()
 		if fname.endswith('-locked'): continue
+		if fname.endswith('-failed'): continue
 		if fname.endswith('-processed'): continue
 		if not os.path.isfile(fname): continue
 
