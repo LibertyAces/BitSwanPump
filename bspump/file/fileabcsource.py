@@ -59,7 +59,7 @@ class FileABCSource(TriggerSource):
 			return
 		except BaseException as e:
 			L.exception("Error when locking the file '{}'".format(filename))
-			self.Pipeline.set_error(e, None)
+			self.Pipeline.set_error(None, None, e)
 			return
 
 		try:
@@ -79,7 +79,7 @@ class FileABCSource(TriggerSource):
 				f = open(locked_filename, self.mode, newline=self.newline)
 
 		except:
-			self.Pipeline.set_error(ProcessingError("The file '{}' could not be read.".format(filename)), None)
+			self.Pipeline.set_error(None, None, ProcessingError("The file '{}' could not be read.".format(filename)))
 			return
 
 		L.debug("Processing file '{}'".format(filename))
@@ -121,7 +121,7 @@ class FileABCSource(TriggerSource):
 				os.rename(locked_filename, filename + '-processed')
 		except BaseException as e:
 			L.exception("Error when finalizing the file '{}'".format(filename))
-			self.Pipeline.set_error(e, None)
+			self.Pipeline.set_error(None, None, e)
 			return
 
 

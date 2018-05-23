@@ -133,7 +133,7 @@ class TriggerSource(Source):
 			try:
 				await self.cycle(*args, **kwags)
 			except BaseException as e:
-				self.Pipeline.set_error(e, None)
+				self.Pipeline.set_error(None, None, e)
 
 			# Send end of a cycle event
 			self.Pipeline.PubSub.publish("bspump.pipeline.cycle_end!", pipeline=self.Pipeline)
