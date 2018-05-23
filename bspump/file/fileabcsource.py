@@ -78,8 +78,9 @@ class FileABCSource(TriggerSource):
 			else:
 				f = open(locked_filename, self.mode, newline=self.newline)
 
-		except:
-			self.Pipeline.set_error(None, None, ProcessingError("The file '{}' could not be read.".format(filename)))
+		except BaseException as e:
+			L.exception("Error when opening the file '{}'".format(filename))
+			self.Pipeline.set_error(None, None, e)
 			return
 
 		L.debug("Processing file '{}'".format(filename))
