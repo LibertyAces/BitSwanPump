@@ -11,7 +11,6 @@ if platform.system() == "Windows":
 		return False
 else:
 	def _is_file_open(fname):
-		return False
 		result = subprocess.run(['lsof', fname], stdout=subprocess.PIPE)
 		return len(result.stdout) != 0
 
