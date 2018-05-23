@@ -160,13 +160,13 @@ class SampleInternalPipeline(bspump.Pipeline):
 				if depth > 0: raise # Handle error on the top level
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))
 				self.set_error(context, event, e)
-				return False
+				raise
 
 			if event is None: # Event has been consumed on the way
-				return True
+				return
 
 		if event is None:
-			return True
+			return
 
 		# If the event is generator and there is more in the processor pipeline, then enumerate generator
 		if isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
@@ -179,9 +179,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 			except BaseException as e:
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.__class__.__name__, depth))
 				self.set_error(context, event, e)
-				return False
-
-		return True
+				raise
 
 
 	def locate_connection(self, app, connection_id):

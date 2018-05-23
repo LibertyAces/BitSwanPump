@@ -35,7 +35,7 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		while not self.Pipeline._ready.is_set():
 			await self.Pipeline.ready()
 
-		return self.Pipeline.process(event, context=context)
+		self.Pipeline.process(event, context=context)
 
 
 	def start(self, loop):
