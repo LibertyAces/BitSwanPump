@@ -45,6 +45,10 @@ class AMQPSource(Source):
 		except asyncio.CancelledError:
 			pass
 
+		except BaseException as e:
+			L.exception("Error when processing AMQP message")
+
+
 		# Requeue rest of the messages
 		while not self._queue.empty():
 			method, properties, body = await self._queue.get()
@@ -88,6 +92,7 @@ class AMQPSource(Source):
 			self._queue.put_nowait((method, properties, body))
 		except:
 			channel.basic_nack(method.delivery_tag, requeue=True)
+
 
 class AMQPFullMessageSource(AMQPSource):
 
