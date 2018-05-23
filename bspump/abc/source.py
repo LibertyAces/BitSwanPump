@@ -31,6 +31,9 @@ It is acomplished by `await self.Pipeline.ready()` call.
 	async def process(self, event, context=None):
 		'''
 		This method is used to emit event into a pipeline.
+
+		If there is an error in the processing of the event, the pipeline is throttled by setting the error and the exception raised.
+		The source should catch this exception and fail gracefully.
 		'''
 		while not self.Pipeline._ready.is_set():
 			await self.Pipeline.ready()
