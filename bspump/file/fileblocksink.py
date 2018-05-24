@@ -1,3 +1,4 @@
+import os
 import logging
 from ..abc.sink import Sink
 
@@ -11,7 +12,28 @@ class FileBlockSink(Sink):
 
 	ConfigDefaults = {
 		'path': '',
+		'mode': "wb",
+		'flags': "O_CREAT",
 	}
+
+	OFlagDict = {
+		'O_CREAT': os.O_CREAT,
+		'O_EXCL': os.O_EXCL
+	}
+
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+
+		self._oflags = 0
+		for flag in self.Config["flags"].split(","):
+			flag = flag.strip()
+			try:
+				self._oflags |= self.OFlagDict[flag]
+			except KeyError:
+				L.warn("Unknown oflag '{}'".format(flag))
+			
+		
 
 
 	def get_file_name(self, context, event):
@@ -23,5 +45,7 @@ class FileBlockSink(Sink):
 
 	def process(self, context, event):
 		fname = self.get_file_name(context, event)
-		with open(fname, 'wb') as fo:
+
+		fd = os.open(fname, os.O_WRONLY | self._oflags)
+		with os.fdopen(fd, "wb") as fo:
 			fo.write(event)
