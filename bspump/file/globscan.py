@@ -19,7 +19,7 @@ def _glob_scan(path, exclude='', include=''):
 	if path is None: return None
 	if path == "": return None
 
-	filelist = glob.glob(path)
+	filelist = glob.glob(path, recursive=True)
 	filelist.sort()
 	while len(filelist) > 0:
 		fname = filelist.pop()
