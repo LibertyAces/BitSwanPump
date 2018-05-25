@@ -82,9 +82,9 @@ class FileCSVSink(Sink):
 		self._csv_writer.writerow(event)
 
 
-	def flush(self):
+	def rotate(self):
 		'''
 		Call this to close the currently open file.
 		'''
-		self._csv_writer.close()
+		del self._csv_writer
 		self._csv_writer = None
