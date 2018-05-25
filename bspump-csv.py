@@ -17,11 +17,23 @@ class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
+
+		self.Sink = bspump.file.FileCSVSink(app, self, config={'path': 'out.csv'})
+
 		self.build(
-			bspump.file.FileCSVSource(app, self, config={'path': 'sample.csv'}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.file.FileCSVSource(app, self, config={'path': 'sample.csv', 'delimiter': ';'}).on(bspump.trigger.RunOnceTrigger(app)),
 			bspump.common.PPrintProcessor(app, self),
-			bspump.file.FileCSVSink(app, self, config={'path': 'out.csv'})
+			self.Sink
 		)
+
+		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
+
+
+	def on_cycle_end(self, event_name, pipeline):
+		'''
+		This ensures that at the end of the file scan, the target file is closed
+		'''
+		self.sink.rotate()
 
 
 if __name__ == '__main__':
