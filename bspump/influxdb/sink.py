@@ -31,9 +31,15 @@ class InfluxDBSink(Sink):
 			wire_line = "{},{} {} {}\n".format(measurement, tag_set, field_set, int(timestamp * 1e9))
 
 		elif isinstance(event, bytes):
-			measurement = 'line'
 			wire_line = event.decode('utf-8')
 			if wire_line[-1:] != '\n': wire_line += '\n'
+
+		elif isinstance(event, str):
+			wire_line = event
+			if wire_line[-1:] != '\n': wire_line += '\n'
+
+		else:
+			raise RuntimeError("Incorrect format")
 
 		# Passing the processed event to the connection
 		self._connection.consume(wire_line)
