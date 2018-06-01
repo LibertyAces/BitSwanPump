@@ -41,8 +41,9 @@ class InfluxDBConnection(Connection):
 
 		self._output_bucket = ""
 
-		app.PubSub.subscribe("Application.tick!", self._on_tick)
-		app.PubSub.subscribe("Application.exit!", self._on_exit)
+		self.PubSub = app.PubSub
+		self.PubSub.subscribe("Application.tick!", self._on_tick)
+		self.PubSub.subscribe("Application.exit!", self._on_exit)
 
 		self._future = asyncio.ensure_future(self._loader())
 
