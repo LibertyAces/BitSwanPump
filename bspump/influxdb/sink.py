@@ -52,7 +52,7 @@ class InfluxDBSink(Sink):
 
 		if event_name == "InfluxDBConnection.pause!":
 			self.Pipeline.throttle(self, True)
-		elif event_name == "InfluxdDBConnection.unpause!":
+		elif event_name == "InfluxDBConnection.unpause!":
 			self.Pipeline.throttle(self, False)
 		else:
 			raise RuntimeError("Unexpected event name '{}'".format(event_name))
