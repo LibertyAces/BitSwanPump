@@ -24,7 +24,9 @@ Principles
 Stream processor example
 ------------------------
 
+
 .. code:: python
+
     #!/usr/bin/env python3
     import bspump
     import bspump.socket
