@@ -66,7 +66,7 @@ class RouterSink(Sink):
 		source = self.SourcesCache.get(source_id)
 		
 		if source is None:
-			source = self.svc_bspump.locate(source_id)
+			source = self.ServiceBSPump.locate(source_id)
 			if source is None:
 				L.warning("Cannot locate '{}' in '{}'".format(source_id, self.Id))
 				raise RuntimeError("Cannot locate '{}' in '{}'".format(source_id, self.Id))
