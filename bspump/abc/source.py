@@ -151,6 +151,8 @@ class TriggerSource(Source):
 		raise NotImplemented()
 
 	def rest_get(self):
-		return super().rest_get().update({
+		result = super().rest_get()
+		result.update({
 			"triggered": self.TriggerEvent.is_set()
 		})
+		return result
