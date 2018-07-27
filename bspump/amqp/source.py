@@ -1,8 +1,14 @@
 import asab
 import asyncio
+import logging
 
 from ..abc.source import Source
 
+#
+
+L = logging.getLogger(__name__)
+
+#
 
 class AMQPSource(Source):
 
