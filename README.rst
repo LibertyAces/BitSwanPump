@@ -10,8 +10,8 @@ Principles
 
 * Write once, use many times
 * Schema-less
-* Orthogonal
 * High performance
+* Back pressure
 * Simple to use and well documented, so anyone can write their own stream processor
 * Sliding time window
 * Asynchronous via Python 3.5+ ``async``/``await`` and ``asyncio``
