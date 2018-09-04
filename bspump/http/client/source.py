@@ -6,7 +6,7 @@ class HTTPClientSource(HTTPABCClientSource):
 
 	async def read(self, response):
 		response = await response.read()
-		self.process(response)
+		await self.process(response)
 
 ###
 
@@ -24,7 +24,7 @@ class HTTPClientTextSource(HTTPABCClientSource):
 
 	async def read(self, response):
 		response = await response.text(encoding=self.encoding)
-		self.process(response)
+		await self.process(response)
 
 ###
 
@@ -35,4 +35,4 @@ class HTTPClientLineSource(HTTPClientTextSource):
 		response = await response.text(encoding=self.encoding)
 
 		for line in response.split('\n'):
-			self.process(line)
+			await self.process(line)
