@@ -8,6 +8,9 @@ class BSPumpApplication(asab.Application):
 	def __init__(self):
 		super().__init__()
 
+		from asab.metrics import Module
+		self.add_module(Module)
+
 		self.PumpService = BSPumpService(self)
 
 		# Conditionally activate also a web service

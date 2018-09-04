@@ -30,7 +30,7 @@ class Pipeline(abc.ABC):
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
-		self.Metrics = app.Metrics
+		self.MetricsService = app.get_service('asab.MetricsService')
 
 		self._error = None # None if not in error state otherwise there is a tuple (exception, event)
 
@@ -51,11 +51,11 @@ class Pipeline(abc.ABC):
 		If called with `exc is None`, then reset error (aka recovery)
 		'''
 		if not self.catch_error(exc, event):
-			self.Metrics.add("bspump.pipeline.warning.{}".format(self.Id))
+			self.MetricsService.add("bspump.pipeline", {'warning': 1}, tags={'pipeline': self.Id})
 			self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
 			return
 
-		self.Metrics.add("bspump.pipeline.error.{}".format(self.Id))
+			self.MetricsService.add("bspump.pipeline", {'error': 1}, tags={'pipeline': self.Id})
 
 		if exc is None:
 			if self._error is not None:
@@ -146,7 +146,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 	def process(self, event, depth=0, context=None):
 
 		if depth == 0:
-			self.Metrics.add("bspump.pipeline.event_in.{}".format(self.Id))
+			self.MetricsService.add("bspump.pipeline", {'event_in': 1}, tags={'pipeline': self.Id})
 			if context is None:
 				context = self._context.copy()
 			else:
