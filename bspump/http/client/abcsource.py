@@ -23,8 +23,11 @@ class HTTPABCClientSource(TriggerSource):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop
 
-		self._request_method = self.Config['method']
-		self._request_url = self.Config['url']
+		self.Method = self.Config['method']
+		self.URL = self.Config['url']
+
+		self.Headers = {}
+		self.VerifySSL = True
 
 
 	async def main(self):
@@ -33,7 +36,12 @@ class HTTPABCClientSource(TriggerSource):
 
 
 	async def cycle(self, session):
-		async with session.request(self._request_method, self._request_url) as response:
+		async with session.request(
+				self.Method,
+				self.URL,
+				headers = self.Headers if len(self.Headers) > 0 else None,
+				verify_ssl = self.VerifySSL,
+			) as response:
 			await self.read(response)
 
 
