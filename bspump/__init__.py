@@ -7,3 +7,4 @@ from .abc.processor import Processor
 from .abc.generator import Generator
 from .exception import ProcessingError
 from .abc.lookup import Lookup
+from .fileloader import load_json_file
