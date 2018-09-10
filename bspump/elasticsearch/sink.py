@@ -155,7 +155,7 @@ class ElasticSearchSizeRollover(ElasticSearchBaseRollover):
 			if (data['indices'][sorted_ls[0]]['primaries']['store']['size_in_bytes'] > self.MaxIndexSize)  and (self.Index is not None):
 				_ , split_index = self.Index.rsplit('_',1)
 				split_index =int(split_index) + 1
-				self.Index = self.IndexPrefix + '{:05}'.format(split_index[1])
+				self.Index = self.IndexPrefix + '{:05}'.format(split_index)
 
 		if self.Index is None:
 			self.Index = self.IndexPrefix + '{:05}'.format(1)
