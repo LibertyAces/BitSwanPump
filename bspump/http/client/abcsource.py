@@ -27,7 +27,13 @@ class HTTPABCClientSource(TriggerSource):
 		self.URL = self.Config['url']
 
 		self.Headers = {}
-		self.VerifySSL = True
+		
+		self.SSL = None
+		# SSL validation mode (see aiohttp documentation for more details)
+		# - None for default SSL check (ssl.create_default_context() is used),
+		# - False for skip SSL certificate validation
+		# - aiohttp.Fingerprint for fingerprint validation
+		# - ssl.SSLContext for custom SSL certificate validation.
 
 
 	async def main(self):
@@ -40,7 +46,7 @@ class HTTPABCClientSource(TriggerSource):
 				self.Method,
 				self.URL,
 				headers = self.Headers if len(self.Headers) > 0 else None,
-				verify_ssl = self.VerifySSL,
+				ssl = self.SSL,
 			) as response:
 			await self.read(response)
 
