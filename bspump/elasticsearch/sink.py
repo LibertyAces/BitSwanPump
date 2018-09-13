@@ -23,7 +23,7 @@ class ElasticSearchSink(Sink):
 		"time_period": "d",
 		"rollover_mechanism": 'time',
 		"max_index_size": 30*1024*1024*1024, #This is 30GB
-		"timeout": 30
+		"timeout": 30,
 
 	}
 
