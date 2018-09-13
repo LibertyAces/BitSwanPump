@@ -1,4 +1,5 @@
 import logging
+import json
 from .fileabcsource import FileABCSource
 
 #
@@ -7,8 +8,12 @@ L = logging.getLogger(__file__)
 
 #
 
-class FileBlockSource(FileABCSource):
+class FileJSONSource(FileABCSource):
 
+	'''
+	This file source is optimized to load even large JSONs from a file and parse that.
+	The loading & parsing is off-loaded to the worker thread so that it doesn't block the IO loop.
+	'''
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -17,8 +22,11 @@ class FileBlockSource(FileABCSource):
 
 	async def read(self, filename, f):
 		await self.Pipeline.ready()
-		# Load the file in a worker thread (to prevent blockage of the main loop)
-		event = await self.ProactorService.run(f.read)
+
+		def do_read_and_parse(f):
+			return json.load(f)
+		event = await self.ProactorService.run(do_read_and_parse, f)
+
 		await self.process(event, {
 			"filename": filename
 		})

@@ -11,6 +11,10 @@ class BSPumpApplication(asab.Application):
 		from asab.metrics import Module
 		self.add_module(Module)
 
+		#TODO: Make sure that we don't occupy unnecessary high amount of threads
+		from asab.proactor import Module
+		self.add_module(Module)
+
 		self.PumpService = BSPumpService(self)
 
 		# Conditionally activate also a web service
