@@ -23,9 +23,7 @@ class FileJSONSource(FileABCSource):
 	async def read(self, filename, f):
 		await self.Pipeline.ready()
 
-		def do_read_and_parse(f):
-			return json.load(f)
-		event = await self.ProactorService.run(do_read_and_parse, f)
+		event = await self.ProactorService.run(json.load, f)
 
 		await self.process(event, {
 			"filename": filename

@@ -1,45 +1,38 @@
 import abc
+import collections.abc
 import json
-from asab.abc.singleton import Singleton
+import asyncio
 
+from .config import ConfigObject
 
-class Lookup(metaclass=Singleton):
+class Lookup(abc.ABC, ConfigObject):
 
-	def __init__(self):
-		self.lookup={}
-		self.load()
-
-	def __getitem__(self, key):
-		return self.lookup[key]
-
-	def __setitem__(self, key, val):
-		self.lookup[key] = val
+	def __init__(self, bspump_svc, lookup_id, config=None):
+		assert(lookup_id is not None)
+		#TODO: bspump_svc is inherited from BSPumpService
+		super().__init__("lookup:{}".format(lookup_id), config=config)
+		self.Id = lookup_id
 
 	@abc.abstractmethod
-	def load(self):
+	async def load(self):
 		pass
 
-	def get(self, key, default=None):
-		return self.lookup.get(key, default)
+
+class MappingLookup(Lookup, collections.abc.Mapping):
+	pass
 
 
-	def load_json_file(self, fname):
+class DictionaryLookup(MappingLookup):
 
-		if fname.endswith(".gz"):
-			import gzip
-			f = gzip.open(fname, 'rb')
+	def __init__(self, bspump_svc, lookup_id, config=None):
+		super().__init__(bspump_svc, lookup_id, config=config)
+		self.Dictionary = {}
 
-		elif fname.endswith(".bz2"):
-			import bz2
-			f = bz2.open(fname, 'rb')
+	def __getitem__(self, key):
+		return self.Dictionary.__getitem__(key)
 
-		elif fname.endswith(".xz") or fname.endswith(".lzma"):
-			import lzma
-			f = lzma.open(fname, 'rb')
+	def __iter__(self):
+		return self.Dictionary.__iter__()
 
-		else:
-			f = open(fname, 'rb')
-
-		jdata = json.loads(f.read().decode('utf-8'))
-		f.close()
-		return jdata
+	def __len__(self):
+		return self.Dictionary.__len__()

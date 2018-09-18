@@ -35,10 +35,8 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		If there is an error in the processing of the event, the pipeline is throttled by setting the error and the exception raised.
 		The source should catch this exception and fail gracefully.
 		'''
-		while not self.Pipeline._ready.is_set():
-			await self.Pipeline.ready()
-
-		self.Pipeline.process(event, context=context)
+		#TODO: Remove this method completely, each source should call pipeline.process() method directly
+		await self.Pipeline.process(event, context=context)
 
 
 	def start(self, loop):

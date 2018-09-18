@@ -143,15 +143,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 		return True
 
 
-	def process(self, event, depth=0, context=None):
-
-		if depth == 0:
-			self.MetricsService.add("bspump.pipeline", {'event_in': 1}, tags={'pipeline': self.Id})
-			if context is None:
-				context = self._context.copy()
-			else:
-				context.update(self._context)
-
+	def _do_process(self, event, depth, context):
 
 		for processor in self.Processors[depth]:
 			try:
@@ -169,9 +161,8 @@ class SampleInternalPipeline(bspump.Pipeline):
 			return
 
 		# If the event is generator and there is more in the processor pipeline, then enumerate generator
-		if isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
-			for gevent in event:
-				self.process(gevent, depth+1, context.copy())
+		elif isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
+			return event
 
 		else:
 			try:
@@ -180,6 +171,33 @@ class SampleInternalPipeline(bspump.Pipeline):
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.__class__.__name__, depth))
 				self.set_error(context, event, e)
 				raise
+
+
+	async def process(self, event, context=None):
+		while not self._ready.is_set():
+			await self.ready()
+
+		#TODO: This is not optimal way of counting events
+		self.MetricsService.add("bspump.pipeline", {'event_in': 1}, tags={'pipeline': self.Id})
+		
+		if context is None:
+			context = self._context.copy()
+		else:
+			context.update(self._context)
+
+		gevent = self._do_process(event, depth=0, context=context)
+		if gevent is not None:	
+			await self._generator_process(gevent, 1, context=context)
+
+
+	async def _generator_process(self, event, depth, context):
+		for gevent in event:
+			while not self._ready.is_set():
+				await self.ready()
+			
+			ngevent = self._do_process(gevent, depth, context.copy())
+			if ngevent is not None:
+				self._generator_process(ngevent, depth+1, context)
 
 
 	def locate_connection(self, app, connection_id):

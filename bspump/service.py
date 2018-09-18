@@ -17,6 +17,7 @@ class BSPumpService(asab.Service):
 
 		self.Pipelines = dict()
 		self.Connections = dict()
+		self.Lookups = dict()
 
 
 	def locate(self, address):
@@ -65,6 +66,26 @@ class BSPumpService(asab.Service):
 		except KeyError:
 			raise KeyError("Cannot find connection id '{}' (did you call add_connection() ?)".format(connection_id))
 
+
+	# Lookups
+
+	def ensure_lookup(self, lookup_cls, lookup_id=None, config=None, *args, **kwargs):
+		#TODO: lookup_cls is inherited from lookup_cls
+
+		if lookup_id == None:
+			lookup_id = lookup_cls.__name__
+
+		try:
+			return self.Lookups[lookup_id]
+		except KeyError:
+			pass
+		
+		lkp = lookup_cls(self, lookup_id, config, *args, **kwargs)
+		self.Lookups[lookup_id] = lkp
+
+		asyncio.ensure_future(lkp.load(), loop=self.App.Loop)
+
+		return lkp
 
 	#
 

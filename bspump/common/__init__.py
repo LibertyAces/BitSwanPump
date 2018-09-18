@@ -6,6 +6,7 @@ from .routing import RouterSink
 from .tee import TeeProcessor
 from .tee import TeeSource
 from .hexlify import HexlifyProcessor
+from .iterator import IteratorSource
 from .dictp import DictKeys2ListProcessor, DictValues2ListProcessor, DictItems2ListProcessor
 from .dictp import DictKeysGenerator, DictValuesGenerator, DictItemsGenerator
 from .listp import ListGenerator
