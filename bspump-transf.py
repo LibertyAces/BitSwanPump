@@ -17,11 +17,15 @@ class MyTransformator(bspump.common.MappingTransformator):
 
 	def build(self, app):
 		return {
-			'color': self.color
+			'color': self.color,
+			'category': self.category,
 		}
 
 	def color(self, key, value):
 		return key.upper(), 1.0
+
+	def category(self, key, value):
+		return key, value.upper()
 
 #
 
@@ -35,7 +39,7 @@ class SamplePipeline(bspump.Pipeline):
 				.on(bspump.trigger.PubSubTrigger(app, "Application.tick!")),
 			MyTransformator(app, self),
 			bspump.common.MappingItemsProcessor(app, self),
-			bspump.common.IteratorGenerator(app, self),
+#			bspump.common.IteratorGenerator(app, self),
 			bspump.common.PPrintSink(app, self),
 		)
 
