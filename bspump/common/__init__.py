@@ -10,3 +10,4 @@ from .iterator import IteratorSource
 from .iterator import IteratorGenerator
 from .mapping import MappingKeysProcessor, MappingValuesProcessor, MappingItemsProcessor
 from .mapping import MappingKeysGenerator, MappingValuesGenerator, MappingItemsGenerator
+from .transfr import MappingTransformator
