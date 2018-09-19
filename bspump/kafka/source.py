@@ -1,5 +1,6 @@
 import logging
 import aiokafka
+import concurrent
 
 from ..abc.source import Source
 
@@ -37,6 +38,8 @@ class KafkaSource(Source):
 				msg = await type(self._consumer).__anext__(self._consumer)
 				await self.process_message(msg)
 		except StopAsyncIteration:
+			pass
+		except concurrent.futures._base.CancelledError:
 			pass
 		except BaseException as e:
 			L.exception("Error when processing Kafka message")

@@ -5,14 +5,25 @@ import bspump.kafka
 import bspump.trigger
 
 
-class SamplePipeline(bspump.Pipeline):
+class KafkaPipeline(bspump.Pipeline):
 
+	def __init__(self, app, pipeline_id):
+		super().__init__(app, pipeline_id)
+		self.build(
+			bspump.kafka.KafkaSource(app, self, "KafkaConnection", config={'topic': 'messages'}),
+			bspump.common.TeeProcessor(app, self).bind("PPrintPipeline.*TeeSource"),
+			# bspump.common.NullSink(app, self),
+			bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
+		)
+
+
+class PPrintPipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.kafka.KafkaSource(app, self, "KafkaConnection", config={'topic': 'messages'}),
-			bspump.common.PPrintSink(app, self)
+			bspump.common.TeeSource(app, self),
+			bspump.common.PPrintSink(app, self),
 		)
 
 
@@ -26,7 +37,8 @@ if __name__ == '__main__':
 	)
 
 	svc.add_pipelines(
-		SamplePipeline(app, "SamplePipeline"),
+		KafkaPipeline(app, "KafkaPipeline"),
+		PPrintPipeline(app, "PPrintPipeline"),
 	)
 
 	app.run()
