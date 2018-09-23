@@ -30,7 +30,16 @@ class Pipeline(abc.ABC):
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
-		self.MetricsService = app.get_service('asab.MetricsService')
+		metrics_service = app.get_service('asab.MetricsService')
+		self.MetricsCounter = metrics_service.create_counter(
+			"bspump.pipeline",
+			tags={'pipeline':self.Id},
+			init_values={
+				'event.in': 0,
+				'warning': 0,
+				'error': 0,
+			}
+		)
 
 		self._error = None # None if not in error state otherwise there is a tuple (exception, event)
 
@@ -51,11 +60,11 @@ class Pipeline(abc.ABC):
 		If called with `exc is None`, then reset error (aka recovery)
 		'''
 		if not self.catch_error(exc, event):
-			self.MetricsService.add("bspump.pipeline", {'warning': 1}, tags={'pipeline': self.Id})
+			self.MetricsCounter.add('warning', 1)
 			self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
 			return
 
-			self.MetricsService.add("bspump.pipeline", {'error': 1}, tags={'pipeline': self.Id})
+			self.MetricsCounter.add('error', 1)
 
 		if exc is None:
 			if self._error is not None:
@@ -177,8 +186,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 		while not self._ready.is_set():
 			await self.ready()
 
-		#TODO: This is not optimal way of counting events
-		self.MetricsService.add("bspump.pipeline", {'event_in': 1}, tags={'pipeline': self.Id})
+		self.MetricsCounter.add('event.in', 1)
 		
 		if context is None:
 			context = self._context.copy()
