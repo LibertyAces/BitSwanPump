@@ -15,13 +15,13 @@ async def pipelines(request):
 	return json_response(request, svc.Pipelines)
 
 
-async def trigger(request):
+async def example_trigger(request):
 	app = request.app['app']
 	app.PubSub.publish("mymessage!")
 	return json_response(request, {'ok': 1})
 
 
-async def internal(request):
+async def example_internal(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
 	source = svc.locate("SampleInternalPipeline.*InternalSource")
@@ -41,8 +41,9 @@ def initialize_web(app):
 
 	svc.WebApp.router.add_get('/', index)
 	svc.WebApp.router.add_get('/pipelines', pipelines)
-	svc.WebApp.router.add_get('/trigger', trigger)
-	svc.WebApp.router.add_get('/internal', trigger)
 	svc.WebApp.router.add_static('/static/', path=static_dir, name='static')
+
+	svc.WebApp.router.add_get('/example/trigger', example_trigger)
+	svc.WebApp.router.add_get('/example/internal', example_internal)
 
 	return svc
