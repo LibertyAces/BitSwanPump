@@ -79,7 +79,7 @@ class KafkaConnection(Connection):
 			await producer.stop()
 
 	def get_bootstrap_servers(self):
-		return self.Config['bootstrap_servers']
+		return self.Config['bootstrap_servers'].split(';')
 
 
 	def consume(self, topic, message):
