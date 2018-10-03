@@ -11,6 +11,10 @@ L = logging.getLogger(__name__)
 #
 
 class MySQLSource(TriggerSource):
+
+	ConfigDefaults = {
+		'query': ''
+	}
 	
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
