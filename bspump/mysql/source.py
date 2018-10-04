@@ -43,5 +43,6 @@ class MySQLSource(TriggerSource):
 
 						# Pass event to the pipeline
 						await self.process(event)
+					await cur.execute("COMMIT;")
 			except BaseException as e:
 				L.exception("Unexpected error when processing MySQL query.")
