@@ -39,7 +39,7 @@ class MySQLConnection(Connection):
 		self.Loop = app.Loop
 
 		self._host = self.Config['host']
-		self._port = self.Config['port']
+		self._port = int(self.Config['port'])
 		self._user = self.Config['user']
 		self._password = self.Config['password']
 		self._connect_timeout = self.Config['connect_timeout']
