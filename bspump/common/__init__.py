@@ -1,5 +1,6 @@
 from .print import PrintSink, PPrintSink, PrintProcessor, PPrintProcessor, PrintContextProcessor, PPrintContextProcessor
 from .json import JSONParserProcessor
+from .dict import FlattenDictProcessor
 from .null import NullSink
 from .routing import InternalSource
 from .routing import RouterSink
