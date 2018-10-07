@@ -16,8 +16,8 @@ class HTTPClientTextSource(HTTPABCClientSource):
 		'encoding': '',
 	}
 
-	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
+	def __init__(self, app, pipeline, id=None, config=None, headers={}):
+		super().__init__(app, pipeline, id=id, config=config, headers={})
 
 		self.encoding = self.Config['encoding']
 		if self.encoding == '': self.encoding = None

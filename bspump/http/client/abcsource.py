@@ -19,14 +19,14 @@ class HTTPABCClientSource(TriggerSource):
 	}
 
 
-	def __init__(self, app, pipeline, id=None, config=None):
+	def __init__(self, app, pipeline, id=None, config=None, headers={}):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop
 
 		self.Method = self.Config['method']
 		self.URL = self.Config['url']
 
-		self.Headers = {}
+		self.Headers = headers.copy()
 		
 		self.SSL = None
 		# SSL validation mode (see aiohttp documentation for more details)
