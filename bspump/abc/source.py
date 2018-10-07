@@ -1,6 +1,7 @@
 import abc
 import logging
 import asyncio
+import concurrent.futures
 from .config import ConfigObject
 
 #
@@ -90,6 +91,9 @@ class TriggerSource(Source):
 	This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
 	You need to provide a trigger class and implement cycle() method.
 
+	Trigger source will stop execution, when a pipeline is cancelled (raises concurrent.futures.CancelledError).
+	This typically happens when a program wants to quit in reaction to a on the signal.
+
 	You also may overload the main() method to provide additional parameters for a cycle() method.
 
 	async def main(self):
@@ -133,6 +137,16 @@ class TriggerSource(Source):
 			# Execute one cycle
 			try:
 				await self.cycle(*args, **kwags)
+
+			except concurrent.futures.CancelledError as e:
+				# This happens when Ctrl-C is pressed
+				L.warning("Pipeline '{}' processing was cancelled".format(self.Pipeline.Id))
+
+				# Send end of a cycle event
+				self.Pipeline.PubSub.publish("bspump.pipeline.cycle_canceled!", pipeline=self.Pipeline)
+
+				break
+
 			except BaseException as e:
 				self.Pipeline.set_error(None, None, e)
 
