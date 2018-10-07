@@ -1,9 +1,12 @@
+import signal
+
 import asab
 
 from .service import BSPumpService
 
 
 class BSPumpApplication(asab.Application):
+
 
 	def __init__(self):
 		super().__init__()
@@ -28,6 +31,25 @@ class BSPumpApplication(asab.Application):
 		else:
 			self.WebService = None
 
+		try:
+			# Signals are not available on Windows
+			self.Loop.add_signal_handler(signal.SIGUSR1, self._on_signal_usr1)
+		except NotImplementedError:
+			pass
+
 
 	async def main(self):
 		self.PumpService.start()
+
+
+	def _on_signal_usr1(self):
+		'''
+		To clear reset from all pipelines, run 
+		$ kill -SIGUSR1 xxxx
+		Equivalently, you can use `docker kill -s SIGUSR1 ....` to reset containerized BSPump.
+		'''
+		# Reset errors from all pipelines
+		for pipeline in self.PumpService.Pipelines.values():
+			if not pipeline.is_error(): continue # Focus only on pipelines that has errors
+			pipeline.set_error(None, None, None)
+

@@ -55,24 +55,31 @@ class Pipeline(abc.ABC):
 		self._context = {}
 
 
+	def is_error(self):
+		return self._error is not None
+
+
 	def set_error(self, context, event, exc):
 		'''
 		If called with `exc is None`, then reset error (aka recovery)
 		'''
-		if not self.catch_error(exc, event):
-			self.MetricsCounter.add('warning', 1)
-			self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
-			return
-
-			self.MetricsCounter.add('error', 1)
 
 		if exc is None:
+			# Reset branch
 			if self._error is not None:
 				self._error = None
+				L.log(asab.LOG_NOTICE, "Error cleared at a pipeline '{}'".format(self.Id))
 				self.PubSub.publish("bspump.pipeline.clear_error!", pipeline=self)
 				self._evaluate_ready()
 
 		else:
+			if not self.catch_error(exc, event):
+				self.MetricsCounter.add('warning', 1)
+				self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
+				return
+
+				self.MetricsCounter.add('error', 1)
+
 			if (self._error is not None):
 				L.warning("Error on a pipeline is already set!")
 			
