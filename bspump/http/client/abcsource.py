@@ -1,4 +1,5 @@
 import abc
+import re
 import logging
 import asyncio
 import aiohttp
@@ -16,6 +17,9 @@ class HTTPABCClientSource(TriggerSource):
 	ConfigDefaults = {
 		'method': 'GET',
 		'url': 'http://example.com/',
+		'response_code': '200', # Specify an expected response status code, more values are accepted ("200, 300 301")
+		'max_failed_retries': 3,
+		'fail_chilldown': 30, # If there is an incorrect response, chilldown for X seconds
 	}
 
 
@@ -35,6 +39,16 @@ class HTTPABCClientSource(TriggerSource):
 		# - aiohttp.Fingerprint for fingerprint validation
 		# - ssl.SSLContext for custom SSL certificate validation.
 
+		self.FailedResponses = 0
+		self.MaxFailedResponses = int(self.Config.get('max_failed_retries'))
+		self.FailChilldown = float(self.Config.get('fail_chilldown'))
+		try:
+			self.ResponseCodes = frozenset(map(int, re.findall(r"\d+", self.Config.get('response_code'))))
+		except:
+			L.error("Failed to parse 'response_code' configuration value")
+			raise
+
+
 
 	async def main(self):
 		async with aiohttp.ClientSession(loop=self.Loop) as session:
@@ -48,14 +62,27 @@ class HTTPABCClientSource(TriggerSource):
 				headers = self.Headers if len(self.Headers) > 0 else None,
 				ssl = self.SSL,
 			) as response:
+			if response.status not in self.ResponseCodes:
+				self.FailedResponses += 1
+				if self.FailedResponses < self.MaxFailedResponses:
+					L.warn("Received an incorrect response status code {} from '{}', will retry ({}/{}) in {:0.0f} sec".format(response.status, self.URL, self.FailedResponses, self.MaxFailedResponses, self.FailChilldown))
+					self.Pipeline.MetricsCounter.add('warning', 1)
+					await asyncio.sleep(self.FailChilldown)
+					return
+				else:
+					t = await response.text()
+					if len(t) > 1000: t = t[:1000] + '...'
+					L.error("Last failed response (response status code {}):\n{}".format(response.status, t))
+					raise RuntimeError("Recevied {} failed responses from '{}', last response status code: {}".format(self.FailedResponses, self.URL, response.status))
+			else:
+				self.FailedResponses = 0 # Reset the counter
 			await self.read(response)
 
 
 	@abc.abstractmethod
 	async def read(self, response):
 		'''
-		Override this method to implement your File Source.
-		`f` is an opened file object.
+		Override this method to implement your HTTP Source.
 		'''
 		raise NotImplemented()
 
