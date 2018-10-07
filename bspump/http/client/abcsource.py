@@ -6,7 +6,7 @@ from ...abc.source import TriggerSource
 
 #
 
-L = logging.getLogger(__file__)
+L = logging.getLogger(__name__)
 
 #
 
