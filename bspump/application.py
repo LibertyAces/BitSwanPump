@@ -31,6 +31,14 @@ class BSPumpApplication(asab.Application):
 		else:
 			self.WebService = None
 
+		# Conditionally activate LogMan.io service
+		if asab.Config.has_section("logman.io"):
+			from asab.logman import Module
+			self.add_module(Module)
+			logman_service = self.get_service('asab.LogManIOService')
+			logman_service.configure_metrics(self.get_service('asab.MetricsService'))
+
+
 		try:
 			# Signals are not available on Windows
 			self.Loop.add_signal_handler(signal.SIGUSR1, self._on_signal_usr1)
