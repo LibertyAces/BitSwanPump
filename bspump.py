@@ -57,7 +57,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 
 if __name__ == '__main__':
-	app = bspump.BSPumpApplication(web=True)
+	app = bspump.BSPumpApplication()
 	svc = app.get_service("bspump.PumpService")
 
 	# Construct timer trigger

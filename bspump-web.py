@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 import aiohttp.web
 import asab
-import asab.web
 import bspump
+import bspump.web
 import bspump.common
 import bspump.http
+
+
+class ErrorProcessor(bspump.Processor):
+	def process(self, context, event):
+		raise RuntimeError("AAAAA")
 
 
 class SamplePipeline(bspump.Pipeline):
@@ -17,6 +22,7 @@ class SamplePipeline(bspump.Pipeline):
 
 		self.build(
 			self.WebServiceSource,
+			ErrorProcessor(app, self),
 			self.WebServiceSink
 		)
 
@@ -31,7 +37,7 @@ class SamplePipeline(bspump.Pipeline):
 
 
 if __name__ == '__main__':
-	app = bspump.BSPumpApplication(web=True)
+	app = bspump.BSPumpApplication()
 
 	svc = app.get_service("bspump.PumpService")
 
@@ -40,6 +46,7 @@ if __name__ == '__main__':
 	svc.add_pipeline(pl)
 
 	# Locate web service
+	bspump.web.initialize_web(app)
 	websvc = app.get_service("asab.WebService")
 
 	websvc.WebApp.router.add_post('/bspump/sp', pl.webservice)
