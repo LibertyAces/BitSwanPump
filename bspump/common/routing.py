@@ -14,13 +14,14 @@ class InternalSource(Source):
 
 
 	ConfigDefaults = {
+		'queue_max_size': 10,
 	}
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop 
-		self.Queue = asyncio.Queue(loop=self.Loop) #TODO: Max size (etc.)
+		self.Queue = asyncio.Queue(maxsize=int(self.Config.get('queue_max_size')), loop=self.Loop)
 
 
 	def put(self, context, event):
