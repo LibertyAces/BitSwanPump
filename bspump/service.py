@@ -21,10 +21,16 @@ class BSPumpService(asab.Service):
 
 
 	def locate(self, address):
-		p, t = address.split('.', 1)
+		if '.' in address:
+			p, t = address.split('.', 1)
+		else:
+			p = address
+			t = None
 		pipeline = self.Pipelines.get(p)
 		if pipeline is None:
 			return None
+		elif t is None:
+			return pipeline
 
 		if t[:1] == '*':
 			for source in pipeline.Sources:
