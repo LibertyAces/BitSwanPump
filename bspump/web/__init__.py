@@ -1,7 +1,6 @@
 import os
 import aiohttp.web
-
-from .json import json_response
+import asab.web.rest
 
 ####
 
@@ -12,13 +11,13 @@ async def index(request):
 async def pipelines(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
-	return json_response(request, svc.Pipelines)
+	return asab.web.rest.json_response(request, svc.Pipelines)
 
 
 async def example_trigger(request):
 	app = request.app['app']
 	app.PubSub.publish("mymessage!")
-	return json_response(request, {'ok': 1})
+	return asab.web.rest.json_response(request, {'ok': 1})
 
 
 async def example_internal(request):
@@ -26,7 +25,7 @@ async def example_internal(request):
 	svc = app.get_service("bspump.PumpService")
 	source = svc.locate("SampleInternalPipeline.*InternalSource")
 	source.put({"event": "example"})
-	return json_response(request, {'ok': 1})
+	return asab.web.rest.json_response(request, {'ok': 1})
 
 
 
