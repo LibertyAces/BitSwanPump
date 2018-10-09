@@ -294,6 +294,9 @@ class SampleInternalPipeline(bspump.Pipeline):
 			rest['Processors'].append(processors)
 
 		if self._error:
-			rest['Error'] = str(self._error[2])
+			error_text = str(self._error[2])
+			if len(error_text) == 0:
+				error_text = str(type(self._error[2]))
+			rest['Error'] = error_text
 
 		return rest
