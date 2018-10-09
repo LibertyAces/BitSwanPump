@@ -47,6 +47,12 @@ class InternalSource(Source):
 			if self.Queue.qsize() > 0:
 				L.warning("Source '{}' stopped with {} events in a queue".format(self.Id, self.Queue.qsize()))
 
+
+	def rest_get(self):
+		rest = super().rest_get()
+		rest['Queue'] = self.Queue.qsize()
+		return rest
+
 #
 
 class RouterSink(Sink):
