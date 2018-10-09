@@ -287,6 +287,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 			'Ready': self.is_ready(),
 			'Sources': self.Sources,
 			'Processors': [],
+			'Metrics': self.MetricsCounter,
 		}
 
 		for l, processors in enumerate(self.Processors):
