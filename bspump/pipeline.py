@@ -127,7 +127,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 
 	def _evaluate_ready(self):
-		orig_ready = self._ready.is_set()
+		orig_ready = self.is_ready()
 
 		# Do we observed an error?
 		new_ready = self._error is None
@@ -157,6 +157,10 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 		await self._ready.wait()
 		return True
+
+
+	def is_ready(self):
+		return self._ready.is_set()
 
 
 	def _do_process(self, event, depth, context):
@@ -190,11 +194,11 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 
 	async def process(self, event, context=None):
-		while not self._ready.is_set():
+		while not self.is_ready():
 			await self.ready()
 
 		self.MetricsCounter.add('event.in', 1)
-		
+
 		if context is None:
 			context = self._context.copy()
 		else:
@@ -207,7 +211,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 	async def _generator_process(self, event, depth, context):
 		for gevent in event:
-			while not self._ready.is_set():
+			while not self.is_ready():
 				await self.ready()
 			
 			ngevent = self._do_process(gevent, depth, context.copy())
@@ -280,7 +284,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 	def rest_get(self):
 		rest = {
 			'Id': self.Id,
-			'Ready': self._ready.is_set(),
+			'Ready': self.is_ready(),
 			'Sources': self.Sources,
 			'Processors': [],
 		}
