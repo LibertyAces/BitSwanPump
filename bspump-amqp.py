@@ -16,12 +16,8 @@ class SamplePipeline1(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
-
-		self.trigger = bspump.trigger.OpportunisticTrigger(app)
-
 		self.build(
-			#bspump.socket.TCPStreamSource(app, self),
-			bspump.file.FileLineSource(app, self, config={'path': './services'}).trigger(self.trigger),
+			bspump.socket.TCPStreamSource(app, self),
 			bspump.amqp.AMQPSink(app, self, "AMQPConnection1")
 		)
 
