@@ -68,7 +68,11 @@ class Pipeline(abc.ABC):
 			# Reset branch
 			if self._error is not None:
 				self._error = None
-				L.log(asab.LOG_NOTICE, "Error cleared at a pipeline '{}'".format(self.Id))
+				L.info("Error cleared at a pipeline '{}'".format(self.Id))
+
+				for source in self.Sources:
+					source.restart(self.Loop)
+
 				self.PubSub.publish("bspump.pipeline.clear_error!", pipeline=self)
 				self._evaluate_ready()
 

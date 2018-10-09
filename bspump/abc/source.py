@@ -26,7 +26,7 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		self.Id = id if id is not None else self.__class__.__name__
 		self.Pipeline = pipeline
 
-		self.MainCoro = None # Contains a main coroutine `main()` if Pipeline is started
+		self.Task = None # Contains a main coroutine `main()` if Pipeline is started
 
 
 	async def process(self, event, context=None):
@@ -41,16 +41,37 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 
 	def start(self, loop):
-		if self.MainCoro is not None: return
-		self.MainCoro = asyncio.ensure_future(self.main(), loop=loop)
+		if self.Task is not None: return
+
+		async def _main():
+			# This is to properly handle a lifecycle of the main method
+			try:
+				await self.main()
+			except concurrent.futures.CancelledError:
+				pass
+			except Exception as e:
+				self.Pipeline.set_error(None, None, e)
+				L.exception("Exception in the source '{}'".format(self.Id))
+
+		self.Task = asyncio.ensure_future(_main(), loop=loop)
 
 
 	async def stop(self):
-		if self.MainCoro is None: return # Source is not started
-		self.MainCoro.cancel()
-		await self.MainCoro
-		if not self.MainCoro.done():
-			L.warning("Source '{}' refused to stop: {}".format(self.Id, self.MainCoro))
+		if self.Task is None: return # Source is not started
+		if not self.Task.done():
+			self.Task.cancel()
+		await self.Task
+		if not self.Task.done():
+			L.error("Source '{}' refused to stop: {}".format(self.Id, self.Task))
+		self.Task = None
+
+
+	def restart(self, loop):
+		if self.Task is not None:
+			if self.Task.done():
+				self.Task.result()
+				self.Task = None
+		self.start(loop)
 
 
 	@abc.abstractmethod

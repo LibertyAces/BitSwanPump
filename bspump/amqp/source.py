@@ -30,11 +30,11 @@ class AMQPSource(Source):
 		self._error_exchange = self.Config['error_exchange']
 		self._queue = asyncio.Queue(loop=app.Loop)
 
+		self._connection.PubSub.subscribe("AMQPConnection.open!", self._on_connection_open)
+		self._connection.PubSub.subscribe("AMQPConnection.close!", self._on_connection_close)
 
 
 	async def main(self):
-		self._connection.PubSub.subscribe("AMQPConnection.open!", self._on_connection_open)
-		self._connection.PubSub.subscribe("AMQPConnection.close!", self._on_connection_close)
 
 		if self._connection.ConnectionEvent.is_set() and self._channel is None:
 			self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
@@ -53,6 +53,7 @@ class AMQPSource(Source):
 
 		except BaseException as e:
 			L.exception("Error when processing AMQP message")
+			self.set_error(None, None, e)
 
 
 		# Requeue rest of the messages

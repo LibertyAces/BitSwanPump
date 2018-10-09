@@ -69,14 +69,33 @@ class RouterSink(Sink):
 		self.SourcesCache = {}
 
 
+	def locate(self, source_id):
+		source = self.ServiceBSPump.locate(source_id)
+		if source is None:
+			L.warning("Cannot locate '{}' in '{}'".format(source_id, self.Id))
+			raise RuntimeError("Cannot locate '{}' in '{}'".format(source_id, self.Id))
+		
+		self.SourcesCache[source_id] = source
+
+		source.Pipeline.PubSub.subscribe("bspump.pipeline.ready!", self._on_target_pipeline_ready_change)
+		source.Pipeline.PubSub.subscribe("bspump.pipeline.not_ready!", self._on_target_pipeline_ready_change)
+
+		return source
+
+
 	def dispatch(self, context, event, source_id):
 		source = self.SourcesCache.get(source_id)
 		
 		if source is None:
-			source = self.ServiceBSPump.locate(source_id)
-			if source is None:
-				L.warning("Cannot locate '{}' in '{}'".format(source_id, self.Id))
-				raise RuntimeError("Cannot locate '{}' in '{}'".format(source_id, self.Id))
-			self.SourcesCache[source_id] = source
+			source = self.locate(source_id)
 
 		source.put(context, event)
+
+
+	def _on_target_pipeline_ready_change(self, event_name, pipeline):
+		if event_name == "bspump.pipeline.ready!":
+			self.Pipeline.throttle(pipeline, enable=False)
+		elif event_name == "bspump.pipeline.not_ready!":
+			self.Pipeline.throttle(pipeline, enable=True)
+		else:
+			L.warning("Unknown event '{}' received in _on_target_pipeline_ready_change in '{}'".format(event_name, self))
