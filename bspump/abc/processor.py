@@ -1,5 +1,5 @@
 import abc
-from .config import ConfigObject
+from asab import ConfigObject
 
 class ProcessorBase(abc.ABC, ConfigObject):
 

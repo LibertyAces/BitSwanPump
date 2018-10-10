@@ -3,7 +3,7 @@ import collections.abc
 import json
 import asyncio
 
-from .config import ConfigObject
+from asab import ConfigObject
 
 class Lookup(abc.ABC, ConfigObject):
 

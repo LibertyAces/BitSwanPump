@@ -2,7 +2,7 @@ import abc
 import logging
 import asyncio
 import concurrent.futures
-from .config import ConfigObject
+from asab import ConfigObject
 
 #
 
