@@ -18,6 +18,12 @@ setup(
 	],
 	keywords='asyncio asab',
 	packages=find_packages(),
+	package_data={
+		'bspump.web': [
+			'static/*.html',
+			'static/*.js'
+		]
+	},
 	project_urls={
 		'Source': 'https://github.com/TeskaLabs/bspump'
 	},
