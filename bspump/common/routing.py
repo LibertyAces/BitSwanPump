@@ -102,7 +102,7 @@ class RouterMixIn(object):
 
 		# If target pipeline is not ready, throttle
 		if not source.Pipeline.is_ready():
-			self.Pipeline.throttle(source.Pipeline, enable=True)		
+			self.Pipeline.throttle(source.Pipeline, enable=True)
 
 		source.Pipeline.PubSub.subscribe("bspump.InternalSource.backpressure_on!", self._on_internal_source_backpressure_ready_change)
 		source.Pipeline.PubSub.subscribe("bspump.InternalSource.backpressure_off!", self._on_internal_source_backpressure_ready_change)
@@ -110,6 +110,25 @@ class RouterMixIn(object):
 			self.Pipeline.throttle(source, enable=True)
 
 		return source
+
+
+	def unlocate(self, source_id):
+		try:
+			source = self.SourcesCache.pop(source_id)
+		except KeyError:
+			return
+
+		source.Pipeline.PubSub.unsubscribe("bspump.pipeline.not_ready!", self._on_target_pipeline_ready_change)
+		source.Pipeline.PubSub.unsubscribe("bspump.pipeline.ready!", self._on_target_pipeline_ready_change)
+
+		if not source.Pipeline.is_ready():
+			self.Pipeline.throttle(source.Pipeline, enable=False)
+
+		source.Pipeline.PubSub.unsubscribe("bspump.InternalSource.backpressure_on!", self._on_internal_source_backpressure_ready_change)
+		source.Pipeline.PubSub.unsubscribe("bspump.InternalSource.backpressure_off!", self._on_internal_source_backpressure_ready_change)
+
+		if source.BackPressure:
+			self.Pipeline.throttle(source, enable=False)
 
 
 

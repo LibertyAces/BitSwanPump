@@ -1,6 +1,5 @@
 import logging
-from ..abc.processor import Processor
-from .routing import InternalSource
+from .routing import InternalSource, RouterProcessor
 #
 
 L = logging.getLogger(__name__)
@@ -60,19 +59,19 @@ class SampleTeePipeline(bspump.Pipeline):
 				L.warning("TeeSource '{}' requires TeeProcessor as target, not '{}'".format(self.Id, target))
 				return
 
-			processor.bind(self)
+			processor.bind(self.locate_address())
 			unbind_processor.append(processor)
 
 		try:
 			await super().main()
 		finally:
 			for processor in unbind_processor:
-				processor.unbind(self)
+				processor.unbind(self.locate_address())
 
 
 #
 
-class TeeProcessor(Processor):
+class TeeProcessor(RouterProcessor):
 
 	'''
 	See TeeSource for details.
@@ -84,48 +83,24 @@ class TeeProcessor(Processor):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-
-		self.Sources = None
 		self.Targets = []
 
-		self._svc = app.get_service("bspump.PumpService")
 
-
-	def bind(self, target):
+	def bind(self, target:str):
 		'''
-		Target can be a bspump.PumpService.locate() string or an instance of TeeSource object.
+		Target is a bspump.PumpService.locate() string 
 		'''
-		self.Sources = None # Trigger location of the target sources
 		self.Targets.append(target)
 		return self
 
 
-	def unbind(self, target):
-		self.Sources = None # Trigger location of the target sources
+	def unbind(self, target:str):
 		self.Targets.remove(target)
+		self.unlocate(target)
 		return self
 
 
 	def process(self, context, event):
-		if self.Sources is None:
-			self.Sources = []
-			for target in self.Targets:
-				if isinstance(target, TeeSource):
-					# If we received direct reference to a target source, use that
-					source = target
-				else:
-					source = self._svc.locate(target)
-					if source is None:
-						L.warning("TeeProcessor '{}' cannot find source '{}'".format(self.Id, target))
-						return
-					if not isinstance(source, TeeSource):
-						L.warning("TeeProcessor '{}' requires TeeSource as target, not '{}'".format(self.Id, target))
-						return
-
-				self.Sources.append(source)
-
-		#TODO: Throttle pipeline if queue is getting full & unthrottle when getting empty
-		for source in self.Sources:
-			source.put(context, event)
-
+		for source in self.Targets:
+			self.route(context, event, source)
 		return event

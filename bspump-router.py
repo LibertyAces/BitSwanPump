@@ -48,6 +48,7 @@ class RandomSourcePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			RandomSource(app, self),
+			bspump.common.TeeProcessor(app, self),
 			CustomRouterSink(app, self)
 		)
 
@@ -115,6 +116,18 @@ class TargetPipeline(bspump.Pipeline):
 			bspump.common.PPrintSink(app, self)
 		)
 
+
+class TeePipeline(bspump.Pipeline):
+
+	def __init__(self, app, pipeline_id):
+		super().__init__(app, pipeline_id)
+
+		self.build(
+			bspump.common.TeeSource(app, self).bind("RandomSourcePipeline.TeeProcessor"),
+			bspump.common.PPrintSink(app, self)
+		)
+
+
 async def simulate_fail(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
@@ -143,6 +156,10 @@ listen=127.0.0.1 8080
 		TargetPipeline(app, "TargetPipelineA"),
 		TargetPipeline(app, "TargetPipelineB"),
 		TargetPipeline(app, "TargetPipelineC"),
+	)
+
+	svc.add_pipeline(
+		TeePipeline(app, "TeePipeline")
 	)
 
 	svc = app.get_service("asab.WebService")
