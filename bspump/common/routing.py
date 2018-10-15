@@ -14,7 +14,7 @@ class InternalSource(Source):
 
 
 	ConfigDefaults = {
-		'queue_max_size': 10,
+		'queue_max_size': 100000,
 	}
 
 
