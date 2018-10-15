@@ -42,17 +42,9 @@ class SampleInternalPipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			[
-				bspump.common.TeeSource(app, self).bind("SamplePipeline.TeeProcessor"),
-			],
-			#bspump.common.JSONParserProcessor(app, self),
+			bspump.common.TeeSource(app, self).bind("SamplePipeline.TeeProcessor"),
 			bspump.common.PPrintSink(app, self)
 		)
-
-	def catch_error(self, exception, event):
-		if isinstance(exception, json.decoder.JSONDecodeError):
-			return False
-		return True
 
 
 
