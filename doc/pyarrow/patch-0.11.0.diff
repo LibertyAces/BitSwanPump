@@ -1,0 +1,20 @@
+--- a/cpp/src/arrow/util/logging.cc
++++ b/cpp/src/arrow/util/logging.cc
+@@ -17,7 +17,7 @@
+
+ #include "arrow/util/logging.h"
+
+-#ifndef _WIN32
++#if !defined(_WIN32) && defined (__GNU_LIBRARY__)
+ #include <execinfo.h>
+ #endif
+ #include <cstdlib>
+@@ -68,7 +68,7 @@ class CerrLog {
+   bool has_logged_;
+
+   void PrintBackTrace() {
+-#if defined(_EXECINFO_H) || !defined(_WIN32)
++#if defined(_EXECINFO_H) && !defined(_WIN32)
+     void* buffer[255];
+     const int calls = backtrace(buffer, static_cast<int>(sizeof(buffer) / sizeof(void*)));
+     backtrace_symbols_fd(buffer, calls, 1);
