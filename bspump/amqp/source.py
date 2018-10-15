@@ -53,7 +53,7 @@ class AMQPSource(Source):
 
 		except BaseException as e:
 			L.exception("Error when processing AMQP message")
-			self.set_error(None, None, e)
+			self.Pipeline.set_error(None, None, e)
 
 
 		# Requeue rest of the messages
