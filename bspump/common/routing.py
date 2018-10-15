@@ -70,7 +70,7 @@ class InternalSource(Source):
 
 		except asyncio.CancelledError:
 			if self.Queue.qsize() > 0:
-				L.warning("Source '{}' stopped with {} events in a queue".format(self.Id, self.Queue.qsize()))
+				L.warning("'{}' stopped with {} events in a queue".format(self.locate_address(), self.Queue.qsize()))
 
 
 	def rest_get(self):
