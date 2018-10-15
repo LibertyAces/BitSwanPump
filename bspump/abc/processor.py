@@ -16,6 +16,10 @@ class ProcessorBase(abc.ABC, ConfigObject):
 		raise NotImplemented()
 
 
+	def locate_address(self):
+		return "{}.{}".format(self.Pipeline.Id, self.Id)
+
+
 	def rest_get(self):
 		return {
 			"Id": self.Id,

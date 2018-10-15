@@ -98,11 +98,16 @@ It is acomplished by `await self.Pipeline.ready()` call.
 			pass
 
 
+	def locate_address(self):
+		return "{}.*{}".format(self.Pipeline.Id, self.Id)
+
+
 	def rest_get(self):
 		return {
 			"Id": self.Id,
 			"Class": self.__class__.__name__
 		}
+
 
 #
 
