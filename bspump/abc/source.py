@@ -109,6 +109,10 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		}
 
 
+	def __repr__(self):
+		return '%s(%r)' % (self.__class__.__name__, self.locate_address())
+
+
 #
 
 class TriggerSource(Source):
