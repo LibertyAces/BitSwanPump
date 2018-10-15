@@ -3,6 +3,7 @@ import asyncio
 import random
 import string
 import logging
+import time
 
 import asab
 import asab.web.rest
@@ -20,7 +21,7 @@ class RandomSource(bspump.Source):
 
 	async def main(self):
 		while True:
-			await asyncio.sleep(1.0)
+			await asyncio.sleep(0.1)
 			await self.Pipeline.ready()
 			event = random.choice(['A','B','C']) + ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
 			await self.Pipeline.process(event)
@@ -30,9 +31,9 @@ class CustomRouterSink(bspump.common.RouterSink):
 	""" A router sink that routes events based on their type to the type-specific pipelines. """
 
 	TYPE_TO_SOURCE = {
-		"A": 	"TargetPipelineA.*InternalSource",
-		"B": 	"TargetPipelineB.*InternalSource",
-		"C": 	"TargetPipelineC.*InternalSource",
+		"A": 	"TargetPipelineA.*SlowerInternalSource",
+		"B": 	"TargetPipelineB.*SlowerInternalSource",
+		"C": 	"TargetPipelineC.*SlowerInternalSource",
 	}
 
 
@@ -97,16 +98,22 @@ class CircuitBreaker(bspump.Processor):
 		return rest
 
 
+class SlowerInternalSource(bspump.common.InternalSource):
+
+	async def process(self, event, context=None):
+		await asyncio.sleep(0.5)
+		await super().process(event, context=None)
+
+
 class TargetPipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.common.InternalSource(app, self),
+			SlowerInternalSource(app, self),
 			CircuitBreaker(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
-
 
 async def simulate_fail(request):
 	app = request.app['app']
