@@ -113,13 +113,23 @@ class RouterMixIn(object):
 
 
 
-	def dispatch(self, context, event, source_id):
+	def dispatch(self, context, event, source_id, copy_event=True):
+		#TODO: Obsolete function
+		return self.route(self, context, event, source_id, copy_event=True)
+
+
+	def route(self, context, event, source_id, copy_event=True):
+		'''
+		This method routes an event to a InternalSource `source_id`.
+
+		It can be called multiple times from a process() method, which results in a cloning of the event. 
+		'''
 		source = self.SourcesCache.get(source_id)
 		
 		if source is None:
 			source = self.locate(source_id)
 
-		source.put(context, event)
+		source.put(context, event, copy_event=copy_event)
 
 
 	def _on_target_pipeline_ready_change(self, event_name, pipeline):
@@ -144,7 +154,7 @@ class RouterSink(Sink, RouterMixIn):
 
 	'''
 	Abstract Sink that dispatches events to other internal sources.
-	One should override the process() method and call dispatch() with target source id.
+	One should override the process() method and call route() with target source id.
 	'''
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -156,7 +166,7 @@ class RouterProcessor(Processor, RouterMixIn):
 
 	'''
 	Abstract Processor that dispatches events to other internal sources.
-	One should override the process() method and call dispatch() with target source id.
+	One should override the process() method and call route() with target source id.
 	'''
 
 	def __init__(self, app, pipeline, id=None, config=None):

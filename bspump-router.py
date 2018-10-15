@@ -39,7 +39,7 @@ class CustomRouterSink(bspump.common.RouterSink):
 
 	def process(self, context, event):
 		target = self.TYPE_TO_SOURCE.get(event[0], 'A')
-		self.dispatch(context, event, target)
+		self.route(context, event, target)
 
 
 class RandomSourcePipeline(bspump.Pipeline):
