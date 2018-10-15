@@ -3,6 +3,7 @@ import asyncio
 import copy
 from ..abc.source import Source
 from ..abc.sink import Sink
+from ..abc.processor import Processor
 
 #
 
@@ -80,16 +81,10 @@ class InternalSource(Source):
 
 #
 
-class RouterSink(Sink):
-
-	'''
-	Abstract Sink that dispatches events to other internal sources.
-	One should override the process() method and call dispatch() with target source id.
-	'''
+class RouterMixIn(object):
 
 
-	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, id, config)
+	def _mixin_init(self, app):
 		self.ServiceBSPump = app.get_service("bspump.PumpService")
 		self.SourcesCache = {}
 
@@ -143,4 +138,28 @@ class RouterSink(Sink):
 			self.Pipeline.throttle(source, enable=True)
 		else:
 			L.warning("Unknown event '{}' received in _on_internal_source_backpressure_ready_change in '{}'".format(event_name, self))
+
+
+class RouterSink(Sink, RouterMixIn):
+
+	'''
+	Abstract Sink that dispatches events to other internal sources.
+	One should override the process() method and call dispatch() with target source id.
+	'''
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id, config)
+		self._mixin_init(app)
+
+
+class RouterProcessor(Processor, RouterMixIn):
+
+	'''
+	Abstract Processor that dispatches events to other internal sources.
+	One should override the process() method and call dispatch() with target source id.
+	'''
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id, config)
+		self._mixin_init(app)
 
