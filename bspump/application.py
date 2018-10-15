@@ -42,7 +42,7 @@ class BSPumpApplication(asab.Application):
 		try:
 			# Signals are not available on Windows
 			self.Loop.add_signal_handler(signal.SIGUSR1, self._on_signal_usr1)
-		except NotImplementedError:
+		except (NotImplementedError, AttributeError):
 			pass
 
 
