@@ -121,7 +121,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 
 	def throttle(self, who, enable=True):
-		L.warning("Pipeline '{}' throttle {}".format(self.Id, "enabled" if enable else "disabled"))
+		L.warning("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
 		if enable:
 			self._throttles.add(who)
 		else:
