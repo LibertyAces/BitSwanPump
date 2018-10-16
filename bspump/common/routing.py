@@ -139,7 +139,7 @@ class RouterMixIn(object):
 
 	def dispatch(self, context, event, source_id, copy_event=True):
 		#TODO: Obsolete function
-		return self.route(self, context, event, source_id, copy_event=True)
+		return self.route(context, event, source_id, copy_event=True)
 
 
 	def route(self, context, event, source_id, copy_event=True):
