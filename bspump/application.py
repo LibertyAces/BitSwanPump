@@ -37,6 +37,7 @@ class BSPumpApplication(asab.Application):
 			self.add_module(Module)
 			logman_service = self.get_service('asab.LogManIOService')
 			logman_service.configure_metrics(self.get_service('asab.MetricsService'))
+			logman_service.configure_logging(self)
 
 
 		try:
