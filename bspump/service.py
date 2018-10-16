@@ -95,7 +95,7 @@ class BSPumpService(asab.Service):
 
 	#
 
-	def start(self):
+	async def initialize(self, app):
 		# Start all pipelines
 		for pipeline in self.Pipelines.values():
 			pipeline.start()

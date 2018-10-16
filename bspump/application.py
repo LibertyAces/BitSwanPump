@@ -47,9 +47,6 @@ class BSPumpApplication(asab.Application):
 			pass
 
 
-	async def main(self):
-		self.PumpService.start()
-
 
 	def _on_signal_usr1(self):
 		'''
