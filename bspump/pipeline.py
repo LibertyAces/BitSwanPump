@@ -5,6 +5,7 @@ import logging
 import itertools
 import asab
 from .abc.source import Source
+from .abc.sink import Sink
 from .abc.generator import Generator
 from .abc.connection import Connection
 from .exception import ProcessingError
@@ -36,6 +37,8 @@ class Pipeline(abc.ABC):
 			tags={'pipeline':self.Id},
 			init_values={
 				'event.in': 0,
+				'event.out': 0,
+				'event.drop': 0,
 				'warning': 0,
 				'error': 0,
 			}
@@ -168,7 +171,6 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 
 	def _do_process(self, event, depth, context):
-
 		for processor in self.Processors[depth]:
 			try:
 				event = processor.process(context, event)
@@ -179,13 +181,18 @@ class SampleInternalPipeline(bspump.Pipeline):
 				raise
 
 			if event is None: # Event has been consumed on the way
+				if len(self.Processors) == (depth + 1):
+					if isinstance(processor, Sink):
+						self.MetricsCounter.add('event.out', 1)
+					else:
+						self.MetricsCounter.add('event.drop', 1)
+
 				return
 
-		if event is None:
-			return
+		assert(event is not None)
 
 		# If the event is generator and there is more in the processor pipeline, then enumerate generator
-		elif isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
+		if isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
 			return event
 
 		else:
