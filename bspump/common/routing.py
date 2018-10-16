@@ -113,6 +113,11 @@ class RouterMixIn(object):
 
 
 	def unlocate(self, source_id):
+		'''
+		Undo locate() call, it means that it removes the source from a cache + remove throttling binds
+		'''
+
+		# UNTESTED CODE !!!
 		try:
 			source = self.SourcesCache.pop(source_id)
 		except KeyError:
