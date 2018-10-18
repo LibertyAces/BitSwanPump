@@ -19,10 +19,10 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.sink = bspump.parquet.ParquetSink(app, self, config={'path': 'output.parquet', 'chunk_size': 500})
+		self.sink = bspump.parquet.ParquetSink(app, self, config={'rows_in_chunk': 500, 'rows_per_file': 1000})
 
 		self.build(
-			bspump.file.FileCSVSource(app, self, config={'path': 'sample.csv', 'delimiter': ';'}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.file.FileCSVSource(app, self, config={'path': 'data.csv', 'delimiter': ','}).on(bspump.trigger.RunOnceTrigger(app)),
 			self.sink
 		)
 
