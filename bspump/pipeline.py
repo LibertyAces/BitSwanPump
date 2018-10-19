@@ -20,14 +20,12 @@ class Pipeline(abc.ABC):
 
 
 	def __init__(self, app, id=None):
-
 		self.Id = id if id is not None else self.__class__.__name__
 		self.Loop = app.Loop
 
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
 		self._source_coros = [] # List of source main() coroutines
-
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
@@ -43,6 +41,15 @@ class Pipeline(abc.ABC):
 				'error': 0,
 			}
 		)
+		self.MetricsDutyCycle = metrics_service.create_duty_cycle(self.Loop,
+			"bspump.pipeline.dutycycle",
+			tags={'pipeline':self.Id},
+			init_values={
+				'ready': 0.0,
+			}
+		)
+
+		self.LastReadyStateSwitch = self.Loop.time()
 
 		self._error = None # None if not in error state otherwise there is a tuple (exception, event)
 
@@ -144,12 +151,14 @@ class SampleInternalPipeline(bspump.Pipeline):
 			new_ready = len(self._throttles) == 0 
 
 		if orig_ready != new_ready:
-			if new_ready:
+			if new_ready:				
 				self._ready.set()
 				self.PubSub.publish("bspump.pipeline.ready!", pipeline=self)
+				self.MetricsDutyCycle.set('ready', True)
 			else:
 				self._ready.clear()
 				self.PubSub.publish("bspump.pipeline.not_ready!", pipeline=self)
+				self.MetricsDutyCycle.set('ready', False)
 
 
 	async def ready(self):
