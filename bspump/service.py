@@ -3,6 +3,7 @@ import asyncio
 import asab
 
 from .abc.connection import Connection
+from .abc.lookup import Lookup
 
 #
 
@@ -59,6 +60,8 @@ class BSPumpService(asab.Service):
 	# Connections
 
 	def add_connection(self, connection):
+		if connection.Id in self.Connections:
+			raise RuntimeError("Lookup '{}' already created".format(lookup_id))
 		self.Connections[connection.Id] = connection
 
 	def add_connections(self, *connections):
@@ -75,27 +78,29 @@ class BSPumpService(asab.Service):
 
 	# Lookups
 
-	def ensure_lookup(self, lookup_cls, lookup_id=None, config=None, *args, **kwargs):
-		#TODO: lookup_cls is inherited from lookup_cls
+	def add_lookup(self, lookup):
+		if lookup.Id in self.Lookups:
+			raise RuntimeError("Lookup '{}' already created".format(lookup_id))		
+		self.Lookups[lookup.Id] = lookup
 
-		if lookup_id == None:
-			lookup_id = lookup_cls.__name__
+	def add_lookups(self, *lookups):
+		for lookup in lookups:
+			self.add_lookup(lookup)
 
+	def locate_lookup(self, lookup_id):
+		if isinstance(lookup_id, Lookup): return lookup_id
 		try:
 			return self.Lookups[lookup_id]
 		except KeyError:
-			pass
-		
-		lkp = lookup_cls(self, lookup_id, config, *args, **kwargs)
-		self.Lookups[lookup_id] = lkp
-
-		asyncio.ensure_future(lkp.load(), loop=self.App.Loop)
-
-		return lkp
+			raise KeyError("Cannot find lookup id '{}' (did you call add_lookup() ?)".format(lookup_id))
 
 	#
 
 	async def initialize(self, app):
+		# Await all lookups
+		if len(self.Lookups) > 0:
+			done, pending = await asyncio.wait({lookup.LoadTask for lookup in self.Lookups.values()}, loop=app.Loop)
+
 		# Start all pipelines
 		for pipeline in self.Pipelines.values():
 			pipeline.start()

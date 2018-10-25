@@ -7,11 +7,13 @@ from asab import ConfigObject
 
 class Lookup(abc.ABC, ConfigObject):
 
-	def __init__(self, bspump_svc, lookup_id, config=None):
+
+	def __init__(self, app, lookup_id, config=None):
 		assert(lookup_id is not None)
-		#TODO: bspump_svc is inherited from BSPumpService
 		super().__init__("lookup:{}".format(lookup_id), config=config)
 		self.Id = lookup_id
+		self.LoadTask = asyncio.ensure_future(self.load(), loop=app.Loop)
+
 
 	@abc.abstractmethod
 	async def load(self):

@@ -16,10 +16,11 @@ L = logging.getLogger(__name__)
 
 class SamplePipeline(bspump.Pipeline):
 
-	def __init__(self, app, pipeline_id, lookup):
+	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.Lookup = lookup
+		svc = app.get_service("bspump.PumpService")
+		self.Lookup = svc.locate_lookup("MyDictionaryLookup")
 
 		self.build(
 			bspump.file.FileCSVSource(app, self, config={'path': './examples/data/sample.csv', 'delimiter': ';'})
@@ -40,10 +41,10 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	# Construct the lookup
-	lkp = svc.ensure_lookup(MyDictionaryLookup)
+	lkp = svc.add_lookup(MyDictionaryLookup(app, "MyDictionaryLookup"))
 
 	# Construct and register Pipeline
-	pl = SamplePipeline(app, 'SamplePipeline', lkp)
+	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
 
 	app.run()
