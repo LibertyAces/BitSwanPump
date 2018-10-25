@@ -11,6 +11,10 @@ L = logging.getLogger(__name__)
 
 #
 
+class InvalidResponseStatusCodeError(aiohttp.ClientError):
+	pass
+
+
 class HTTPABCClientSource(TriggerSource):
 
 
@@ -56,27 +60,29 @@ class HTTPABCClientSource(TriggerSource):
 
 
 	async def cycle(self, session):
-		async with session.request(
-				self.Method,
-				self.URL,
-				headers = self.Headers if len(self.Headers) > 0 else None,
-				ssl = self.SSL,
-			) as response:
-			if response.status not in self.ResponseCodes:
-				self.FailedResponses += 1
-				if self.FailedResponses < self.MaxFailedResponses:
-					L.warn("Received an incorrect response status code {} from '{}', will retry ({}/{}) in {:0.0f} sec".format(response.status, self.URL, self.FailedResponses, self.MaxFailedResponses, self.FailChilldown))
-					self.Pipeline.MetricsCounter.add('warning', 1)
-					await asyncio.sleep(self.FailChilldown)
-					return
+		try:
+			async with session.request(
+					self.Method,
+					self.URL,
+					headers = self.Headers if len(self.Headers) > 0 else None,
+					ssl = self.SSL,
+				) as response:
+				if response.status not in self.ResponseCodes:
+					await response.text()
+					raise InvalidResponseStatusCodeError("The response status code {} from '{}' is invalid".format(response.status,self.URL))
 				else:
-					t = await response.text()
-					if len(t) > 1000: t = t[:1000] + '...'
-					L.error("Last failed response (response status code {}):\n{}".format(response.status, t))
-					raise RuntimeError("Recevied {} failed responses from '{}', last response status code: {}".format(self.FailedResponses, self.URL, response.status))
+					self.FailedResponses = 0 # Reset the counter
+				await self.read(response)
+
+		except aiohttp.ClientError as e:
+			self.FailedResponses += 1
+			if self.FailedResponses < self.MaxFailedResponses:
+				L.warn("{}, will retry ({}/{}) in {:0.0f} sec".format(e, self.FailedResponses, self.MaxFailedResponses, self.FailChilldown))
+				self.Pipeline.MetricsCounter.add('warning', 1)
+				await asyncio.sleep(self.FailChilldown)
 			else:
-				self.FailedResponses = 0 # Reset the counter
-			await self.read(response)
+				L.error("{}, {} failed response(s)".format(e, self.FailedResponses))
+				raise aiohttp.ClientError("{}, url='{}'".format(e, self.URL))
 
 
 	@abc.abstractmethod
