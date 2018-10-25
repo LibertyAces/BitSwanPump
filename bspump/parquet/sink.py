@@ -53,7 +53,7 @@ class ParquetSink(Sink):
 			index=('{:04d}'.format(self.Index)) if self.Index is not None else ''
 		) + postfix
 
-	def on_tick(self):
+	def on_tick(self, event_name):
 		self.flush()
 
 	def process(self, context, event):
