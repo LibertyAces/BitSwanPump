@@ -26,8 +26,8 @@ class MappingLookup(Lookup, collections.abc.Mapping):
 
 class DictionaryLookup(MappingLookup):
 
-	def __init__(self, bspump_svc, lookup_id, config=None):
-		super().__init__(bspump_svc, lookup_id, config=config)
+	def __init__(self, app, lookup_id, config=None):
+		super().__init__(app, lookup_id, config=config)
 		self.Dictionary = {}
 
 	def __getitem__(self, key):
