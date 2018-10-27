@@ -3,16 +3,26 @@ import collections.abc
 import json
 import asyncio
 
-from asab import ConfigObject
+import asab
 
-class Lookup(abc.ABC, ConfigObject):
+class Lookup(abc.ABC, asab.ConfigObject):
 
 
 	def __init__(self, app, lookup_id, config=None):
 		assert(lookup_id is not None)
 		super().__init__("lookup:{}".format(lookup_id), config=config)
 		self.Id = lookup_id
-		self.LoadTask = asyncio.ensure_future(self.load(), loop=app.Loop)
+		self.PubSub = asab.PubSub(app)
+
+
+	def ensure_future_update(self, loop):
+		return asyncio.ensure_future(self._do_update(), loop=loop)
+
+
+	async def _do_update(self):
+		res = await self.load()
+		if res is not False:
+			self.PubSub.publish("bspump.Lookup.changed!")
 
 
 	@abc.abstractmethod

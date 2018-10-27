@@ -21,12 +21,17 @@ class SamplePipeline(bspump.Pipeline):
 
 		svc = app.get_service("bspump.PumpService")
 		self.Lookup = svc.locate_lookup("MyDictionaryLookup")
+		self.Lookup.PubSub.subscribe("bspump.Lookup.changed!", self.lookup_updated)
 
 		self.build(
 			bspump.file.FileCSVSource(app, self, config={'path': './examples/data/sample.csv', 'delimiter': ';'})
 				.on(bspump.trigger.RunOnceTrigger(app)),
 			bspump.common.PPrintSink(app, self),
 		)
+
+
+	def lookup_updated(self, event_name):
+		print(">>>", event_name)
 
 
 class MyDictionaryLookup(bspump.DictionaryLookup):
