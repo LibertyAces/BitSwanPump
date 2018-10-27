@@ -1,7 +1,7 @@
 import abc
-from asab import ConfigObject
+import asab
 
-class ProcessorBase(abc.ABC, ConfigObject):
+class ProcessorBase(abc.ABC, asab.ConfigObject):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
