@@ -27,5 +27,11 @@ setup(
 	project_urls={
 		'Source': 'https://github.com/TeskaLabs/bspump'
 	},
+	install_requires=[
+		'requests',
+	],
+	scripts=[
+		'utils/bselastic'
+	]
 )
 

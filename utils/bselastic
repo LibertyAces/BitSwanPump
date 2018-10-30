@@ -1,0 +1,426 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import json
+import pprint
+import re
+import datetime
+import time
+import requests
+
+def parse_cmdline():
+	# Parse args
+	parser = argparse.ArgumentParser(
+		formatter_class=argparse.RawDescriptionHelpFormatter,
+		description='''Manage ElasticSearch.''')
+
+	subparsers = parser.add_subparsers(help='commands')
+
+	# An load_index_template command
+	load_template_parser = subparsers.add_parser('load_index_template', help='loads index templates into ElasticSearch')
+	load_template_parser.add_argument('DIR', action='store', help='a directory to seek for template')
+	load_template_parser.add_argument('URL', action='store', help='a ElasticSearch URL to write to')
+	load_template_parser.set_defaults(COMMAND='load_index_template')
+
+	# An cleanup command
+	cleanup_parser = subparsers.add_parser('cleanup', help='cleanup old and empty indexes')
+	cleanup_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
+	cleanup_parser.set_defaults(COMMAND='cleanup')
+
+	# An reopen command
+	reopen_parser = subparsers.add_parser('reopen', help='reopen closed indexes in time range')
+	reopen_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
+	reopen_parser.add_argument('--min-date',
+		action='store',
+		help='Min date (format yyyy-mm-dd)',
+		default='1970-01-01')
+	reopen_parser.add_argument('--max-date',
+		action='store',
+		help='Max date (format yyyy-mm-dd)',
+		default='1970-01-01')
+	reopen_parser.set_defaults(COMMAND='reopen')
+
+	# Close command
+	close_parser = subparsers.add_parser('close', help='close open indexes in time range')
+	close_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
+	close_parser.add_argument('--min-date',
+		action='store',
+		help='Min date (format yyyy-mm-dd)',
+		default='1970-01-01')
+	close_parser.add_argument('--max-date',
+		action='store',
+		help='Max date (format yyyy-mm-dd)',
+		default='1970-01-01')
+	close_parser.set_defaults(COMMAND='close')
+
+	return parser.parse_args()
+
+
+def req_close_index(es_url, index_name):
+	url_close = es_url + '{}/_close'.format(index_name)
+	r = requests.post(url_close, json={})
+	return r.json()
+
+
+def req_maxmin_timestamp(es_url, index_name):
+	maxmin_request = {
+		"aggs" : {
+			"max_timestamp" : { "max" : { "field" : "@timestamp" } },
+			"min_timestamp" : { "min" : { "field" : "@timestamp" } }
+		}
+	}
+	url_maxmin = es_url + '{}/_search?size=0'.format(index_name)
+	r = requests.post(url_maxmin, json=maxmin_request)
+	return r.json()
+
+
+def min_datetime_from_maxmin(maxmin_obj):
+	v = maxmin_obj['aggregations']['min_timestamp']['value']
+	if v is not None:
+		min_date = datetime.datetime.utcfromtimestamp(v/1000.0)
+	else:
+		min_date = None
+	return min_date
+
+
+def max_datetime_from_maxmin(maxmin_obj):
+	v = maxmin_obj['aggregations']['max_timestamp']['value']
+	if v is not None:
+		max_date = datetime.datetime.utcfromtimestamp(v/1000.0)
+	else:
+		max_date = None
+	return max_date
+
+
+def datetime_ranges_collide(a_min_datetime, a_max_datetime, b_min_datetime, b_max_datetime):
+	assert a_min_datetime <= a_max_datetime
+	assert b_min_datetime <= b_max_datetime
+
+	if b_min_datetime < a_min_datetime and b_max_datetime > a_min_datetime:
+		# A   |---| ||   |--|
+		# B |---|   || |------|
+		#===============
+		return True
+	elif b_min_datetime > a_min_datetime and b_min_datetime < a_max_datetime:
+		# A |---|   || |-------|
+		# B   |---| ||   |---|
+		return True
+	else:
+		return False
+
+
+def COMMAND_load_index_template(DIR, URL):
+
+	# Compile list of templates
+	template_files = []
+	for root, subdirs, files in os.walk(DIR):
+		if 'es_index_template.json' in files:
+			template_files.append(os.path.join(root, 'es_index_template.json'))
+
+	for tf in template_files:
+		print("Loading {}".format(tf))
+		obj = None
+		try:
+			b = open(tf,'r').read()
+			# Strip comments
+			b = re.sub(r"//.*$", "", b, flags=re.M)
+
+			obj = json.loads(b)
+		except Exception as e:
+			print("Failed to load {}: {}".format(tf, e))
+			continue
+
+		deploy_to = obj.pop('!deploy_to')
+
+
+		url = URL
+		if url[-1:] != '/': url += '/'
+
+		url += '_template/'+deploy_to
+		print(" to {}".format(url))
+
+		r = requests.put(url, json=obj)
+		print(r.text)
+
+
+def COMMAND_cleanup(URL):
+	url = URL
+	if url[-1:] != '/': url += '/'
+
+	print("Communicate with: {}".format(url))
+
+	url_indices = url + '_cat/indices?format=json'
+	r = requests.get(url_indices)
+	indices = r.json()
+	#json.dump(indices, open('dump.json', 'wt'))
+	#indices = json.load(open('dump.json', 'rt'))
+
+	empty_indices = []
+	old_count = 0
+	not_green_count = 0
+	closed_count = 0
+
+	indices = sorted(indices, key=lambda index:index['index'].rsplit('_')[-1], reverse=False)
+
+	for index in indices:
+		try:
+			name = index['index']
+			if index['health'] != 'green':
+				#print("Index {index} health is {health} - skipping".format(**index))
+				not_green_count += 1
+				continue
+
+			if index['status'] != 'open':
+				continue
+
+			if name.startswith('.'):
+				continue
+
+			if int(index['docs.count']) == 0:
+				# Delete empty indicies
+				print("Deleting '{}' (doc.count: {})".format(name, index['docs.count']))
+				url_delete_index = url + '{}'.format(name)
+				r = requests.delete(url_delete_index)
+				result = r.json()
+				if result.get('acknowledged') != True:
+					print("Failed to delete index '{}': {}".format(name, result))
+				continue
+
+			maxmin_obj = req_maxmin_timestamp(url, name)
+			max_date = max_datetime_from_maxmin(maxmin_obj)
+			min_date = min_datetime_from_maxmin(maxmin_obj)
+
+			if max_date < datetime.datetime(year=2018, month=1, day=1, hour=0, minute=0):
+				old_count += 1
+				# Delete close old indicies
+
+				print("Closing index: {}\n\tMax: {}\n\tMin: {}\n\tCount: {}\n".format(
+					name,
+					max_date, min_date,
+					index['docs.count']
+				))
+
+				url_close = url + '{}/_close'.format(name)
+				r = requests.post(url_close, json={})
+				result = r.json()
+
+				if result.get('acknowledged') != True:
+					print("Failed to close index '{}': {}".format(name, result))
+
+				continue
+
+		
+		except KeyboardInterrupt:
+			return
+
+		except:
+			print("Error in this index:")
+			pprint.pprint(index)
+
+	print("Count of total indicies: {}".format(len(indices)))
+	print("Count of old indicies: {}".format(old_count))
+	print("Count of empty indicies: {}".format(len(empty_indices)))
+	print("Count of non-green indicies: {}".format(not_green_count))
+
+
+def COMMAND_reopen(URL, args_min_date, args_max_date):
+	url = URL
+	if url[-1:] != '/': url += '/'
+
+	args_min_datetime = datetime.datetime.strptime(args_min_date, "%Y-%m-%d")
+	args_max_datetime = datetime.datetime.strptime(args_max_date, "%Y-%m-%d")
+	args_max_datetime = args_max_datetime + datetime.timedelta(days=1)
+	assert args_min_datetime < args_max_datetime
+
+	print("Communicate with: {}".format(url))
+
+	url_indices = url + '_cat/indices?format=json'
+	r = requests.get(url_indices)
+	indices = r.json()
+	# json.dump(indices, open('dump.json', 'wt'))
+	# indices = json.load(open('dump.json', 'rt'))
+
+	closed_count = 0
+	opened_count = 0
+
+	indices = sorted(indices, key=lambda index:index['index'].rsplit('_')[-1], reverse=False)
+
+	for index in indices:
+		try:
+			name = index['index']
+
+			if index['status'] != 'close':
+				continue
+
+			if name.startswith('.'):
+				continue
+
+			closed_count+=1
+
+			# Open
+			print("Opening index {}".format(name))
+			url_open = url + '{}/_open'.format(name)
+			r = requests.post(url_open, json={})
+			result = r.json()
+
+
+			# Wait until open
+			url_stats = url + '_cat/indices/{}?format=json'.format(name)
+			is_open = False
+			while not is_open:
+				r = requests.get(url_stats)
+				result = r.json()
+				assert len(result) == 1
+				is_open = result[0]['status'] == 'open'
+				print("Index '{}' {} open.".format(name, "is" if is_open else "is not"))
+				if not is_open:
+					time.sleep(1)
+
+
+			# Get max and min date
+			res_success = False
+			retry_count = 0
+			while not res_success:
+				maxmin_obj = req_maxmin_timestamp(url, name)
+				res_success = "aggregations" in maxmin_obj
+				if not res_success:
+					retry_count+=1
+					if retry_count > 5:
+						raise RuntimeError("Max retries exceeded while requesting maxmin timestamp on index '{}'".format(name))
+					time.sleep(1)
+
+			max_datetime = max_datetime_from_maxmin(maxmin_obj)
+			min_datetime = min_datetime_from_maxmin(maxmin_obj)
+
+
+			# Close if found time range doesn't collide with selected time range
+			if  min_datetime is None \
+				or max_datetime is None \
+				or not datetime_ranges_collide(
+					min_datetime, max_datetime,
+					args_min_datetime, args_max_datetime
+				):
+				print("Closing index {}".format(name))
+				result = req_close_index(url, name)
+			else:
+				opened_count+=1
+
+		except KeyboardInterrupt:
+			return
+
+		except Exception as e:
+			print("Error in this index:")
+			pprint.pprint(index)
+
+	print("Count of total indicies: {}".format(len(indices)))
+	print("Count of closed indicies: {}".format(closed_count))
+	print("Count of indices that were reopened: {}".format(opened_count))
+
+
+def COMMAND_close(URL, args_min_date, args_max_date):
+	url = URL
+	if url[-1:] != '/': url += '/'
+
+	args_min_datetime = datetime.datetime.strptime(args_min_date, "%Y-%m-%d")
+	args_max_datetime = datetime.datetime.strptime(args_max_date, "%Y-%m-%d")
+	args_max_datetime = args_max_datetime + datetime.timedelta(days=1)
+	assert args_min_datetime < args_max_datetime
+
+	print("Communicate with: {}".format(url))
+
+	url_indices = url + '_cat/indices?format=json'
+	r = requests.get(url_indices)
+	indices = r.json()
+	# json.dump(indices, open('dump.json', 'wt'))
+	# indices = json.load(open('dump.json', 'rt'))
+
+	open_count = 0
+	closed_count = 0
+	not_green_count = 0
+	closed_count = 0
+
+	indices = sorted(indices, key=lambda index:index['index'].rsplit('_')[-1], reverse=False)
+
+	for index in indices:
+		try:
+			name = index['index']
+
+			if index['health'] != 'green' and index['health'] != 'yellow':
+				#print("Index {index} health is {health} - skipping".format(**index))
+				not_green_count += 1
+				continue
+
+			if index['status'] != 'open':
+				continue
+
+			if name.startswith('.'):
+				continue
+
+			open_count+=1
+
+			# Get max and min date
+			res_success = False
+			retry_count = 0
+			while not res_success:
+				maxmin_obj = req_maxmin_timestamp(url, name)
+				res_success = "aggregations" in maxmin_obj
+				if not res_success:
+					retry_count+=1
+					if retry_count > 5:
+						raise RuntimeError("Max retries exceeded while requesting maxmin timestamp on index '{}'".format(name))
+					time.sleep(1)
+
+			max_datetime = max_datetime_from_maxmin(maxmin_obj)
+			min_datetime = min_datetime_from_maxmin(maxmin_obj)
+
+
+			# Close if found time range doesn't collide with selected time range
+			if  min_datetime is not None \
+				and max_datetime is not None \
+				and datetime_ranges_collide(
+					min_datetime, max_datetime,
+					args_min_datetime, args_max_datetime
+				):
+				print("Closing index {}".format(name))
+				result = req_close_index(url, name)
+				closed_count+=1
+			else:
+				print("Index {} will remain open.".format(name))
+
+		except KeyboardInterrupt:
+			return
+
+		except Exception as e:
+			print("Error in this index:")
+			pprint.pprint(index)
+
+	print("Count of total indicies: {}".format(len(indices)))
+	print("Count of open indicies: {}".format(open_count))
+	print("Count of indices that were closed: {}".format(closed_count))
+
+
+def main():
+	# Get arguments
+	args = parse_cmdline()
+
+	# Call the command
+	if 'COMMAND' not in args:
+		print("Please select a command: load_index_template, cleanup, reopen, close.")
+		print("For more information see --help")
+		return 1
+
+	if args.COMMAND == 'load_index_template':
+		return COMMAND_load_index_template(args.DIR, args.URL)
+
+	elif args.COMMAND == 'cleanup':
+		return COMMAND_cleanup(args.URL)
+
+	elif args.COMMAND == 'reopen':
+		return COMMAND_reopen(args.URL, args.min_date, args.max_date)
+
+	elif args.COMMAND == 'close':
+		return COMMAND_close(args.URL, args.min_date, args.max_date)
+
+
+if __name__ == '__main__':
+	main()
