@@ -41,9 +41,11 @@ class BSPumpApplication(asab.Application):
 		parser = super().create_argument_parser()
 		parser.add_argument(
 			'-w', '--web',
-			default="",
 			const="0.0.0.0 80",
-			nargs="?")
+			nargs="?",
+			metavar="ADDRESS",
+			help='Enable the web API, ADDRESS specify an listen address such as "0.0.0.0 80"'
+		)
 		return parser
 
 
@@ -59,7 +61,7 @@ class BSPumpApplication(asab.Application):
 
 		# Listen host and port
 		listen = ""
-		if len(self._web_listen) > 0:
+		if self._web_listen is not None and len(self._web_listen) > 0:
 			listen = self._web_listen
 		else:
 			listen = asab.Config["bspump:web"].get("listen", "")
