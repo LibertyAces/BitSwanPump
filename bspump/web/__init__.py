@@ -1,4 +1,7 @@
 import os
+import hashlib
+import json
+
 import aiohttp.web
 import asab.web.rest
 
@@ -28,6 +31,38 @@ async def example_internal(request):
 	return asab.web.rest.json_response(request, {'ok': 1})
 
 
+async def lookup(request):
+	lookup_id = request.match_info.get('lookup_id')
+	app = request.app['app']
+	svc = app.get_service("bspump.PumpService")
+	request_etag = request.headers.get('ETag')
+
+	try:
+		lookup = svc.locate_lookup(lookup_id)
+	except KeyError:
+		return asab.web.rest.json_response(request, {'ok': 0, 'result': 'LOOKUP-NOT-FOUND'})
+
+	try:
+		data = lookup.serialize()
+	except AttributeError:
+		return asab.web.rest.json_response(request, {'ok': 0, 'result': 'LOOKUP-SERIALIZE-NOT-IMPLEMENTED'})
+
+	if isinstance(data, dict):
+		response_etag = hashlib.sha1(json.dumps(data).encode('utf-8')).hexdigest()
+	elif isinstance(data, str):
+		response_etag = hashlib.sha1(data.encode('utf-8')).hexdigest()
+	else:
+		response_etag = hashlib.sha1(data).hexdigest()
+
+	if request_etag == response_etag:
+		return asab.web.rest.json_response(request, {'ok': 1, 'result': 'ETAG-LATEST'})
+
+	return asab.web.rest.json_response(request, {
+		'ok': 1,
+		'result': 'OK',
+		'data': data,
+	}, headers={'ETag': response_etag})
+
 
 def initialize_web(app):
 	from asab.web import Module
@@ -44,5 +79,7 @@ def initialize_web(app):
 
 	svc.WebApp.router.add_get('/example/trigger', example_trigger)
 	svc.WebApp.router.add_get('/example/internal', example_internal)
+
+	svc.WebApp.router.add_get('/lookup/{lookup_id}', lookup)
 
 	return svc
