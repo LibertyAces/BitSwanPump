@@ -4,10 +4,6 @@ import asab.web.rest
 
 ####
 
-async def index(request):
-	return aiohttp.web.FileResponse(os.path.join(request.app['static_dir'], 'app.html'))
-
-
 async def pipelines(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
@@ -29,20 +25,24 @@ async def example_internal(request):
 
 
 
-def initialize_web(app):
-	from asab.web import Module
-	app.add_module(Module)
+def initialize_web(app, listen):
+	app.add_module(asab.web.Module)
 
-	svc = app.get_service("asab.WebService")
+	websvc = app.get_service("asab.WebService")
 
-	static_dir = os.path.join(os.path.dirname(__file__), "static")
-	svc.WebApp['static_dir'] = static_dir
+	# Create a dedicated web container
+	container = asab.web.WebContainer(websvc, 'bspump:web', config={"listen": listen})
 
-	svc.WebApp.router.add_get('/', index)
-	svc.WebApp.router.add_get('/pipelines', pipelines)
-	svc.WebApp.router.add_static('/static/', path=static_dir, name='static')
+	# Add web app
+	asab.web.StaticDirProvider(
+		container.WebApp,
+		root='/',
+		path=os.path.join(os.path.dirname(__file__), "static"),
+		index="app.html")
 
-	svc.WebApp.router.add_get('/example/trigger', example_trigger)
-	svc.WebApp.router.add_get('/example/internal', example_internal)
+	# Add routes
+	container.WebApp.router.add_get('/pipelines', pipelines)
+	container.WebApp.router.add_get('/example/trigger', example_trigger)
+	container.WebApp.router.add_get('/example/internal', example_internal)
 
-	return svc
+	return websvc
