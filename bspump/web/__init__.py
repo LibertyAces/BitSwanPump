@@ -63,8 +63,7 @@ async def lookup(request):
 
 
 def initialize_web(app, listen):
-	from asab.web import Module
-	app.add_module(Module)
+	app.add_module(asab.web.Module)
 
 	websvc = app.get_service("asab.WebService")
 
