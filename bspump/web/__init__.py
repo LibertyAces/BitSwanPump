@@ -47,20 +47,14 @@ async def lookup(request):
 	except AttributeError:
 		raise aiohttp.web.HTTPNotImplemented()
 
-	if isinstance(data, dict):
-		response_etag = hashlib.sha1(json.dumps(data).encode('utf-8')).hexdigest()
-	elif isinstance(data, str):
-		response_etag = hashlib.sha1(data.encode('utf-8')).hexdigest()
-	else:
-		response_etag = hashlib.sha1(data).hexdigest()
-
+	response_etag = hashlib.sha1(data).hexdigest()
 	if request_etag == response_etag:
 		raise aiohttp.web.HTTPNotModified()
 
 	return asab.web.rest.json_response(request,
 		{
 			'result': 'OK',
-			'data': data,
+			'data': data.decode('utf-8'),
 		},
 		headers={
 			'ETag': response_etag
