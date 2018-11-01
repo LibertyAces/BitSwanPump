@@ -43,6 +43,8 @@ async def lookup(request):
 	except AttributeError:
 		raise aiohttp.web.HTTPNotImplemented()
 
+	assert(isinstance(data, bytes))
+
 	response_etag = hashlib.sha1(data).hexdigest()
 	if request_etag == response_etag:
 		raise aiohttp.web.HTTPNotModified()
