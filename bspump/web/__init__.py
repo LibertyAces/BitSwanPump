@@ -49,15 +49,11 @@ async def lookup(request):
 	if request_etag == response_etag:
 		raise aiohttp.web.HTTPNotModified()
 
-	return asab.web.rest.json_response(request,
-		{
-			'result': 'OK',
-			'data': data.decode('utf-8'),
-		},
-		headers={
+	return aiohttp.web.Response(body=data, status=200,
+		headers= {
 			'ETag': response_etag
-		}
-	)
+		},
+		content_type="application/octet-stream")
 
 
 def initialize_web(app, listen):
