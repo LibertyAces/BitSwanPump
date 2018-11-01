@@ -62,22 +62,27 @@ async def lookup(request):
 	)
 
 
-def initialize_web(app):
+def initialize_web(app, listen):
 	from asab.web import Module
 	app.add_module(Module)
 
-	svc = app.get_service("asab.WebService")
+	websvc = app.get_service("asab.WebService")
 
-	static_dir = os.path.join(os.path.dirname(__file__), "static")
-	svc.WebApp['static_dir'] = static_dir
+	# Create a dedicated web container
+	container = asab.web.WebContainer(websvc, 'bspump:web', config={"listen": listen})
 
-	svc.WebApp.router.add_get('/', index)
-	svc.WebApp.router.add_get('/pipelines', pipelines)
-	svc.WebApp.router.add_static('/static/', path=static_dir, name='static')
+	# Add web app
+	asab.web.StaticDirProvider(
+		container.WebApp,
+		root='/',
+		path=os.path.join(os.path.dirname(__file__), "static"),
+		index="app.html")
 
-	svc.WebApp.router.add_get('/example/trigger', example_trigger)
-	svc.WebApp.router.add_get('/example/internal', example_internal)
+	# Add routes
+	container.WebApp.router.add_get('/pipelines', pipelines)
+	container.WebApp.router.add_get('/example/trigger', example_trigger)
+	container.WebApp.router.add_get('/example/internal', example_internal)
 
-	svc.WebApp.router.add_get('/lookup/{lookup_id}', lookup)
+	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup)
 
-	return svc
+	return websvc
