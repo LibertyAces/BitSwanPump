@@ -1,4 +1,7 @@
 import os
+import hashlib
+import json
+
 import aiohttp.web
 import asab.web.rest
 
@@ -24,6 +27,38 @@ async def example_internal(request):
 	return asab.web.rest.json_response(request, {'ok': 1})
 
 
+async def lookup(request):
+	lookup_id = request.match_info.get('lookup_id')
+	app = request.app['app']
+	svc = app.get_service("bspump.PumpService")
+	request_etag = request.headers.get('ETag')
+
+	try:
+		lookup = svc.locate_lookup(lookup_id)
+	except KeyError:
+		raise aiohttp.web.HTTPNotFound()
+
+	try:
+		data = lookup.serialize()
+	except AttributeError:
+		raise aiohttp.web.HTTPNotImplemented()
+
+	assert(isinstance(data, bytes))
+
+	response_etag = hashlib.sha1(data).hexdigest()
+	if request_etag == response_etag:
+		raise aiohttp.web.HTTPNotModified()
+
+	return asab.web.rest.json_response(request,
+		{
+			'result': 'OK',
+			'data': data.decode('utf-8'),
+		},
+		headers={
+			'ETag': response_etag
+		}
+	)
+
 
 def initialize_web(app, listen):
 	app.add_module(asab.web.Module)
@@ -44,5 +79,7 @@ def initialize_web(app, listen):
 	container.WebApp.router.add_get('/pipelines', pipelines)
 	container.WebApp.router.add_get('/example/trigger', example_trigger)
 	container.WebApp.router.add_get('/example/internal', example_internal)
+
+	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup)
 
 	return websvc
