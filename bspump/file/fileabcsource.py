@@ -25,7 +25,7 @@ class FileABCSource(TriggerSource):
 		'post': 'move', # one of 'delete', 'noop' and 'move'
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
-		'encoding': None,
+		'encoding': '',
 	}
 
 
@@ -78,7 +78,8 @@ class FileABCSource(TriggerSource):
 				f = lzma.open(locked_filename, self.mode)
 
 			else:
-				f = open(locked_filename, self.mode, newline=self.newline, encoding=self.encoding)
+				f = open(locked_filename, self.mode, newline=self.newline,
+						encoding=self.encoding if len(self.encoding) > 0 else None)
 
 		except BaseException as e:
 			L.exception("Error when opening the file '{}'".format(filename))
