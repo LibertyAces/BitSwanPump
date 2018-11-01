@@ -7,10 +7,6 @@ import asab.web.rest
 
 ####
 
-async def index(request):
-	return aiohttp.web.FileResponse(os.path.join(request.app['static_dir'], 'app.html'))
-
-
 async def pipelines(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")

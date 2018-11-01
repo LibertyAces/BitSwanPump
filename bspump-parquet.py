@@ -14,20 +14,21 @@ L = logging.getLogger(__name__)
 
 ###
 
+
 class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.sink = bspump.parquet.ParquetSink(app, self, config={'rows_in_chunk': 500, 'rows_per_file': 1000})
+		self.sink = bspump.parquet.ParquetSink(app, self, config={'rows_in_chunk': 500, 'rows_per_file': 1000,
+																  'schema_file': './examples/data/sample2-schema.json'})
 
 		self.build(
-			bspump.file.FileCSVSource(app, self, config={'path': 'data.csv', 'delimiter': ','}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.file.FileCSVSource(app, self, config={'path': './examples/data/sample2.csv', 'delimiter': ','}).on(bspump.trigger.RunOnceTrigger(app)),
 			self.sink
 		)
 
 		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
-
 
 	def on_cycle_end(self, event_name, pipeline):
 		'''

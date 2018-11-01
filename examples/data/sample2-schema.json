@@ -1,0 +1,11 @@
+{
+      "name":{
+          "type": "string"
+      },
+      "age":{
+          "type": "int"
+      },
+      "salary":{
+          "type": "float"
+      }
+}

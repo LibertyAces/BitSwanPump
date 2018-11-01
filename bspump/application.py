@@ -19,17 +19,7 @@ class BSPumpApplication(asab.Application):
 		self.add_module(Module)
 
 		self.PumpService = BSPumpService(self)
-
-		# Conditionally activate also a web service
-		if asab.Config.has_section("asab:web"):
-			listen = asab.Config["asab:web"].get("listen", "")
-			if len(listen) > 0:
-				# Initialize web service
-				from .web import initialize_web
-				self.WebService = initialize_web(self)
-
-		else:
-			self.WebService = None
+		self.WebService = None
 
 		# Conditionally activate LogMan.io service
 		if asab.Config.has_section("logman.io"):
@@ -46,6 +36,39 @@ class BSPumpApplication(asab.Application):
 		except (NotImplementedError, AttributeError):
 			pass
 
+
+	def create_argument_parser(self):
+		parser = super().create_argument_parser()
+		parser.add_argument(
+			'-w', '--web',
+			const="0.0.0.0 80",
+			nargs="?",
+			metavar="ADDRESS",
+			help='Enable the web API, ADDRESS specify an listen address such as "0.0.0.0 80"'
+		)
+		return parser
+
+
+	def parse_arguments(self):
+		args = super().parse_arguments()
+		self._web_listen = args.web
+
+
+	async def initialize(self):
+		# Conditionally activate also a web service
+		if not asab.Config.has_section("bspump:web"):
+			asab.Config["bspump:web"] = {}
+
+		# Listen host and port
+		listen = ""
+		if self._web_listen is not None and len(self._web_listen) > 0:
+			listen = self._web_listen
+		else:
+			listen = asab.Config["bspump:web"].get("listen", "")
+
+		if len(listen) > 0:
+			from .web import initialize_web
+			self.WebService = initialize_web(self, listen)
 
 
 	def _on_signal_usr1(self):
