@@ -239,15 +239,6 @@ class SampleInternalPipeline(bspump.Pipeline):
 				self._generator_process(ngevent, depth+1, context)
 
 
-	def locate_connection(self, app, connection_id):
-		if isinstance(connection_id, Connection): return connection_id
-		svc = app.get_service("bspump.PumpService")
-		connection = svc.locate_connection(connection_id)
-		if connection is None:
-			raise RuntimeError("Cannot locate connection '{}'".format(connection_id))
-		return connection
-
-
 	# Construction
 
 	def set_source(self, source):
@@ -279,6 +270,26 @@ class SampleInternalPipeline(bspump.Pipeline):
 		for processors in self.Processors:
 			for processor in processors:
 				yield processor
+
+
+	# Locate  ...
+
+	def locate_source(self, address):
+		'''
+		Find by a source id.
+		'''
+		for source in self.Sources:
+			if source.Id == address:
+				return source
+		return None
+
+	def locate_connection(self, app, connection_id):
+		if isinstance(connection_id, Connection): return connection_id
+		svc = app.get_service("bspump.PumpService")
+		connection = svc.locate_connection(connection_id)
+		if connection is None:
+			raise RuntimeError("Cannot locate connection '{}'".format(connection_id))
+		return connection
 
 
 	# Lifecycle ...
