@@ -40,12 +40,34 @@ class InternalSource(Source):
 
 	def put(self, context, event, copy_event=True):
 		'''
-		Context can be empty dictionary if is not provided
+		Context can be an empty dictionary if is not provided
 		'''
 		if copy_event:
 			event = copy.deepcopy(event)
 
 		self.Queue.put_nowait((
+			copy.deepcopy(context),
+			event
+		))
+
+		if (not self.BackPressure) and (self.BackPressureLimit is not None) and (self.BackPressureLimit <= self.Queue.qsize()):
+			self.BackPressure = True
+			self.Pipeline.PubSub.publish("bspump.InternalSource.backpressure_on!", source=self)
+
+
+	async def put_async(self, context, event, copy_event=False):
+		'''
+		This method allows to put an event into InternalSource asynchronously.
+		Since a processing in the pipeline is synchronous, this method is useful mainly
+		for situation, when an event is created outside of the pipeline processing.
+		It is designed to handle situation when the queue is becoming full.
+
+		Context can be an empty dictionary if is not provided.
+		'''
+		if copy_event:
+			event = copy.deepcopy(event)
+
+		await self.Queue.put((
 			copy.deepcopy(context),
 			event
 		))
@@ -67,6 +89,8 @@ class InternalSource(Source):
 					self.Pipeline.PubSub.publish("bspump.InternalSource.backpressure_off!", source=self)
 
 				await self.process(event, context={'ancestor':context})
+
+				self.Queue.task_done()
 
 		except asyncio.CancelledError:
 			if self.Queue.qsize() > 0:
