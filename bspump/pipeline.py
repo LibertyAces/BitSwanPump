@@ -45,7 +45,7 @@ class Pipeline(abc.ABC):
 			"bspump.pipeline.dutycycle",
 			tags={'pipeline':self.Id},
 			init_values={
-				'ready': 0.0,
+				'ready': False,
 			}
 		)
 
