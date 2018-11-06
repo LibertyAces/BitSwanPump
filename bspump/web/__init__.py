@@ -56,6 +56,25 @@ async def lookup(request):
 		content_type="application/octet-stream")
 
 
+async def metric_list(request):
+	app = request.app['app']
+	svc = app.get_service("asab.MetricsService")
+	return asab.web.rest.json_response(request, svc.Metrics)
+
+
+async def metric_detail(request):
+	metric_id = request.match_info.get('metric_id')
+	app = request.app['app']
+	svc = app.get_service("asab.MetricsService")
+
+	print(">>>", metric_id)
+	metric = svc.Metrics.get(metric_id)
+	if metric is None:
+		raise aiohttp.web.HTTPNotFound()
+
+	return asab.web.rest.json_response(request, metric)
+
+
 def initialize_web(app, listen):
 	app.add_module(asab.web.Module)
 
@@ -77,5 +96,8 @@ def initialize_web(app, listen):
 	container.WebApp.router.add_get('/example/internal', example_internal)
 
 	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup)
+
+	container.WebApp.router.add_get('/metric', metric_list)
+	container.WebApp.router.add_get('/metric/{metric_id}', metric_detail)
 
 	return websvc
