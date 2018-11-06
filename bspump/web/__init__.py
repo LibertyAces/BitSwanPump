@@ -67,7 +67,6 @@ async def metric_detail(request):
 	app = request.app['app']
 	svc = app.get_service("asab.MetricsService")
 
-	print(">>>", metric_id)
 	metric = svc.Metrics.get(metric_id)
 	if metric is None:
 		raise aiohttp.web.HTTPNotFound()
