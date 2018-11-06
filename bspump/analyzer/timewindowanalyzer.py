@@ -90,7 +90,6 @@ class TimeWindowAnalyzer(Analyzer):
 	def get_time_column_index(self, event_timestamp):
 		column_idx = int((event_timestamp - self.TimeWindowsStart) / self.ResolutionMillis)
 		
-		print(event_timestamp)
 		if column_idx >= self.TimeColumnCount:
 			#print('a1')
 			self.Counters.add('events.late', 1)
