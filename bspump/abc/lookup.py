@@ -78,7 +78,7 @@ class Lookup(abc.ABC, asab.ConfigObject):
 	def serialize(self):
 		raise NotImplementedError("Lookup '{}' serialize() method not implemented".format(self.Id))
 
-	def deserialize(self, data, etag):
+	def deserialize(self, data):
 		'''
 		Do self.PubSub.publish("bspump.Lookup.changed!") when data are changed
 		'''
