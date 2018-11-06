@@ -79,9 +79,6 @@ class Lookup(abc.ABC, asab.ConfigObject):
 		raise NotImplementedError("Lookup '{}' serialize() method not implemented".format(self.Id))
 
 	def deserialize(self, data):
-		'''
-		Do self.PubSub.publish("bspump.Lookup.changed!") when data are changed
-		'''
 		raise NotImplementedError("Lookup '{}' deserialize() method not implemented".format(self.Id))
 
 
@@ -95,18 +92,27 @@ class Lookup(abc.ABC, asab.ConfigObject):
 		path = os.path.join(os.path.abspath(asab.Config["general"]["var_dir"]), "lookup_{}.cache".format(self.Id))
 
 		# Load the ETag from cached file, if have one
-		if not os.path.isfile(path) or not os.access(path, os.R_OK):
+		if not os.path.isfile(path):
 			return False
 
-		with open(path, 'rb') as f:
-			tlen, = struct.unpack(r"<L", f.read(struct.calcsize(r"<L")))
-			etag_b = f.read(tlen)
-			self.ETag = etag_b.decode('utf-8')
-			f.read(1)
-			data = f.read()
+		if not os.access(path, os.R_OK):
+			return False
 
-		self.deserialize(data)
-		self.PubSub.publish("bspump.Lookup.changed!")
+		try:
+			with open(path, 'rb') as f:
+				tlen, = struct.unpack(r"<L", f.read(struct.calcsize(r"<L")))
+				etag_b = f.read(tlen)
+				self.ETag = etag_b.decode('utf-8')
+				f.read(1)
+				data = f.read()
+
+			self.deserialize(data)
+		
+		except Exception as e:
+			L.warn("Failed to read content of lookup cache '{}' from '{}': {}".format(self.Id, path, e))
+			os.unlink(path)
+			return False
+
 
 		return True
 
