@@ -40,6 +40,22 @@ class SlackMessageSink(SlackAbcSink):
 		'''
 		Param 'event' must be a Slack message (https://api.slack.com/docs/messages)
 		It must contains at least keys 'text' or 'attachments'
+		Example:
+			{
+				"text": "This is text example!",
+				"attachments": [
+					{
+						"title": "This is attachments title",
+						"fields": [
+							{
+								"title": "Volume",
+								"value": "1",
+								"short": true
+							}
+						]
+					}
+				]
+			}
 		'''
 
 		self.Connection.consume(event)
