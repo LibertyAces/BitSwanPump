@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+import asab
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pandas as pd
@@ -30,7 +31,6 @@ class ParquetSink(Sink):
 			  "type": "float"
 		  }
 		}
-
 	"""
 
 	ConfigDefaults = {
@@ -44,16 +44,25 @@ class ParquetSink(Sink):
 		super().__init__(app, pipeline, id=id, config=config)
 		app.PubSub.subscribe("Application.tick/10!", self.on_tick)
 
+		metrics_service = app.get_service('asab.MetricsService')
+		self.Counter = metrics_service.create_counter("counter", tags={},
+													  init_values={'parquet.error': 0})
+		self.Gauge = metrics_service.create_gauge("gauge", tags={},
+												  init_values={'parquet.missing_attributes': 0, 'parquet.new_attributes': 0})
+
 		self.Frames = []
 		self.ChunkSize = self.Config['rows_in_chunk']
 		self.RolloverMechanism = self.Config['rollover_mechanism']
 		self.FileNameTemplate = self.Config['file_name_template']
 
-		self.SchemaFile = self.Config['schema_file']
+		self.MissingSet = set()
+		self.NewSet = set()
+
+		self.SchemaFile = self.Config.get('schema_file')
 		if self.SchemaFile is not None:
 			self.SchemaDefined = True
 		else:
-			self.SchemaDefined = True
+			self.SchemaDefined = False
 
 		self.SchemaDataTypes = ['string', 'bool', 'list', 'decimal', 'float', 'int', 'date', 'time', 'bytearray', 'array']
 
@@ -99,7 +108,7 @@ class ParquetSink(Sink):
 
 				if col['type'] not in self.SchemaDataTypes:
 					L.warning('SchemaFile is not valid schema. Types must be one of the following: string, bool, \
-								float, int, list, decimal, date, time, bytearray or array. Not ' + col['type'])
+								float, int, list, decimal, date, time, bytearray or array. Not {}'.format(col['type']))
 
 					return False
 
@@ -111,50 +120,47 @@ class ParquetSink(Sink):
 
 	def apply_schema(self, event):
 
-		data = event
-		for col, value in event.items():
+		data = {}
 
-			col_schema = self.Schema.get(col)
-			if col_schema is None:
-				L.warning(col + ' is not part of Schema File. Because of that, It is not going to be in parquet file')
-				del data[col]
+		for attr_name, attr_descr in self.Schema.items():
+			value = event.pop(attr_name, None)
+
+			if value is None:
+				data[attr_name] = None
+				self.MissingSet.add(attr_name)
+
 			else:
-				if col_schema['type'] == 'string' and type(value) is not str:
-					try:
-						data[col] = str(value)
-					except ValueError:
-						del data[col]
-						L.warning(col + ' cannot be converted to ' + col_schema['type']
-									+ '. Because of that, It is not going to be in parquet file')
-						pass
-				if col_schema['type'] == 'int' and type(value) is not int:
-					try:
-						data[col] = int(float(value))
-					except ValueError:
-						del data[col]
-						L.warning(col + ' cannot be converted to ' + col_schema['type']
-									+ '. Because of that, It is not going to be in parquet file')
-						pass
-				if col_schema['type'] == 'float' and type(value) is not float:
-					try:
-						data[col] = float(value)
-					except ValueError:
-						del data[col]
-						L.warning(col + ' cannot be converted to ' + col_schema['type']
-									+ '. Because of that, It is not going to be in parquet file')
-						pass
-				if col_schema['type'] == 'bool' and type(value) is not bool:
-					try:
-						if type(value) is str and value.lower() == 'false':
-							data[col] = False
-						else:
-							data[col] = bool(value)
+				value_type = attr_descr['type']
+				try:
+					if value_type == 'string' and type(value) is not str:
+						data[attr_name] = str(value)
+						continue
 
-					except ValueError:
-						del data[col]
-						L.warning(col + ' cannot be converted to ' + col_schema['type']
-									+ '. Because of that, It is not going to be in parquet file')
-						pass
+					if value_type == 'int' and type(value) is not int:
+						data[attr_name] = int(float(value))
+						continue
+
+					if value_type == 'float' and type(value) is not float:
+						data[attr_name] = float(value)
+						continue
+
+					if value_type == 'bool' and type(value) is not bool:
+						if type(value) is str and value.lower() == 'false':
+							data[attr_name] = False
+							continue
+						else:
+							data[attr_name] = bool(value)
+							continue
+
+				except ValueError:
+					self.Counter.add('parquet.error', 1)
+					pass
+
+				data[attr_name] = value
+
+		new_attrs_count = len(event)
+		if new_attrs_count > 0:
+			self.NewSet = self.NewSet.union([k for k in event])
 
 		df = pd.DataFrame([data])
 		return df
@@ -165,6 +171,8 @@ class ParquetSink(Sink):
 		) + postfix
 
 	def on_tick(self, event_name):
+		self.Gauge.set('parquet.new_attributes', len(self.NewSet))
+		self.Gauge.set('parquet.missing_attributes', len(self.MissingSet))
 		self.flush()
 
 	def process(self, context, event):
@@ -189,7 +197,10 @@ class ParquetSink(Sink):
 			table = pa.Table.from_pandas(pd.concat(self.Frames))
 			if self._pq_writer is None:
 				self._pq_writer = pq.ParquetWriter(self.build_filename('-open'), table.schema)
-			self._pq_writer.write_table(table=table)
+			try:
+				self._pq_writer.write_table(table=table)
+			except Exception as e:
+				L.warning(e)
 			self.Frames = []
 
 	def rotate(self, new_filename=None):
