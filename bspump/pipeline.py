@@ -276,7 +276,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 	def locate_source(self, address):
 		'''
-		Find by a source id.
+		Find a source by id.
 		'''
 		for source in self.Sources:
 			if source.Id == address:
@@ -290,6 +290,14 @@ class SampleInternalPipeline(bspump.Pipeline):
 		if connection is None:
 			raise RuntimeError("Cannot locate connection '{}'".format(connection_id))
 		return connection
+
+	def locate_processor(self, processor_id):
+		'''
+		Find by a processor by id.
+		'''
+		for processor in self.iter_processors():
+				if processor.Id == processor_id:
+					return processor
 
 
 	# Lifecycle ...
