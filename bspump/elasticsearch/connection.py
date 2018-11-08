@@ -3,6 +3,7 @@ import aiohttp
 import logging
 import json
 import random
+import re
 
 from asab import Config
 
@@ -23,6 +24,7 @@ class ElasticSearchConnection(Connection):
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 1024*1024,
 		'timeout': 300,
+		'allowed_bulk_response_codes': '201',
 	}
 
 
@@ -53,6 +55,10 @@ class ElasticSearchConnection(Connection):
 		self.PubSub = app.PubSub
 		self.PubSub.subscribe("Application.tick/10!", self._on_tick)
 		self.PubSub.subscribe("Application.exit!", self._on_exit)
+
+		self.AllowedBulkResponseCodes = frozenset(
+			[int(x) for x in re.findall(r"[0-9]+", self.Config['allowed_bulk_response_codes'])]
+		)
 
 		self._futures = []
 		for url in self.node_urls:
@@ -150,12 +156,15 @@ class ElasticSearchConnection(Connection):
 						resp_body = await resp.text()
 						respj = json.loads(resp_body)
 						if respj.get('errors', True) != False:
-
-							L.error("Failed to insert bulk into ElasticSearch status: {}".format(resp.status))
+							error_level = 0
 							for item in respj['items']:
-								if item['index']['status'] != 201:
+								#TODO: item['index']['status']: add metrics counter for status code
+								if item['index']['status'] not in self.AllowedBulkResponseCodes:
+									if error_level == 0:
+										L.error("Failed to insert bulk into ElasticSearch status: {}".format(resp.status))
+									error_level += 1
 									L.error(" - {} Failed document detail: '{}'".format(item['index']['status'], item))
+							if error_level > 0:
+								raise RuntimeError("Failed to insert document into ElasticSearch")
 
-							raise RuntimeError("Failed to insert document into ElasticSearch")
-						else:
-							L.debug("Bulk POST finished successfully")
+						L.debug("Bulk POST finished successfully")
