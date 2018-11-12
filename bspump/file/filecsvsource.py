@@ -1,4 +1,5 @@
 import csv
+import asyncio
 import logging
 from .fileabcsource import FileABCSource
 
@@ -68,7 +69,14 @@ class FileCSVSource(FileABCSource):
 
 
 	async def read(self, filename, f):
+		counter = 0
 		for line in self.reader(f):
 			await self.process(line, {
 				"filename": filename
 			})
+
+			# Give chance to others when we are in the middle of massive processing
+			counter += 1
+			if counter >= 10000:
+				await asyncio.sleep(0.01)
+				counter = 0
