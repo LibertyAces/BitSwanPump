@@ -74,7 +74,7 @@ async def metric_detail(request):
 	return asab.web.rest.json_response(request, metric)
 
 
-def initialize_web(app, listen):
+def initialize_web(app, listen="0.0.0.0:8080"):
 	app.add_module(asab.web.Module)
 
 	websvc = app.get_service("asab.WebService")
