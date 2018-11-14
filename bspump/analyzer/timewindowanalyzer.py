@@ -1,12 +1,11 @@
-import abc
-import datetime
-import logging
 import time
+import logging
 
 import numpy as np
 
-from .analyzer import Analyzer
 import asab
+
+from .analyzer import Analyzer
 
 ###
 
@@ -16,156 +15,156 @@ L = logging.getLogger(__name__)
 
 class TimeWindowAnalyzer(Analyzer):
 	'''
-	This is the analyzer for events with timestamp.
-	Configurable sliding window records events withing specified windows and
-	implements functions to find the exact time slot.
-	Timer periodically shifts the window by time window resolution, dropping
-	previous events   
+	This is the analyzer for events with a temporal dimension (aka timestamp).
+	Configurable sliding window records events withing specified windows and implements functions to find the exact time slot.
+	Timer periodically shifts the window by time window resolution, dropping previous events.
+
+
+    ## Time window
+
+    --> Columns (time dimension), column "width" = resolution
+	+---+---+---+---+---+---+
+	|   |   |   |   |   |   |
+	+---+---+---+---+---+---+
+	|   |   |   |   |   |   |
+	+---+---+---+---+---+---+
+	|   |   |   |   |   |   |
+	+---+---+---+---+---+---+
+	|   |   |   |   |   |   |
+	+---+---+---+---+---+---+
+	|   |   |   |   |   |   |
+	+---+---+---+---+---+---+
+	^                       ^
+	End (past)   <          Start (== now)
+
 	'''
 
 	ConfigDefaults = {
-		'start_time': int(time.time()*1000),
-		'windows_size': 1200, # Window size in seconds (20 minutes)
-		'resolution': 60, # Time slot resolution in seconds
-		'analyze_windows_size' : 1200, # Might be different from window size
+		'warm_up_period': 15*60, # in seconds
+		'columns': 356,
+		'resolution': 60*60*24, # Resolution (aka column width) in seconds
 	}
 
-	def __init__(self, app, pipeline, id=None, config=None):
+	def __init__(self, app, pipeline, start_time=None, clock_driven=True, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		
-		self.TimeWindowsStart = None
-		self.TimeWindowsEnd = None
-		self.set_time_windows_start_end(self.Config['start_time'])
+		if start_time is None:
+			start_time = time.time()
 
-		windows_size = self.Config['windows_size']
-		analyze_windows_size = self.Config['analyze_windows_size']
-		resolution = int(self.Config['resolution'])
+		self.Resolution = int(self.Config['resolution'])
+		self.Columns = int(self.Config['columns'])
 
-		self.ResolutionMillis = self.Config['resolution'] * 1000
-		self.TimeColumnCount = int(windows_size / resolution)
-		self.AnalyzeColumnCount = int(analyze_windows_size / resolution)
+		self.TimeWindowStart = (1 + (start_time // self.Resolution)) * self.Resolution
+		self.TimeWindowEnd = self.TimeWindowStart - (self.Resolution * self.Columns)
+		self.TimeWindow = None
 
 		self.RowMap = {}
 		self.RevRowMap = {}
-		self.RowsCounter = -1
-		self.TimeWindows = None
+
+		# Warm-up attribute
+		self.WarmingUp = True
+		self.WarmingUpTimer = asab.Timer(app, self._on_tick_warming_up)
+		self.Timer.start(self.Config['warm_up_period'])
 
 		metrics_service = app.get_service('asab.MetricsService')
-		self.Counters = metrics_service.create_counter("counters", tags={}, init_values={'events.early': 0, 'events.late': 0})
+		self.Counters = metrics_service.create_counter(
+			"counters",
+			tags={
+				'pipeline': pipeline.Id,
+				'twa': self.Id,
+			},
+			init_values={
+				'events.early': 0,
+				'events.late': 0,
+			}
+		)
 
-		self.Timer = asab.Timer(app, self.on_tick)
-		self.Timer.start(self.Config['resolution'])
-
+		if clock_driven:
+			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
+			self.Timer.start(self.Resolution / 4) # 1/4 of the sampling
+		else:
+			self.Timer = None
 
 	##
-	def _datetime_to_ts_millis(self, dt):
-		return (dt - datetime.datetime(1970,1,1)).total_seconds() * 1000
 
+	def add_column(self):
+		self.TimeWindowStart += self.Resolution
+		self.TimeWindowEnd += self.Resolution
 
-	def _floor_millis_to_minutes(self, millis):
-		return millis - (millis % (60000))
-
-	# initializing time windows' start and end
-	def set_time_windows_start_end(self, ts):
-		ts = int(ts)
-		self.TimeWindowsStart = self._floor_millis_to_minutes(ts)
-		self.TimeWindowsEnd = self._floor_millis_to_minutes(ts) + self.Config['windows_size']*1000
-
-
-	# shift time windows
-	def advance_time_windows(self):
-		
-		self.TimeWindowsStart += self.ResolutionMillis
-		self.TimeWindowsEnd += self.ResolutionMillis
-
-		if self.TimeWindows is None:
+		if self.TimeWindow is None:
 			return
 
-		column = np.zeros([self.RowsCounter + 1, 1])
-		self.TimeWindows = np.hstack((self.TimeWindows, column))
-		self.TimeWindows = np.delete(self.TimeWindows, 0, axis=1)
+		column = np.zeros([len(self.RowMap), 1])
+		self.TimeWindow = np.hstack((self.TimeWindow, column))
+		self.TimeWindow = np.delete(self.TimeWindow, 0, axis=1)
 
-		
 
-	def get_time_column_index(self, event_timestamp):
-		column_idx = int((event_timestamp - self.TimeWindowsStart) / self.ResolutionMillis)
-		
-		if column_idx >= self.TimeColumnCount:
-			#print('a1')
+	def advance(self, target_ts):
+		'''
+		Advance time window (add columns) so it covers target timestamp (target_ts)
+		Also, if target_ts is in top 75% of the last existing column, add a new column too.
+
+		------------------|-----------
+		target_ts  ^ >>>  |
+		                  ^ 
+		                  TimeWindowStart
+
+		'''
+		while True:
+			dt = (self.TimeWindowStart - target_ts) / self.Resolution
+			if dt > 0.25: break
+			if dt < 0: print("Eeee!") # Target timestamp slipped in front of the window
+			self.add_column()
+
+
+
+	def get_column(self, event_timestamp):
+
+		if event_timestamp < self.TimeWindowEnd:
 			self.Counters.add('events.late', 1)
 			return None
 
-		elif column_idx < 0:
-			#print('a2')
+		if event_timestamp > self.TimeWindowStart:
 			self.Counters.add('events.early', 1)
 			return None
 
-		else:
-			return column_idx
+		column_idx = int((event_timestamp - self.TimeWindowEnd) // self.Resolution)
 
-	
-	def get_time_column_indexes(self, event_timestamp, duration):
+		assert(column_idx >= 0)
+		assert(column_idx < self.Columns)
 		
-		if duration is None:
-			idx = self.get_time_column_index(event_timestamp)
-			if idx is None:
-				return []
-			else:
-				return [idx]
+		return column_idx
 
-		column_idx_start = int((event_timestamp - self.TimeWindowsStart) / self.ResolutionMillis)
-		event_end_timestamp = (event_timestamp + duration * 1000)
-		column_idx_end = int((event_end_timestamp - self.TimeWindowsStart) / self.ResolutionMillis)
-		idxs = []
 
-		if column_idx_start >= self.TimeColumnCount:
-			self.Counters.add('events.late', 1)
-			return idxs
+	def get_row(self, row_name):
+		return self.RowMap.get(row_name)
 
-		elif column_idx_start < 0:
-			start = 0
 
-		else:
-			start = column_idx_start
+	#Adding new row to a window
+	def add_row(self, row_name):
+		rowcounter = len(self.RowMap)
+		self.RowMap[row_name] = rowcounter
+		self.RevRowMap[rowcounter] = row_name
+
+		row = np.zeros([1, self.Columns])
 		
-
-		if column_idx_end < 0:
-			self.Counters.add('events.early', 1)
-			return idxs
-
-		if column_idx_start == column_idx_end:
-			idxs.append(column_idx_start)
-			
-		elif column_idx_end >= self.TimeColumnCount:
-			idxs = list(range(start, self.TimeColumnCount))
-			
+		if self.TimeWindow is None:
+			self.TimeWindow = row
 		else:
-			idxs = list(range(start, column_idx_end))
+			self.TimeWindow = np.vstack((self.TimeWindow, row))
+
+
+	async def _on_tick(self):
+
+		target_ts = time.time()
+		self.advance(target_ts)
+#		if not self.WarmingUp:
+#			await self.analyze()
+#		start = time.time()
 		
-		return idxs
+#		end = time.time()
+#		L.warn("Time window was shifted, it cost {:0.3f} sec".format(end-start))
 
 
-	###
-
-	async def on_tick(self):
-		await self.analyze()
-		start = time.time()
-		self.advance_time_windows()
-		end = time.time()
-		L.warn("Time window was shifted, it cost {} sec".format(end-start))
-		self.Timer.start(self.Config['resolution'])
-
-
-	#Adding new row to time window matrix and new entry to row_name2index dictionary
-	def add_row_to_time_windows(self, row_name):
-		self.RowsCounter += 1
-		self.RowMap[row_name] = self.RowsCounter
-		self.RevRowMap[self.RowsCounter] = row_name
-
-		row = np.zeros([1, self.TimeColumnCount])
-		
-		if self.TimeWindows is None:
-			self.TimeWindows = row
-		else:
-			self.TimeWindows = np.vstack((self.TimeWindows, row))
-
+	async def _on_tick_warming_up(self):
+		self.WarmingUp = False
