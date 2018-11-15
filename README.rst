@@ -51,6 +51,27 @@ Stream processor example
         app.run()
 
 
+Available technologies
+----------------------
+
+* ``bspump.amqp`` AMQP/RabbitMQ connection, source and sink
+* ``bspump.common``
+* ``bspump.crypto``
+* ``bspump.elasticsearch`` ElasticSearch connection, source and sink
+* ``bspump.file`` (plain files, JSON, CSV)
+* ``bspump.http.client``  HTTP client source
+* ``bspump.http.web`` HTTP server source and sink
+* ``bspump.influxdb`` InfluxDB connection and sink
+* ``bspump.kafka`` Kafka connection, source and sink
+* ``bspump.mysql`` MySQL connection, source and sink
+* ``bspump.parquet`` Apache Parquet file sink
+* ``bspump.avro`` Apache Avro file source and sink
+* ``bspump.socket`` TCP source
+* ``bspump.slack`` Slack connection and sink
+* ``bspump.trigger`` Opportunistic, PubSub and Periodic triggers
+* ``bspump.analyzer`` Time Window analyzer
+* ``bspump.lookup`` GeoIP Lookup
+
 
 High-level architecture
 -----------------------
