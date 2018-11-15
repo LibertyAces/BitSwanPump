@@ -55,8 +55,6 @@ Available technologies
 ----------------------
 
 * ``bspump.amqp`` AMQP/RabbitMQ connection, source and sink
-* ``bspump.common``
-* ``bspump.crypto``
 * ``bspump.elasticsearch`` ElasticSearch connection, source and sink
 * ``bspump.file`` (plain files, JSON, CSV)
 * ``bspump.http.client``  HTTP client source
@@ -68,9 +66,22 @@ Available technologies
 * ``bspump.avro`` Apache Avro file source and sink
 * ``bspump.socket`` TCP source
 * ``bspump.slack`` Slack connection and sink
+
 * ``bspump.trigger`` Opportunistic, PubSub and Periodic triggers
-* ``bspump.analyzer`` Time Window analyzer
-* ``bspump.lookup`` GeoIP Lookup
+
+* ``bspump.crypto`` Cryptography
+
+  * Hashing: SHA224, SHA256, SHA384, SHA512, SHA1, MD5, BLAKE2b, BLAKE2s
+  * Symmetric Encryption: AES 128, AES 192, AES 256
+
+* ``bspump.analyzer``
+
+  * Time Window analyzer
+  * Time Drift analyzer
+
+* ``bspump.lookup``
+
+  * GeoIP Lookup
 
 
 High-level architecture
