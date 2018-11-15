@@ -20,10 +20,6 @@ Example:
 
 	'''
 
-	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
-
-
 	async def put(self, context, data, request):
 		if context is None:
 			context = {}
