@@ -36,10 +36,9 @@ class AvroSink(Sink):
 	"""
 	ConfigDefaults = {
 		'file_name_template': './sink{index}.avro',
-		'file_index_type': 'chunks',  # or none
 		'events_per_file': 1000,
 		'events_per_chunk': 100,
-		'rollover_mechanism': 'none'
+		'rollover_mechanism': 'none'  # or chunks
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
