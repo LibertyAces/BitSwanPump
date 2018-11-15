@@ -24,27 +24,36 @@ class TCPStreamSource(Source):
 		self.Writers = set()
 
 
-	async def _handler(self, reader, writer):
+	async def handler(self, reader, writer):
+		'''
+		This method could be overriden to implement various application protocols.
+		'''
+		while True:
+			await self.Pipeline.ready()
+			data = await reader.readline()
+			# End of stream detected
+			if len(data) == 0:
+				break
+			await self.process(data, context={
+				'peer': writer.transport.get_extra_info('peername'),
+			})
+
+
+	async def _handler_wrapper(self, reader, writer):
 		self.Writers.add(writer)
 
 		try:
-			while True:
-				await self.Pipeline.ready()
-				data = await reader.readline()
-				# End of stream detected
-				if len(data) == 0:
-					writer.close()
-					break
-				await self.process(data)
+			await self.handler(reader, writer)
 
 		finally:
+			writer.close()
 			self.Writers.remove(writer)
 
 
 	async def main(self):
 		# Start server
 		server = await asyncio.start_server(
-			self._handler,
+			self._handler_wrapper,
 			self.Config['host'], int(self.Config['port']),
 			loop=self.Loop
 		)
@@ -57,7 +66,7 @@ class TCPStreamSource(Source):
 
 		# Close peer connections
 		for writer in self.Writers:
-			L.warning("Source '{}' closes connection to {}".format(
+			L.warning("'{}' closes connection to '{}'".format(
 				self.Id,
 				writer.transport.get_extra_info('peername'))
 			)
