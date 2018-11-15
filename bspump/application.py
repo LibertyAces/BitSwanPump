@@ -1,15 +1,19 @@
 import signal
+import sys
 
 import asab
 
 from .service import BSPumpService
+from .__version__ import __version__, __build__
 
 
 class BSPumpApplication(asab.Application):
 
-
 	def __init__(self):
 		super().__init__()
+
+		# Banner
+		print("BitSwan BSPump version {}".format(__version__))
 
 		from asab.metrics import Module
 		self.add_module(Module)
@@ -38,7 +42,23 @@ class BSPumpApplication(asab.Application):
 
 
 	def create_argument_parser(self):
-		parser = super().create_argument_parser()
+		prog = sys.argv[0]
+		if prog[-11:] == '__main__.py':
+			prog = sys.executable + " -m bspump"
+
+		description = '''
+BSPump is a stream processor. It is a part of BitSwan.
+For more information, visit: https://github.com/TeskaLabs/bspump
+
+version: {}
+build: {} [{}]
+'''.format(__version__, __build__, __build__[:7])
+
+
+		parser = super().create_argument_parser(
+			prog=prog,
+			description=description
+		)
 		parser.add_argument(
 			'-w', '--web',
 			const="0.0.0.0 80",
@@ -69,6 +89,10 @@ class BSPumpApplication(asab.Application):
 		if len(listen) > 0:
 			from .web import initialize_web
 			self.WebService = initialize_web(self, listen)
+
+
+	async def main(self):
+		print("{} pipeline(s) ready.".format(len(self.PumpService.Pipelines)))
 
 
 	def _on_signal_usr1(self):
