@@ -40,9 +40,9 @@ class TimeWindowAnalyzer(Analyzer):
 	'''
 
 	ConfigDefaults = {
-		'warm_up_period': 15*60, # in seconds
-		'columns': 356,
-		'resolution': 60*60*24, # Resolution (aka column width) in seconds
+		'warm_up_count': 2, # at least this amount of events in the matrix should be to analyze 
+		'columns': 15,
+		'resolution': 60, # Resolution (aka column width) in seconds
 	}
 
 	def __init__(self, app, pipeline, start_time=None, clock_driven=True, id=None, config=None):
@@ -61,10 +61,9 @@ class TimeWindowAnalyzer(Analyzer):
 		self.RowMap = {}
 		self.RevRowMap = {}
 
-		# Warm-up attribute
-		self.WarmingUp = True
-		self.WarmingUpTimer = asab.Timer(app, self._on_tick_warming_up)
-		self.Timer.start(self.Config['warm_up_period'])
+		# to warm up
+		self.WarmingUpCount = int(self.Config['warm_up_count'])
+		self.WarmingUpRows = []
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
@@ -120,7 +119,7 @@ class TimeWindowAnalyzer(Analyzer):
 
 	def get_column(self, event_timestamp):
 
-		if event_timestamp < self.TimeWindowEnd:
+		if event_timestamp <= self.TimeWindowEnd:
 			self.Counters.add('events.late', 1)
 			return None
 
@@ -128,7 +127,8 @@ class TimeWindowAnalyzer(Analyzer):
 			self.Counters.add('events.early', 1)
 			return None
 
-		column_idx = int((event_timestamp - self.TimeWindowEnd) // self.Resolution)
+		column_idx = int((event_timestamp - self.TimeWindowEnd - 1) // self.Resolution)
+		#print("column idx", column_idx, self.Columns, self.TimeWindowEnd, event_timestamp, self.Resolution)
 
 		assert(column_idx >= 0)
 		assert(column_idx < self.Columns)
@@ -146,6 +146,9 @@ class TimeWindowAnalyzer(Analyzer):
 		self.RowMap[row_name] = rowcounter
 		self.RevRowMap[rowcounter] = row_name
 
+		#and to warming up
+		self.WarmingUpRows.append(0)
+
 		row = np.zeros([1, self.Columns])
 		
 		if self.TimeWindow is None:
@@ -158,13 +161,9 @@ class TimeWindowAnalyzer(Analyzer):
 
 		target_ts = time.time()
 		self.advance(target_ts)
-#		if not self.WarmingUp:
-#			await self.analyze()
+
+#		await self.analyze()
 #		start = time.time()
 		
 #		end = time.time()
 #		L.warn("Time window was shifted, it cost {:0.3f} sec".format(end-start))
-
-
-	async def _on_tick_warming_up(self):
-		self.WarmingUp = False
