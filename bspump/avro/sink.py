@@ -46,15 +46,15 @@ class AvroSink(Sink):
 
 		self.SchemaFile = self.Config.get('schema_file')
 		if self.SchemaFile is None:
-			self.SchemaDefined = False
-			L.warning('schema is not defined')
-		else:
-			self.SchemaDefined = False
+			L.error('schema is not defined')
+			raise FileNotFoundError
 
-		if self.SchemaDefined is True:
-			with open(self.SchemaFile) as json_data:
-				schema = json.load(json_data)
-				self.Schema = parse_schema(schema)
+		if self.SchemaFile is not None:
+			schema = json.load(open(self.SchemaFile, 'r'))
+			self.Schema = parse_schema(schema)
+			'''with open(self.SchemaFile) as json_data:
+				schema = json.loads(json_data.read())
+				self.Schema = parse_schema(schema)'''
 
 		self.RolloverMechanism = self.Config.get('rollover_mechanism')
 		self.FileNameTemplate = self.Config['file_name_template']
@@ -95,11 +95,11 @@ class AvroSink(Sink):
 
 	def flush(self):
 		if len(self.Events) != 0:
-			if self.SchemaDefined is True:
+			if self.SchemaFile is not None:
 				try:
 					is_valid = validate_many(self.Events, self.Schema)
 					if is_valid is True:
-						with open(self.build_filename('-open'), self._encoding) as out:
+						with open(self.build_filename('-open'), self._filemode) as out:
 							writer(out, self.Schema, self.Events)
 						if self._filemode == 'wb':
 							self._filemode = 'a+b'
@@ -111,13 +111,12 @@ class AvroSink(Sink):
 	def process(self, context, event):
 		self.Events.append(event)
 
-		if len(self.Events) >= self.EventsPerChunk:
-
-			if self.RolloverMechanism == 'chunks':
+		if self.RolloverMechanism == 'chunks':
+			if len(self.Events) >= self.EventsPerFile:
 				self.Chunks = self.Chunks + 1
 				if self.Chunks >= self.ChunksPerFile:
 					self.rotate()
-			self.flush()
+		self.flush()
 
 	def rotate(self, new_filename=None):
 		'''
@@ -129,5 +128,6 @@ class AvroSink(Sink):
 		current_fname = self.build_filename('-open')
 		os.rename(current_fname, current_fname[:-5])
 
-		self.Index = self.Index + 1
+		if self.RolloverMechanism == 'chunks':
+			self.Index = self.Index + 1
 		self._filemode = 'wb'

@@ -1,0 +1,4 @@
+{ "station": "string", 
+  "time":  4545454545,
+  "temp": 12
+}

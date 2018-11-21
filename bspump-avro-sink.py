@@ -21,10 +21,10 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.sink = bspump.avro.AvroSink(app, self, 
-			config={'path': './examples/data/avro_schema.avsc'})
+			config={'schema_file': './examples/data/avro_schema.avsc'})
 
 		self.build(
-			bspump.file.FileJSONSource(app, self, config={'path': './examples/data/sample.json'}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.file.FileJSONSource(app, self, config={'path': './examples/data/sample_to_avro.json'}).on(bspump.trigger.RunOnceTrigger(app)),
 			self.sink
 		)
 
