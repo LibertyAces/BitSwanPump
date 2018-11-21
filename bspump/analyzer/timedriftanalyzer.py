@@ -6,7 +6,6 @@ import numpy as np
 
 import asab
 
-import bspump
 import bspump.analyzer
 from .analyzer import Analyzer
 
@@ -51,7 +50,6 @@ class TimeDriftAnalyzer(Analyzer):
 		self.Timer.start(self.Config['stats_period'])
 
 		self.App = app
-		self.BaseTime = time.time() - self.App.Loop.time()
 
 
 	async def on_tick(self):
@@ -70,7 +68,7 @@ class TimeDriftAnalyzer(Analyzer):
 
 
 	def get_diff(self, event_timestamp):
-		diff = (self.BaseTime + self.App.Loop.time())*1000 - event_timestamp
+		diff = self.App.time()*1000 - event_timestamp
 		return diff
 
 
