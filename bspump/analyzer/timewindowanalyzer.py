@@ -114,6 +114,7 @@ class TimeWindowAnalyzer(Analyzer):
 			if dt > 0.25: break
 			if dt < 0: print("Eeee!") # Target timestamp slipped in front of the window
 			self.add_column()
+			L.warn("Time window was shifted")
 
 
 
