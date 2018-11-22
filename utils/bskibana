@@ -1,0 +1,837 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import sys
+import os
+import itertools
+import pprint
+import hashlib
+
+import requests
+
+try:
+	import jinja2
+except ModuleNotFoundError:
+	jinja2 = None
+
+###
+
+PRINT_LEVEL = 0 # -1 is for silent, 1 is for verbose
+INDECES = [".kibana", ".lookup"]
+
+######## Export / Import part
+
+def load_from_es_search(URL, INDEX):
+
+	if URL[-1:] != '/':
+		URL += '/'
+
+	scroll_id = None
+
+	while True:
+		if scroll_id is None:
+			actual_url = URL + INDEX + '/_search?scroll=1m'
+			query = {"size":"100"}
+		else:
+			actual_url = URL + "_search/scroll"
+			query = {"scroll":"1m","scroll_id": scroll_id}
+
+		r = requests.post(actual_url, json=query)
+		if r.status_code != 200:
+			print("Error {} when exporting " + INDEX + " index from {}\n{}".format(r.status_code, actual_url, r.text))
+			sys.exit(1)
+
+		result = r.json()
+
+		scroll_id = result['_scroll_id']
+
+		hits = result['hits']['hits']
+		if len(hits) == 0:
+			break
+		
+		if PRINT_LEVEL >= 1:
+			print("Received {} objects".format(len(hits)))
+
+		for hit in hits:
+			yield(hit)
+
+
+def load_from_compiled_file(FILE):
+	with open(FILE, "rb") as f:
+		content = f.read().decode("utf-8")
+		for hit in json.loads(content):
+			yield(hit)
+
+
+def do_export(URL, FILE):
+	""" Export .kibana index from ElasticSearch using Search API.
+
+		:param URL: a URL to the ElasticSearch
+		:param FILE: a path to a file
+	"""
+
+	counter = 0
+	try:
+		with open(FILE+'~', "w") as f:
+			for index in INDECES:
+				for o in sorted(load_from_es_search(URL, index), key=lambda obj: obj['_id']):
+					if counter > 0:
+						f.write(',\n')
+					else:
+						f.write('[\n')
+
+					counter += 1
+					if PRINT_LEVEL >= 1:
+						print("{} exported".format(o['_id']))
+					json.dump(o, f)
+			f.write('\n]\n')
+
+		os.rename(FILE+'~', FILE)
+
+	except:
+		os.unlink(FILE+'~')
+		raise
+
+	if PRINT_LEVEL >= 0:
+		print("{} objects exported from Kibana index {}".format(counter, URL))
+
+
+def do_import(FILE, URL):
+
+	import_data = ""
+	for obj in load_from_compiled_file(FILE):
+		if obj['_index'] == INDECES[1]:
+			import_data += json.dumps({"index": {"_index": INDECES[1], "_type": "doc", "_id": obj["_id"]}}) + '\n'
+		else:
+			import_data += json.dumps({"index": {"_index": INDECES[0], "_type": "doc", "_id": obj["_id"] } }) + '\n'
+		import_data += json.dumps(obj['_source']) + '\n'
+
+	if URL[-1:] != '/':
+		URL += '/'
+	URL += '_bulk'
+
+	r = requests.post(URL, data=import_data, headers={'Content-Type':'application/x-ndjson'})
+	if r.status_code != 200:
+		print("Error {} when importing Kibana index into {}\n{}".format(r.status_code, URL, r.text))
+		sys.exit(1)
+
+	res = r.json()
+
+	if not res.get('errors', False):
+		if PRINT_LEVEL >= 1:
+			for i in res['items']:
+				print("{} imported".format(i['index']['_id']))
+		if PRINT_LEVEL >= 0:
+			print("Kibana index with {} objects imported into {}".format(len(res['items']), URL))
+		return
+
+	# Error during import
+	print("Error(s) during Kibana index import:")
+	for i in res['items']:
+		if (i['index']['status'] == 200) or (i['index']['status'] == 201): continue
+		pprint.pprint(i)
+
+	sys.exit(1)
+
+
+###############
+
+class LibraryObject(object):
+
+	def __init__(self, fname = None, jsonobj = None):
+		self.includes = {}
+		# Meta is used for structures that are needed for processing outside of the kibana scope, e. g. documentation
+		self.meta = {}
+
+		if fname is not None:
+			self.fname = fname
+			self.obj = json.load(open(self.fname, 'r'))
+			self._expand_includes()
+		else:
+			self.fname = '-'
+			self.obj = jsonobj
+			self._normalize()
+
+
+	def compare(self, trg_obj):
+		return self.obj == trg_obj.obj
+
+	@property
+	def id(self):
+		return self.obj['_id']
+
+	@property
+	def type(self):
+		return self.obj['_source']['type']
+
+	@property
+	def title(self):
+		try:
+			return self.obj['_source'][self.type]['title']
+		except KeyError:
+			return self.obj['_id']
+
+
+	def add_include(self, inc_name):
+		if inc_name.startswith('@ref-'):
+			# Obsolete ref naming
+			inc_name = '@'+inc_name[5:]
+
+		inc_fname = self.fname[:-5] + inc_name + '.json'
+		inc_obj = json.load(open(inc_fname, 'r'))
+		self.includes[inc_name] = inc_obj
+		return inc_obj
+
+
+	def save_include(self, inc_name, inc, destring=True):
+		inc_fname = self.fname[:-5] + inc_name + '.json'
+		if destring:
+			inc = json.loads(inc)
+		with open(inc_fname, 'w') as fo:
+			json.dump(inc, fo, indent='\t')
+			fo.write('\n') # 
+		return inc_name
+
+
+	def _expand_includes(self):
+
+		try:
+			obj_source = self.obj["_source"]
+		except KeyError:
+			pprint.pprint(self.fname)
+			raise
+
+		if self.type == 'index-pattern':
+			
+			inc_name = obj_source["index-pattern"].get("fields")
+			if isinstance(inc_name, list):
+				f = []
+				f_doc = [] # Fields for document
+				for inc_p in inc_name:
+					parts = inc_p.split("|")
+					title = inc_p					
+					if len(parts) > 1:
+						inc_p = parts[0]
+						title = parts[1]
+
+					i = self.add_include(inc_p)
+					f.extend(i)
+					f_doc.append({'title': title, 'inc_p': inc_p, 'fields': i})
+				obj_source["index-pattern"]["fields"] = json.dumps(f)
+				self.meta["_fields_docs"] = f_doc
+
+			inc_name = obj_source["index-pattern"].get("fieldFormatMap")
+			if inc_name is not None:
+				if inc_name.startswith('@'):
+					inc_obj = self.add_include(inc_name)
+					obj_source["index-pattern"]["fieldFormatMap"] = json.dumps(inc_obj)
+
+
+		elif self.type == 'dashboard':
+
+			inc_name = obj_source["dashboard"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+			if inc_name.startswith('@'):
+				inc_obj = self.add_include(inc_name)
+				obj_source["dashboard"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = json.dumps(inc_obj)
+
+			inc_name = obj_source["dashboard"]["panelsJSON"]
+			if inc_name.startswith('@'):
+				inc_obj = self.add_include(inc_name)
+				obj_source["dashboard"]["panelsJSON"] = json.dumps(inc_obj)
+
+			inc_name = obj_source["dashboard"]["optionsJSON"]
+			if inc_name.startswith('@'):
+				inc_obj = self.add_include(inc_name)
+				obj_source["dashboard"]["optionsJSON"] = json.dumps(inc_obj)
+
+			inc_name = obj_source["dashboard"].get("uiStateJSON")
+			if inc_name is not None and inc_name.startswith('@'):
+				inc_obj = self.add_include(inc_name)
+				obj_source["dashboard"]["uiStateJSON"] = json.dumps(inc_obj)
+
+
+		elif self.type == 'visualization':
+
+			inc_name = obj_source["visualization"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+			if inc_name.startswith('@'):
+				inc_obj = self.add_include(inc_name)
+				obj_source["visualization"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = json.dumps(inc_obj)
+
+			inc_name = obj_source["visualization"]["visState"]
+			if inc_name.startswith('@'):
+				inc_obj = self.add_include(inc_name)
+				obj_source["visualization"]["visState"] = json.dumps(inc_obj)
+
+			inc_name = obj_source["visualization"]["uiStateJSON"]
+			if inc_name.startswith('@'):
+				inc_obj = self.add_include(inc_name)
+				obj_source["visualization"]["uiStateJSON"] = json.dumps(inc_obj)
+
+
+		elif self.type == 'search':
+			inc_name = obj_source["search"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+			if inc_name.startswith('@'):
+				inc_obj = self.add_include(inc_name)
+				obj_source["search"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = json.dumps(inc_obj)
+
+
+		elif self.type == 'x-lff-lookup':
+			inc_name = obj_source["config"]["map"]
+			if inc_name.startswith('@'):
+				inc_obj = self.add_include(inc_name)
+				obj_source["config"]["map"] = json.dumps(inc_obj)
+
+
+	def save(self, directory = None):
+
+		if directory is not None:
+			try:
+				os.makedirs(directory)
+			except FileExistsError:
+				pass
+
+			self.fname = os.path.join(directory, self.obj['_id'].replace(':', '_'))+'.json'
+
+		obj_source = self.obj["_source"]
+
+
+		if self.type == 'index-pattern':
+			fields = json.loads(obj_source["index-pattern"]["fields"])
+
+			new_fields = []
+			for inc_name in filter(lambda k: k.startswith('@fields-'), self.includes.keys()):
+				new_fields.append(inc_name)
+				inc_fname = self.fname[:-5] + inc_name + '.json'
+				inc_obj = json.load(open(inc_fname, 'r'))
+
+				new_inc_obk = []
+				for f in inc_obj:
+					fname = f['name']
+					for i in range(len(fields)):
+						field = fields[i]
+						if field['name'] == fname:
+							new_inc_obk.append(fields.pop(i))
+							break
+
+				self.save_include(inc_name, new_inc_obk, destring = False)
+
+			if len(fields) > 0:
+				# There are new fields in index pattern
+				self.save_include("@newfields", fields, destring = False)
+
+			obj_source["index-pattern"]["fields"] = new_fields
+
+
+			inc = obj_source["index-pattern"].get("fieldFormatMap")
+			if inc is not None:
+				obj_source["index-pattern"]["fieldFormatMap"] = self.save_include('@fieldFormatMap', inc)
+
+
+		if self.type == 'dashboard':
+			inc = obj_source["dashboard"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+			obj_source["dashboard"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = self.save_include('@searchSourceJSON', inc)
+
+			inc = obj_source["dashboard"]["panelsJSON"]
+			obj_source["dashboard"]["panelsJSON"] = self.save_include('@panelsJSON', inc)
+
+			inc = obj_source["dashboard"]["optionsJSON"]
+			obj_source["dashboard"]["optionsJSON"] = self.save_include('@optionsJSON', inc)
+
+			inc = obj_source["dashboard"].get("uiStateJSON")
+			if inc is not None:
+				obj_source["dashboard"]["uiStateJSON"] = self.save_include('@uiStateJSON', inc)
+
+
+		elif self.type == 'visualization':
+			inc = obj_source["visualization"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+			obj_source["visualization"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = self.save_include('@searchSourceJSON', inc)
+
+			inc = obj_source["visualization"]["visState"]
+			obj_source["visualization"]["visState"] = self.save_include('@visState', inc)
+
+			inc = obj_source["visualization"].get("uiStateJSON")
+			if inc is not None:
+				obj_source["visualization"]["uiStateJSON"] = self.save_include('@uiStateJSON', inc)
+
+
+		elif self.type == 'search':
+			inc = obj_source["search"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+			obj_source["search"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = self.save_include('@searchSourceJSON', inc)
+
+
+		elif self.type == 'x-lff-lookup':
+			inc = obj_source["config"]["map"]
+			obj_source["config"]["map"] = self.save_include('@map', inc)
+
+
+		with open(self.fname, 'w') as fo:
+			json.dump(self.obj, fo, indent='\t')
+			fo.write('\n')
+
+
+	def _normalize(self):
+		obj_source = self.obj["_source"]
+
+		if self.type == 'index-pattern':
+			
+			inc = obj_source["index-pattern"]["fields"]
+			obj_source["index-pattern"]["fields"] = json.dumps(json.loads(inc))
+
+			inc = obj_source["index-pattern"].get("fieldFormatMap")
+			if inc is not None:
+				obj_source["index-pattern"]["fieldFormatMap"] = json.dumps(json.loads(inc))
+
+		elif self.type == 'dashboard':
+
+			inc = obj_source["dashboard"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+			obj_source["dashboard"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = json.dumps(json.loads(inc))
+
+			inc = obj_source["dashboard"]["panelsJSON"]
+			obj_source["dashboard"]["panelsJSON"] = json.dumps(json.loads(inc))
+
+			inc = obj_source["dashboard"]["optionsJSON"]
+			obj_source["dashboard"]["optionsJSON"] = json.dumps(json.loads(inc))
+
+			inc = obj_source["dashboard"].get("uiStateJSON")
+			if inc is not None:
+				obj_source["dashboard"]["uiStateJSON"] = json.dumps(json.loads(inc))
+
+
+		elif self.type == 'visualization':
+
+			inc = obj_source["visualization"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+			obj_source["visualization"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = json.dumps(json.loads(inc))
+
+			inc = obj_source["visualization"]["visState"]
+			obj_source["visualization"]["visState"] = json.dumps(json.loads(inc))
+
+			inc = obj_source["visualization"].get("uiStateJSON")
+			if inc is not None:
+				obj_source["visualization"]["uiStateJSON"] = json.dumps(json.loads(inc))
+
+
+		elif self.type == 'search':
+			inc = obj_source["search"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+			obj_source["search"]["kibanaSavedObjectMeta"]["searchSourceJSON"] = json.dumps(json.loads(inc))
+
+
+		elif self.type == 'x-lff-lookup':
+
+			inc = obj_source["config"]["map"]
+			obj_source["config"]["map"] = json.dumps(json.loads(inc))
+
+
+
+def load_library(DIRS):
+
+	library = {}
+	for root, dirs, files in itertools.chain.from_iterable([os.walk(DIR) for DIR in DIRS]):
+		for fname in filter(lambda fname: os.path.splitext(fname)[1] == '.json', files):
+			if '@' in fname: continue
+			fname = os.path.join(root, fname)
+
+			try:
+				obj = LibraryObject(fname=fname)
+			except json.decoder.JSONDecodeError as e:
+				print("Failed to load {}\n{}".format(fname, e), file=sys.stderr)
+				continue
+
+			if PRINT_LEVEL >= 1:
+				print("Loaded {} of type {}".format(obj.id, obj.type))
+
+			library[obj.id] = obj
+
+	print("Loaded {} objects from library".format(len(library)))
+	return library
+
+
+def do_decompile(FILE, DIRS, CSVLOG):
+
+	if FILE.startswith("http://") or FILE.startswith("https://"):
+		loader = load_from_es_search
+	else:
+		loader = load_from_compiled_file
+
+	library = load_library(DIRS)
+
+	stats_new = 0
+	stats_unchanged = 0
+	stats_updated = 0
+
+	if CSVLOG is not None:
+		csvfo = open(CSVLOG, 'w')
+	else:
+		csvfo = open(os.devnull, "w")
+
+	counter = 0
+	for obj in loader(FILE):
+		obj = LibraryObject(jsonobj=obj)
+		counter += 1
+
+		trg_obj = library.get(obj.id)
+		if trg_obj is None:
+			# Object is not found in the library
+			obj.save(os.path.join(DIRS[0], 'new'))
+			stats_new += 1
+			csvfo.write("{}\t{}\t{}\t{}\t{}\t{}\n".format('new', obj.type, obj.id, obj.title, os.path.dirname(obj.fname), obj.fname))
+			continue
+
+		elif trg_obj.compare(obj):
+			# Object is found in the library and it is the same
+			stats_unchanged += 1
+			csvfo.write("{}\t{}\t{}\t{}\t{}\t{}\n".format('unchanged', trg_obj.type, trg_obj.id, trg_obj.title, os.path.dirname(trg_obj.fname), trg_obj.fname))
+			continue
+
+		else:
+			# Object is found in the library but it is different
+			trg_obj.obj = obj.obj
+			trg_obj.save()
+
+			stats_updated += 1
+			csvfo.write("{}\t{}\t{}\t{}\t{}\t{}\n".format('updated', trg_obj.type, trg_obj.id, trg_obj.title, os.path.dirname(trg_obj.fname), trg_obj.fname))
+
+			continue
+
+	if PRINT_LEVEL >= 0:
+		print("Decompiled {} objects into {} new, {} unchanged, {} updated".format(counter, stats_new, stats_unchanged, stats_updated))
+
+
+
+def do_compile(DIRS, FILE):
+
+	library = load_library(DIRS)
+
+	counter = 0
+	with open(FILE + '~', "w") as fo:
+		for obj in sorted(library.values(), key=lambda obj: obj.id):
+
+			if counter > 0:
+				fo.write(',\n')
+			else:
+				fo.write('[\n')
+
+			json.dump(obj.obj, fo)
+
+			if PRINT_LEVEL >= 1:
+				print("{} compiled".format(obj['_id']))
+
+			counter += 1
+
+		fo.write('\n]\n')
+
+	os.rename(FILE + '~', FILE)
+
+	if PRINT_LEVEL >= 0:
+		print("{} Kibana objects compiled into {}".format(counter, FILE))
+
+###########
+
+def do_document(DIRS, TEMPLATEDIR, OUTPUT):
+
+	library = {}
+
+	# Preprocessing
+	for obj_id, obj in load_library(DIRS).items():
+		# Filter out objects that we don't want to include in a documenation
+		if obj.type in ['config', 'x-lff-lookup']: continue
+		library[obj_id] = obj
+
+	template_dirs = [TEMPLATEDIR]
+	for d in DIRS:
+		template_dirs.append(d[0])
+
+	# Prepare Jinja2 Environment
+	env = jinja2.Environment(
+		loader = jinja2.FileSystemLoader(template_dirs),
+		autoescape=jinja2.select_autoescape(['html', 'xml'])
+	)
+
+	# Add Field and FieldCat objects to the Library
+	field_cat_library_objs = {}
+	field_library_objs = {}
+	for id in library.keys():
+		if library[id].type == 'index-pattern':
+			index_pattern_id = library[id].id
+			index_pattern_source = library[id].obj['_source']
+			for field_cat in library[id].meta['_fields_docs']:
+				cat_id = 'fieldcategory_'+index_pattern_id+field_cat['inc_p']
+				cat_title = field_cat['title']
+				catjsonobj = {
+					'_id': cat_id,
+					'index_pattern_id': index_pattern_id,
+					'_source': {
+						'type': 'fieldcategory',
+						'updated_at': index_pattern_source['updated_at'],
+						'fieldcategory': {
+							'title': cat_title,
+						}
+					}
+				}
+				for f in field_cat['fields']:
+					f_id = 'field_'+index_pattern_id+f['name'].lower().replace('.','-')
+					fjsonobj = {
+						'_id': f_id,
+						'cat_id': cat_id,
+						'index_pattern_id': index_pattern_id,
+						'_source': {
+							'type': 'field',
+							'updated_at': index_pattern_source['updated_at'],
+							'field': f
+						}
+					}
+					fjsonobj['_source']['field'].update({
+						'title': f['name'],
+						'cat_id': cat_id,
+						'cat_name': cat_title
+					})
+					field_obj = LibraryObject(jsonobj=fjsonobj)
+					# Add to library
+					field_library_objs[f_id] = field_obj
+
+				# Add field category to library
+				field_cat_library_objs[cat_id] = LibraryObject(jsonobj=catjsonobj)
+
+	library.update(field_library_objs)
+	library.update(field_cat_library_objs)
+	#
+	# Resolve relations among objects
+	#
+
+	# Prepare attributes
+	for obj in sorted(library.values(), key=lambda obj: obj.id):
+		obj.used_by = list()
+		obj.uses 	= list()
+		if obj.type == 'index-pattern':
+			obj.fieldcategories = list()
+		elif obj.type == 'fieldcategory':
+			obj.fields = list()
+
+	# Enrich objects with mutual dependencies
+	for obj in sorted(library.values(), key=lambda obj: obj.id):
+
+		if obj.type == 'search':
+			continue
+
+		elif obj.type == 'visualization':
+			# usage of searches
+			search_id = obj.obj['_source']['visualization'].get('savedSearchId')
+			if search_id is not None:
+				try:
+					# Search used by this visualsation
+					library["search:"+search_id].used_by.append(obj)
+					# This visualisation uses search
+					obj.uses.append(library["search:"+search_id])
+				except KeyError:
+					print("Cannot find '{}'' object referenced from visualization '{}'".format(o_id, obj.id))
+
+
+		elif obj.type == 'dashboard':
+			obj._expand_includes()
+			obj_list = json.loads(obj.obj["_source"]["dashboard"]["panelsJSON"])
+			
+			for o in obj_list:
+				o_id = o["type"]+":"+o["id"]
+				try:
+					# Object used by this dashboard
+					library[o_id].used_by.append(obj)
+					# This dashboard uses object
+					obj.uses.append(library[o_id])
+				except KeyError:
+					print("Cannot find '{}'' object referenced from dashbord '{}'".format(o_id, obj.id))
+
+		elif obj.type == 'field':
+			library[obj.obj["cat_id"]].fields.append(obj)
+
+		elif obj.type == 'fieldcategory':
+			library[obj.obj["index_pattern_id"]].fieldcategories.append(obj)
+
+	
+	# Postprocessing			
+	# Sort uses/used by
+	for obj in sorted(library.values(), key=lambda obj: obj.id):
+		obj.uses.sort(key=lambda o: o.type+'-'+o.title)
+		obj.used_by.sort(key=lambda o: o.type+'-'+o.title)
+
+
+	# Prepare output dir
+	try:
+		os.makedirs(OUTPUT)
+	except FileExistsError:
+		pass
+
+
+	def render_to_file(out, trg_file):
+		try:
+			os.makedirs(os.path.dirname(trg_file))
+		except FileExistsError:
+			pass
+		file_changed=False
+		file_not_found=False
+		encoded_out = out.encode("utf-8")
+		try:
+			with open(trg_file, 'rb') as f:
+				if hashlib.md5(f.read()).hexdigest() != hashlib.md5(encoded_out).hexdigest():
+					file_changed=True
+		except FileNotFoundError:
+			file_not_found=True
+
+		if file_not_found or file_changed:
+			print("Generating {}".format(trg_file))
+			open(trg_file, 'wb').write(encoded_out)
+
+
+	for obj in sorted(library.values(), key=lambda obj: obj.id):
+		# Skip file template
+		if obj.type == 'field':
+			continue
+
+		# Locate proper template
+		template = None
+		# Generic object template
+		try:
+			template = env.get_template('object.md')
+		except jinja2.exceptions.TemplateNotFound:
+			pass
+		# Object type template
+		try:
+			template = env.get_template(obj.type+'.md')
+		except jinja2.exceptions.TemplateNotFound:
+			pass
+		# Dedicated template
+		try:
+			md_template = (".".join(obj.fname.split(".")[:-1])+".md").strip("./")
+			template = env.get_template(md_template)
+		except jinja2.exceptions.TemplateNotFound:
+			pass
+
+		if template is None:
+			print("No template for object {}, skipping...".format(obj.id))
+			continue
+
+		# Render template into a MarkDown page
+		out = template.render(obj=obj, title="Black Swan")
+		trg_file = os.path.join(OUTPUT, obj.type, obj.id.replace(':','_')+'.md')
+		render_to_file(out, trg_file)
+
+
+	# Build the summary
+	template = env.get_template('SUMMARY.md')
+	# Render template into a MarkDown page
+	out = template.render(
+		library=sorted(library.values(), key=lambda o: o.title),
+		title="Black Swan Reference")
+	trg_file = os.path.join(OUTPUT, 'SUMMARY.md')
+	render_to_file(out, trg_file)
+
+
+	# Build the readme
+	template = env.get_template('README.md')
+	# Render template into a MarkDown page
+	out = template.render(
+		library=sorted(library.values(), key=lambda o: o.title),
+		title="Black Swan Reference"
+	)
+	trg_file = os.path.join(OUTPUT, 'README.md')
+	render_to_file(out, trg_file)
+
+
+###########
+
+def parse_cmdline():
+
+
+	description = '''Manage Kibana object library and Kibana index in ElasticSearch.\n
+Example of use:
+
+lmiokibana.py export http://localhost:9200/ /tmp/kibana-index-exported.json
+lmiokibana.py decompile /tmp/kibana-index-exported.json /tmp/kibana-index-decompiled/ ./kibana/library/objects/
+lmiokibana.py compile /tmp/kibana-index-decompiled/ ./kibana/library/objects/ -o /tmp/kibana-index-exported.json
+lmiokibana.py import /tmp/kibana-index-exported.json http://localhost:9200/
+
+lmiokibana.py document -t ./kibana/library/templates/ ./kibana/library/objects/ -o /tmp/doc
+
+'''
+
+	if jinja2 is None: description += '''
+WARNING: jinja2 is not installed, documentation functions are not available!
+
+'''
+
+	# Parse args
+	parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=description)
+	subparsers = parser.add_subparsers(help='commands')
+	parser.add_argument('--verbose', '-v', action='store_true', help='Be verbose in the output')
+	parser.add_argument('--silent', '-s', action='store_true', help="Don't print anything")
+
+	# An export command
+	export_parser = subparsers.add_parser('export', help='exports a Kibana index to a file')
+	export_parser.add_argument('URL', action='store', help='a ElasicSearch URL to read from')
+	export_parser.add_argument('FILE', action='store', help='a file to export data to')
+	export_parser.set_defaults(COMMAND='export')
+
+	# An import command
+	import_parser = subparsers.add_parser('import', help='Imports a Kibana index from a file')
+	import_parser.add_argument('FILE', action='store', help='a file to read from')
+	import_parser.add_argument('URL', action='store', help='a Kibana URL to import data to')
+	import_parser.set_defaults(COMMAND='import')
+
+	# An decompile command
+	decompile_parser = subparsers.add_parser('decompile', help='Decompile a Kibana index file into a library')
+	decompile_parser.add_argument('FILE', action='store', help='a file to read from (or ElasicSearch URL)')
+	decompile_parser.add_argument('DIR', action='store', nargs='+', help='a library directory')
+	decompile_parser.add_argument('--csv', '-c', action='store', help='specify an output CVS file with details of objects')
+	decompile_parser.set_defaults(COMMAND='decompile')
+
+	# An compile command
+	compile_parser = subparsers.add_parser('compile', help='Compile a Kibana index file')
+	compile_parser.add_argument('DIR', action='store', nargs='+', help='a directories that will be scanned for Kibana objects, first directory is also used for new objects')
+	compile_parser.add_argument('--output', '-o', metavar='FILE', action='store', help='a file to write to')
+	compile_parser.set_defaults(COMMAND='compile')
+
+	if jinja2 is not None:
+		doc_parser = subparsers.add_parser('document', help='Generate a documentation')
+		doc_parser.add_argument('DIR', action='store', nargs='+', help='a directories that will be scanned for Kibana objects')
+		doc_parser.add_argument('--template-dir', '-t', metavar='TEMPLATEDIR', action='store', help='specify a directory with templates', required=True)
+		doc_parser.add_argument('--output', '-o', metavar='OUTPUT', action='store', help='a directory to write output to')
+		doc_parser.set_defaults(COMMAND='document')
+
+
+	return parser.parse_args()
+
+
+def main():
+	# Get arguments
+	args = parse_cmdline()
+
+	global PRINT_LEVEL
+	if args.silent:
+		PRINT_LEVEL = -1
+	elif args.verbose:
+		PRINT_LEVEL = 1
+
+	# Call the command
+	if 'COMMAND' not in args:
+		print("Please select a command: import or export.")
+		print("For more information see --help")
+		return 1
+
+	if args.COMMAND  == 'export':
+		do_export(args.URL, args.FILE)
+
+	elif args.COMMAND == 'import':
+		do_import(args.FILE, args.URL)
+
+	elif args.COMMAND == 'decompile':
+		do_decompile(args.FILE, args.DIR, args.csv)
+
+	elif args.COMMAND == 'compile':
+		do_compile(args.DIR, args.output)
+
+	elif args.COMMAND == 'document':
+		do_document(args.DIR, args.template_dir, args.output)
+
+	else:
+		print("Unknown command {}".format(args.COMMAND))
+
+if __name__ == '__main__':
+	main()
