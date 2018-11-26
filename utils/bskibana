@@ -159,7 +159,16 @@ class LibraryObject(object):
 
 	@property
 	def type(self):
-		return self.obj['_source']['type']
+		t = self.obj['_source'].get('type')
+
+		# Lookups sometimes miss obj["type"]
+		if t is None:
+			if self.obj['_index'] == '.x-lff-lookup':
+				t = 'x-lff-lookup'
+			else:
+				raise KeyError("'type' in self.obj['_source']")
+
+		return t
 
 	@property
 	def title(self):
@@ -427,6 +436,9 @@ class LibraryObject(object):
 						"value": val["label"]
 					})
 				del obj_source["config"]
+
+			if "type" not in obj_source:
+				obj_source["type"]="x-lff-lookup"
 
 
 def load_library(DIRS):
