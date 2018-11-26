@@ -17,7 +17,7 @@ except ModuleNotFoundError:
 ###
 
 PRINT_LEVEL = 0 # -1 is for silent, 1 is for verbose
-INDECES = [".kibana", ".lookup"]
+INDECES = [".kibana", ".x-lff-lookup"]
 
 ######## Export / Import part
 
@@ -100,10 +100,7 @@ def do_import(FILE, URL):
 
 	import_data = ""
 	for obj in load_from_compiled_file(FILE):
-		if obj['_index'] == INDECES[1]:
-			import_data += json.dumps({"index": {"_index": INDECES[1], "_type": "doc", "_id": obj["_id"]}}) + '\n'
-		else:
-			import_data += json.dumps({"index": {"_index": INDECES[0], "_type": "doc", "_id": obj["_id"] } }) + '\n'
+		import_data += json.dumps({"index": {"_index": obj["_index"], "_type": obj["_type"], "_id": obj["_id"]}}) + '\n'
 		import_data += json.dumps(obj['_source']) + '\n'
 
 	if URL[-1:] != '/':
@@ -276,10 +273,10 @@ class LibraryObject(object):
 
 
 		elif self.type == 'x-lff-lookup':
-			inc_name = obj_source["config"]["map"]
+			inc_name = obj_source["map"]
 			if inc_name.startswith('@'):
 				inc_obj = self.add_include(inc_name)
-				obj_source["config"]["map"] = json.dumps(inc_obj)
+				obj_source["map"] = inc_obj
 
 
 	def save(self, directory = None):
@@ -360,8 +357,8 @@ class LibraryObject(object):
 
 
 		elif self.type == 'x-lff-lookup':
-			inc = obj_source["config"]["map"]
-			obj_source["config"]["map"] = self.save_include('@map', inc)
+			inc = obj_source["map"]
+			obj_source["map"] = self.save_include('@map', inc, destring=False)
 
 
 		with open(self.fname, 'w') as fo:
@@ -416,10 +413,20 @@ class LibraryObject(object):
 
 
 		elif self.type == 'x-lff-lookup':
-
-			inc = obj_source["config"]["map"]
-			obj_source["config"]["map"] = json.dumps(json.loads(inc))
-
+			# Backward compatibility
+			# This will make sure lookups are decompiled in the correct way even from old library export (with old way of storing lookups)
+			if "config" in obj_source:
+				self.obj["_index"] = ".x-lff-lookup"
+				self.obj["_type"] = "lookup"
+				obj_source["fieldType"] = obj_source["config"]["fieldType"]
+				obj_source["lookupType"] = obj_source["config"]["lookupType"]
+				obj_source["map"] = []
+				for key, val in json.loads(obj_source["config"]["map"]).items():
+					obj_source["map"].append({
+						"key": key,
+						"value": val["label"]
+					})
+				del obj_source["config"]
 
 
 def load_library(DIRS):
