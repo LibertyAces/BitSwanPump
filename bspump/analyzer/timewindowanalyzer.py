@@ -36,7 +36,7 @@ class TimeWindow(object):
 	'''
 
 
-	def __init__(self, app, pipeline, resolution=60, columns=15, start_time):
+	def __init__(self, app, pipeline, start_time, resolution=60, columns=15):
 
 		if start_time is None:
 			start_time = time.time()
@@ -84,7 +84,7 @@ class TimeWindow(object):
 		self.RevRowMap[rowcounter] = row_name
 
 		#and to warming up
-		row = np.zeros([1, self.TimeWindow.Columns])
+		row = np.zeros([1, self.Columns])
 		
 		if self.Matrix is None:
 			self.Matrix = row
@@ -96,7 +96,6 @@ class TimeWindow(object):
 
 
 	def get_column(self, event_timestamp):
-
 		if event_timestamp <= self.End:
 			self.Counters.add('events.late', 1)
 			return None
@@ -109,7 +108,6 @@ class TimeWindow(object):
 
 		assert(column_idx >= 0)
 		assert(column_idx < self.Columns)
-		
 		return column_idx
 
 
@@ -159,9 +157,9 @@ class TimeWindowAnalyzer(Analyzer):
 			self.TimeWindow = TimeWindow(
 				app,
 				pipeline,
+				start_time,
 				int(self.Config['resolution']),
-				int(self.Config['columns']),
-				start_time
+				int(self.Config['columns'])
 			)
 
 
@@ -171,7 +169,7 @@ class TimeWindowAnalyzer(Analyzer):
 
 		if clock_driven:
 			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
-			self.Timer.start(self.Resolution / 4) # 1/4 of the sampling
+			self.Timer.start(self.TimeWindow.Resolution / 4) # 1/4 of the sampling
 		else:
 			self.Timer = None
 
