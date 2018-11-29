@@ -25,12 +25,16 @@ class IPGeoLookup(DictionaryLookup):
 
 	def __init__(self, app, lookup_id, config=None):
 		super().__init__(app, lookup_id=lookup_id, config=config)
+		self.Id = lookup_id
 		self.TreeRoot = None
 		self.Locations = {}
 
 
 	async def load(self):
 		fname = self.Config['path']
+		if fname == '':
+			return
+
 		with open(fname, 'r') as f:
 			array = []
 			
@@ -51,6 +55,8 @@ class IPGeoLookup(DictionaryLookup):
 				self.Locations[ip_int_address_end] = d
 
 		self.TreeRoot = self.sorted_array_to_bst(array)
+		del array
+		L.warn("Lookup {} was successfully created".format(self.Id))
 		return True
 
 	def set(self, tree):
@@ -92,6 +98,12 @@ class IPGeoLookup(DictionaryLookup):
 	def lookup_location_ipv4(self, address):
 		
 		#check if correct address
+
+		if self.TreeRoot is None:
+			#L.warn("Cannnot enrich the location")
+			return None
+
+
 		if len(address.split(".")) != 4:
 			raise ValueError("This IP-address is not in ipv4 format")
 
@@ -102,7 +114,11 @@ class IPGeoLookup(DictionaryLookup):
 
 
 	def lookup_location_ipv6(self, address):
-		
+		if self.TreeRoot is None:
+			#L.warn("Cannnot enrich the location")
+			return None
+
+			
 		#check if correct address
 		if len(address.split(":")) not in [7, 8]:
 			raise ValueError("This IP-address is not in ipv6 format")

@@ -51,6 +51,9 @@ class TimeWindow(object):
 		self.RowMap = {}
 		self.RevRowMap = {}
 
+		#to warm up
+		self.WarmingUpRows = None
+
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
@@ -77,6 +80,9 @@ class TimeWindow(object):
 		self.Matrix = np.hstack((self.Matrix, column))
 		self.Matrix = np.delete(self.Matrix, 0, axis=1)
 
+		#decrease warming up
+		self.WarmingUpRows[:, 0] -= 1
+
 	
 	def add_row(self, row_name):
 		rowcounter = len(self.RowMap)
@@ -85,17 +91,23 @@ class TimeWindow(object):
 
 		#and to warming up
 		row = np.zeros([1, self.Columns])
+		warm_up = self.Columns * np.ones([1, 1])
 		
 		if self.Matrix is None:
 			self.Matrix = row
+			self.WarmingUpRows = warm_up
 		else:
 			self.Matrix = np.vstack((self.Matrix, row))
+			self.WarmingUpRows = np.vstack((self.WarmingUpRows, warm_up))
 
+	
 	def get_row(self, row_name):
 		return self.RowMap.get(row_name)
 
 
 	def get_column(self, event_timestamp):
+
+		event_timestamp = float(event_timestamp) / 1000
 		if event_timestamp <= self.End:
 			self.Counters.add('events.late', 1)
 			return None
@@ -143,7 +155,6 @@ class TimeWindowAnalyzer(Analyzer):
 	'''
 
 	ConfigDefaults = {
-		'warm_up_count': 2, # at least this amount of events in the matrix should be to analyze 
 		'columns': 15,
 		'resolution': 60, # Resolution (aka column width) in seconds
 	}
@@ -164,8 +175,6 @@ class TimeWindowAnalyzer(Analyzer):
 
 
 		# to warm up
-		self.WarmingUpCount = int(self.Config['warm_up_count'])
-		self.WarmingUpRows = []
 
 		if clock_driven:
 			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
@@ -185,8 +194,6 @@ class TimeWindowAnalyzer(Analyzer):
 	#Adding new row to a window
 	def add_row(self, row_name):
 		self.TimeWindow.add_row(row_name)
-		#and to warming up
-		self.WarmingUpRows.append(0)
 
 
 	def advance(self, target_ts):
