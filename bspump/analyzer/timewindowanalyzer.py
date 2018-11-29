@@ -39,9 +39,9 @@ class TimeWindow(object):
 	def __init__(self, app, pipeline, start_time, resolution=60, columns=15):
 
 		if start_time is None:
-			start_time = time.time()
+			start_time = time.time() * 1000
 
-		self.Resolution = resolution
+		self.Resolution = resolution * 1000
 		self.Columns = columns
 
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
@@ -195,7 +195,7 @@ class TimeWindowAnalyzer(Analyzer):
 
 	async def _on_tick(self):
 
-		target_ts = time.time()
+		target_ts = time.time() * 1000
 		self.advance(target_ts)
 #		if not self.WarmingUp:
 #			await self.analyze()
