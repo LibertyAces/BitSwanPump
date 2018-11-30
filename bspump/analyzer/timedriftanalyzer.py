@@ -6,7 +6,6 @@ import numpy as np
 
 import asab
 
-import bspump.analyzer
 from .analyzer import Analyzer
 
 ###
