@@ -15,11 +15,13 @@ L = logging.getLogger(__name__)
 
 #
 
-class ElasticSearchConnection(Connection):
 
+class ElasticSearchConnection(Connection):
 
 	ConfigDefaults = {
 		'url': 'http://localhost:9200/', # Could be multiline, each line is a URL to a node in ElasticSearch cluster
+		'username': '',
+		'password': '',
 		'loader_per_url': 4, # Number of parael loaders per URL
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 1024*1024,
@@ -33,6 +35,14 @@ class ElasticSearchConnection(Connection):
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue(loop=app.Loop)
+
+		username = self.Config.get('username')
+		password = self.Config.get('password')
+
+		if username == '':
+			self._auth = None
+		else:
+			self._auth = aiohttp.BasicAuth(login=username, password=password)
 		
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
@@ -71,12 +81,15 @@ class ElasticSearchConnection(Connection):
 	def get_url(self):
 		return random.choice(self.node_urls)
 
-
 	def consume(self, data):
 		self._bulk_out += data
 
 		if len(self._bulk_out) > self._bulk_out_max_size:
 			self.flush()
+
+
+	def get_session(self):
+		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
 
 	async def _on_exit(self, event_name):
@@ -133,7 +146,7 @@ class ElasticSearchConnection(Connection):
 
 
 	async def _loader(self, url):
-		async with aiohttp.ClientSession() as session:
+		async with self.get_session() as session:
 			while self._started:
 				bulk_out = await self._output_queue.get()
 				if bulk_out is None:
