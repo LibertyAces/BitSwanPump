@@ -19,7 +19,7 @@
 
 	mkdir /opt/repos/arrow/cpp/build
 
-	wget https://raw.githubusercontent.com/TeskaLabs/bspump/alpine-pyarrow-doc/doc/pyarrow/patch-0.11.0.diff
+	wget https://raw.githubusercontent.com/TeskaLabs/bspump/master/doc/pyarrow/patch-0.11.0.diff
 	patch /opt/repos/arrow/cpp/src/arrow/util/logging.cc < patch-0.11.0.diff
 	rm patch-0.11.0.diff
 
