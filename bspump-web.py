@@ -7,11 +7,6 @@ import bspump.common
 import bspump.http
 
 
-class ErrorProcessor(bspump.Processor):
-	def process(self, context, event):
-		raise RuntimeError("AAAAA")
-
-
 class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
@@ -22,7 +17,6 @@ class SamplePipeline(bspump.Pipeline):
 
 		self.build(
 			self.WebServiceSource,
-			ErrorProcessor(app, self),
 			self.WebServiceSink
 		)
 
