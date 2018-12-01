@@ -74,7 +74,7 @@ async def metric_detail(request):
 	return asab.web.rest.json_response(request, metric)
 
 
-def initialize_web(app, listen="0.0.0.0:8080"):
+def _initialize_web(app, listen="0.0.0.0:8080"):
 	app.add_module(asab.web.Module)
 
 	websvc = app.get_service("asab.WebService")
@@ -99,4 +99,4 @@ def initialize_web(app, listen="0.0.0.0:8080"):
 	container.WebApp.router.add_get('/metric', metric_list)
 	container.WebApp.router.add_get('/metric/{metric_id}', metric_detail)
 
-	return websvc
+	return container

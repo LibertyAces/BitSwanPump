@@ -9,7 +9,7 @@ from .__version__ import __version__, __build__
 
 class BSPumpApplication(asab.Application):
 
-	def __init__(self):
+	def __init__(self, web_listen=None):
 		super().__init__()
 
 		# Banner
@@ -23,7 +23,7 @@ class BSPumpApplication(asab.Application):
 		self.add_module(Module)
 
 		self.PumpService = BSPumpService(self)
-		self.WebService = None
+		self.WebContainer = None
 
 		# Conditionally activate LogMan.io service
 		if asab.Config.has_section("logman.io"):
@@ -33,12 +33,23 @@ class BSPumpApplication(asab.Application):
 			logman_service.configure_metrics(self.get_service('asab.MetricsService'))
 			logman_service.configure_logging(self)
 
-
 		try:
 			# Signals are not available on Windows
 			self.Loop.add_signal_handler(signal.SIGUSR1, self._on_signal_usr1)
 		except (NotImplementedError, AttributeError):
 			pass
+
+		# Activate web frontend, if requested
+		if web_listen is None:
+			if self._web_listen is not None and len(self._web_listen) > 0:
+				web_listen = self._web_listen
+			elif "bspump:web" in asab.Config:
+				web_listen = asab.Config["bspump:web"].get("listen", "")
+
+		if web_listen is not None and len(web_listen) > 0:
+			from .web import _initialize_web
+			self.WebContainer = _initialize_web(self, web_listen)
+
 
 
 	def create_argument_parser(self):
@@ -72,23 +83,6 @@ build: {} [{}]
 	def parse_arguments(self):
 		args = super().parse_arguments()
 		self._web_listen = args.web
-
-
-	async def initialize(self):
-		# Conditionally activate also a web service
-		if not asab.Config.has_section("bspump:web"):
-			asab.Config["bspump:web"] = {}
-
-		# Listen host and port
-		listen = ""
-		if self._web_listen is not None and len(self._web_listen) > 0:
-			listen = self._web_listen
-		else:
-			listen = asab.Config["bspump:web"].get("listen", "")
-
-		if len(listen) > 0:
-			from .web import initialize_web
-			self.WebService = initialize_web(self, listen)
 
 
 	async def main(self):
