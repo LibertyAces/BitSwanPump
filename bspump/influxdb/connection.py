@@ -7,7 +7,6 @@ from asab import Config
 
 from ..abc.connection import Connection
 
-
 #
 
 L = logging.getLogger(__name__)
