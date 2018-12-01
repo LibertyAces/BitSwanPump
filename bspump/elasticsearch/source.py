@@ -40,13 +40,14 @@ class ElasticSearchSource(TriggerSource):
 					}
 				}}
 
+
 	async def cycle(self):
 
 		scroll_id = None
 
 		while True:
 			if scroll_id is None:
-				path = self.Index + '/_search?scroll={}'.format(self.ScrollTimeout)
+				path = '{}/_search?scroll={}'.format(self.Index, self.ScrollTimeout)
 				request_body = self.RequestBody
 			else:
 				path = "_search/scroll"
