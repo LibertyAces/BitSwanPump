@@ -1,3 +1,4 @@
+import re
 import logging
 import aiokafka
 import concurrent
@@ -15,45 +16,59 @@ class KafkaSource(Source):
 
 
 	ConfigDefaults = {
-		'topic': '',
+		'topic': '', # Multiple values are allowed, separated by , character
+		'client_id': 'BSPump-KafkaSource',
+		'group_id': '',
+		'max_partition_fetch_bytes': 1048576,
+		'auto_offset_reset': 'latest',
+		'api_version': 'auto', # or e.g. 0.9.0
 	}
 
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self._connection = pipeline.locate_connection(app, connection)
-		self._consumer = aiokafka.AIOKafkaConsumer(
-			self.Config['topic'],
-			loop=app.Loop,
-			bootstrap_servers=self._connection.get_bootstrap_servers()
+		topics = re.split(r'\s*,\s*', self.Config['topic'])
+
+		group_id = self.Config['group_id']
+		if len(group_id) == 0: group_id = None
+
+		self.Connection = pipeline.locate_connection(app, connection)
+		self.Consumer = aiokafka.AIOKafkaConsumer(
+			*topics,
+			loop = app.Loop,
+			bootstrap_servers = self.Connection.get_bootstrap_servers(),
+			client_id = self.Config['client_id'],
+			group_id = group_id,
+			max_partition_fetch_bytes = int(self.Config['max_partition_fetch_bytes']),
+			auto_offset_reset = self.Config['auto_offset_reset'],
+			api_version = self.Config['api_version'],
+			enable_auto_commit=False
 		)
 
 
 	async def main(self):
-		await self._consumer.start()
+		await self.Consumer.start()
 		try:
 			while 1:
 				await self.Pipeline.ready()
-				msg = await type(self._consumer).__anext__(self._consumer)
-				await self.process_message(msg)
-		except StopAsyncIteration:
-			pass
+				print("Loading ...")
+				data = await self.Consumer.getmany(timeout_ms=10000)
+				print("Loaded.", len(data))
+				for tp, messages in data.items():
+					for message in messages:
+						#TODO: If pipeline is not ready, don't commit messages ...
+						await self.process_message(message)
+				await self.Consumer.commit()
+
 		except concurrent.futures._base.CancelledError:
 			pass
 		except BaseException as e:
 			L.exception("Error when processing Kafka message")
 		finally:
-			await self._consumer.stop()
+			await self.Consumer.stop()
 
 
-	async def process_message(self, msg):
-		# Expand msg attributes to context
-		msg_dict = msg._asdict()
-		msg_dict.pop('value')
-		context = {
-			"kafka": dict(msg_dict)
-		}
-
-		# Process
-		await self.process(msg.value, context=context)
+	async def process_message(self, message):
+		context = { "kafka": message }
+		await self.process(message.value, context=context)
