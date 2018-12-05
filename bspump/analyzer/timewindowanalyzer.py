@@ -138,7 +138,7 @@ class TimeWindow(object):
 			dt = (self.Start - target_ts) / self.Resolution
 			if dt > 0.25: break
 			self.add_column()
-			L.warn("Time window was shifted")
+			# L.warn("Time window was shifted")
 
 
 	def get_matrix(self):

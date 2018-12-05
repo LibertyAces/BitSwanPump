@@ -76,7 +76,7 @@ class TimeDriftAnalyzer(Analyzer):
 		diff = self.get_diff(timestamp)
 
 		if diff < 0:
-			L.warning("Negative timestamp")
+			# L.warning("Negative timestamp")
 			return
 
 		self.History.append(diff)
