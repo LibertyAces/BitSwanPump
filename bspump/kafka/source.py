@@ -52,9 +52,7 @@ class KafkaSource(Source):
 		try:
 			while 1:
 				await self.Pipeline.ready()
-				print("Loading ...")
 				data = await self.Consumer.getmany(timeout_ms=10000)
-				print("Loaded.", len(data))
 				for tp, messages in data.items():
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
