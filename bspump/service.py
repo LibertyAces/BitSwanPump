@@ -63,6 +63,7 @@ class BSPumpService(asab.Service):
 		if connection.Id in self.Connections:
 			raise RuntimeError("Lookup '{}' already created".format(lookup_id))
 		self.Connections[connection.Id] = connection
+		return connection
 
 	def add_connections(self, *connections):
 		for connection in connections:
