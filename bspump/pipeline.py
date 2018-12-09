@@ -18,6 +18,28 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC):
 
+	'''
+
+## Multiple sources
+
+A pipeline can have multiple sources.
+They are simply passed as an list of sources to a pipeline `build()` method.
+
+class MyPipeline(bspump.Pipeline):
+
+	def __init__(self, app, pipeline_id):
+		super().__init__(app, pipeline_id)
+		self.build(
+			[
+				MySource1(app, self),
+				MySource2(app, self),
+				MySource3(app, self),
+			]
+			bspump.common.NullSink(app, self),
+		)
+
+	'''
+
 
 	def __init__(self, app, id=None):
 		self.Id = id if id is not None else self.__class__.__name__
