@@ -10,24 +10,33 @@ L = logging.getLogger(__name__)
 
 ###
 
-'''This lookup contains locations with precision to city.
-	For better precision visit https://lite.ip2location.com 
-	to buy a better version of database.
-	Usage: specify in configuration the path to the database in csv format.
-	Lookup provides locations both in ipv4 and ipv6 formats'''
-
 class IPGeoLookup(DictionaryLookup):
+	'''
+This lookup performs transformation of IP address into a geographical location.
+It uses a file database from ip2location.com.
+Lookup provides locations both in ipv4 and ipv6 formats.
+NOTICE: IPv6 database includes also all IPv4 locations, see "ipv4mapped" config. option.
+
+Free versions: IP2LOCATION-LITE-DB5.IPV6.CSV and IP2LOCATION-LITE-DB5.IPV4.CSV
+For better precision visit https://lite.ip2location.com to buy a commercial version of database.
+
+Usage: specify in configuration the path to the database in csv format.
+'''
 
 
 	ConfigDefaults = {
 		'path': '',
+		'ipv4mapped': 'no', # IPv4-mapped IPv6 address (enables to use IPv6 lookups for IPv4 addresses)
 	}
 
 	def __init__(self, app, lookup_id, config=None):
 		super().__init__(app, lookup_id=lookup_id, config=config)
-		self.Id = lookup_id
 		self.TreeRoot = None
 		self.Locations = {}
+		if self.Config['ipv4mapped'].lower() == 'yes':
+			self.IP4Mapped = True
+		else:
+			self.IP4Mapped = False
 
 
 	async def load(self):
@@ -51,12 +60,16 @@ class IPGeoLookup(DictionaryLookup):
 				else:
 					d = {'lat' : lat, 'lon' : lon}
 
+				if line[2] != '-': d['country'] = line[2]
+				if line[4] != '-': d['region'] = line[4]
+				if line[5] != '-': d['city'] = line[5]
+
 				self.Locations[ip_int_address_start] = d
 				self.Locations[ip_int_address_end] = d
 
 		self.TreeRoot = self.sorted_array_to_bst(array)
 		del array
-		L.warn("Lookup {} was successfully created".format(self.Id))
+		L.debug("IPGeoLookup {} was successfully created".format(self.Id))
 		return True
 
 	def set(self, tree):
@@ -96,21 +109,19 @@ class IPGeoLookup(DictionaryLookup):
 
 
 	def lookup_location_ipv4(self, address):
-		
-		#check if correct address
-
 		if self.TreeRoot is None:
 			#L.warn("Cannnot enrich the location")
 			return None
 
-
-		if len(address.split(".")) != 4:
-			raise ValueError("This IP-address is not in ipv4 format")
-
 		address_int = int(ipaddress.IPv4Address(address))
+
+		if self.IP4Mapped:
+			# https://blog.ip2location.com/knowledge-base/ipv4-mapped-ipv6-address/
+			# 191.239.213.197 -> ::ffff:191.239.213.197
+			address_int += 281470681743360
+
 		value = self.search(address_int)
-		location = self.Locations.get(value)
-		return location
+		return self.Locations.get(value)
 
 
 	def lookup_location_ipv6(self, address):
@@ -118,16 +129,19 @@ class IPGeoLookup(DictionaryLookup):
 			#L.warn("Cannnot enrich the location")
 			return None
 
-			
-		#check if correct address
-		if len(address.split(":")) not in [7, 8]:
-			raise ValueError("This IP-address is not in ipv6 format")
-
 		address_int = int(ipaddress.IPv6Address(address))
+
 		value = self.search(address_int)
-		location = self.Locations.get(value)
-		return location
-	
+		return self.Locations.get(value)
+
+	def lookup_location(self, address):
+		if '.' in address:
+			return self.lookup_location_ipv4(address)
+		elif ':' in address:
+			return self.lookup_location_ipv6(address)
+		else:
+			raise ValueError("Invalid IPv4/IPv6 format")
+
 
 class Node: 
 	def __init__(self, d): 
