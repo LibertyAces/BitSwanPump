@@ -30,8 +30,8 @@ class KafkaSource(Source):
 
 		topics = re.split(r'\s*,\s*', self.Config['topic'])
 
-		group_id = self.Config['group_id']
-		if len(group_id) == 0: group_id = None
+		self._group_id = self.Config['group_id']
+		if len(self._group_id) == 0: self._group_id = None
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.Consumer = aiokafka.AIOKafkaConsumer(
@@ -39,7 +39,7 @@ class KafkaSource(Source):
 			loop = app.Loop,
 			bootstrap_servers = self.Connection.get_bootstrap_servers(),
 			client_id = self.Config['client_id'],
-			group_id = group_id,
+			group_id = self._group_id,
 			max_partition_fetch_bytes = int(self.Config['max_partition_fetch_bytes']),
 			auto_offset_reset = self.Config['auto_offset_reset'],
 			api_version = self.Config['api_version'],
@@ -57,7 +57,8 @@ class KafkaSource(Source):
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.process_message(message)
-				await self.Consumer.commit()
+				if self._group_id is not None:
+					await self.Consumer.commit()
 
 		except concurrent.futures._base.CancelledError:
 			pass
