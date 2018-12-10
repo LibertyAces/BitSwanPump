@@ -149,12 +149,12 @@ class ElasticSearchSizeRollover(ElasticSearchBaseRollover):
 		for index_name, index_stats in data['indices'].items():
 			ls.append(index_name)
 
-		sorted_ls = sorted(ls, key=lambda item: item.rsplit('_', 1)[-1], reverse=True)
+		sorted_ls = sorted(ls, key=lambda item: item[len(self.IndexPrefix):], reverse=True)
 
 		if len(sorted_ls) > 0:
 			# Increase index counter if max size of latest index is exceeded
 			if data['indices'][sorted_ls[0]]['total']['store']['size_in_bytes'] > self.MaxIndexSize:
-				_ , split_index = sorted_ls[0].rsplit('_',1)
+				split_index = sorted_ls[0][len(self.IndexPrefix):]
 				self.Index = self.IndexPrefix + '{:05}'.format(int(split_index) + 1)
 
 			# Pick latest index
