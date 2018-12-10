@@ -57,8 +57,8 @@ Available technologies
 * ``bspump.amqp`` AMQP/RabbitMQ connection, source and sink
 * ``bspump.elasticsearch`` ElasticSearch connection, source and sink
 * ``bspump.file`` (plain files, JSON, CSV)
-* ``bspump.http.client``  HTTP client source
-* ``bspump.http.web`` HTTP server source and sink
+* ``bspump.http.client``  HTTP client source, WebSocket client sink
+* ``bspump.http.web`` HTTP server source and sink, WebSocket server source
 * ``bspump.influxdb`` InfluxDB connection and sink
 * ``bspump.kafka`` Kafka connection, source and sink
 * ``bspump.mysql`` MySQL connection, source and sink
