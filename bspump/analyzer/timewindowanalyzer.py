@@ -116,7 +116,7 @@ class TimeWindow(object):
 			self.Counters.add('events.early', 1)
 			return None
 
-		column_idx = int((event_timestamp - self.End - 1) // self.Resolution)
+		column_idx = int((event_timestamp - self.End) // self.Resolution)
 
 		assert(column_idx >= 0)
 		assert(column_idx < self.Columns)
@@ -204,5 +204,4 @@ class TimeWindowAnalyzer(Analyzer):
 
 		target_ts = time.time()
 		self.advance(target_ts)
-#		if not self.WarmingUp:
-#			await self.analyze()
+
