@@ -29,6 +29,8 @@ class TimeDriftAnalyzer(Analyzer):
 		self.HistorySize = self.Config['history_size']
 
 		metrics_service = app.get_service('asab.MetricsService')
+
+		self.DifferenceCounter = metrics_service.create_counter("timedrift.difference", tags={}, init_values={'positive': 0, 'negative': 0})
 		self.Gauge = metrics_service.create_gauge("timedrift",
 			tags = {
 				'pipeline': pipeline.Id,
@@ -76,9 +78,10 @@ class TimeDriftAnalyzer(Analyzer):
 		diff = self.get_diff(timestamp)
 
 		if diff < 0:
-			# L.warning("Negative timestamp")
+			self.DifferenceCounter.add('negative', 1)
 			return
-
+		self.DifferenceCounter.add('positive', 1)
+		
 		self.History.append(diff)
 
 		while len(self.History) > self.HistorySize:
