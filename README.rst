@@ -64,6 +64,7 @@ Available technologies
 * ``bspump.mysql`` MySQL connection, source and sink
 * ``bspump.parquet`` Apache Parquet file sink
 * ``bspump.avro`` Apache Avro file source and sink
+* ``bspump.mongodb`` MongoDB connection and lookup
 * ``bspump.socket`` TCP source
 * ``bspump.slack`` Slack connection and sink
 
