@@ -64,12 +64,10 @@ Available technologies
 * ``bspump.mysql`` MySQL connection, source and sink
 * ``bspump.parquet`` Apache Parquet file sink
 * ``bspump.avro`` Apache Avro file source and sink
+* ``bspump.socket`` TCP source, UDP source
 * ``bspump.mongodb`` MongoDB connection and lookup
-* ``bspump.socket`` TCP source
 * ``bspump.slack`` Slack connection and sink
-
 * ``bspump.trigger`` Opportunistic, PubSub and Periodic triggers
-
 * ``bspump.crypto`` Cryptography
 
   * Hashing: SHA224, SHA256, SHA384, SHA512, SHA1, MD5, BLAKE2b, BLAKE2s
