@@ -272,5 +272,5 @@ class TimeWindowAnalyzer(Analyzer):
 
 	async def _on_tick(self):
 		target_ts = time.time()
-		columns_added = self.advance(target_ts)
+		self.advance(target_ts)
 
