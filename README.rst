@@ -82,6 +82,9 @@ Available technologies
 
   * GeoIP Lookup
 
+Google Sheet with technological compatiblity matrix:
+https://docs.google.com/spreadsheets/d/1L1DvSuHuhKUyZ3FEFxqEKNpSoamPH2Z1ZaFuHyageoI/edit?usp=sharing
+
 
 High-level architecture
 -----------------------
