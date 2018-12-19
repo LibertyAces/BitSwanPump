@@ -97,4 +97,3 @@ Licence
 
 BSPump is an open-source software, available under BSD 3-Clause License.
 
-BSPump is a part of Black Swan project, joint effort of Liberty Aces and TeskaLabs.
