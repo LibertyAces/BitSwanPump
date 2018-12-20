@@ -216,4 +216,5 @@ class ParquetSink(Sink):
 		os.rename(current_fname, current_fname[:-5])
 
 		if self.RolloverMechanism == 'rows':
+			self.Chunks = 0
 			self.Index = self.Index + 1
