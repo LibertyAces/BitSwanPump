@@ -3,6 +3,8 @@ import asyncio
 import types
 import logging
 import itertools
+import collections
+import datetime
 import asab
 from .abc.source import Source
 from .abc.sink import Sink
@@ -44,6 +46,9 @@ class MyPipeline(bspump.Pipeline):
 	def __init__(self, app, id=None):
 		self.Id = id if id is not None else self.__class__.__name__
 		self.Loop = app.Loop
+
+		# Pipeline logger
+		self.L = PipelineLogger("bspump.pipeline.{}".format(self.Id))
 
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
@@ -349,6 +354,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 			'Sources': self.Sources,
 			'Processors': [],
 			'Metrics': self.MetricsCounter,
+			'Log': [record.__dict__ for record in self.L.Deque]
 		}
 
 		for l, processors in enumerate(self.Processors):
@@ -361,3 +367,32 @@ class SampleInternalPipeline(bspump.Pipeline):
 			rest['Error'] = error_text
 
 		return rest
+
+
+###
+
+
+class PipelineLogger(logging.Logger):
+
+	def __init__(self, name, level=logging.NOTSET):
+		super().__init__(name, level=level)
+		self.Deque = collections.deque([], 50)
+		# TODO: configurable maxlen that is now 50 ^^
+		# TODO: configurable log level (per pipeline, from its config) 
+
+
+	def handle(self, record):
+		# Add formatted timestamp
+		record.timestamp = self._format_time(record)
+		# Add record
+		self.Deque.append(record)
+
+
+	def _format_time(self, record):
+		try:
+			ct = datetime.datetime.fromtimestamp(record.created)
+			return ct.isoformat()
+		except BaseException as e:
+			L.error("ERROR when logging: {}".format(e))
+			return str(record.created)
+
