@@ -1,7 +1,7 @@
 import logging
 import os
 import json
-import asab
+from asab.timer import Timer
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pandas as pd
@@ -13,8 +13,9 @@ L = logging.getLogger(__file__)
 
 #
 
+
 class ParquetSink(Sink):
-	""""
+	"""
 	schema_file is JSON which defines column names (as keys) and their types.
 	These types are allowed : string, bool, float, int, list, decimal
 										date, time, bytearray, array
@@ -35,8 +36,9 @@ class ParquetSink(Sink):
 
 	ConfigDefaults = {
 		'rows_in_chunk': 1000,
-		'rollover_mechanism': 'rows',
+		'rollover_mechanism': 'rows',  # or time
 		'rows_per_file': 10000,
+		'writing_period': '1d',  # only used if rollover_mechanism == 'time', valid units are s, m, h, d, w
 		'file_name_template': './sink{index}.parquet',
 	}
 
@@ -52,6 +54,7 @@ class ParquetSink(Sink):
 
 		self.Frames = []
 		self.ChunkSize = self.Config['rows_in_chunk']
+		self.Index = 0
 		self.RolloverMechanism = self.Config['rollover_mechanism']
 		self.FileNameTemplate = self.Config['file_name_template']
 
@@ -87,7 +90,19 @@ class ParquetSink(Sink):
 			else:
 				self.ChunksPerFile = int(self.Config['rows_per_file'] / self.ChunkSize)
 			self.Chunks = 0
-			self.Index = 0
+
+		if self.RolloverMechanism == 'time':
+			writing_period = self.Config['writing_period']
+
+			seconds_per_unit = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800}
+
+			def convert_to_seconds(s):
+				return int(s[:-1]) * seconds_per_unit[s[-1]]
+
+			writing_period = convert_to_seconds(writing_period)
+
+			self._writing_timer = Timer(app, self.rotate_async, autorestart=True)
+			self._writing_timer.start(writing_period)
 
 		else:
 			self.Index = None
@@ -183,12 +198,11 @@ class ParquetSink(Sink):
 			df = pd.DataFrame([event])
 		self.Frames.append(df)
 
-		if len(self.Frames) >= self.ChunkSize:
+		if self.RolloverMechanism == 'rows' and (len(self.Frames) >= self.ChunkSize):
 
-			if self.RolloverMechanism == 'rows':
-				self.Chunks = self.Chunks + 1
-				if self.Chunks >= self.ChunksPerFile:
-					self.rotate()
+			self.Chunks = self.Chunks + 1
+			if self.Chunks >= self.ChunksPerFile:
+				self.rotate()
 
 			self.flush()
 
@@ -202,6 +216,9 @@ class ParquetSink(Sink):
 			except Exception as e:
 				L.warning(e)
 			self.Frames = []
+
+	async def rotate_async(self):
+		self.rotate()
 
 	def rotate(self, new_filename=None):
 		'''
@@ -217,4 +234,5 @@ class ParquetSink(Sink):
 
 		if self.RolloverMechanism == 'rows':
 			self.Chunks = 0
-			self.Index = self.Index + 1
+
+		self.Index = self.Index + 1
