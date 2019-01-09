@@ -47,9 +47,6 @@ class MyPipeline(bspump.Pipeline):
 		self.Id = id if id is not None else self.__class__.__name__
 		self.Loop = app.Loop
 
-		# Pipeline logger
-		self.L = PipelineLogger("bspump.pipeline.{}".format(self.Id))
-
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
 		self._source_coros = [] # List of source main() coroutines
@@ -68,12 +65,30 @@ class MyPipeline(bspump.Pipeline):
 				'error': 0,
 			}
 		)
+		self.MetricsGauge = metrics_service.create_gauge(
+			"bspump.pipeline.gauge",
+			tags={'pipeline':self.Id},
+			init_values={
+				'warning.ratio': 0,
+				'error.ratio': 0,
+			}
+		)
 		self.MetricsDutyCycle = metrics_service.create_duty_cycle(self.Loop,
 			"bspump.pipeline.dutycycle",
 			tags={'pipeline':self.Id},
 			init_values={
 				'ready': False,
 			}
+		)
+		app.PubSub.subscribe(
+			"Application.Metrics.Flush!",
+			self._on_metrics_flush
+		)
+
+		# Pipeline logger
+		self.L = PipelineLogger(
+			"bspump.pipeline.{}".format(self.Id),
+			self.MetricsCounter
 		)
 
 		self.LastReadyStateSwitch = self.Loop.time()
@@ -90,6 +105,17 @@ class MyPipeline(bspump.Pipeline):
 		self._chillout_counter = 0
 
 		self._context = {}
+
+
+	def _on_metrics_flush(self, event_type, metric, values):
+		if metric != self.MetricsCounter:
+			return
+		if values["event.in"] == 0:
+			self.MetricsGauge.set("warning.ratio", 0)
+			self.MetricsGauge.set("error.ratio", 0)
+			return
+		self.MetricsGauge.set("warning.ratio", values["warning"]/values["event.in"])
+		self.MetricsGauge.set("error.ratio", values["error"]/values["event.in"])
 
 
 	def is_error(self):
@@ -353,7 +379,11 @@ class SampleInternalPipeline(bspump.Pipeline):
 			'Ready': self.is_ready(),
 			'Sources': self.Sources,
 			'Processors': [],
-			'Metrics': self.MetricsCounter,
+			'Metrics': {
+				"MetricsCounter": self.MetricsCounter,
+				"MetricsGauge": self.MetricsGauge,
+				"MetricsDutyCycle": self.MetricsDutyCycle,
+			},
 			'Log': [record.__dict__ for record in self.L.Deque]
 		}
 
@@ -374,16 +404,24 @@ class SampleInternalPipeline(bspump.Pipeline):
 
 class PipelineLogger(logging.Logger):
 
-	def __init__(self, name, level=logging.NOTSET):
+	def __init__(self, name, metrics_counter, level=logging.NOTSET):
 		super().__init__(name, level=level)
 		self.Deque = collections.deque([], 50)
+		self._metrics_counter = metrics_counter
 		# TODO: configurable maxlen that is now 50 ^^
 		# TODO: configurable log level (per pipeline, from its config) 
 
 
 	def handle(self, record):
+		# Count errors and warnings
+		if (record.levelno == logging.WARNING):
+			self._metrics_counter.add("warning", 1)
+		elif (record.levelno >= logging.ERROR):
+			self._metrics_counter.add("error", 1)
+
 		# Add formatted timestamp
 		record.timestamp = self._format_time(record)
+		
 		# Add record
 		self.Deque.append(record)
 
