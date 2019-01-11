@@ -23,8 +23,16 @@ def parse_cmdline():
 	load_template_parser.set_defaults(COMMAND='load_index_template')
 
 	# An cleanup command
-	cleanup_parser = subparsers.add_parser('cleanup', help='cleanup old and empty indexes')
+	cleanup_parser = subparsers.add_parser('cleanup', help='Closes old and deletes empty indexes')
 	cleanup_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
+	cleanup_parser.add_argument('--min-date',
+		action='store',
+		help='Min date (format yyyy-mm-dd)',
+		default='1970-01-01')
+	cleanup_parser.add_argument('--max-date',
+		action='store',
+		help='Max date (format yyyy-mm-dd)',
+		default='1970-01-01')
 	cleanup_parser.set_defaults(COMMAND='cleanup')
 
 	# An reopen command
@@ -143,9 +151,14 @@ def COMMAND_load_index_template(DIR, URL):
 		print(r.text)
 
 
-def COMMAND_cleanup(URL):
+def COMMAND_cleanup(URL, args_min_date, args_max_date):
 	url = URL
 	if url[-1:] != '/': url += '/'
+
+	args_min_datetime = datetime.datetime.strptime(args_min_date, "%Y-%m-%d")
+	args_max_datetime = datetime.datetime.strptime(args_max_date, "%Y-%m-%d")
+	args_max_datetime = args_max_datetime + datetime.timedelta(days=1)
+	assert args_min_datetime < args_max_datetime
 
 	print("Communicate with: {}".format(url))
 
@@ -187,10 +200,16 @@ def COMMAND_cleanup(URL):
 				continue
 
 			maxmin_obj = req_maxmin_timestamp(url, name)
-			max_date = max_datetime_from_maxmin(maxmin_obj)
-			min_date = min_datetime_from_maxmin(maxmin_obj)
+			max_datetime = max_datetime_from_maxmin(maxmin_obj)
+			min_datetime = min_datetime_from_maxmin(maxmin_obj)
 
-			if max_date < datetime.datetime(year=2018, month=1, day=1, hour=0, minute=0):
+
+			if  min_datetime is not None \
+				and max_datetime is not None \
+				and datetime_ranges_collide(
+					min_datetime, max_datetime,
+					args_min_datetime, args_max_datetime
+				):
 				old_count += 1
 				# Delete close old indicies
 
@@ -413,7 +432,7 @@ def main():
 		return COMMAND_load_index_template(args.DIR, args.URL)
 
 	elif args.COMMAND == 'cleanup':
-		return COMMAND_cleanup(args.URL)
+		return COMMAND_cleanup(args.URL, args.min_date, args.max_date)
 
 	elif args.COMMAND == 'reopen':
 		return COMMAND_reopen(args.URL, args.min_date, args.max_date)
