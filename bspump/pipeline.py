@@ -379,7 +379,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 			'Ready': self.is_ready(),
 			'Sources': self.Sources,
 			'Processors': [],
-			'Metrics': self.MetricsService.MemstorTarget.Values,
+			'Metrics': self.MetricsService.MemstorTarget,
 			'Log': [record.__dict__ for record in self.L.Deque]
 		}
 
