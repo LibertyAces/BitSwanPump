@@ -53,8 +53,8 @@ class MyPipeline(bspump.Pipeline):
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
-		metrics_service = app.get_service('asab.MetricsService')
-		self.MetricsCounter = metrics_service.create_counter(
+		self.MetricsService = app.get_service('asab.MetricsService')
+		self.MetricsCounter = self.MetricsService.create_counter(
 			"bspump.pipeline",
 			tags={'pipeline':self.Id},
 			init_values={
@@ -65,7 +65,7 @@ class MyPipeline(bspump.Pipeline):
 				'error': 0,
 			}
 		)
-		self.MetricsGauge = metrics_service.create_gauge(
+		self.MetricsGauge = self.MetricsService.create_gauge(
 			"bspump.pipeline.gauge",
 			tags={'pipeline':self.Id},
 			init_values={
@@ -73,7 +73,7 @@ class MyPipeline(bspump.Pipeline):
 				'error.ratio': 0.0,
 			}
 		)
-		self.MetricsDutyCycle = metrics_service.create_duty_cycle(self.Loop,
+		self.MetricsDutyCycle = self.MetricsService.create_duty_cycle(self.Loop,
 			"bspump.pipeline.dutycycle",
 			tags={'pipeline':self.Id},
 			init_values={
@@ -379,11 +379,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 			'Ready': self.is_ready(),
 			'Sources': self.Sources,
 			'Processors': [],
-			'Metrics': {
-				"MetricsCounter": self.MetricsCounter,
-				"MetricsGauge": self.MetricsGauge,
-				"MetricsDutyCycle": self.MetricsDutyCycle,
-			},
+			'Metrics': self.MetricsService.MemstorTarget.Values,
 			'Log': [record.__dict__ for record in self.L.Deque]
 		}
 
