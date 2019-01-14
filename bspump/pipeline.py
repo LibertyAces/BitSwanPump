@@ -69,8 +69,8 @@ class MyPipeline(bspump.Pipeline):
 			"bspump.pipeline.gauge",
 			tags={'pipeline':self.Id},
 			init_values={
-				'warning.ratio': 0,
-				'error.ratio': 0,
+				'warning.ratio': 0.0,
+				'error.ratio': 0.0,
 			}
 		)
 		self.MetricsDutyCycle = metrics_service.create_duty_cycle(self.Loop,
@@ -111,8 +111,8 @@ class MyPipeline(bspump.Pipeline):
 		if metric != self.MetricsCounter:
 			return
 		if values["event.in"] == 0:
-			self.MetricsGauge.set("warning.ratio", 0)
-			self.MetricsGauge.set("error.ratio", 0)
+			self.MetricsGauge.set("warning.ratio", 0.0)
+			self.MetricsGauge.set("error.ratio", 0.0)
 			return
 		self.MetricsGauge.set("warning.ratio", values["warning"]/values["event.in"])
 		self.MetricsGauge.set("error.ratio", values["error"]/values["event.in"])
