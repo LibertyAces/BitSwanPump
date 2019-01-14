@@ -22,6 +22,7 @@ class KafkaSource(Source):
 		'max_partition_fetch_bytes': 1048576,
 		'auto_offset_reset': 'latest',
 		'api_version': 'auto', # or e.g. 0.9.0
+		'disabled': 0,
 	}
 
 
@@ -48,6 +49,9 @@ class KafkaSource(Source):
 
 
 	async def main(self):
+		if int(self.Config['disabled']) != 0:
+			return
+
 		await self.Consumer.start()
 		try:
 			while 1:
