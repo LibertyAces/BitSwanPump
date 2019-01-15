@@ -210,21 +210,13 @@ class LibraryObject(object):
 		if self.type == 'index-pattern':
 			
 			inc_name = obj_source["index-pattern"].get("fields")
-			if isinstance(inc_name, list):
-				f = []
-				f_doc = [] # Fields for document
-				for inc_p in inc_name:
-					parts = inc_p.split("|")
-					title = inc_p					
-					if len(parts) > 1:
-						inc_p = parts[0]
-						title = parts[1]
-
-					i = self.add_include(inc_p)
-					f.extend(i)
-					f_doc.append({'title': title, 'inc_p': inc_p, 'fields': i})
-				obj_source["index-pattern"]["fields"] = json.dumps(f)
-				self.meta["_fields_docs"] = f_doc
+			if inc_name is None:
+				pass
+			elif isinstance(inc_name, list):
+				pass
+			elif inc_name.startswith("@"):
+				inc_obj = self.add_include(inc_name)
+				obj_source["index-pattern"]["fields"] = json.dumps(inc_obj)
 
 			inc_name = obj_source["index-pattern"].get("fieldFormatMap")
 			if inc_name is not None:
@@ -304,28 +296,10 @@ class LibraryObject(object):
 		if self.type == 'index-pattern':
 			fields = json.loads(obj_source["index-pattern"]["fields"])
 
-			new_fields = []
-			for inc_name in filter(lambda k: k.startswith('@fields-'), self.includes.keys()):
-				new_fields.append(inc_name)
-				inc_fname = self.fname[:-5] + inc_name + '.json'
-				inc_obj = json.load(open(inc_fname, 'r'))
-
-				new_inc_obk = []
-				for f in inc_obj:
-					fname = f['name']
-					for i in range(len(fields)):
-						field = fields[i]
-						if field['name'] == fname:
-							new_inc_obk.append(fields.pop(i))
-							break
-
-				self.save_include(inc_name, new_inc_obk, destring = False)
-
 			if len(fields) > 0:
-				# There are new fields in index pattern
-				self.save_include("@newfields", fields, destring = False)
-
-			obj_source["index-pattern"]["fields"] = new_fields
+				obj_source["index-pattern"]["fields"] = self.save_include("@fields", fields, destring = False)
+			else:
+				obj_source["index-pattern"]["fields"] = fields
 
 
 			inc = obj_source["index-pattern"].get("fieldFormatMap")
@@ -380,8 +354,27 @@ class LibraryObject(object):
 
 		if self.type == 'index-pattern':
 			
+			## Fields
+
 			inc = obj_source["index-pattern"]["fields"]
-			obj_source["index-pattern"]["fields"] = json.dumps(json.loads(inc))
+			fields = []
+
+			# Sort fields by name
+			s_fields = sorted(json.loads(inc), key=lambda k: k['name'])
+			for f in s_fields:
+				# Order keys in the field document
+				ordered_field = {}
+				# "name" and "type" go first
+				ordered_field["name"] = f.pop("name")
+				ordered_field["type"] = f.pop("type")
+				# And then the rest alphabetically sorted
+				for k in sorted(f):
+					ordered_field[k] = f.pop(k)
+				fields.append(ordered_field)
+
+			obj_source["index-pattern"]["fields"] = json.dumps(fields)
+
+			###
 
 			inc = obj_source["index-pattern"].get("fieldFormatMap")
 			if inc is not None:
