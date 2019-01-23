@@ -47,7 +47,7 @@ class FileABCSource(TriggerSource):
 	async def cycle(self):
 		filename = None
 
-		for path in self.path.split(';'):
+		for path in self.path.split(os.pathsep):
 			filename = _glob_scan(path, exclude=self.exclude, include=self.include)
 			if filename is not None:
 				break
