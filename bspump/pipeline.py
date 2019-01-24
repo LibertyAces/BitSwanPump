@@ -45,6 +45,7 @@ class MyPipeline(bspump.Pipeline):
 
 	def __init__(self, app, id=None):
 		self.Id = id if id is not None else self.__class__.__name__
+		self.App = app
 		self.Loop = app.Loop
 
 		self.Sources = []
@@ -93,7 +94,7 @@ class MyPipeline(bspump.Pipeline):
 
 		self.LastReadyStateSwitch = self.Loop.time()
 
-		self._error = None # None if not in error state otherwise there is a tuple (exception, event)
+		self._error = None # None if not in error state otherwise there is a tuple (context, event, exc, timestamp)
 
 		self._throttles = set()
 
@@ -150,7 +151,7 @@ class MyPipeline(bspump.Pipeline):
 			if (self._error is not None):
 				L.warning("Error on a pipeline is already set!")
 			
-			self._error = (context, event, exc)
+			self._error = (context, event, exc, self.App.time())
 			L.warning("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
 
 			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
@@ -387,10 +388,12 @@ class SampleInternalPipeline(bspump.Pipeline):
 			rest['Processors'].append(processors)
 
 		if self._error:
-			error_text = str(self._error[2])
+			error_text = str(self._error[2]) # (context, event, exc, timestamp)[2]
+			error_time = self._error[3]
 			if len(error_text) == 0:
 				error_text = str(type(self._error[2]))
 			rest['Error'] = error_text
+			rest['ErrorTimestamp'] = error_time
 
 		return rest
 
