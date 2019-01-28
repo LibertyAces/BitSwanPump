@@ -59,7 +59,7 @@ async def lookup(request):
 async def metric_list(request):
 	app = request.app['app']
 	svc = app.get_service("asab.MetricsService")
-	return asab.web.rest.json_response(request, svc.Metrics)
+	return asab.web.rest.json_response(request, svc.MemstorTarget)
 
 
 async def metric_detail(request):
