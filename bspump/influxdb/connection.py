@@ -17,10 +17,10 @@ class InfluxDBConnection(Connection):
 
 	ConfigDefaults = {
 		"url": 'http://localhost:8086/',
+		'db': 'mydb',
 		'output_queue_max_size': 10,
 		'output_bucket_max_size': 1000*1000,
 		'timeout': 30,
-		'db': 'mydb',
 	}
 
 	def __init__(self, app, connection_id, config=None):
