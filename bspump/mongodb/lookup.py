@@ -24,8 +24,8 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 	ConfigDefaults = {
 		'database': '', # Specify a database if you want to overload the connection setting
-		'collection':'',
-		'key':''
+		'collection':'', # Specify collection name
+		'key':'' # Specify key name used for search
 	}
 
 	def __init__(self, app, lookup_id, mongodb_connection, config=None):
