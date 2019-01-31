@@ -24,6 +24,8 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 	ConfigDefaults = {
 		'database': '', # Specify a database if you want to overload the connection setting
+		'collection':'',
+		'key':''
 	}
 
 	def __init__(self, app, lookup_id, mongodb_connection, config=None):
@@ -37,25 +39,22 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 		self.Count = -1
 		self.Cache = {}
 
-
-	@abc.abstractmethod
-	def find_one(self, database, key):
-		'''
-		return database['collection'].find_one({'key':key})
-		'''
-		pass
+		metrics_service = app.get_service('asab.MetricsService')
+		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
 
 
-	@abc.abstractmethod
-	async def count(self, database):
-		'''
-		return await database['collection'].count_documents({})
-		'''
-		pass
+	def _find_one(self, database, key):
+		
+		return database[self.Config['collection']].find_one({self.Config['key']:key})
+
+	
+	async def _count(self, database):
+
+		return await database[self.Config['collection']].count_documents({})
 
 
 	async def load(self):
-		self.Count = await self.count(self.Connection.Client[self.Database])
+		self.Count = await self._count(self.Connection.Client[self.Database])
 
 
 	def __len__(self):
@@ -64,13 +63,18 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 	def __getitem__(self, key):
 		try:
-			return self.Cache[key]
+			key = self.Cache[key]
+			self.CacheCounter.add('hit', 1)
+			return key
 		except KeyError:
 			# Find pymongo (synchronous) connection to a database
 			database = self.Connection.Client[self.Database].delegate
-			v = self.find_one(database, key)
+			v = self._find_one(database, key)
 			self.Cache[key] = v
+			self.CacheCounter.add('miss', 1)
 			return v
 
 	def __iter__(self):
-		raise NotImplementedError("Not implemented yet") #TODO: This ...
+		database = self.Connection.Client[self.Database].delegate
+		collection = self.Config['collection']
+		return database[collection].find().__iter__()
