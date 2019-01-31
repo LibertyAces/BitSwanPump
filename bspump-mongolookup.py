@@ -33,7 +33,7 @@ class MyApplication(BSPumpApplication):
 		
 
 class MyPipeline(Pipeline):
-
+	# Enriches the event with location from Mogodb lookup
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(

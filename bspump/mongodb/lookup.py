@@ -44,12 +44,10 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 
 	def _find_one(self, database, key):
-		
 		return database[self.Config['collection']].find_one({self.Config['key']:key})
 
 	
 	async def _count(self, database):
-
 		return await database[self.Config['collection']].count_documents({})
 
 
@@ -67,12 +65,12 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 			self.CacheCounter.add('hit', 1)
 			return key
 		except KeyError:
-			# Find pymongo (synchronous) connection to a database
 			database = self.Connection.Client[self.Database].delegate
 			v = self._find_one(database, key)
 			self.Cache[key] = v
 			self.CacheCounter.add('miss', 1)
 			return v
+
 
 	def __iter__(self):
 		database = self.Connection.Client[self.Database].delegate
