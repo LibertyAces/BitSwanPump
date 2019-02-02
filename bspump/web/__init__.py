@@ -104,7 +104,7 @@ KEY2=${ENVIRONMENT_VARIABLE}
 		'ASAB_VERSION': asab.__version__,
 		'BSPUMP_VERSION': bspump_version,
 		'BSPUMP_BUILD': bspump_build,
-		'APP_LAUNCHED_AT': datetime.datetime.utcfromtimestamp(app.LaunchTime).isoformat(),
+		'LAUNCHED_AT': datetime.datetime.utcfromtimestamp(app.LaunchTime).isoformat(),
 	}
 
 	container_host = os.environ.get('CONTAINER_HOST')
