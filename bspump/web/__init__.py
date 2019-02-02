@@ -97,12 +97,20 @@ async def manifest(request):
 KEY1=VALUE
 KEY2=${ENVIRONMENT_VARIABLE}
 	'''
+	
+	app = request.app['app']
 
 	d = {
 		'ASAB_VERSION': asab.__version__,
 		'BSPUMP_VERSION': bspump_version,
 		'BSPUMP_BUILD': bspump_build,
+		'APP_LAUNCHED_AT': datetime.datetime.utcfromtimestamp(app.LaunchTime).isoformat(),
 	}
+
+	container_host = os.environ.get('CONTAINER_HOST')
+	if container_host is not None:
+		d['CONTAINER_HOST'] = container_host
+	
 	try:
 
 		fname = '/manifest'
