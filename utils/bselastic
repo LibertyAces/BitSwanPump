@@ -152,6 +152,15 @@ def datetime_ranges_collide(a_min_datetime, a_max_datetime, b_min_datetime, b_ma
 		return False
 
 
+def datetime_range_a_is_within_b(a_min_datetime, a_max_datetime, b_min_datetime, b_max_datetime):
+	assert a_min_datetime <= a_max_datetime
+	assert b_min_datetime <= b_max_datetime
+
+	# A |------|
+	# B |--------|
+	return a_min_datetime >= b_min_datetime and a_max_datetime < b_max_datetime
+
+
 def COMMAND_load_index_template(DIR, URL):
 
 	# Compile list of templates
@@ -247,7 +256,7 @@ def COMMAND_cleanup(URL, args_min_date, args_max_date, exclude_prefix):
 
 			if  min_datetime is not None \
 				and max_datetime is not None \
-				and datetime_ranges_collide(
+				and datetime_range_a_is_within_b(
 					min_datetime, max_datetime,
 					args_min_datetime, args_max_datetime
 				):
@@ -361,7 +370,7 @@ def COMMAND_reopen(URL, args_min_date, args_max_date, exclude_prefix):
 			# Close if found time range doesn't collide with selected time range
 			if  min_datetime is None \
 				or max_datetime is None \
-				or not datetime_ranges_collide(
+				or not datetime_range_a_is_within_b(
 					min_datetime, max_datetime,
 					args_min_datetime, args_max_datetime
 				):
@@ -447,7 +456,7 @@ def COMMAND_close(URL, args_min_date, args_max_date, exclude_prefix):
 			# Close if found time range doesn't collide with selected time range
 			if  min_datetime is not None \
 				and max_datetime is not None \
-				and datetime_ranges_collide(
+				and datetime_range_a_is_within_b(
 					min_datetime, max_datetime,
 					args_min_datetime, args_max_datetime
 				):
@@ -543,7 +552,7 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 			# Delete if found time range doesn't collide with selected time range
 			if  min_datetime is not None \
 				and max_datetime is not None \
-				and datetime_ranges_collide(
+				and datetime_range_a_is_within_b(
 					min_datetime, max_datetime,
 					args_min_datetime, args_max_datetime
 				):
