@@ -27,21 +27,29 @@ class Window(object):
 	'U'	Unicode string	np.dtype('U') == np.str_
 	'V'	Raw data (void)	np.dtype('V') == np.void
 
-	TODO: nums after letters??////?
-	also dimensions!!!!!!!!!!!!!!!!!!
+	storage has structure:
+	{
+		"row_id0":{
+			"storage_id0": object,
+			...
+		},
+		...
+	}
+	TODO: nums after letters, dimensions
 	'''
 
 	def __init__(self, app, pipeline):
-		self.RowMap = {}
-		self.RevRowMap = {}
+		
+		self.Matrix = None
 		self.ColumnNames = []
 		self.ColumnFormats = []
-		self.Storage = {}
-		self.ClosedRows = set()
-		self.Matrix = None
 
 
 	def initialize_window(self):
+		self.RowMap = {}
+		self.RevRowMap = {}
+		self.Storage = {}
+		self.ClosedRows = set()
 		self.Matrix = np.zeros(0, dtype={'names':self.ColumnNames, 'formats':self.ColumnFormats})
 
 	
@@ -51,6 +59,8 @@ class Window(object):
 		row_counter = len(self.RowMap)
 		self.RowMap[row_id] = row_counter
 		self.RevRowMap[row_counter] = row_id
+
+	# def 
 
 
 	def rebuild_rows(self, mode):
@@ -67,9 +77,12 @@ class Window(object):
 					new_row_map[key] = value
 					new_rev_row_map[value] = key
 					saved_indexes.append(value)
+				else:
+					if value in self.Storage:
+						self.Storage.pop(value)
 
-			new_sessions = self.Sessions[saved_indexes]
-			self.Matrix = new_sessions
+			new_matrix = self.Matrix[saved_indexes]
+			self.Matrix = new_matrix
 			self.RowMap = new_row_map
 			self.RevRowMap = new_rev_row_map
 			self.ClosedRows = set()
@@ -209,6 +222,7 @@ class SessionWindow(Window):
 		if row_counter is not None:
 			self.ClosedRows.add(row_counter)
 			self.Matrix[row_counter]["@timestamp_end"] = end_time
+			
 
 
 
