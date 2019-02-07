@@ -69,7 +69,7 @@ class TimeWindowAnalyzer(Analyzer):
 			tws_configuration = {"default":{"third_dimension":1}}
 
 		for label in tws_configuration.keys():
-			self.TimeWindows[label] = TimeWindow(
+			self.TimeWindows[label] = TimeWindowCapture(
 				app,
 				pipeline,
 				third_dimension=tws_configuration[label][third_dimension],

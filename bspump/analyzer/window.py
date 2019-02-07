@@ -14,7 +14,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class Window(object):
+class Capture(object):
 	'''
 	Each column has name and type. Types can be identified from table:
 	
@@ -91,7 +91,7 @@ class Window(object):
 
 
 
-class TimeWindow(Window):
+class TimeWindowCapture(Capture):
 	'''
     ## Time window
 
@@ -192,13 +192,14 @@ class TimeWindow(Window):
 		assert(column_idx < self.Columns)
 		return column_idx
 
+	
 	def close_row(self, row_id):
 		row_counter = self.RowMap.get(row_id)
 		if row_counter is not None:
 			self.ClosedRows.add(row_counter)
 
 
-class SessionWindow(Window):
+class SessionCapture(Capture):
 	def __init__(self, app, pipeline, column_formats, column_names, id=None, config=None):
 		super().__init__(app, pipeline)
 

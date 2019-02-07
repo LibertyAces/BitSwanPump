@@ -58,7 +58,7 @@ class SessionAnalyzer(Analyzer):
 	def _create_sessions(self, app, pipeline, sws_configuration):
 		self.SessionMatrixes = {}
 		for label in sws_configuration.keys():
-			self.SessionMatrixes[label] = SessionWindow(
+			self.SessionMatrixes[label] = SessionCapture(
 				app,
 				pipeline,
 				column_formats=sws_configuration[label]['column_formats'],
