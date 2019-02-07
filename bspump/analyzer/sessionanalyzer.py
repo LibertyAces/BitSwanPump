@@ -32,75 +32,68 @@ class SessionAnalyzer(Analyzer):
 	'S', 'a'	String	np.dtype('S5')
 	'U'	Unicode string	np.dtype('U') == np.str_
 	'V'	Raw data (void)	np.dtype('V') == np.void
+
+
+
+	sws_configuration = {'label0':{'column_formats':['c1', 'c2'], 'column_names':['col1', 'col12']}}
+	if you need to create just one session matrix, name the label somehow and specify column_fomats/names. 
+	you can access it by self.SessionMatrix without the label 
 	'''
 
 
-	def __init__(self, app, pipeline, column_formats, column_names, id=None, config=None):
-		
+	def __init__(self, app, pipeline, sws_configuration, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		self.ColumnNames = column_names
 		self.ColumnFormats = column_formats
-		if len(self.ColumnNames) != len(self.ColumnFormats):
-			raise RuntimeError("Column names and column formats should be the same length!")
+		
 
 		self.ColumnNames.append("@timestamp_start")
 		self.ColumnFormats.append('i4')
 
 		self.ColumnNames.append("@timestamp_end")
 		self.ColumnFormats.append('i4')
-		self._initialize_sessions()
+		self._create_sessions(app, pipeline, sws_configuration)
 		
 
-	def _initialize_sessions(self):
-		self.Sessions = np.zeros(0, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
-		self.RowMap = {}
-		self.RevRowMap = {}
-		self.ClosedRows = set()
-
-
-	def add_session(self, session_id, start_time):
-		row = np.zeros(1, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
-		row["@timestamp_start"] = start_time
-		self.Sessions = np.append(self.Sessions, row) #discussable, we can preassign big matrix and then fill it untill end and then restructure
-		row_counter = len(self.RowMap)
-		self.RowMap[session_id] = row_counter
-		self.RevRowMap[row_counter] = session_id
-
-
-	def close_session(self, session_id, end_time):
-		row_counter = self.RowMap.get(session_id)
+	def _create_sessions(self, app, pipeline, sws_configuration):
+		self.SessionMatrixes = {}
+		for label in sws_configuration.keys():
+			self.SessionMatrixes[label] = SessionWindow(
+				app,
+				pipeline,
+				column_formats=sws_configuration[label]['column_formats'],
+				column_names=sws_configuration[label]['column_names'],
+			)
 		
-		if row_counter is None:
-			return
+		self.SessionMatrix = self.SessionMatrixes[list(sws_configuration.keys())[0]]
+
+
+
+	def add_session(self, session_id, start_time, label=None):
+		if label is None:
+			self.SessionMatrix.add_row(session_id,start_time)		
 		else:
-			idx = self.RowMap[session_id]
-			self.Sessions[idx]['@timestamp_end'] = end_time
-			self.ClosedRows.add(row_counter)
+			self.SessionMatrixes[label].add_row(session_id,start_time)
 
 
-	def rebuild_sessions(self, mode):
-		
-		if mode == "full":
-			self._initialize_sessions()
-		elif mode == "partial":
-			new_row_map = {}
-			new_rev_row_map = {}
-			saved_indexes = []
-			for key in self.RowMap.keys():
-				value = self.RowMap[key]
-				if value not in self.ClosedRows:
-					new_row_map[key] = value
-					new_rev_row_map[value] = key
-					saved_indexes.append(value)
 
-			new_sessions = self.Sessions[saved_indexes]
-			self.Sessions = new_sessions
-			self.RowMap = new_row_map
-			self.RevRowMap = new_rev_row_map
-			self.ClosedRows = set()
-
+	def close_session(self, session_id, end_time, label=None):
+		if label is None:
+			s = self.SessionMatrix
 		else:
-			L.warn("Unknown mode")
+			s = self.SessionMatrixes[label]
+		
+		s.close_row(session_id, end_time)
+
+
+	def rebuild_sessions(self, mode, label=None):
+		if label is None:
+			s = self.SessionMatrix
+		else:
+			s = self.SessionMatrixes[label]
+
+		s.rebuild_rows(mode)
+		
 
 	
 	
