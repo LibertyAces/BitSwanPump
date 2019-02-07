@@ -3,6 +3,13 @@ import pika
 import asab
 
 from ..abc.sink import Sink
+import logging
+
+###
+
+L = logging.getLogger(__name__)
+
+###
 
 class AMQPSink(Sink):
 
@@ -55,9 +62,18 @@ class AMQPSink(Sink):
 		if self._channel is None:
 			raise RuntimeError("AMQP channel is not open")
 
+
+		if self._exchange == '!context':
+			exchange = context.get('amqp.exchange')
+		else:
+			exchange = self._exchange
+
+		if exchange is None:
+			L.warn("Exchange is not specified")
+
 		try:
 			self._channel.basic_publish(
-				self._exchange,
+				exchange,
 				self._routing_key,
 				event,
 				pika.BasicProperties(content_type=self._content_type, delivery_mode=1)

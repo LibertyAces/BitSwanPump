@@ -23,8 +23,20 @@ def parse_cmdline():
 	load_template_parser.set_defaults(COMMAND='load_index_template')
 
 	# An cleanup command
-	cleanup_parser = subparsers.add_parser('cleanup', help='cleanup old and empty indexes')
+	cleanup_parser = subparsers.add_parser('cleanup', help='Closes old and deletes empty indexes')
 	cleanup_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
+	cleanup_parser.add_argument('--min-date',
+		action='store',
+		help='Min date (format yyyy-mm-dd)',
+		default='1970-01-01')
+	cleanup_parser.add_argument('--max-date',
+		action='store',
+		help='Max date (format yyyy-mm-dd)',
+		default='1970-01-01')
+	cleanup_parser.add_argument('--exclude',
+		action='store',
+		help='Indicies with matching prefix will be excluded',
+		default=None)
 	cleanup_parser.set_defaults(COMMAND='cleanup')
 
 	# An reopen command
@@ -38,6 +50,10 @@ def parse_cmdline():
 		action='store',
 		help='Max date (format yyyy-mm-dd)',
 		default='1970-01-01')
+	reopen_parser.add_argument('--exclude',
+		action='store',
+		help='Indicies with matching prefix will be excluded',
+		default=None)
 	reopen_parser.set_defaults(COMMAND='reopen')
 
 	# Close command
@@ -51,7 +67,28 @@ def parse_cmdline():
 		action='store',
 		help='Max date (format yyyy-mm-dd)',
 		default='1970-01-01')
+	close_parser.add_argument('--exclude',
+		action='store',
+		help='Indicies with matching prefix will be excluded',
+		default=None)
 	close_parser.set_defaults(COMMAND='close')
+
+	# Delete command
+	delete_parser = subparsers.add_parser('delete', help='delete indexes in time range')
+	delete_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
+	delete_parser.add_argument('--min-date',
+		action='store',
+		help='Min date (format yyyy-mm-dd)',
+		default='1970-01-01')
+	delete_parser.add_argument('--max-date',
+		action='store',
+		help='Max date (format yyyy-mm-dd)',
+		default='1970-01-01')
+	delete_parser.add_argument('--exclude',
+		action='store',
+		help='Indicies with matching prefix will be excluded',
+		default=None)
+	delete_parser.set_defaults(COMMAND='delete')
 
 	return parser.parse_args()
 
@@ -59,6 +96,12 @@ def parse_cmdline():
 def req_close_index(es_url, index_name):
 	url_close = es_url + '{}/_close'.format(index_name)
 	r = requests.post(url_close, json={})
+	return r.json()
+
+
+def req_delete_index(es_url, index_name):
+	url_close = es_url + '{}'.format(index_name)
+	r = requests.delete(url_close, json={})
 	return r.json()
 
 
@@ -109,6 +152,15 @@ def datetime_ranges_collide(a_min_datetime, a_max_datetime, b_min_datetime, b_ma
 		return False
 
 
+def datetime_range_a_is_within_b(a_min_datetime, a_max_datetime, b_min_datetime, b_max_datetime):
+	assert a_min_datetime <= a_max_datetime
+	assert b_min_datetime <= b_max_datetime
+
+	# A |------|
+	# B |--------|
+	return a_min_datetime >= b_min_datetime and a_max_datetime < b_max_datetime
+
+
 def COMMAND_load_index_template(DIR, URL):
 
 	# Compile list of templates
@@ -143,9 +195,14 @@ def COMMAND_load_index_template(DIR, URL):
 		print(r.text)
 
 
-def COMMAND_cleanup(URL):
+def COMMAND_cleanup(URL, args_min_date, args_max_date, exclude_prefix):
 	url = URL
 	if url[-1:] != '/': url += '/'
+
+	args_min_datetime = datetime.datetime.strptime(args_min_date, "%Y-%m-%d")
+	args_max_datetime = datetime.datetime.strptime(args_max_date, "%Y-%m-%d")
+	args_max_datetime = args_max_datetime + datetime.timedelta(days=1)
+	assert args_min_datetime < args_max_datetime
 
 	print("Communicate with: {}".format(url))
 
@@ -165,15 +222,21 @@ def COMMAND_cleanup(URL):
 	for index in indices:
 		try:
 			name = index['index']
+
+			if name.startswith('.'):
+				print("Index {} will be excluded. Indexes that start with '.' are always excluded".format(name))
+				continue
+
+			if exclude_prefix is not None and name.startswith(exclude_prefix):
+				print("Index {0} will be excluded because it matches prefix {1}".format(name, exclude_prefix))
+				continue
+
 			if index['health'] != 'green':
 				#print("Index {index} health is {health} - skipping".format(**index))
 				not_green_count += 1
 				continue
 
 			if index['status'] != 'open':
-				continue
-
-			if name.startswith('.'):
 				continue
 
 			if int(index['docs.count']) == 0:
@@ -187,10 +250,16 @@ def COMMAND_cleanup(URL):
 				continue
 
 			maxmin_obj = req_maxmin_timestamp(url, name)
-			max_date = max_datetime_from_maxmin(maxmin_obj)
-			min_date = min_datetime_from_maxmin(maxmin_obj)
+			max_datetime = max_datetime_from_maxmin(maxmin_obj)
+			min_datetime = min_datetime_from_maxmin(maxmin_obj)
 
-			if max_date < datetime.datetime(year=2018, month=1, day=1, hour=0, minute=0):
+
+			if  min_datetime is not None \
+				and max_datetime is not None \
+				and datetime_range_a_is_within_b(
+					min_datetime, max_datetime,
+					args_min_datetime, args_max_datetime
+				):
 				old_count += 1
 				# Delete close old indicies
 
@@ -223,7 +292,7 @@ def COMMAND_cleanup(URL):
 	print("Count of non-green indicies: {}".format(not_green_count))
 
 
-def COMMAND_reopen(URL, args_min_date, args_max_date):
+def COMMAND_reopen(URL, args_min_date, args_max_date, exclude_prefix):
 	url = URL
 	if url[-1:] != '/': url += '/'
 
@@ -249,10 +318,15 @@ def COMMAND_reopen(URL, args_min_date, args_max_date):
 		try:
 			name = index['index']
 
-			if index['status'] != 'close':
+			if name.startswith('.'):
+				print("Index {} will be excluded. Indexes that start with '.' are always excluded".format(name))
 				continue
 
-			if name.startswith('.'):
+			if exclude_prefix is not None and name.startswith(exclude_prefix):
+				print("Index {0} will be excluded because it matches prefix {1}".format(name, exclude_prefix))
+				continue
+
+			if index['status'] != 'close':
 				continue
 
 			closed_count+=1
@@ -296,7 +370,7 @@ def COMMAND_reopen(URL, args_min_date, args_max_date):
 			# Close if found time range doesn't collide with selected time range
 			if  min_datetime is None \
 				or max_datetime is None \
-				or not datetime_ranges_collide(
+				or not datetime_range_a_is_within_b(
 					min_datetime, max_datetime,
 					args_min_datetime, args_max_datetime
 				):
@@ -317,7 +391,7 @@ def COMMAND_reopen(URL, args_min_date, args_max_date):
 	print("Count of indices that were reopened: {}".format(opened_count))
 
 
-def COMMAND_close(URL, args_min_date, args_max_date):
+def COMMAND_close(URL, args_min_date, args_max_date, exclude_prefix):
 	url = URL
 	if url[-1:] != '/': url += '/'
 
@@ -335,7 +409,6 @@ def COMMAND_close(URL, args_min_date, args_max_date):
 	# indices = json.load(open('dump.json', 'rt'))
 
 	open_count = 0
-	closed_count = 0
 	not_green_count = 0
 	closed_count = 0
 
@@ -345,6 +418,14 @@ def COMMAND_close(URL, args_min_date, args_max_date):
 		try:
 			name = index['index']
 
+			if name.startswith('.'):
+				print("Index {} will be excluded. Indexes that start with '.' are always excluded".format(name))
+				continue
+
+			if exclude_prefix is not None and name.startswith(exclude_prefix):
+				print("Index {0} will be excluded because it matches prefix {1}".format(name, exclude_prefix))
+				continue
+
 			if index['health'] != 'green' and index['health'] != 'yellow':
 				#print("Index {index} health is {health} - skipping".format(**index))
 				not_green_count += 1
@@ -353,8 +434,6 @@ def COMMAND_close(URL, args_min_date, args_max_date):
 			if index['status'] != 'open':
 				continue
 
-			if name.startswith('.'):
-				continue
 
 			open_count+=1
 
@@ -377,7 +456,7 @@ def COMMAND_close(URL, args_min_date, args_max_date):
 			# Close if found time range doesn't collide with selected time range
 			if  min_datetime is not None \
 				and max_datetime is not None \
-				and datetime_ranges_collide(
+				and datetime_range_a_is_within_b(
 					min_datetime, max_datetime,
 					args_min_datetime, args_max_datetime
 				):
@@ -399,6 +478,109 @@ def COMMAND_close(URL, args_min_date, args_max_date):
 	print("Count of indices that were closed: {}".format(closed_count))
 
 
+def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
+	url = URL
+	if url[-1:] != '/': url += '/'
+
+	args_min_datetime = datetime.datetime.strptime(args_min_date, "%Y-%m-%d")
+	args_max_datetime = datetime.datetime.strptime(args_max_date, "%Y-%m-%d")
+	args_max_datetime = args_max_datetime + datetime.timedelta(days=1)
+	assert args_min_datetime < args_max_datetime
+
+	print("Communicate with: {}".format(url))
+
+	url_indices = url + '_cat/indices?format=json'
+	r = requests.get(url_indices)
+	indices = r.json()
+	# json.dump(indices, open('dump.json', 'wt'))
+	# indices = json.load(open('dump.json', 'rt'))
+
+	delete_count = 0
+
+	indices = sorted(indices, key=lambda index:index['index'].rsplit('_')[-1], reverse=False)
+
+	for index in indices:
+		try:
+			name = index['index']
+			was_closed = False
+
+			if name.startswith('.'):
+				print("Index {} will be excluded. Indexes that start with '.' are always excluded".format(name))
+				continue
+
+			if exclude_prefix is not None and name.startswith(exclude_prefix):
+				print("Index {0} will be excluded because it matches prefix {1}".format(name, exclude_prefix))
+				continue
+
+			if index['status'] == 'close':
+				was_closed = True
+
+				# Open
+				print("Opening index {} to analyze max and min dates".format(name))
+				url_open = url + '{}/_open'.format(name)
+				r = requests.post(url_open, json={})
+				result = r.json()
+
+
+				# Wait until open
+				url_stats = url + '_cat/indices/{}?format=json'.format(name)
+				is_open = False
+				while not is_open:
+					r = requests.get(url_stats)
+					result = r.json()
+					assert len(result) == 1
+					is_open = result[0]['status'] == 'open'
+					print("Index '{}' {} open.".format(name, "is" if is_open else "is not"))
+					if not is_open:
+						time.sleep(1)
+
+			# Get max and min date
+			res_success = False
+			retry_count = 0
+			while not res_success:
+				maxmin_obj = req_maxmin_timestamp(url, name)
+				res_success = "aggregations" in maxmin_obj
+				if not res_success:
+					retry_count+=1
+					if retry_count > 5:
+						raise RuntimeError("Max retries exceeded while requesting maxmin timestamp on index '{}'".format(name))
+					time.sleep(1)
+
+			max_datetime = max_datetime_from_maxmin(maxmin_obj)
+			min_datetime = min_datetime_from_maxmin(maxmin_obj)
+
+			# Delete if found time range doesn't collide with selected time range
+			if  min_datetime is not None \
+				and max_datetime is not None \
+				and datetime_range_a_is_within_b(
+					min_datetime, max_datetime,
+					args_min_datetime, args_max_datetime
+				):
+				print("Deleting index {}".format(name))
+				result = req_delete_index(url, name)
+				delete_count+=1
+			else:
+				print("Index {} won't be deleted.".format(name))
+				if was_closed:
+					print("Closing index {}".format(name))
+					result = req_close_index(url, name)
+
+
+
+		except KeyboardInterrupt:
+			return
+
+		except Exception as e:
+			print("Error in this index:")
+			pprint.pprint(index)
+
+
+
+	print("Original count of indicies: {}".format(len(indices)))
+	print("Count of deleted indicies: {}".format(delete_count))
+	print("Count of reamining indicies: {}".format(len(indices)-delete_count))
+
+
 def main():
 	# Get arguments
 	args = parse_cmdline()
@@ -413,13 +595,16 @@ def main():
 		return COMMAND_load_index_template(args.DIR, args.URL)
 
 	elif args.COMMAND == 'cleanup':
-		return COMMAND_cleanup(args.URL)
+		return COMMAND_cleanup(args.URL, args.min_date, args.max_date, args.exclude)
 
 	elif args.COMMAND == 'reopen':
-		return COMMAND_reopen(args.URL, args.min_date, args.max_date)
+		return COMMAND_reopen(args.URL, args.min_date, args.max_date, args.exclude)
 
 	elif args.COMMAND == 'close':
-		return COMMAND_close(args.URL, args.min_date, args.max_date)
+		return COMMAND_close(args.URL, args.min_date, args.max_date, args.exclude)
+
+	elif args.COMMAND == 'delete':
+		return COMMAND_delete(args.URL, args.min_date, args.max_date, args.exclude)
 
 
 if __name__ == '__main__':

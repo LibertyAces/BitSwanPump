@@ -15,7 +15,8 @@ class KafkaConnection(Connection):
 
 	ConfigDefaults = {
 		'bootstrap_servers': 'localhost:9092',
-		'output_queue_max_size': 100
+		'output_queue_max_size': 100,
+		'disabled': 0
 	}
 
 
@@ -29,10 +30,12 @@ class KafkaConnection(Connection):
 		self._conn_future = None
 
 		# Subscription
-		self._on_health_check('connection.open!')
 		self.PubSub = app.PubSub
-		self.PubSub.subscribe("Application.stop!", self._on_application_stop)
-		self.PubSub.subscribe("Application.tick!", self._on_health_check)
+
+		if int(self.Config['disabled']) == 0:
+			self._on_health_check('connection.open!')
+			self.PubSub.subscribe("Application.stop!", self._on_application_stop)
+			self.PubSub.subscribe("Application.tick!", self._on_health_check)
 
 
 	def _on_health_check(self, message_type):

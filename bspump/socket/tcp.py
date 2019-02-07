@@ -8,7 +8,7 @@ L = logging.getLogger(__name__)
 
 #
 
-class TCPStreamSource(Source):
+class TCPSource(Source):
 
 
 	ConfigDefaults = {

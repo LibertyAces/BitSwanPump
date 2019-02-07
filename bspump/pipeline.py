@@ -3,6 +3,8 @@ import asyncio
 import types
 import logging
 import itertools
+import collections
+import datetime
 import asab
 from .abc.source import Source
 from .abc.sink import Sink
@@ -43,6 +45,7 @@ class MyPipeline(bspump.Pipeline):
 
 	def __init__(self, app, id=None):
 		self.Id = id if id is not None else self.__class__.__name__
+		self.App = app
 		self.Loop = app.Loop
 
 		self.Sources = []
@@ -51,8 +54,8 @@ class MyPipeline(bspump.Pipeline):
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
-		metrics_service = app.get_service('asab.MetricsService')
-		self.MetricsCounter = metrics_service.create_counter(
+		self.MetricsService = app.get_service('asab.MetricsService')
+		self.MetricsCounter = self.MetricsService.create_counter(
 			"bspump.pipeline",
 			tags={'pipeline':self.Id},
 			init_values={
@@ -63,17 +66,35 @@ class MyPipeline(bspump.Pipeline):
 				'error': 0,
 			}
 		)
-		self.MetricsDutyCycle = metrics_service.create_duty_cycle(self.Loop,
+		self.MetricsGauge = self.MetricsService.create_gauge(
+			"bspump.pipeline.gauge",
+			tags={'pipeline':self.Id},
+			init_values={
+				'warning.ratio': 0.0,
+				'error.ratio': 0.0,
+			}
+		)
+		self.MetricsDutyCycle = self.MetricsService.create_duty_cycle(self.Loop,
 			"bspump.pipeline.dutycycle",
 			tags={'pipeline':self.Id},
 			init_values={
 				'ready': False,
 			}
 		)
+		app.PubSub.subscribe(
+			"Application.Metrics.Flush!",
+			self._on_metrics_flush
+		)
+
+		# Pipeline logger
+		self.L = PipelineLogger(
+			"bspump.pipeline.{}".format(self.Id),
+			self.MetricsCounter
+		)
 
 		self.LastReadyStateSwitch = self.Loop.time()
 
-		self._error = None # None if not in error state otherwise there is a tuple (exception, event)
+		self._error = None # None if not in error state otherwise there is a tuple (context, event, exc, timestamp)
 
 		self._throttles = set()
 
@@ -85,6 +106,17 @@ class MyPipeline(bspump.Pipeline):
 		self._chillout_counter = 0
 
 		self._context = {}
+
+
+	def _on_metrics_flush(self, event_type, metric, values):
+		if metric != self.MetricsCounter:
+			return
+		if values["event.in"] == 0:
+			self.MetricsGauge.set("warning.ratio", 0.0)
+			self.MetricsGauge.set("error.ratio", 0.0)
+			return
+		self.MetricsGauge.set("warning.ratio", values["warning"]/values["event.in"])
+		self.MetricsGauge.set("error.ratio", values["error"]/values["event.in"])
 
 
 	def is_error(self):
@@ -119,7 +151,7 @@ class MyPipeline(bspump.Pipeline):
 			if (self._error is not None):
 				L.warning("Error on a pipeline is already set!")
 			
-			self._error = (context, event, exc)
+			self._error = (context, event, exc, self.App.time())
 			L.warning("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
 
 			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
@@ -348,16 +380,56 @@ class SampleInternalPipeline(bspump.Pipeline):
 			'Ready': self.is_ready(),
 			'Sources': self.Sources,
 			'Processors': [],
-			'Metrics': self.MetricsCounter,
+			'Metrics': self.MetricsService.MemstorTarget,
+			'Log': [record.__dict__ for record in self.L.Deque]
 		}
 
 		for l, processors in enumerate(self.Processors):
 			rest['Processors'].append(processors)
 
 		if self._error:
-			error_text = str(self._error[2])
+			error_text = str(self._error[2]) # (context, event, exc, timestamp)[2]
+			error_time = self._error[3]
 			if len(error_text) == 0:
 				error_text = str(type(self._error[2]))
 			rest['Error'] = error_text
+			rest['ErrorTimestamp'] = error_time
 
 		return rest
+
+
+###
+
+
+class PipelineLogger(logging.Logger):
+
+	def __init__(self, name, metrics_counter, level=logging.NOTSET):
+		super().__init__(name, level=level)
+		self.Deque = collections.deque([], 50)
+		self._metrics_counter = metrics_counter
+		# TODO: configurable maxlen that is now 50 ^^
+		# TODO: configurable log level (per pipeline, from its config) 
+
+
+	def handle(self, record):
+		# Count errors and warnings
+		if (record.levelno == logging.WARNING):
+			self._metrics_counter.add("warning", 1)
+		elif (record.levelno >= logging.ERROR):
+			self._metrics_counter.add("error", 1)
+
+		# Add formatted timestamp
+		record.timestamp = self._format_time(record)
+		
+		# Add record
+		self.Deque.append(record)
+
+
+	def _format_time(self, record):
+		try:
+			ct = datetime.datetime.fromtimestamp(record.created)
+			return ct.isoformat()
+		except BaseException as e:
+			L.error("ERROR when logging: {}".format(e))
+			return str(record.created)
+

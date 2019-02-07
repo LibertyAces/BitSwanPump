@@ -1,9 +1,16 @@
 import os
+import os.path
 import hashlib
 import json
+import datetime
 
 import aiohttp.web
+
+import asab
 import asab.web.rest
+
+from ..__version__ import __version__ as bspump_version
+from ..__version__ import __build__ as bspump_build
 
 ####
 
@@ -59,7 +66,7 @@ async def lookup(request):
 async def metric_list(request):
 	app = request.app['app']
 	svc = app.get_service("asab.MetricsService")
-	return asab.web.rest.json_response(request, svc.Metrics)
+	return asab.web.rest.json_response(request, svc.MemstorTarget)
 
 
 async def metric_detail(request):
@@ -72,6 +79,52 @@ async def metric_detail(request):
 		raise aiohttp.web.HTTPNotFound()
 
 	return asab.web.rest.json_response(request, metric)
+
+
+async def manifest(request):
+	'''
+	$ curl http://localhost:8080/manifest?pretty=true
+	{
+		"ASAB_VERSION": "18.12b1",
+		"DOCKER_HOST": "${DOCKER_HOST}",
+		"BSPUMP_VERSION": "1.2.3",
+		"APP_VERSION": "1.2.3",
+		"MANIFEST_MTIME": "2019-01-29T21:54:15.780668"
+	}
+
+	Served from `/manifest` file.
+	The format of the file is:
+KEY1=VALUE
+KEY2=${ENVIRONMENT_VARIABLE}
+	'''
+	
+	app = request.app['app']
+
+	d = {
+		'ASAB_VERSION': asab.__version__,
+		'BSPUMP_VERSION': bspump_version,
+		'BSPUMP_BUILD': bspump_build,
+		'LAUNCHED_AT': datetime.datetime.utcfromtimestamp(app.LaunchTime).isoformat(),
+	}
+
+	container_host = os.environ.get('CONTAINER_HOST')
+	if container_host is not None:
+		d['CONTAINER_HOST'] = container_host
+	
+	try:
+
+		fname = '/manifest'
+		mtime = os.path.getmtime(fname)
+		with open(fname) as f:
+			for line in f:
+				k, v = line.strip().split('=', 1)
+				if k not in d:
+					d[k] = os.path.expandvars(v)
+		d['MANIFEST_MTIME'] = datetime.datetime.utcfromtimestamp(mtime).isoformat()
+	except FileNotFoundError:
+		pass
+	return asab.web.rest.json_response(request,d)
+
 
 
 def _initialize_web(app, listen="0.0.0.0:8080"):
@@ -98,5 +151,7 @@ def _initialize_web(app, listen="0.0.0.0:8080"):
 
 	container.WebApp.router.add_get('/metric', metric_list)
 	container.WebApp.router.add_get('/metric/{metric_id}', metric_detail)
+
+	container.WebApp.router.add_get('/manifest', manifest)
 
 	return container

@@ -17,7 +17,7 @@ class SamplePipeline1(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.socket.TCPStreamSource(app, self),
+			bspump.socket.TCPSource(app, self),
 			bspump.amqp.AMQPSink(app, self, "AMQPConnection1")
 		)
 

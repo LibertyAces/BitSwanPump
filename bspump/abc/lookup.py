@@ -155,6 +155,9 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			except aiohttp.ClientConnectorError as e:
 				L.warn("Failed to contact lookup master at '{}': {}".format(self.MasterURL, e))
 				return self.load_from_cache()
+			except asyncio.TimeoutError as e:
+				L.warn("Failed to contact lookup master at '{}' (timeout): {}".format(self.MasterURL, e))
+				return self.load_from_cache()
 
 			if response.status == 304:
 				L.info("The '{}' lookup is actual.".format(self.Id))

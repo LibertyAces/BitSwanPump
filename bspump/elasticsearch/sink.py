@@ -40,14 +40,15 @@ class ElasticSearchSink(Sink):
 			self._rollover_mechanism = ElasticSearchTimeRollover(app, self)
 		elif ro == 'size':
 			self._rollover_mechanism = ElasticSearchSizeRollover(app, self,  self._connection)
+		elif ro == 'noop' or ro == 'fixed':  # Do not use fixed, it is an obsolete name
+			self._rollover_mechanism = ElasticSearchNoopRollover(app, self)
 		else:
-			if ro != 'fixed':
-				L.warning("Unknown rollover mechanism: '{}', defaulting to fixed".format(ro))
-			self._rollover_mechanism = ElasticSearchFixedRollover(app, self)
+			L.error("Unknown rollover mechanism: '{}'".format(ro))
+			raise RuntimeError("Unknown rollover mechanism")
 
 		app.PubSub.subscribe("ElasticSearchConnection.pause!", self._connection_throttle)
 		app.PubSub.subscribe("ElasticSearchConnection.unpause!", self._connection_throttle)
-	
+
 
 	def process(self, context, event):
 		assert self._rollover_mechanism.Index is not None
@@ -92,7 +93,7 @@ class ElasticSearchBaseRollover(abc.ABC):
 			self.InitThrottled = False
 
 
-class ElasticSearchFixedRollover(ElasticSearchBaseRollover):
+class ElasticSearchNoopRollover(ElasticSearchBaseRollover):
 	
 	async def refresh_index(self, event_name=None):
 		self.Index = self.IndexPrefix
