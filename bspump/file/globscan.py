@@ -41,3 +41,27 @@ def _glob_scan(path, exclude='', include=''):
 		return fname
 
 	return None
+
+
+def _file_check(path, file_count):
+	
+
+	if path is None: return
+	if path == "": return
+
+	filelist = glob.glob(path, recursive=True)
+	file_count["all_files"] += len(filelist)
+
+	for file in filelist:
+		if file.endswith('-locked'): 
+			file_count["locked"] += 1
+		if fname.endswith('-failed'):
+			file_count["failed"] += 1
+		if fname.endswith('-processed'):
+			file_count["processed"] += 1
+		if not os.path.isfile(fname): 
+			file_count["all_files"] -= 1
+			continue
+		
+		file_count["unprocessed"] += 1
+
