@@ -508,15 +508,15 @@ def do_decompile(FILE, DIRS, CSVLOG):
 		print("Decompiled {} objects into {} new, {} unchanged, {} updated".format(counter, stats_new, stats_unchanged, stats_updated))
 
 
-def check_pattern_match (obj, INDEXPATTERN):
+def check_pattern_match (obj, INDEXPATTERNS):
 	#  TODO: maybe make sure that index patern has source:index-pattern:title?
 	pattern_str = obj.obj ['_source']['index-pattern']['title']
-	if pattern_str == INDEXPATTERN:
+	if pattern_str in INDEXPATTERNS:
 		return True
 	else:
 		return False
 
-def check_search_source_match (obj, INDEXPATTERN, library):
+def check_search_source_match (obj, INDEXPATTERNS, library):
 	obj_id = obj.obj['_id']
 	ssj = obj.obj ['_source'][obj.type]['kibanaSavedObjectMeta']['searchSourceJSON']
 	ssj_json = json.loads (ssj)
@@ -531,11 +531,13 @@ def check_search_source_match (obj, INDEXPATTERN, library):
 		return False
 	pattern = library [pattern_idx]
 
-	return check_pattern_match (pattern, INDEXPATTERN)
+	return check_pattern_match (pattern, INDEXPATTERNS)
 		
 
 def do_compile(DIRS, FILE, INDEXPATTERN):
-
+	if INDEXPATTERN != None: 
+		INDEXPATTERNS = INDEXPATTERN.split (',')
+	
 	library = load_library(DIRS)
 	related_lookup_ids = set ()
 	encountered_type_counter = {}
@@ -543,14 +545,9 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 
 	counter = 0
 	with open(FILE + '~', "w") as fo:
+		fo.write('[\n')
 		for obj in sorted(library.values(), key=lambda obj: obj.id):
 
-			if counter > 0:
-				fo.write(',\n')
-			else:
-				fo.write('[\n')
-			
-			
 			if INDEXPATTERN != None:
 				if obj.type not in encountered_type_counter:
 					encountered_type_counter [obj.type] = 1
@@ -560,19 +557,18 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 				
 				if (obj.type == 'index-pattern'):
 
+					if not check_pattern_match (obj, INDEXPATTERNS):
+						continue
+			
 					if 'fieldFormatMap' in obj.obj['_source']['index-pattern'].keys ():
 						ffm = obj.obj['_source']['index-pattern']['fieldFormatMap']
 						ffm_json = json.loads (ffm)
 						for value in ffm_json.values ():
 							lookup_id = 'x-lff-lookup:' + value['id']
-							related_lookup_ids.add (lookup_id)
-
-
-					if not check_pattern_match (obj, INDEXPATTERN):
-						continue
+							related_lookup_ids.add (lookup_id)						
 				
 				elif (obj.type == 'search' or obj.type == 'visualization'):
-					if not check_search_source_match (obj, INDEXPATTERN, library):
+					if not check_search_source_match (obj, INDEXPATTERNS, library):
 						continue
 				
 				elif (obj.type == 'dashboard'):
@@ -588,7 +584,7 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 							print ('{} related to not existant {}. Skipping.'.format (obj_id, idx))
 							return False
 						dep_obj = library [idx]
-						if not check_search_source_match (dep_obj, INDEXPATTERN, library):
+						if not check_search_source_match (dep_obj, INDEXPATTERNS, library):
 							related = False
 
 					if not related:
@@ -598,9 +594,14 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 					if obj.obj['_id'] not in related_lookup_ids:
 						continue
 
-				elif (obj.type in ['timelion-sheet','config']):
-					print ('Skipping {} object. Not related to any index-pattern.'.format (obj.type))
-					continue
+				elif (obj.type == 'config'):
+					if 'config' in obj.obj['_source'].keys():
+						obj.obj['_source']['config'].pop ('defaultIndex', None)
+					print ('Including {0} object, as {0}s are always included.'.format (obj.type))					
+
+				elif (obj.type == 'timelion-sheet'):
+					print ('Including {0} object, as {0}s are always included.'.format (obj.type))
+
 				else:
 					print ('Skipping unexpected object type: {}'.format (obj.type))
 					continue
@@ -608,6 +609,8 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 
 				compiled_type_counter [obj.type] += 1
 
+			if counter > 0:
+				fo.write(',\n')
 			json.dump(obj.obj, fo)
 
 
@@ -893,7 +896,7 @@ WARNING: jinja2 is not installed, documentation functions are not available!
 	compile_parser = subparsers.add_parser('compile', help='Compile a Kibana index file')
 	compile_parser.add_argument('DIR', action='store', nargs='+', help='a directories that will be scanned for Kibana objects, first directory is also used for new objects')
 	compile_parser.add_argument('--output', '-o', metavar='FILE', action='store', help='a file to write to')
-	compile_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='include only objects related to given index pattern')
+	compile_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='include only objects related to given index patterns')
 	compile_parser.set_defaults(COMMAND='compile')
 
 	if jinja2 is not None:
@@ -901,7 +904,7 @@ WARNING: jinja2 is not installed, documentation functions are not available!
 		doc_parser.add_argument('DIR', action='store', nargs='+', help='a directories that will be scanned for Kibana objects')
 		doc_parser.add_argument('--template-dir', '-t', metavar='TEMPLATEDIR', action='store', help='specify a directory with templates', required=True)
 		doc_parser.add_argument('--output', '-o', metavar='OUTPUT', action='store', help='a directory to write output to')
-		doc_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='include only objects related to given index pattern')
+		doc_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='include only objects related to given index patterns')
 		doc_parser.set_defaults(COMMAND='document')
 
 
