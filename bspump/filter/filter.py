@@ -1,4 +1,3 @@
-import abc
 from ..abc.processor import Processor
 import asab
 
@@ -24,15 +23,12 @@ class Filter(Processor):
 		self.Lookup = svc.locate_lookup(lookup)
 
 
-	@abc.abstractmethod
 	def predicate(self, event):
-		raise NotImplemented("")
+		return True
 
 	
-	@abc.abstractmethod
 	def get_fields(self, event):
-		# From lookup
-		raise NotImplemented("")
+		return None
 
 	
 	def filter_fields(self, event):
