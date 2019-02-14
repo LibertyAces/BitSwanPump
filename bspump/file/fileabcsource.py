@@ -82,6 +82,7 @@ class FileABCSource(TriggerSource):
 		self.Gauge.set("failed", file_count["failed"])
 		self.Gauge.set("locked", file_count["locked"])
 		self.Gauge.set("unprocessed", file_count["unprocessed"])
+		self.Gauge.set("all_files", file_count["all_files"])
 		
 
 
