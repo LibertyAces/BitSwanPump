@@ -9,7 +9,7 @@ L = logging.getLogger(__name__)
 
 class Filter(Processor):
 	'''
-	This is processor implenting abstract filter.
+	This is processor implenting a simple filter.
 	If delete_fields is True, all fields from event matching with lookup will be deleted, 
 	otherwise all fields not from lookup will be deleted from event. 
 	'''
