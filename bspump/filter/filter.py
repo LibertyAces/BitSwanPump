@@ -14,9 +14,9 @@ class Filter(Processor):
 	otherwise all fields not from lookup will be deleted from event. 
 	'''
 
-	def __init__(self, app, pipeline, lookup, inverse=False, id=None, config=None):
+	def __init__(self, app, pipeline, lookup, include=False, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		self.InverseFilter = inverse
+		self.Include = include
 		
 		#Lookups discovery
 		svc = app.get_service("bspump.PumpService")
@@ -34,7 +34,7 @@ class Filter(Processor):
 	def filter_fields(self, event):
 		fields = self.get_fields(event)
 		for event_key in event.keys():
-			if (event_key in fields) != self.InverseFilter:
+			if (event_key in fields) != self.Include:
 				event.pop(event_key)
 		return event
 
