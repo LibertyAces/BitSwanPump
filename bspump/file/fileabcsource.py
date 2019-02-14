@@ -51,10 +51,11 @@ class FileABCSource(TriggerSource):
 				'pipeline': pipeline.Id,
 			},
 			init_values = {
-				"processed": 0.0,
-				"failed" : 0.0,
-				"locked": 0.0,
-				"unprocessed": 0.0,
+				"processed": 0,
+				"failed" : 0,
+				"locked": 0,
+				"unprocessed": 0,
+				"all_files" : 0,
 			}
 		)
 		# 
@@ -77,10 +78,10 @@ class FileABCSource(TriggerSource):
 		if file_count["all_files"] == 0:
 			return
 
-		self.Gauge.set("processed", file_count["processed"] * 100 / file_count["all_files"])
-		self.Gauge.set("failed", file_count["failed"] * 100 / file_count["all_files"])
-		self.Gauge.set("locked", file_count["locked"] * 100 / file_count["all_files"])
-		self.Gauge.set("unprocessed", file_count["unprocessed"] * 100 / file_count["all_files"])
+		self.Gauge.set("processed", file_count["processed"])
+		self.Gauge.set("failed", file_count["failed"])
+		self.Gauge.set("locked", file_count["locked"])
+		self.Gauge.set("unprocessed", file_count["unprocessed"])
 		
 
 
