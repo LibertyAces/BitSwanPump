@@ -360,7 +360,10 @@ class LibraryObject(object):
 			fields = []
 
 			# Sort fields by name
-			s_fields = sorted(json.loads(inc), key=lambda k: k['name'])
+			if isinstance(inc, str ):
+				s_fields = sorted(json.loads(inc), key=lambda k: k['name'])
+			elif inc == []:
+				s_fields = []
 			for f in s_fields:
 				# Order keys in the field document
 				ordered_field = {}
