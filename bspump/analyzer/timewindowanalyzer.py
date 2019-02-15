@@ -22,11 +22,12 @@ class TimeWindowAnalyzer(Analyzer):
 	'''
 
 	ConfigDefaults = {
-		'columns': 15,
+		'columns': 15, 
+		'third_dimension': 1,
 		'resolution': 60, # Resolution (aka column width) in seconds
 	}
 
-	def __init__(self, app, pipeline, tws_configuration=None, start_time=None, clock_driven=True, time_windows=None, id=None, config=None):
+	def __init__(self, app, pipeline, twa_configuration=None, start_time=None, clock_driven=True, time_windows=None, id=None, config=None):
 		'''
 		time_windows is dictionary with provided windows and labels.
 
@@ -40,20 +41,22 @@ class TimeWindowAnalyzer(Analyzer):
 		d) labels=['1st', '2nd', '3rd'], dimension=[3, 5, 6] => 3 time windows with shapes (n_i, m_i, dim_i) will be
 		created.
 
-		tws_configuration = {"label0":{'third_dimension': 2}, "label1":{'third_dimension': 3}}
+		twa_configuration = {"label0":{'dimensions': (15, 2), 'tw_format':'int'}, 
+		"label1":{'dimensions': (10, 3), 'tw_format':'double'}
 
 		'''
 
 		super().__init__(app, pipeline, id, config)
 
 		if time_windows is None:
-			self._create_time_windows(app, pipeline, tws_configuration=tws_configuration, start_time=start_time)	
+			self._create_time_window_aggregations(app, pipeline, twa_configuration=twa_configuration, start_time=start_time)	
 		else:
 			if time_windows == {}:
 				raise RuntimeError("time_windows cannot be an empty dictionary")
-			
-			self.TimeWindows = time_windows
-			self.TimeWindow = list(self.TimeWindows.values())[0]
+			self.TimeWindowAggregations = time_windows
+
+		self.LabelDefault = list(self.TimeWindows.values())[0]
+		self.TimeWindowAggregation = self.TimeWindowAggregations[self.LabelDefault]
 
 		if clock_driven:
 			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
@@ -62,64 +65,27 @@ class TimeWindowAnalyzer(Analyzer):
 			self.Timer = None
 
 
-	def _create_time_windows(self, app, pipeline, tws_configuration, start_time):
+	def _create_time_window_aggregations(self, app, pipeline, twa_configuration, start_time):
 		self.TimeWindows = {}
 
-		if tws_configuration is None:
-			tws_configuration = {"default":{"third_dimension":1}}
+		if twa_configuration is None:
+			twa_configuration = {
+				"default": {
+					'dimensions': (self.Config['columns'], self.Config['third_dimension']), 
+					'tw_format':'int'
+				}
+			}
 
-		for label in tws_configuration.keys():
-			self.TimeWindows[label] = TimeWindowCapture(
+		for label in twq_configuration.keys():
+			self.TimeWindowAggregations[label] = TimeWindowAggregation(
 				app,
 				pipeline,
-				third_dimension=tws_configuration[label][third_dimension],
+				dimensions=twa_configuration[label]['dimensions'],
+				tw_format=twa_configuration[label]['tw_format'],
 				start_time=start_time,
 				resolution=int(self.Config['resolution']),
-				columns=int(self.Config['columns'])
 			)
 		
-		self.TimeWindow = self.TimeWindows[list(tws_configuration.keys())[0]]
-
-
-
-	def get_column(self, event_timestamp, label=None):
-		if label is None:
-			return self.TimeWindow.get_column(event_timestamp)
-		else:
-			return self.TimeWindows[label].get_column(event_timestamp)
-
-
-	def get_row(self, row_name, label=None):
-		if label is None:
-			return self.TimeWindow.get_row(row_name)		
-		else:
-			return self.TimeWindows[label].get_row(row_name)
-
-
-	#Adding new row to a window
-	def add_row(self, row_name, label=None):
-		if label is None:
-			self.TimeWindow.add_row(row_name)		
-		else:
-			self.TimeWindows[label].add_row(row_name)
-
-	def close_row(self, row_id, label=None):
-		if label is None:
-			t = self.TimeWindow
-		else:
-			t = self.TimeWindows[label]
-		
-		t.close_row(row_id)
-
-
-	def rebuild_sessions(self, mode, label=None):
-		if label is None:
-			s = self.SessionMatrix
-		else:
-			s = self.SessionMatrixes[label]
-
-		s.rebuild_rows(mode)
-
 
 	def advance(self, target_ts):
 		'''
@@ -132,17 +98,14 @@ class TimeWindowAnalyzer(Analyzer):
 		                  Start
 
 		'''
-		# columns_added = 0
 		
-		for tw in self.TimeWindows.values():
+		for tw in self.TimeWindowAggregations.values():
 			while True:
-				dt = (self.Start - target_ts) / self.Resolution
+				dt = (tw.Start - target_ts) / tw.Resolution
 				if dt > 0.25: break
 				tw.add_column()
-				# columns_added += 1
 
 
 	async def _on_tick(self):
 		target_ts = time.time()
 		self.advance(target_ts)
-
