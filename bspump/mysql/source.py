@@ -28,7 +28,7 @@ class MySQLSource(TriggerSource):
 		await self._connection.ConnectionEvent.wait()
 		async with self._connection.acquire() as connection:
 			try:
-				async with connection.cursor(cursor=aiomysql.cursors.SSCursor) as cur:
+				async with connection.cursor(aiomysql.cursors.SSCursor) as cur:
 					await cur.execute(self._query)
 					event = {}
 					while True:
