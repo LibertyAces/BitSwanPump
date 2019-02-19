@@ -24,8 +24,8 @@ class KafkaSink(Sink):
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.Topic = self.Config['topic']
 
-		app.PubSub.subscribe("KafkaConnection.pause!", self.Connection_throttle)
-		app.PubSub.subscribe("KafkaConnection.unpause!", self.Connection_throttle)
+		app.PubSub.subscribe("KafkaConnection.pause!", self._connection_throttle)
+		app.PubSub.subscribe("KafkaConnection.unpause!", self._connection_throttle)
 
 
 	def process(self, context, event):

@@ -40,7 +40,7 @@ if __name__ == '__main__':
 	svc.add_pipeline(pl)
 
 	# Locate web service
-	bspump.web.initialize_web(app)
+	bspump.web._initialize_web(app)
 	websvc = app.get_service("asab.WebService")
 
 	websvc.WebApp.router.add_post('/bspump/sp', pl.webservice)
