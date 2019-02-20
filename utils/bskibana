@@ -360,10 +360,8 @@ class LibraryObject(object):
 			fields = []
 
 			# Sort fields by name
-			if isinstance(inc, str ):
-				s_fields = sorted(json.loads(inc), key=lambda k: k['name'])
-			elif inc == []:
-				s_fields = []
+
+			s_fields = sorted(json.loads(inc), key=lambda k: k['name'])
 			for f in s_fields:
 				# Order keys in the field document
 				ordered_field = {}
@@ -426,7 +424,7 @@ class LibraryObject(object):
 				obj_source["fieldType"] = obj_source["config"]["fieldType"]
 				obj_source["lookupType"] = obj_source["config"]["lookupType"]
 				obj_source["map"] = []
-				for key, val in obj_source["config"]["map"].items():
+				for key, val in json.loads(obj_source["config"]["map"]).items():
 					obj_source["map"].append({
 						"key": key,
 						"value": val["label"]
@@ -575,14 +573,12 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 						continue
 				
 				elif (obj.type == 'dashboard'):
-					#print (obj.type)
 					obj_id = obj.obj['_id']
 					panels = obj.obj ['_source'][obj.type]['panelsJSON']
 					panels_json = json.loads (panels)
 					related = True
 					for panel in panels_json:
 						idx = '{}:{}'.format (panel['type'], panel['id'])
-						#print (idx)
 						if idx not in library.keys ():
 							print ('{} related to not existant {}. Skipping.'.format (obj_id, idx))
 							return False
