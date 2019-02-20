@@ -22,7 +22,7 @@ def _glob_scan(path, exclude='', include=''):
 	filelist = glob.glob(path, recursive=True)
 	filelist.sort()
 	while len(filelist) > 0:
-		fname = filelist.pop()
+		fname = filelist.pop(0)
 		if fname.endswith('-locked'): continue
 		if fname.endswith('-failed'): continue
 		if fname.endswith('-processed'): continue
