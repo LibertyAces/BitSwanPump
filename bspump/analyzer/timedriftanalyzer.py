@@ -14,6 +14,7 @@ L = logging.getLogger(__name__)
 
 ###
 
+
 class TimeDriftAnalyzer(Analyzer):
 
 	ConfigDefaults = {
@@ -26,7 +27,7 @@ class TimeDriftAnalyzer(Analyzer):
 		super().__init__(app, pipeline, id=id, config=config)
 		
 		self.History = []
-		self.HistorySize = self.Config['history_size']
+		self.HistorySize = int(self.Config['history_size'])
 
 		metrics_service = app.get_service('asab.MetricsService')
 
@@ -48,7 +49,7 @@ class TimeDriftAnalyzer(Analyzer):
 		self.SparseCount = int(self.Config['sparse_count'])
 
 		self.Timer = asab.Timer(app, self.on_tick, autorestart=True)
-		self.Timer.start(self.Config['stats_period'])
+		self.Timer.start(int(self.Config['stats_period']))
 
 		self.App = app
 
