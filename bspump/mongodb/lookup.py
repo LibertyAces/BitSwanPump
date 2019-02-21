@@ -33,6 +33,9 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 		self.Connection = mongodb_connection
 
 		self.Database = self.Config['database']
+		self.Collection = self.Config['collection']
+		self.Key =  self.Config['key']
+		
 		if len(self.Database) == 0:
 			self.Database = self.Connection.Database
 
@@ -44,11 +47,11 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 
 	def _find_one(self, database, key):
-		return database[self.Config['collection']].find_one({self.Config['key']:key})
+		return database[self.Collection].find_one({self.Key:key})
 
 	
 	async def _count(self, database):
-		return await database[self.Config['collection']].count_documents({})
+		return await database[self.Collection].count_documents({})
 
 
 	async def load(self):
@@ -61,18 +64,27 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 	def __getitem__(self, key):
 		try:
-			key = self.Cache[key]
+			value = self.Cache[key]
 			self.CacheCounter.add('hit', 1)
-			return key
+			return value
 		except KeyError:
 			database = self.Connection.Client[self.Database].delegate
 			v = self._find_one(database, key)
-			self.Cache[key] = v
+			if v is not None:
+				self.Cache[key] = v
 			self.CacheCounter.add('miss', 1)
 			return v
 
 
 	def __iter__(self):
 		database = self.Connection.Client[self.Database].delegate
-		collection = self.Config['collection']
-		return database[collection].find().__iter__()
+		self.Iterator = database[self.Collection].find()
+		return self
+
+	def __next__(self):
+		element = self.Iterator.next()
+		key = element.get(self.Key)
+		if key is not None:
+			self.Cache[key] = element
+		return key
+
