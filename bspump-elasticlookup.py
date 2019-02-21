@@ -1,8 +1,8 @@
-from bspump.mongodb import MongoDBLookup, MongoDBConnection
+from bspump.elasticsearch import ElasticSearchLookup, ElasticSearchConnection
 
 from bspump.file import FileCSVSource
 from bspump.trigger import OpportunisticTrigger
-from bspump.common import PPrintSink, NullSink
+from bspump.common import PPrintSink
 from bspump import BSPumpApplication, Pipeline, Processor
 import logging
 import bspump.common
@@ -17,33 +17,30 @@ class MyApplication(BSPumpApplication):
 
 		svc = self.get_service("bspump.PumpService")
 
-		mongodb_connection = MongoDBConnection(self, "MongoDBConnection", config={
-			"host":"mongodb://127.0.0.1:27017"})
+		es_connection = ElasticSearchConnection(self, "ElasticSearchConnection", config={
+			"url":"http://10.199.158.120:9200/"})
 		
-		self.MongoDBLookup = MongoDBLookup(self, "MongoDBLookup", 
-			mongodb_connection=mongodb_connection,
+		self.ElasticSearchLookup = ElasticSearchLookup(self, "ElasticSearchLookup", 
+			es_connection=es_connection,
 			config={
-				'collection':'user_location',
-				'database': 'users',
+				'index':'bs_cell_config_*',
 				'key': 'user'
 			})
 
-		svc.add_lookup(self.MongoDBLookup)
+		svc.add_lookup(self.ElasticSearchLookup)
 		svc.add_pipeline(MyPipeline(self))
 		
 
 class MyPipeline(Pipeline):
-	# Enriches the event with location from Mogodb lookup
+	# Enriches the event with location from ES lookup
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
 			FileCSVSource(app, self, 
-				config={"post":"noop", "path":"bspump/mongodb/var/users.csv"}
+				config={"post":"noop", "path":"bspump/elasticsearch/var/users.csv"}
 				).on(OpportunisticTrigger(app)),
 			MyProcessor(app, self), 
 			PPrintSink(app, self)
-			# NullSink(app, self)
-
 		)
 
 
@@ -52,7 +49,8 @@ class MyProcessor(Processor):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
-		self.Lookup = svc.locate_lookup("MongoDBLookup")
+		self.Lookup = svc.locate_lookup("ElasticSearchLookup")
+
 	
 	def process(self, context, event):
 		if 'user' not in event:
@@ -63,8 +61,6 @@ class MyProcessor(Processor):
 			event['L'] = info.get('L')
 		
 		return event
-
-
 
 
 if __name__ == '__main__':
