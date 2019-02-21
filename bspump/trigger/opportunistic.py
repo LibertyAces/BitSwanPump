@@ -30,7 +30,7 @@ class OpportunisticTrigger(Trigger):
 
 	def on_tick(self, event_type="simulated"):
 		now = self.Loop.time()
-		if (now < (self.LastFireAt + self.ChilldownPeriod)):
+		if (self.LastFireAt != 0) and (now < (self.LastFireAt + self.ChilldownPeriod)):
 			return 
 
 		self.fire()

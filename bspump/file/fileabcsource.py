@@ -7,7 +7,7 @@ import asab
 from ..abc.source import TriggerSource
 from .. import ProcessingError
 
-from .globscan import _glob_scan
+from .globscan import _glob_scan, _file_check
 
 #
 
@@ -26,6 +26,7 @@ class FileABCSource(TriggerSource):
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
 		'encoding': '',
+		'processed_period': 5*60
 	}
 
 
@@ -42,6 +43,47 @@ class FileABCSource(TriggerSource):
 		self.include = self.Config['include']
 		self.exclude = self.Config['exclude']
 		self.encoding = self.Config['encoding']
+
+		metrics_service = app.get_service('asab.MetricsService')
+
+		self.Gauge = metrics_service.create_gauge("processed_files_percentage",
+			tags = {
+				'pipeline': pipeline.Id,
+			},
+			init_values = {
+				"processed": 0,
+				"failed" : 0,
+				"locked": 0,
+				"unprocessed": 0,
+				"all_files" : 0,
+			}
+		)
+		# 
+		self.Timer = asab.Timer(app, self.on_tick, autorestart=True)
+		self.Timer.start(self.Config['processed_period'])
+
+	
+	async def on_tick(self):
+		file_count = {
+			"processed": 0,
+			"unprocessed": 0,
+			"failed": 0, 
+			"locked" : 0,
+			"all_files": 0
+		}
+
+		for path in self.path.split(os.pathsep):
+			_file_check(path, file_count)
+
+		if file_count["all_files"] == 0:
+			return
+
+		self.Gauge.set("processed", file_count["processed"])
+		self.Gauge.set("failed", file_count["failed"])
+		self.Gauge.set("locked", file_count["locked"])
+		self.Gauge.set("unprocessed", file_count["unprocessed"])
+		self.Gauge.set("all_files", file_count["all_files"])
+		
 
 
 	async def cycle(self):
