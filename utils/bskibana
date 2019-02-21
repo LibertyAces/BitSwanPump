@@ -510,7 +510,6 @@ def do_decompile(FILE, DIRS, CSVLOG):
 
 
 def check_pattern_match (obj, INDEXPATTERNS):
-	#  TODO: maybe make sure that index patern has source:index-pattern:title?
 	pattern_str = obj.obj ['_source']['index-pattern']['title']
 	if pattern_str in INDEXPATTERNS:
 		return True
@@ -538,6 +537,10 @@ def check_search_source_match (obj, INDEXPATTERNS, library):
 def do_compile(DIRS, FILE, INDEXPATTERN):
 	if INDEXPATTERN != None: 
 		INDEXPATTERNS = INDEXPATTERN.split (',')
+
+	print (DIRS)
+	if FILE == None:
+		FILE = DIRS[0] + '.json'
 	
 	library = load_library(DIRS)
 	related_lookup_ids = set ()
