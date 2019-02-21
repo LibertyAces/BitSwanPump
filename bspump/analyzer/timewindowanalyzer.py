@@ -41,8 +41,8 @@ class TimeWindowAnalyzer(Analyzer):
 		d) labels=['1st', '2nd', '3rd'], dimension=[3, 5, 6] => 3 time windows with shapes (n_i, m_i, dim_i) will be
 		created.
 
-		twa_configuration = {"label0":{'dimensions': (15, 2), 'tw_format':'int'}, 
-		"label1":{'dimensions': (10, 3), 'tw_format':'double'}
+		twa_configuration = {"label0":{'dimensions': (15, 2), 'tw_format':'i8'}, 
+		"label1":{'dimensions': (10, 3), 'tw_format':'f10'}
 
 		'''
 
@@ -72,7 +72,7 @@ class TimeWindowAnalyzer(Analyzer):
 			twa_configuration = {
 				"default": {
 					'dimensions': (self.Config['columns'], self.Config['third_dimension']), 
-					'tw_format':'int'
+					'tw_format':'i8'
 				}
 			}
 

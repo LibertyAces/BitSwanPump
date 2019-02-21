@@ -37,13 +37,6 @@ class Aggregation(object):
 	}
 	TODO: nums after letters, dimensions
 	'''
-	
-	FormatsLookup = {
-		'int': 'i10',
-		'string': 'U128',
-		'float' : 'f12',
-		'raw' : 'V' 
-	}
 
 
 	def __init__(self, app, pipeline, column_names, column_formats):
@@ -56,12 +49,6 @@ class Aggregation(object):
 		self.ClosedRows = set()
 		self.Matrix = np.zeros(0, dtype={'names':self.ColumnNames, 'formats':self.ColumnFormats})
 
-	
-	def _lookup_column_formats(self, column_formats_in):
-		column_names_out = []
-		for c_f in column_formats_in:
-			column_formats_out.append(self.FormatsLookup[c_f])
-		return column_formats_out
 
 
 	def add_row(self, row_id):
@@ -76,7 +63,12 @@ class Aggregation(object):
 	def rebuild_rows(self, mode):
 		
 		if mode == "full":
-			self.reset_window() #!!TODO
+			self.RowMap = {}
+			self.RevRowMap = {}
+			self.Storage = {}
+			self.ClosedRows = set()
+			self.Matrix = np.zeros(0, dtype={'names':self.ColumnNames, 'formats':self.ColumnFormats})
+			
 		elif mode == "partial":
 			new_row_map = {}
 			new_rev_row_map = {}
@@ -125,7 +117,7 @@ class TimeWindowAggregation(Capture):
 		column_names = []
 		column_formats = []
 		column_names.append("time_window")
-		column_formats.append(str(dimensions) + self.FormatsLookup[tw_format])
+		column_formats.append(str(dimensions) + tw_format)
 
 		column_names.append("warming_up_count")
 		column_formats.append("i8")
@@ -211,7 +203,6 @@ class TimeWindowAggregation(Capture):
 
 class SessionAggregation(Aggregation):
 	def __init__(self, app, pipeline, column_formats, column_names, id=None, config=None):
-		column_formats = self._lookup_column_formats(column_formats)
 		column_formats.append("i8")
 		column_names.append("@timestamp_start")
 		column_formats.append("i8")

@@ -25,7 +25,7 @@ class SessionAnalyzer(Analyzer):
 	def __init__(self, app, pipeline, sa_configuration, sessions=None, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		if sessions is None:
-			self._create_session_aggregations(app, pipeline, sws_configuration)	
+			self._create_session_aggregations(app, pipeline, sa_configuration)	
 		else:
 			if sessions == {}:
 				raise RuntimeError("sessions cannot be an empty dictionary")
