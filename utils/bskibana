@@ -540,7 +540,7 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 
 	print (DIRS)
 	if FILE == None:
-		FILE = DIRS[0] + '.json'
+		FILE = 'out.json'
 	
 	library = load_library(DIRS)
 	related_lookup_ids = set ()
