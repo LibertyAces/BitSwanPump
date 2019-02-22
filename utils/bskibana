@@ -561,6 +561,9 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 				
 				if (obj.type == 'index-pattern'):
 
+					if not 'fields' in obj.obj['_source']['index-pattern'].keys ():
+						print ("ALERT: {} doesn't reference fields. It should.".format (obj.obj['_id']))
+
 					if not check_pattern_match (obj, INDEXPATTERNS):
 						continue
 			
