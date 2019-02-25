@@ -31,7 +31,7 @@ class ElasticSearchSource(TriggerSource):
 		self.Paging = paging
 
 
-		print("index", self.Index)
+		#print("index", self.Index)
 		if request_body is not None:
 			self.RequestBody = request_body
 		else:
@@ -77,7 +77,7 @@ class ElasticSearchSource(TriggerSource):
 				break
 
 			hits = msg['hits']['hits']
-			print(hits)
+			#print(hits)
 			if len(hits) == 0:
 				break
 
