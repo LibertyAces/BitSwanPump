@@ -2,6 +2,7 @@ import abc
 import os
 import logging
 import asyncio
+import time
 import asab
 
 from ..abc.source import TriggerSource
@@ -55,6 +56,7 @@ class FileABCSource(TriggerSource):
 				"locked": 0,
 				"unprocessed": 0,
 				"all_files" : 0,
+				"scan_time" : 0.0, 
 			}
 		)
 
@@ -64,11 +66,14 @@ class FileABCSource(TriggerSource):
 	async def cycle(self):
 		filename = None
 
+		start_time = time.time()
 		for path in self.path.split(os.pathsep):
 			filename = _glob_scan(path, self.Gauge, self.Loop, exclude=self.exclude, include=self.include)
 			if filename is not None:
 				break
-
+		end_time = time.time()
+		self.Gauge.set("scan_time", end_time - start_time)
+		
 		if filename is None:
 			self.Pipeline.PubSub.publish("bspump.file_source.no_files!")
 			return  # No file to read
