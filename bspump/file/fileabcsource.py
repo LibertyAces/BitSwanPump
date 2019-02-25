@@ -46,6 +46,9 @@ class FileABCSource(TriggerSource):
 		self.encoding = self.Config['encoding']
 		
 		self.PathProcessed = self.Config['path_processed']
+		if self.post != 'moveaway':
+			self.PathProcessed = None
+
 		if self.PathProcessed == '':
 			self.PathProcessed = os.path.abspath(os.path.join(self.path, os.pardir, "processed"))
 			if not os.path.isdir(self.PathProcessed):
@@ -74,7 +77,7 @@ class FileABCSource(TriggerSource):
 
 		start_time = time.time()
 		for path in self.path.split(os.pathsep):
-			filename = _glob_scan(path, self.Gauge, self.Loop, exclude=self.exclude, include=self.include)
+			filename = _glob_scan(path, self.Gauge, self.Loop, self.post, exclude=self.exclude, include=self.include, self.PathProcessed)
 			if filename is not None:
 				break
 		end_time = time.time()
