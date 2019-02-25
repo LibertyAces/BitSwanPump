@@ -1,6 +1,10 @@
 from .print import PrintSink, PPrintSink, PrintProcessor, PPrintProcessor, PrintContextProcessor, PPrintContextProcessor
-from .json import JSONParser
-from .json import JSONParser as JSONParserProcessor # For backward compatability
+from .json import JsonToDictParser
+from .json import JsonToDictParser as JSONParser # For backward compatability
+from .json import JsonToDictParser as JSONParserProcessor # For backward compatability
+from .json import DictToJsonParser
+from .bytes import StringToBytesParser
+from .bytes import BytesToStringParser
 from .flatten import FlattenDictProcessor
 from .null import NullSink
 from .routing import InternalSource
