@@ -60,9 +60,9 @@ if __name__ == '__main__':
 	svc.add_connection(
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection1")
 	)
-	# svc.add_connection(
-	# 	bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection2")
-	# )
+	svc.add_connection(
+		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection2")
+	)
 	# Construct and register Pipeline
 	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
