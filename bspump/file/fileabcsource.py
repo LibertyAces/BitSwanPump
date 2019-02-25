@@ -23,10 +23,11 @@ class FileABCSource(TriggerSource):
 		'path': '',
 		'mode': 'rb',
 		'newline': None,
-		'post': 'move', # one of 'delete', 'noop' and 'move'
+		'post': 'move', # one of 'delete', 'noop' and 'move', 'moveaway'
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
-		'encoding': ''
+		'encoding': '',
+		'path_processed': ''
 	}
 
 
@@ -37,15 +38,20 @@ class FileABCSource(TriggerSource):
 		self.mode = self.Config['mode']
 		self.newline = self.Config['newline']
 		self.post = self.Config['post']
-		if self.post not in ['delete', 'noop', 'move']:
+		if self.post not in ['delete', 'noop', 'move', 'moveaway']:
 			L.warning("Incorrect/unknown 'post' configuration value '{}' - defaulting to 'move'".format(self.post))
 			self.post = 'move'
 		self.include = self.Config['include']
 		self.exclude = self.Config['exclude']
 		self.encoding = self.Config['encoding']
+		
+		self.PathProcessed = self.Config['path_processed']
+		if self.PathProcessed == '':
+			self.PathProcessed = os.path.abspath(os.path.join(self.path, os.pardir, "processed"))
+			if not os.path.isdir(self.PathProcessed):
+				os.mkdir(self.PathProcessed)
 
 		metrics_service = app.get_service('asab.MetricsService')
-
 		self.Gauge = metrics_service.create_gauge("file_count",
 			tags = {
 				'pipeline': pipeline.Id,
@@ -141,7 +147,12 @@ class FileABCSource(TriggerSource):
 			elif self.post == "noop":
 				os.rename(locked_filename, filename)
 			else:
-				os.rename(locked_filename, filename + '-processed')
+				new_filename = filename + '-processed'
+				os.rename(locked_filename, new_filename)
+				if self.post == 'moveaway':
+					file_from = os.path.abspath(new_filename)
+					file_to = os.path.abspath(os.path.join(self.PathProcessed, new_filename))
+					os.rename(file_from, file_to)
 		except BaseException as e:
 			L.exception("Error when finalizing the file '{}'".format(filename))
 			self.Pipeline.set_error(None, None, e)

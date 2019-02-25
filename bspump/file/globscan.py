@@ -15,7 +15,7 @@ else:
 		return len(result.stdout) != 0
 
 
-def _glob_scan(path, gauge, loop, exclude='', include=''):
+def _glob_scan(path, gauge, loop, post, exclude='', include='', path_processed=None):
 	if path is None: return None
 	if path == "": return None
 
@@ -26,7 +26,7 @@ def _glob_scan(path, gauge, loop, exclude='', include=''):
 	filelist_to_check.extend(filelist)
 
 	# also check the whole folder meanwhile
-	loop.call_soon(_file_check, filelist_to_check, gauge)
+	loop.call_soon(_file_check, filelist_to_check, gauge, post, path_processed=path_processed)
 
 	while len(filelist) > 0:
 		fname = filelist.pop(0)
@@ -50,18 +50,17 @@ def _glob_scan(path, gauge, loop, exclude='', include=''):
 	return None
 
 
-def _file_check(filelist, gauge):
+def _file_check(filelist, gauge, post, path_processed=None):
 
 	file_count = {
-			"processed": 0,
-			"unprocessed": 0,
-			"failed": 0, 
-			"locked" : 0,
-			"all_files": 0
-		}
+		"processed": 0,
+		"unprocessed": 0,
+		"failed": 0, 
+		"locked" : 0,
+		"all_files": 0
+	}
 
 	file_count["all_files"] += len(filelist)
-
 	for file in filelist:
 		if file.endswith('-locked'): 
 			file_count["locked"] += 1
@@ -72,8 +71,17 @@ def _file_check(filelist, gauge):
 		if file.endswith('-processed'):
 			file_count["processed"] += 1
 			continue
-		
+			
 		file_count["unprocessed"] += 1
+
+	if post == 'moveaway':
+		if path_processed is None:
+			L.warn("Path for processed files wasn't defined")
+		
+		else:
+			filelist = glob.glob(path_processed, recursive=True)
+			file_count['processed'] += len(filelist)
+
 
 	gauge.set("processed", file_count["processed"])
 	gauge.set("failed", file_count["failed"])
