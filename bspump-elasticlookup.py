@@ -17,13 +17,11 @@ class MyApplication(BSPumpApplication):
 
 		svc = self.get_service("bspump.PumpService")
 
-		es_connection = ElasticSearchConnection(self, "ElasticSearchConnection", config={
-			"url":"http://10.199.158.120:9200/"})
+		es_connection = ElasticSearchConnection(self, "ElasticSearchConnection")
 		
 		self.ElasticSearchLookup = ElasticSearchLookup(self, "ElasticSearchLookup", 
 			es_connection=es_connection,
 			config={
-				'index':'bs_cell_config_*',
 				'key': 'user'
 			})
 
