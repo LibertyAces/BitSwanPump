@@ -378,6 +378,7 @@ class SampleInternalPipeline(bspump.Pipeline):
 		rest = {
 			'Id': self.Id,
 			'Ready': self.is_ready(),
+			'Throttles': self._throttles,
 			'Sources': self.Sources,
 			'Processors': [],
 			'Metrics': self.MetricsService.MemstorTarget,
