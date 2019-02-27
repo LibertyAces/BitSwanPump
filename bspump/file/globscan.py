@@ -3,6 +3,13 @@ import os.path
 import subprocess
 import platform
 import fnmatch
+import logging
+
+#
+
+L = logging.getLogger(__file__)
+
+#
 
 
 if platform.system() == "Windows":
@@ -26,7 +33,7 @@ def _glob_scan(path, gauge, loop, post, exclude='', include='', path_processed=N
 	filelist_to_check.extend(filelist)
 
 	# also check the whole folder meanwhile
-	loop.call_soon(_file_check, filelist_to_check, gauge, post, path_processed=path_processed)
+	loop.call_soon(_file_check, filelist_to_check, gauge, post, path_processed)
 
 	while len(filelist) > 0:
 		fname = filelist.pop(0)
@@ -76,11 +83,11 @@ def _file_check(filelist, gauge, post, path_processed=None):
 
 	if post == 'moveaway':
 		if path_processed is None:
-			L.warn("Path for processed files wasn't defined")
-		
+			L.warn("Path for processed files wasn't defined")		
 		else:
-			filelist = glob.glob(path_processed, recursive=True)
+			filelist = glob.glob(path_processed + "/*", recursive=True)
 			file_count['processed'] += len(filelist)
+			file_count['all_files'] += len(filelist)
 
 
 	gauge.set("processed", file_count["processed"])

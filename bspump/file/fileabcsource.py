@@ -50,9 +50,11 @@ class FileABCSource(TriggerSource):
 			self.PathProcessed = None
 
 		if self.PathProcessed == '':
-			self.PathProcessed = os.path.abspath(os.path.join(self.path, os.pardir, "processed"))
-			if not os.path.isdir(self.PathProcessed):
-				os.mkdir(self.PathProcessed)
+			self.PathProcessed = os.path.abspath(os.path.join(self.path, os.pardir, os.pardir, "processed"))
+		
+		if (self.post == 'moveaway') and (not os.path.isdir(self.PathProcessed)):
+			os.mkdir(self.PathProcessed)
+
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Gauge = metrics_service.create_gauge("file_count",
@@ -77,7 +79,7 @@ class FileABCSource(TriggerSource):
 
 		start_time = time.time()
 		for path in self.path.split(os.pathsep):
-			filename = _glob_scan(path, self.Gauge, self.Loop, self.post, exclude=self.exclude, include=self.include, self.PathProcessed)
+			filename = _glob_scan(path, self.Gauge, self.Loop, self.post, exclude=self.exclude, include=self.include, path_processed=self.PathProcessed)
 			if filename is not None:
 				break
 		end_time = time.time()
@@ -154,7 +156,8 @@ class FileABCSource(TriggerSource):
 				os.rename(locked_filename, new_filename)
 				if self.post == 'moveaway':
 					file_from = os.path.abspath(new_filename)
-					file_to = os.path.abspath(os.path.join(self.PathProcessed, new_filename))
+					base = os.path.basename(new_filename)
+					file_to = os.path.abspath(os.path.join(self.PathProcessed, base))
 					os.rename(file_from, file_to)
 		except BaseException as e:
 			L.exception("Error when finalizing the file '{}'".format(filename))
