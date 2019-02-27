@@ -719,18 +719,18 @@ def do_rename(DIRS, index_pattern, new_id, args):
 				if PRINT_LEVEL >= 1:
 					print ('Replacing id references in {}'.format (fname))
 				count_replaced+=1
-				# with open (os.path.join(root, fname), 'w') as file:
-				# 	file.write (o_text)			
+				with open (os.path.join(root, fname), 'w') as file:
+					file.write (o_text)			
 
 			# rename file
 			if rename_file:
 				if PRINT_LEVEL >= 1:
 					print ('Renaming {} to {}'.format (fname, new_file_name))
 				count_renamed += 1
-				# os.rename(
-				# 	os.path.join(root, fname), 
-				# 	os.path.join(root, new_file_name)
-				# )
+				os.rename(
+					os.path.join(root, fname), 
+					os.path.join(root, new_file_name)
+				)
 
 
 
