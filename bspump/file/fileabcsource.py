@@ -26,7 +26,8 @@ class FileABCSource(TriggerSource):
 		'post': 'move', # one of 'delete', 'noop' and 'move'
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
-		'encoding': ''
+		'encoding': '',
+		'move_destination': ''
 	}
 
 
@@ -43,9 +44,17 @@ class FileABCSource(TriggerSource):
 		self.include = self.Config['include']
 		self.exclude = self.Config['exclude']
 		self.encoding = self.Config['encoding']
+		
+		self.MoveDestination = self.Config['move_destination']
+
+		if (self.MoveDestination != ''):
+			if (self.post == 'move') and (not os.path.isdir(self.MoveDestination)):
+				os.makedirs(self.MoveDestination)
+		else:
+			self.MoveDestination = None
+
 
 		metrics_service = app.get_service('asab.MetricsService')
-
 		self.Gauge = metrics_service.create_gauge("file_count",
 			tags = {
 				'pipeline': pipeline.Id,
@@ -141,7 +150,15 @@ class FileABCSource(TriggerSource):
 			elif self.post == "noop":
 				os.rename(locked_filename, filename)
 			else:
-				os.rename(locked_filename, filename + '-processed')
+				if self.MoveDestination is not None:
+					file_from = os.path.abspath(locked_filename)
+					base = os.path.basename(filename)
+					file_to = os.path.abspath(os.path.join(self.MoveDestination, base + '-processed'))
+				else:
+					file_from = locked_filename
+					file_to = filename + "-processed"
+
+				os.rename(file_from, file_to)
 		except BaseException as e:
 			L.exception("Error when finalizing the file '{}'".format(filename))
 			self.Pipeline.set_error(None, None, e)
