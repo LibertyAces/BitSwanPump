@@ -6,6 +6,7 @@ import os
 import itertools
 import pprint
 import hashlib
+import re
 
 import requests
 
@@ -467,7 +468,6 @@ def do_decompile(FILE, DIRS, CSVLOG):
 
 	library = load_library(DIRS)
 
-	stats_new = 0
 	stats_unchanged = 0
 	stats_updated = 0
 
@@ -638,6 +638,109 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 					idx,
 					encountered_type_counter[idx]
 				))
+
+
+###########
+
+def do_rename(DIRS, index_pattern, new_id, args):
+	
+	ip_dict = {} # index pattern dict
+
+	# go trough library and get all index patterns titles and ids
+	library = load_library(DIRS)
+	for obj in sorted(library.values(), key=lambda obj: obj.id):
+		
+		if (obj.type == 'index-pattern'):
+			key = obj.obj['_id'].replace ('index-pattern:','')
+			val = obj.obj ['_source']['index-pattern']['title'].strip ('_*')
+			ip_dict [key] = val				
+	
+
+	# filter selected index-pattern
+	if index_pattern != None:		
+		unwanted = set(ip_dict.keys()) - set([index_pattern])
+		for unwanted_key in unwanted: del ip_dict[unwanted_key]
+
+	# overwrite id
+	if new_id != None:
+		ip_dict [index_pattern] = new_id
+
+	# let go of indexes-patterns that are already named correctly
+	ip_dict = {k:v for k,v in ip_dict.items () if k!=v}
+
+
+	ip_match_count = {x:0 for x in ip_dict.keys ()}
+	ip_file_count = {x:0 for x in ip_dict.keys ()}
+	count_replaced = 0
+	count_renamed = 0
+
+	for root, dirs, files in itertools.chain.from_iterable([os.walk(DIR) for DIR in DIRS]):
+		for fname in filter(lambda fname: os.path.splitext(fname)[1] == '.json', files):
+
+			rename_file = False
+			
+			with open (os.path.join(root, fname), 'r') as file:
+				text = file.read()
+			
+			o_text = text
+			for key, value in ip_dict.items ():
+				
+				# replace index-pattern id
+				o_text, subst_count=re.subn(
+					r'"_id"\s*:\s*"index-pattern:{}"'.format (key),
+					'"_id": "index-pattern:{}"'.format (value),
+					o_text
+				)
+				
+				ip_match_count [key] += subst_count
+				if subst_count >= 1: ip_file_count[key] +=1
+
+				# replace all references to index-pattern id
+				o_text, subst_count=re.subn(
+					r'"index"\s*:\s*"{}"'.format (key), 
+					'"index": "{}"'.format (value),
+					o_text
+				)
+				
+				ip_match_count [key] += subst_count
+				if subst_count >= 1: ip_file_count[key] +=1					
+
+		
+				# get new file name - if needed
+				if 'index-pattern_' + key in fname:
+					rename_file = True
+					new_file_name = fname.replace (
+						'index-pattern_' + key, 
+						'index-pattern_' + value
+					)					
+
+			# save to file
+			if text != o_text:
+				if PRINT_LEVEL >= 1:
+					print ('Replacing id references in {}'.format (fname))
+				count_replaced+=1
+				# with open (os.path.join(root, fname), 'w') as file:
+				# 	file.write (o_text)			
+
+			# rename file
+			if rename_file:
+				if PRINT_LEVEL >= 1:
+					print ('Renaming {} to {}'.format (fname, new_file_name))
+				count_renamed += 1
+				# os.rename(
+				# 	os.path.join(root, fname), 
+				# 	os.path.join(root, new_file_name)
+				# )
+
+
+
+	if PRINT_LEVEL >= 1:
+		for key in ip_match_count.keys():
+			msg = 'For index-pattern {0:36} there were {1:2} replacements done across {2:2} files.'
+			print (msg.format (key, ip_match_count[key], ip_file_count[key]))
+	
+	if PRINT_LEVEL >= 0:
+		print("BSKibana made changes in {} files and renamed {}.".format(count_replaced, count_renamed))
 
 ###########
 
@@ -856,21 +959,21 @@ def parse_cmdline():
 
 
 	description = '''Manage Kibana object library and Kibana index in ElasticSearch.\n
-Example of use:
+	Example of use:
 
-lmiokibana.py export http://localhost:9200/ /tmp/kibana-index-exported.json
-lmiokibana.py decompile /tmp/kibana-index-exported.json /tmp/kibana-index-decompiled/ ./kibana/library/objects/
-lmiokibana.py compile /tmp/kibana-index-decompiled/ ./kibana/library/objects/ -o /tmp/kibana-index-exported.json
-lmiokibana.py import /tmp/kibana-index-exported.json http://localhost:9200/
+	bskibana.py export http://localhost:9200/ /tmp/kibana-index-exported.json
+	bskibana.py decompile /tmp/kibana-index-exported.json /tmp/kibana-index-decompiled/ ./kibana/library/objects/
+	bskibana.py compile /tmp/kibana-index-decompiled/ ./kibana/library/objects/ -o /tmp/kibana-index-exported.json
+	bskibana.py import /tmp/kibana-index-exported.json http://localhost:9200/
 
-lmiokibana.py document -t ./kibana/library/templates/ ./kibana/library/objects/ -o /tmp/doc
+	bskibana.py document -t ./kibana/library/templates/ ./kibana/library/objects/ -o /tmp/doc
 
-'''
+	'''
 
 	if jinja2 is None: description += '''
-WARNING: jinja2 is not installed, documentation functions are not available!
+	WARNING: jinja2 is not installed, documentation functions are not available!
 
-'''
+	'''
 
 	# Parse args
 	parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=description)
@@ -878,31 +981,38 @@ WARNING: jinja2 is not installed, documentation functions are not available!
 	parser.add_argument('--verbose', '-v', action='store_true', help='Be verbose in the output')
 	parser.add_argument('--silent', '-s', action='store_true', help="Don't print anything")
 
-	# An export command
+	# export command
 	export_parser = subparsers.add_parser('export', help='exports a Kibana index to a file')
 	export_parser.add_argument('URL', action='store', help='a ElasicSearch URL to read from')
 	export_parser.add_argument('FILE', action='store', help='a file to export data to')
 	export_parser.set_defaults(COMMAND='export')
 
-	# An import command
+	# import command
 	import_parser = subparsers.add_parser('import', help='Imports a Kibana index from a file')
 	import_parser.add_argument('FILE', action='store', help='a file to read from')
 	import_parser.add_argument('URL', action='store', help='a Kibana URL to import data to')
 	import_parser.set_defaults(COMMAND='import')
 
-	# An decompile command
+	# decompile command
 	decompile_parser = subparsers.add_parser('decompile', help='Decompile a Kibana index file into a library')
 	decompile_parser.add_argument('FILE', action='store', help='a file to read from (or ElasicSearch URL)')
 	decompile_parser.add_argument('DIR', action='store', nargs='+', help='a library directory')
 	decompile_parser.add_argument('--csv', '-c', action='store', help='specify an output CVS file with details of objects')
 	decompile_parser.set_defaults(COMMAND='decompile')
 
-	# An compile command
+	# compile command
 	compile_parser = subparsers.add_parser('compile', help='Compile a Kibana index file')
 	compile_parser.add_argument('DIR', action='store', nargs='+', help='a directories that will be scanned for Kibana objects, first directory is also used for new objects')
 	compile_parser.add_argument('--output', '-o', metavar='FILE', action='store', help='a file to write to')
 	compile_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='include only objects related to given index patterns')
 	compile_parser.set_defaults(COMMAND='compile')
+
+	# rename command
+	compile_parser = subparsers.add_parser('rename', help='Change id of Kibana index-pattern object')
+	compile_parser.add_argument('DIR', action='store', nargs='+', help='a directories that will be scanned for Kibana objects.')
+	compile_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='Elastic search index-pattern to be changed')	
+	compile_parser.add_argument('--new-id', '-o', metavar='NEWID', action='store', help='New ID to be used for index-pattern.')
+	compile_parser.set_defaults(COMMAND='rename')	
 
 	if jinja2 is not None:
 		doc_parser = subparsers.add_parser('document', help='Generate a documentation')
@@ -928,7 +1038,7 @@ def main():
 
 	# Call the command
 	if 'COMMAND' not in args:
-		print("Please select a command: import or export.")
+		print("Please select a command: import, export, complie, decompile or document.")
 		print("For more information see --help")
 		return 1
 
@@ -943,6 +1053,9 @@ def main():
 
 	elif args.COMMAND == 'compile':
 		do_compile(args.DIR, args.output,args.index_pattern)
+
+	elif args.COMMAND == 'rename':
+		do_rename(args.DIR, args.index_pattern, args.new_id, args)
 
 	elif args.COMMAND == 'document':
 		do_document(args.DIR, args.template_dir, args.output,args.index_pattern)
