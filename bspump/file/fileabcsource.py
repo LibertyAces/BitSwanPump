@@ -27,7 +27,7 @@ class FileABCSource(TriggerSource):
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
 		'encoding': '',
-		'path_processed': ''
+		'move_destination': ''
 	}
 
 
@@ -45,13 +45,13 @@ class FileABCSource(TriggerSource):
 		self.exclude = self.Config['exclude']
 		self.encoding = self.Config['encoding']
 		
-		self.PathProcessed = self.Config['path_processed']
+		self.MoveDestination = self.Config['move_destination']
 
-		if (self.PathProcessed != ''):
-			if (self.post == 'move') and (not os.path.isdir(self.PathProcessed)):
-				os.mkdir(self.PathProcessed)
+		if (self.MoveDestination != ''):
+			if (self.post == 'move') and (not os.path.isdir(self.MoveDestination)):
+				os.makedirs(self.MoveDestination)
 		else:
-			self.PathProcessed = None
+			self.MoveDestination = None
 
 
 		metrics_service = app.get_service('asab.MetricsService')
@@ -77,7 +77,7 @@ class FileABCSource(TriggerSource):
 
 		start_time = time.time()
 		for path in self.path.split(os.pathsep):
-			filename = _glob_scan(path, self.Gauge, self.Loop, self.post, exclude=self.exclude, include=self.include, path_processed=self.PathProcessed)
+			filename = _glob_scan(path, self.Gauge, self.Loop, exclude=self.exclude, include=self.include)
 			if filename is not None:
 				break
 		end_time = time.time()
@@ -150,13 +150,15 @@ class FileABCSource(TriggerSource):
 			elif self.post == "noop":
 				os.rename(locked_filename, filename)
 			else:
-				new_filename = filename + '-processed'
-				os.rename(locked_filename, new_filename)
-				if self.PathProcessed is not None:
-					file_from = os.path.abspath(new_filename)
-					base = os.path.basename(new_filename)
-					file_to = os.path.abspath(os.path.join(self.PathProcessed, base))
-					os.rename(file_from, file_to)
+				if self.MoveDestination is not None:
+					file_from = os.path.abspath(locked_filename)
+					base = os.path.basename(filename)
+					file_to = os.path.abspath(os.path.join(self.MoveDestination, base + '-processed'))
+				else:
+					file_from = locked_filename
+					file_to = filename + "-processed"
+
+				os.rename(file_from, file_to)
 		except BaseException as e:
 			L.exception("Error when finalizing the file '{}'".format(filename))
 			self.Pipeline.set_error(None, None, e)

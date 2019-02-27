@@ -22,7 +22,7 @@ else:
 		return len(result.stdout) != 0
 
 
-def _glob_scan(path, gauge, loop, post, exclude='', include='', path_processed=None):
+def _glob_scan(path, gauge, loop, exclude='', include=''):
 	if path is None: return None
 	if path == "": return None
 
@@ -33,7 +33,7 @@ def _glob_scan(path, gauge, loop, post, exclude='', include='', path_processed=N
 	filelist_to_check.extend(filelist)
 
 	# also check the whole folder meanwhile
-	loop.call_soon(_file_check, filelist_to_check, gauge, post, path_processed)
+	loop.call_soon(_file_check, filelist_to_check, gauge)
 
 	while len(filelist) > 0:
 		fname = filelist.pop(0)
@@ -57,7 +57,7 @@ def _glob_scan(path, gauge, loop, post, exclude='', include='', path_processed=N
 	return None
 
 
-def _file_check(filelist, gauge, post, path_processed=None):
+def _file_check(filelist, gauge):
 
 	file_count = {
 		"processed": 0,
@@ -80,11 +80,6 @@ def _file_check(filelist, gauge, post, path_processed=None):
 			continue
 			
 		file_count["unprocessed"] += 1
-
-	if (post == 'move') and (path_processed is not None):
-		filelist = glob.glob(path_processed + "/*", recursive=True)
-		file_count['processed'] += len(filelist)
-		file_count['all_files'] += len(filelist)
 
 
 	gauge.set("processed", file_count["processed"])
