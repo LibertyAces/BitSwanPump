@@ -81,13 +81,10 @@ def _file_check(filelist, gauge, post, path_processed=None):
 			
 		file_count["unprocessed"] += 1
 
-	if post == 'moveaway':
-		if path_processed is None:
-			L.warn("Path for processed files wasn't defined")		
-		else:
-			filelist = glob.glob(path_processed + "/*", recursive=True)
-			file_count['processed'] += len(filelist)
-			file_count['all_files'] += len(filelist)
+	if (post == 'move') and (path_processed is not None):
+		filelist = glob.glob(path_processed + "/*", recursive=True)
+		file_count['processed'] += len(filelist)
+		file_count['all_files'] += len(filelist)
 
 
 	gauge.set("processed", file_count["processed"])

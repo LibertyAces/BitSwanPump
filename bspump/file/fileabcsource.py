@@ -23,7 +23,7 @@ class FileABCSource(TriggerSource):
 		'path': '',
 		'mode': 'rb',
 		'newline': None,
-		'post': 'move', # one of 'delete', 'noop' and 'move', 'moveaway'
+		'post': 'move', # one of 'delete', 'noop' and 'move'
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
 		'encoding': '',
@@ -38,7 +38,7 @@ class FileABCSource(TriggerSource):
 		self.mode = self.Config['mode']
 		self.newline = self.Config['newline']
 		self.post = self.Config['post']
-		if self.post not in ['delete', 'noop', 'move', 'moveaway']:
+		if self.post not in ['delete', 'noop', 'move']:
 			L.warning("Incorrect/unknown 'post' configuration value '{}' - defaulting to 'move'".format(self.post))
 			self.post = 'move'
 		self.include = self.Config['include']
@@ -46,14 +46,12 @@ class FileABCSource(TriggerSource):
 		self.encoding = self.Config['encoding']
 		
 		self.PathProcessed = self.Config['path_processed']
-		if self.post != 'moveaway':
-			self.PathProcessed = None
 
-		if self.PathProcessed == '':
-			self.PathProcessed = os.path.abspath(os.path.join(self.path, os.pardir, os.pardir, "processed"))
-		
-		if (self.post == 'moveaway') and (not os.path.isdir(self.PathProcessed)):
-			os.mkdir(self.PathProcessed)
+		if (self.PathProcessed != ''):
+			if (self.post == 'move') and (not os.path.isdir(self.PathProcessed)):
+				os.mkdir(self.PathProcessed)
+		else:
+			self.PathProcessed = None
 
 
 		metrics_service = app.get_service('asab.MetricsService')
@@ -154,7 +152,7 @@ class FileABCSource(TriggerSource):
 			else:
 				new_filename = filename + '-processed'
 				os.rename(locked_filename, new_filename)
-				if self.post == 'moveaway':
+				if self.PathProcessed is not None:
 					file_from = os.path.abspath(new_filename)
 					base = os.path.basename(new_filename)
 					file_to = os.path.abspath(os.path.join(self.PathProcessed, base))
