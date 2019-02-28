@@ -35,7 +35,14 @@ class Aggregation(object):
 		},
 		...
 	}
-	TODO: nums after letters, dimensions
+	
+	It is possible to specify the column as a matrix with different dimension, the tuple (second_dim, third_dim, ...). 
+	E.g: '(4, 3)i8' will create for each row the matrix 
+	[0 0 0
+	 0 0 0
+	 0 0 0
+	 0 0 0]
+
 	'''
 
 
@@ -50,18 +57,7 @@ class Aggregation(object):
 		self.Matrix = np.zeros(0, dtype={'names':self.ColumnNames, 'formats':self.ColumnFormats})
 
 
-
-	def add_row(self, row_id):
-		row = np.zeros(1, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
-		self.Matrix = np.append(self.Matrix, row)
-		row_counter = len(self.RowMap)
-		self.RowMap[row_id] = row_counter
-		self.RevRowMap[row_counter] = row_id
-
-
-
-	def rebuild_rows(self, mode):
-		
+	def rebuild_rows(self, mode):	
 		if mode == "full":
 			self.RowMap = {}
 			self.RevRowMap = {}
@@ -93,7 +89,7 @@ class Aggregation(object):
 
 
 
-class TimeWindowAggregation(Capture):
+class TimeWindowAggregation(Aggregation):
 	'''
     ## Time window
 
@@ -113,11 +109,11 @@ class TimeWindowAggregation(Capture):
 	End (past)   <          Start (== now)
 
 	'''
-	def __init__(self, app, pipeline, dimensions, tw_format, start_time, resolution=60):
+	def __init__(self, app, pipeline, tw_dimensions, tw_format, resolution, start_time=None):
 		column_names = []
 		column_formats = []
 		column_names.append("time_window")
-		column_formats.append(str(dimensions) + tw_format)
+		column_formats.append(str(tw_dimensions) + tw_format)
 
 		column_names.append("warming_up_count")
 		column_formats.append("i8")
@@ -127,13 +123,11 @@ class TimeWindowAggregation(Capture):
 			start_time = time.time()
 
 		self.Resolution = resolution
-		self.Columns = dimensions[0]
-		self.TWFormat = tw_format
-
-		self.ThirdDimension = dimensions[1]
+		self.Dimensions = tw_dimensions
+		self.Format = tw_format
 
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
-		self.End = self.Start - (self.Resolution * self.Columns)
+		self.End = self.Start - (self.Resolution * self.Dimensions[0])
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
@@ -156,19 +150,24 @@ class TimeWindowAggregation(Capture):
 		if self.Matrix.shape[0] == 0:
 			return
 
-		column = np.zeros([len(self.RowMap), 1, self.ThirdDimension])
+		column = np.zeros([len(self.RowMap), 1, self.Dimensions[1]])
 		time_window = np.hstack((self.Matrix["time_window"], column))
 		time_window = np.delete(time_window, 0, axis=1)
 
 		self.Matrix["time_window"] = time_window
 		self.Matrix["warming_up_count"] -= 1
-		# overflow prevent
+		
+		# Overflow prevention
 		self.Matrix["warming_up_count"][self.Matrix["warming_up_count"] < 0] = 0
 
 	
-	def add_row(self, row_name):
-		super().add_row()
-		self.Matrix[-1]["warming_up_count"] = self.Columns
+	def add_row(self, row_id):
+		row = np.zeros(1, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
+		self.Matrix = np.append(self.Matrix, row)
+		row_counter = len(self.RowMap)
+		self.RowMap[row_id] = row_counter
+		self.RevRowMap[row_counter] = row_id
+		self.Matrix[-1]["warming_up_count"] = self.Dimensions[0]
 
 	
 	def get_row(self, row_name):
@@ -191,7 +190,7 @@ class TimeWindowAggregation(Capture):
 		column_idx = int((event_timestamp - self.End) // self.Resolution)
 
 		assert(column_idx >= 0)
-		assert(column_idx < self.Columns)
+		assert(column_idx < self.Dimensions[0])
 		return column_idx
 
 	
@@ -202,16 +201,21 @@ class TimeWindowAggregation(Capture):
 
 
 class SessionAggregation(Aggregation):
-	def __init__(self, app, pipeline, column_formats, column_names, id=None, config=None):
+
+	def __init__(self, app, pipeline, column_formats, column_names):
 		column_formats.append("i8")
 		column_names.append("@timestamp_start")
 		column_formats.append("i8")
-		column_names.append("@timestamp_end")
+		column_names.append("@timestamp_end")	
 		super().__init__(app, pipeline, column_names, column_formats)
 
 	
-	def add_row(self, session_id, start_time):
-		super().add_row()
+	def add_row(self, row_id, start_time):
+		row = np.zeros(1, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
+		self.Matrix = np.append(self.Matrix, row)
+		row_counter = len(self.RowMap)
+		self.RowMap[row_id] = row_counter
+		self.RevRowMap[row_counter] = row_id
 		self.Matrix[-1]["@timestamp_start"] = start_time
 
 

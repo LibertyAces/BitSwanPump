@@ -1,8 +1,8 @@
 from bspump.file import FileCSVSource
 from bspump.trigger import OpportunisticTrigger
-from bspump.common import PPrintSink
+from bspump.common import PPrintSink, NullSink
 from bspump import BSPumpApplication, Pipeline, Processor
-from bspump.analyzer import SessionAnalyzer
+from bspump.analyzer import SessionAnalyzer, TimeWindowAnalyzer
 
 import logging
 import time
@@ -33,8 +33,66 @@ class MyPipeline(Pipeline):
 		self.build(
 			FileCSVSource(app, self, config={'path': "bspump/analyzer/var/users.csv", 'post':'noop'}).on(OpportunisticTrigger(app)),
 			GraphSessionAnalyzer(app, self, column_formats=['S40', 'i8'], column_names=["user_link", "duration"]), 
-			PPrintSink(app, self)
+			UserTimeWindowAnalyzer(app, self),
+			# PPrintSink(app, self)
+			NullSink(app, self)
 		)
+
+
+class UserTimeWindowAnalyzer(TimeWindowAnalyzer):
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, 'S20', (2,2), 3600)
+		self.AnalyzeTimer = asab.Timer(app, self._on_tick_analyze, autorestart=True)
+		self.AnalyzeTimer.start(2)
+
+	
+	def predicate(self, event):
+
+		if '@timestamp' not in event:
+			return False
+
+		if event["@timestamp"] == '':
+			return False
+
+		if 'user' not in event:
+			return False
+
+		return True
+
+	
+	def evaluate(self, event):
+		user = event["user"]
+		msg = event.get('message')
+		er = event.get('error')
+		timestamp = int(event["@timestamp"])
+		column = self.TimeWindow.get_column(timestamp)
+		if user not in self.TimeWindow.RowMap:
+			self.TimeWindow.add_row(user)
+
+		if msg is not None:
+			user_ind = self.TimeWindow.RowMap[user]
+			self.TimeWindow.Matrix['time_window'][user_ind][column, 0] = msg
+
+		if er is not None:
+			self.TimeWindow.Matrix['time_window'][self.TimeWindow.RowMap[user]][column, 1] = er
+
+	async def _on_tick_analyze(self):
+		await self.analyze()
+
+	
+	async def analyze(self):
+		print("Analyzing ....")
+		tw_snapshot = copy.copy(self.TimeWindow.Matrix['time_window'])
+		for i in range(0, tw_snapshot.shape[0]):
+			for j in range(0, 2):
+				if tw_snapshot[i][j, 1] == b'':
+					print('user {} no error'.format(self.TimeWindow.RevRowMap[i]))
+				else:
+					print('user {} error message {}'.format(self.TimeWindow.RevRowMap[i], tw_snapshot[i][j, 0]))
+
+			self.TimeWindow.close_row(self.TimeWindow.RevRowMap[i])
+		self.TimeWindow.rebuild_rows("partial")
+
 
 
 class GraphSessionAnalyzer(SessionAnalyzer):
@@ -64,25 +122,25 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 		user_from = event["user"]
 		user_to = event["user_link"]
 		duration = event['duration']
-		if user_from not in self.RowMap:
-			self.add_session(user_from, start_time)
+		if user_from not in self.Sessions.RowMap:
+			self.Sessions.add_row(user_from, start_time)
 			
-		self.Sessions[self.RowMap[user_from]]["duration"] = duration
-		self.Sessions[self.RowMap[user_from]]["user_link"] = user_to
+		self.Sessions.Matrix[self.Sessions.RowMap[user_from]]["duration"] = duration
+		self.Sessions.Matrix[self.Sessions.RowMap[user_from]]["user_link"] = user_to
 
-		if user_to not in self.RowMap:
-			self.add_session(user_to, start_time)
+		if user_to not in self.Sessions.RowMap:
+			self.Sessions.add_row(user_to, start_time)
 
 	
 	async def analyze(self):
 		graph = {}
-		self.close_session('user_1', time.time())
-		sessions_snapshot = copy.copy(self.Sessions)
+		self.Sessions.close_row('user_1', time.time())
+		sessions_snapshot = copy.copy(self.Sessions.Matrix)
 		for i in range(0, sessions_snapshot.shape[0]):
-			if i in self.ClosedRows:
+			if i in self.Sessions.ClosedRows:
 				continue
 
-			user_from = self.RevRowMap[i]
+			user_from = self.Sessions.RevRowMap[i]
 			user_to = sessions_snapshot[i]['user_link']
 			link_weight = sessions_snapshot[i]['duration']
 			edge = tuple([user_to, link_weight])
@@ -98,9 +156,9 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 			else:
 				graph[user_to].append(rev_edge)
 
-			self.close_session(user_from, time.time())
+			self.Sessions.close_row(user_from, time.time())
 
-		self.rebuild_sessions('full')
+		self.Sessions.rebuild_rows('full')
 		L.warn("Graph is {}".format(graph))
 
 
