@@ -470,6 +470,7 @@ def do_decompile(FILE, DIRS, CSVLOG):
 
 	stats_unchanged = 0
 	stats_updated = 0
+	stats_new = 0
 
 	if CSVLOG is not None:
 		csvfo = open(CSVLOG, 'w')
