@@ -15,6 +15,10 @@ L = logging.getLogger(__name__)
 
 class SamplePipeline(bspump.Pipeline):
 
+	'''
+	NB: if you want to use this code, make sure, that you uploaded index templates to the target elastic search.
+	'''
+
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
@@ -43,12 +47,12 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.elasticsearch.ElasticSearchSource(
 					app, 
 					self, 
-					"ESConnection1", 
+					"ESConnectionSource", 
 					request_body=request_body,
 					paging=False,
 					config={'index': 'bs_xdr_a_*'} #change index here
 					).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
-			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection2")
+			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnectionSink")
 			# bspump.common.PPrintSink(app, self)
 		)
 
@@ -58,10 +62,10 @@ if __name__ == '__main__':
 
 	svc = app.get_service("bspump.PumpService")
 	svc.add_connection(
-		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection1")
+		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnectionSource")
 	)
 	svc.add_connection(
-		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection2")
+		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnectionSink")
 	)
 	# Construct and register Pipeline
 	pl = SamplePipeline(app, 'SamplePipeline')

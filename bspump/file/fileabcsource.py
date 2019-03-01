@@ -27,7 +27,7 @@ class FileABCSource(TriggerSource):
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
 		'encoding': '',
-		'move_destination': ''
+		'move_destination': '' # destination folder for 'move'. Make sure it's outside of the glob search
 	}
 
 
