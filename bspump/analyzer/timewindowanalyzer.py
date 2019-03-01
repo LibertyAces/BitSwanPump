@@ -6,7 +6,7 @@ import numpy as np
 import asab
 
 from .analyzer import Analyzer
-from .aggregation import TimeWindowAggregation
+from .matrixcontainer import TimeWindowMatrixContainer
 
 ###
 
@@ -29,7 +29,7 @@ class TimeWindowAnalyzer(Analyzer):
 	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, start_time=None, clock_driven=True, time_window=None, id=None, config=None):
 		
 		'''
-		TimeWindowAnalyzer operates over the TimeWindowAggregation object. It requires
+		TimeWindowAnalyzer operates over the TimeWindowMatrixContainer object. It requires
 		tw_dimensions parameter as the tuple (column_number, third_dimension), format in form
 		'b'	Byte	np.dtype('b')
 		'i'	Signed integer	np.dtype('i4') == np.int32
@@ -46,7 +46,7 @@ class TimeWindowAnalyzer(Analyzer):
 
 		super().__init__(app, pipeline, id, config)
 		if time_window is None:
-			self.TimeWindow = TimeWindowAggregation(
+			self.TimeWindow = TimeWindowMatrixContainer(
 				app,
 				pipeline,
 				tw_dimensions=tw_dimensions,
@@ -59,7 +59,7 @@ class TimeWindowAnalyzer(Analyzer):
 
 		if clock_driven:
 			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
-			self.Timer.start(int(self.Config['resolution']) / 4) # 1/4 of the sampling
+			self.Timer.start(resolution / 4) # 1/4 of the sampling
 		else:
 			self.Timer = None
 
@@ -81,7 +81,7 @@ class TimeWindowAnalyzer(Analyzer):
 			dt = (self.TimeWindow.Start - target_ts) / self.TimeWindow.Resolution
 			if dt > 0.25: break
 			self.TimeWindow.add_column()
-
+			
 
 	async def _on_tick(self):
 		target_ts = time.time()

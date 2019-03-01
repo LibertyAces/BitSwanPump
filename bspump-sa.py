@@ -41,7 +41,7 @@ class MyPipeline(Pipeline):
 
 class UserTimeWindowAnalyzer(TimeWindowAnalyzer):
 	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, 'S20', (2,2), 3600)
+		super().__init__(app, pipeline, 'S20', (2,2), 2)
 		self.AnalyzeTimer = asab.Timer(app, self._on_tick_analyze, autorestart=True)
 		self.AnalyzeTimer.start(2)
 

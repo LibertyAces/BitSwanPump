@@ -5,7 +5,7 @@ import numpy as np
 import asab
 
 from .analyzer import Analyzer
-from .aggregation import SessionAggregation
+from .matrixcontainer import SessionMatrixContainer
 
 ###
 
@@ -17,8 +17,8 @@ L = logging.getLogger(__name__)
 class SessionAnalyzer(Analyzer):
 	
 	'''
-	SessionAnalyzer operates over the SessionAggregation object. It provides analyzis over the 
-	specified aggregations/ other informations about the sessions, start time and the end time. It 
+	SessionAnalyzer operates over the SessionMatrixContainer object. It provides analyzis over the 
+	specified MatrixContainers/ other informations about the sessions, start time and the end time. It 
 	requires column format in form
 	'b'	Byte	np.dtype('b')
 	'i'	Signed integer	np.dtype('i4') == np.int32
@@ -36,7 +36,7 @@ class SessionAnalyzer(Analyzer):
 	def __init__(self, app, pipeline, column_formats, column_names, sessions=None, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		if sessions is None:
-			self.Sessions =  SessionAggregation(app, pipeline, column_formats, column_names)	
+			self.Sessions =  SessionMatrixContainer(app, pipeline, column_formats, column_names)	
 		else:
 			self.Sessions = sessions
 	
