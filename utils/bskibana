@@ -39,8 +39,9 @@ def load_from_es_search(URL, INDEX):
 
 		r = requests.post(actual_url, json=query)
 		if r.status_code != 200:
-			print("Error {} when exporting " + INDEX + " index from {}\n{}".format(r.status_code, actual_url, r.text))
-			sys.exit(1)
+			print("Error {} when exporting {} index from {}\n{}".format(INDEX,r.status_code, actual_url, r.text))
+			#sys.exit(1)
+			raise Exception  ('Requesting index raised {}'.format  (r.status_code))
 
 		result = r.json()
 
@@ -70,6 +71,22 @@ def do_export(URL, FILE):
 		:param URL: a URL to the ElasticSearch
 		:param FILE: a path to a file
 	"""
+
+	if URL[-1:] != '/':
+		URL += '/'	
+	for index in INDECES:
+		actual_url = URL + index + '/_search?scroll=1m'
+		query = {"size":"1"}
+		r = requests.post(actual_url, json=query)
+
+		if r.status_code != 200:
+			if PRINT_LEVEL >= 0:
+				print("Error {} when exporting {} index from {}".format(r.status_code, index, actual_url))
+			if PRINT_LEVEL >= 1:
+				print ('\n' + r.text)
+
+
+			INDECES.remove (index)
 
 	counter = 0
 	try:
@@ -669,6 +686,8 @@ def do_rename(DIRS, index_pattern, new_id, args):
 	# let go of indexes-patterns that are already named correctly
 	ip_dict = {k:v for k,v in ip_dict.items () if k!=v}
 
+	#print(ip_dict)
+
 
 	ip_match_count = {x:0 for x in ip_dict.keys ()}
 	ip_file_count = {x:0 for x in ip_dict.keys ()}
@@ -696,7 +715,7 @@ def do_rename(DIRS, index_pattern, new_id, args):
 				ip_match_count [key] += subst_count
 				if subst_count >= 1: ip_file_count[key] +=1
 
-				# replace all references to index-pattern id
+				# replace standard references to index-pattern id
 				o_text, subst_count=re.subn(
 					r'"index"\s*:\s*"{}"'.format (key), 
 					'"index": "{}"'.format (value),
@@ -705,6 +724,34 @@ def do_rename(DIRS, index_pattern, new_id, args):
 				
 				ip_match_count [key] += subst_count
 				if subst_count >= 1: ip_file_count[key] +=1					
+
+
+				# replace special visualization references to index-pattern id
+				o_text, subst_count=re.subn(
+					r'"indexPattern"\s*:\s*"{}"'.format (key), 
+					'"index": "{}"'.format (value),
+					o_text
+				)				
+
+				
+				ip_match_count [key] += subst_count
+				if subst_count >= 1: ip_file_count[key] +=1					
+
+
+				# s = r'\1(' + '{}'.format (value) + r')\2'
+				# #print (s)
+				# o_text, subst_count=re.subn (
+				# 	r'("url"\s*:\s"\S*indexPattern=){}(\S*")'.format (key),
+				# 	s,	
+				# 	o_text
+				# )
+				
+				# ip_match_count [key] += subst_count
+				# if subst_count >= 1: 
+				# 	print (o_text)
+				# 	ip_file_count[key] +=1					
+
+				
 
 		
 				# get new file name - if needed
@@ -720,6 +767,7 @@ def do_rename(DIRS, index_pattern, new_id, args):
 				if PRINT_LEVEL >= 1:
 					print ('Replacing id references in {}'.format (fname))
 				count_replaced+=1
+				#print ('"{}",'.format (fname))
 				with open (os.path.join(root, fname), 'w') as file:
 					file.write (o_text)			
 
@@ -1011,8 +1059,8 @@ def parse_cmdline():
 	# rename command
 	compile_parser = subparsers.add_parser('rename', help='Change id of Kibana index-pattern object')
 	compile_parser.add_argument('DIR', action='store', nargs='+', help='a directories that will be scanned for Kibana objects.')
-	compile_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='Elastic search index-pattern to be changed')	
-	compile_parser.add_argument('--new-id', '-o', metavar='NEWID', action='store', help='New ID to be used for index-pattern.')
+	compile_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='index pattern id to be changed')	
+	compile_parser.add_argument('--new-id', '-o', metavar='NEWID', action='store', help='new id')
 	compile_parser.set_defaults(COMMAND='rename')	
 
 	if jinja2 is not None:
