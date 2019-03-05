@@ -92,10 +92,17 @@ class TimeDriftAnalyzer(Analyzer):
 	async def analyze(self):
 		# in seconds
 		if len(self.History) > 0:
-			self.Gauge.set("avg", np.mean(self.History)/1000)
-			self.Gauge.set("median", np.median(self.History)/1000)
-			self.Gauge.set("stddev", np.std(self.History)/1000)
-			self.Gauge.set("min", np.min(self.History)/1000)
-			self.Gauge.set("max", np.max(self.History)/1000)
-
-			self.History = []
+			avg = np.mean(self.History)/1000
+			median = np.median(self.History)/1000
+			stddev = np.std(self.History)/1000
+			min_v = np.min(self.History)/1000
+			max_v = np.max(self.History)/1000
+			self.History = []			
+		else:
+			avg = median = stddev = min_v = max_v = 0.0
+		
+		self.Gauge.set("avg", avg)
+		self.Gauge.set("median", median)
+		self.Gauge.set("stddev", stddev)
+		self.Gauge.set("min", min_v)
+		self.Gauge.set("max", max_v)

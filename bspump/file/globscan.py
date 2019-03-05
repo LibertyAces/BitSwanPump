@@ -3,6 +3,13 @@ import os.path
 import subprocess
 import platform
 import fnmatch
+import logging
+
+#
+
+L = logging.getLogger(__file__)
+
+#
 
 
 if platform.system() == "Windows":
@@ -53,15 +60,14 @@ def _glob_scan(path, gauge, loop, exclude='', include=''):
 def _file_check(filelist, gauge):
 
 	file_count = {
-			"processed": 0,
-			"unprocessed": 0,
-			"failed": 0, 
-			"locked" : 0,
-			"all_files": 0
-		}
+		"processed": 0,
+		"unprocessed": 0,
+		"failed": 0, 
+		"locked" : 0,
+		"all_files": 0
+	}
 
 	file_count["all_files"] += len(filelist)
-
 	for file in filelist:
 		if file.endswith('-locked'): 
 			file_count["locked"] += 1
@@ -72,8 +78,9 @@ def _file_check(filelist, gauge):
 		if file.endswith('-processed'):
 			file_count["processed"] += 1
 			continue
-		
+			
 		file_count["unprocessed"] += 1
+
 
 	gauge.set("processed", file_count["processed"])
 	gauge.set("failed", file_count["failed"])

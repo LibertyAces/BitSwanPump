@@ -22,13 +22,16 @@ class ElasticSearchSource(TriggerSource):
 
 	}
 
-	def __init__(self, app, pipeline, connection, request_body=None, id=None, config=None):
+	def __init__(self, app, pipeline, connection, request_body=None, paging=True, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Connection = pipeline.locate_connection(app, connection)
 
 		self.Index = self.Config['index']
 		self.ScrollTimeout = self.Config['scroll_timeout']
+		self.Paging = paging
 
+
+		#print("index", self.Index)
 		if request_body is not None:
 			self.RequestBody = request_body
 		else:
@@ -74,13 +77,16 @@ class ElasticSearchSource(TriggerSource):
 				break
 
 			hits = msg['hits']['hits']
-			# print(len(hits))
+			#print(hits)
 			if len(hits) == 0:
 				break
 
 			# Feed messages into a pipeline
 			for hit in hits:
 				await self.process(hit['_source'])
+
+			if not self.Paging:
+				break
 
 
 class ElasticSearchAggsSource(TriggerSource):
