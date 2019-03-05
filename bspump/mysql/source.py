@@ -55,6 +55,22 @@ class MySQLBinaryLogSource(TriggerSource):
 		'server_id': 1
 	}
 	
+	'''
+	Before you started using it, make sure that 
+	my.cnf configuration file contains following lines:
+	[mysqld]
+	server-id		 = 1
+	log_bin			 = /var/log/mysql/mysql-bin.log
+	expire_logs_days = 10
+	max_binlog_size  = 100M
+	binlog-format    = row #Very important if you want to receive write, update and delete row events
+
+	Also make sure to restart the server after changing the config file.
+	'''
+
+
+
+
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self._connection = pipeline.locate_connection(app, connection)
