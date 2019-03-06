@@ -1,4 +1,5 @@
-from bspump.mysql import MySQLBinaryLogSource, MySQLConnection
+from bspump.mysql import MySQLConnection
+from bspump.mysql.binlogsource import MySQLBinaryLogSource
 
 from bspump.trigger import OpportunisticTrigger
 from bspump.common import PPrintSink
@@ -30,10 +31,8 @@ class MyPipeline(Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.mysql.MySQLBinaryLogSource(app, self, "MySQLConnection",
+			MySQLBinaryLogSource(app, self, "MySQLConnection",
 				config={'server_id': 1}
-			).on(
-				bspump.trigger.PubSubTrigger(app, "runmysqlpipeline!")
 			),
 			PPrintSink(app, self)
 		)
@@ -42,5 +41,4 @@ class MyPipeline(Pipeline):
 
 if __name__ == '__main__':
 	app = MyApplication()
-	app.PubSub.publish("runmysqlpipeline!", asynchronously=True)
 	app.run()
