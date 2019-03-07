@@ -7,6 +7,7 @@ import itertools
 import pprint
 import hashlib
 import re
+import pprint
 
 import requests
 
@@ -536,27 +537,38 @@ def check_pattern_match (obj, INDEXPATTERNS):
 
 def check_search_source_match (obj, INDEXPATTERNS, library):
 	obj_id = obj.obj['_id']
-	ssj = obj.obj ['_source'][obj.type]['kibanaSavedObjectMeta']['searchSourceJSON']
-	ssj_json = json.loads (ssj)
+	
+	saved_search_id = obj.obj['_source'][obj.type].get('savedSearchId')
+	if saved_search_id != None and obj_id != ':'.join(['search',saved_search_id]):
+		saved_search_id = ':'.join(['search',saved_search_id])
+		if saved_search_id not in library.keys ():
+			print ('{} related to not existant {}. Skipping.'.format (obj_id, saved_search_id))
+			return False
+		else:
+			search = library [saved_search_id]
+			return check_search_source_match (search, INDEXPATTERNS, library)	
 
-	if 'index' not in ssj_json.keys ():
-		print ('{} not related to any index-pattern. Skipping.'.format (obj_id))
-		return False
-	pattern_idx = 'index-pattern:' + ssj_json['index']
+	else:	
+		ssj = obj.obj ['_source'][obj.type]['kibanaSavedObjectMeta']['searchSourceJSON']
+		ssj_json = json.loads (ssj)
 
-	if pattern_idx not in library.keys ():
-		print ('{} related to not existant {}. Skipping.'.format (obj_id, pattern_idx))
-		return False
-	pattern = library [pattern_idx]
+		if 'index' not in ssj_json.keys ():
+			print ('{} not related to any index-pattern. Skipping.'.format (obj_id))
+			return False
+		pattern_idx = 'index-pattern:' + ssj_json['index']
 
-	return check_pattern_match (pattern, INDEXPATTERNS)
+		if pattern_idx not in library.keys ():
+			print ('{} related to not existant {}. Skipping.'.format (obj_id, pattern_idx))
+			return False
+		pattern = library [pattern_idx]
+
+		return check_pattern_match (pattern, INDEXPATTERNS)
 		
 
 def do_compile(DIRS, FILE, INDEXPATTERN):
 	if INDEXPATTERN != None: 
 		INDEXPATTERNS = INDEXPATTERN.split (',')
 
-	print (DIRS)
 	if FILE == None:
 		FILE = 'out.json'
 	
@@ -582,7 +594,7 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 					if not 'fields' in obj.obj['_source']['index-pattern'].keys ():
 						print ("ALERT: {} doesn't reference fields. It should.".format (obj.obj['_id']))
 
-					if not check_pattern_match (obj, INDEXPATTERNS):
+					if not check_pattern_match (obj, INDEXPATTERNS):						
 						continue
 			
 					if 'fieldFormatMap' in obj.obj['_source']['index-pattern'].keys ():
@@ -662,6 +674,8 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 
 def do_rename(DIRS, index_pattern, new_id, args):
 	
+	# TODO: This needs to be changed to use json structure instead of regular expressions.
+
 	ip_dict = {} # index pattern dict
 
 	# go trough library and get all index patterns titles and ids
@@ -1107,7 +1121,7 @@ def main():
 		do_rename(args.DIR, args.index_pattern, args.new_id, args)
 
 	elif args.COMMAND == 'document':
-		do_document(args.DIR, args.template_dir, args.output,args.index_pattern)
+		do_document(args.DIR, args.template_dir, args.output)
 
 	else:
 		print("Unknown command {}".format(args.COMMAND))
