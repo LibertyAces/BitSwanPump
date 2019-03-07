@@ -1,6 +1,7 @@
 import logging
 from ..abc.source import Source
 import pymysqlreplication
+import asyncio
 
 #
 
@@ -99,20 +100,18 @@ class MySQLBinaryLogSource(Source):
 			extract_events.append(line_core)
 		
 		self.ExtractEvents = frozenset(extract_events)
+		self.Loop = app.Loop
+		self.Queue = asyncio.Queue(loop=self.Loop)
 		
 	
-	def open_stream(self):
+	def stream_data(self):
 		self.Stream = pymysqlreplication.BinLogStreamReader(
 						connection_settings=self.MySQLSettings, 
 						server_id=self.ServerId,
 						log_file=self.Config['log_file'],
 						log_pos=4,
 						resume_stream=True)
-	
 
-	async def main(self):
-		await self.Pipeline.ready()
-		await self.ProactorService.run(self.open_stream)
 		for binlogevent in self.Stream:
 			event = {}
 
@@ -175,6 +174,21 @@ class MySQLBinaryLogSource(Source):
 			if event_type == 'IntvarEvent':
 				event['type'] = binlogevent.type
 				event['value'] = binlogevent.value
+			self.Queue.put_nowait(({},event))
+	
 
+	async def main(self):
+		await self.ProactorService.run(self.stream_data)
+		
+		try:
+			while True:
+				await self.Pipeline.ready()
+				context, event = await self.Queue.get()
+
+				await self.process(event, context={})
+				self.Queue.task_done()
+
+		except asyncio.CancelledError:
+			if self.Queue.qsize() > 0:
+				L.warning("'{}' stopped with {} events in a queue".format(self.locate_address(), self.Queue.qsize()))
 			
-			await self.process(event)
