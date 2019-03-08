@@ -13,8 +13,7 @@ class MySQLBinaryLogSource(Source):
 
 	ConfigDefaults = {
 		'server_id': 1,
-		# 'log_file' : 'mysql-bin.000001', #name of the first log file 
-		'log_file': '',
+		'log_file': '', #name of the first log file 
 		'log_pos' : 4,
 		'extract_events': 
 						"""
@@ -37,7 +36,8 @@ class MySQLBinaryLogSource(Source):
 
 	Also don't forget to restart the server after changing the config file.
 
-	It is important to know the name of the first log file, you can find it in /var/log/mysql/ folder.
+	By default, the it picks the last log file, but you can specify your own, you can find it in /var/log/mysql/ folder, so it
+	will process all files, started from specified one.
 
 	The source extracts events from MySQL binary log. By default it extracts only [DeleteRowsEvent, UpdateRowsEvent, WriteRowsEvent],
 	but you can extend the list in configuration with [QueryEvent, RotateEvent,StopEvent,FormatDescriptionEvent,XidEvent,

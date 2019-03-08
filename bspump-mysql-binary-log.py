@@ -32,7 +32,7 @@ class MyPipeline(Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			MySQLBinaryLogSource(app, self, "MySQLConnection",
-				config={'server_id': 1}
+				config={'server_id': 1, 'log_file': 'mysql-bin.000001'}
 			),
 			PPrintSink(app, self)
 		)
