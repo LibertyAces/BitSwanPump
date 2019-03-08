@@ -13,7 +13,9 @@ class MySQLBinaryLogSource(Source):
 
 	ConfigDefaults = {
 		'server_id': 1,
-		'log_file' : 'mysql-bin.000001', #name of the first log file 
+		# 'log_file' : 'mysql-bin.000001', #name of the first log file 
+		'log_file': '',
+		'log_pos' : 4,
 		'extract_events': 
 						"""
 						DeleteRowsEvent 
@@ -90,6 +92,12 @@ class MySQLBinaryLogSource(Source):
 		self.ProactorService = app.get_service("asab.ProactorService")
 		
 		self.ServerId = int(self.Config['server_id'])
+		self.LogFile = self.Config['log_file']
+		self.LogPos = int(self.Config['log_pos'])
+		
+		if self.LogFile == '':
+			self.LogFile = None
+			self.LogPos = None
 		
 		extract_events = []
 		lines = self.Config["extract_events"].split('\n')
@@ -108,8 +116,8 @@ class MySQLBinaryLogSource(Source):
 		self.Stream = pymysqlreplication.BinLogStreamReader(
 						connection_settings=self.MySQLSettings, 
 						server_id=self.ServerId,
-						log_file=self.Config['log_file'],
-						log_pos=4,
+						log_file=self.LogFile,
+						log_pos=self.LogPos,
 						resume_stream=True)
 
 		for binlogevent in self.Stream:
@@ -174,12 +182,12 @@ class MySQLBinaryLogSource(Source):
 			if event_type == 'IntvarEvent':
 				event['type'] = binlogevent.type
 				event['value'] = binlogevent.value
+			
 			self.Queue.put_nowait(({},event))
 	
 
 	async def main(self):
 		await self.ProactorService.run(self.stream_data)
-		
 		try:
 			while True:
 				await self.Pipeline.ready()
