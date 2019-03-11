@@ -123,8 +123,10 @@ class MySQLBinaryLogSource(Source):
 						resume_stream=True)
 
 		for binlogevent in self.Stream:
+			
 			if not self.RunWorker:
 				return
+			
 			event = {}
 
 			event_type = binlogevent.__class__.__name__
@@ -191,7 +193,6 @@ class MySQLBinaryLogSource(Source):
 	
 
 	async def main(self):
-		self.RunWorker = False
 		await self.ProactorService.run(self.stream_data)
 
 		try:
