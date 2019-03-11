@@ -110,6 +110,7 @@ class MySQLBinaryLogSource(Source):
 		self.ExtractEvents = frozenset(extract_events)
 		self.Loop = app.Loop
 		self.Queue = asyncio.Queue(loop=self.Loop)
+		self.RunWorker = True
 
 		
 	
@@ -122,6 +123,8 @@ class MySQLBinaryLogSource(Source):
 						resume_stream=True)
 
 		for binlogevent in self.Stream:
+			if not self.RunWorker:
+				return
 			event = {}
 
 			event_type = binlogevent.__class__.__name__
@@ -185,12 +188,12 @@ class MySQLBinaryLogSource(Source):
 				event['value'] = binlogevent.value
 			
 			self.Queue.put_nowait(({},event))
-		
-		return True
 	
 
 	async def main(self):
-		result = await self.ProactorService.run(self.stream_data)
+		self.RunWorker = False
+		await self.ProactorService.run(self.stream_data)
+
 		try:
 			while True:
 				await self.Pipeline.ready()
@@ -199,11 +202,12 @@ class MySQLBinaryLogSource(Source):
 				await self.process(event, context={})
 				self.Queue.task_done()
 
+
 		except asyncio.CancelledError:
 			if self.Queue.qsize() > 0:
+				self.RunWorker = False
 				L.warning("'{}' stopped with {} events in a queue".format(self.locate_address(), self.Queue.qsize()))
 
 		finally:
-			if result is None:
-				pass
+			self.RunWorker = False
 			
