@@ -237,6 +237,15 @@ class LibraryObject(object):
 				inc_obj = self.add_include(inc_name)
 				obj_source["index-pattern"]["fields"] = json.dumps(inc_obj)
 
+				# Load meta information for fields documentation
+				fields_docs = [{ # It's an array for historical reasons (TODO: refactor)
+					"title": "Fields",	# Field category title
+					"fields": inc_obj,	# List of fields
+					"inc_p": ""		# unknown
+				}]
+				self.meta["_fields_docs"] = fields_docs
+
+
 			inc_name = obj_source["index-pattern"].get("fieldFormatMap")
 			if inc_name is not None:
 				if inc_name.startswith('@'):
