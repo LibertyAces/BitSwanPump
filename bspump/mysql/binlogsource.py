@@ -194,7 +194,7 @@ class MySQLBinaryLogSource(Source):
 	
 
 	async def main(self):
-		worker = self.ProactorService.run(self.stream_data)
+		worker = self.ProactorService.execute(self.stream_data)
 
 		try:
 			while True:
@@ -212,4 +212,4 @@ class MySQLBinaryLogSource(Source):
 
 		finally:
 			self.Running = False
-			print(worker.result())
+			worker.result()
