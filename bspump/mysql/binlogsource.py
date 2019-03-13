@@ -110,8 +110,8 @@ class MySQLBinaryLogSource(Source):
 		self.ExtractEvents = frozenset(extract_events)
 		self.Loop = app.Loop
 		self.Queue = asyncio.Queue(loop=self.Loop)
-		self.RunWorker = True
-
+		self.Running = True
+		self.Stream = None
 		
 	
 	def stream_data(self):
@@ -124,7 +124,7 @@ class MySQLBinaryLogSource(Source):
 
 		for binlogevent in self.Stream:
 			
-			if not self.RunWorker:
+			if not self.Running:
 				return
 			
 			event = {}
@@ -206,9 +206,9 @@ class MySQLBinaryLogSource(Source):
 
 		except asyncio.CancelledError:
 			if self.Queue.qsize() > 0:
-				self.RunWorker = False
+				self.Running = False
 				L.warning("'{}' stopped with {} events in a queue".format(self.locate_address(), self.Queue.qsize()))
 
 		finally:
-			self.RunWorker = False
+			self.Running = False
 			
