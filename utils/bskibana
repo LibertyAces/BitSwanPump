@@ -725,7 +725,6 @@ def do_rename(DIRS, index_pattern, new_id, args):
 					'"_id": "index-pattern:{}"'.format (value),
 					o_text
 				)
-				
 				ip_match_count [key] += subst_count
 				if subst_count >= 1: ip_file_count[key] +=1
 
@@ -735,7 +734,6 @@ def do_rename(DIRS, index_pattern, new_id, args):
 					'"index": "{}"'.format (value),
 					o_text
 				)
-				
 				ip_match_count [key] += subst_count
 				if subst_count >= 1: ip_file_count[key] +=1					
 
@@ -746,27 +744,8 @@ def do_rename(DIRS, index_pattern, new_id, args):
 					'"index": "{}"'.format (value),
 					o_text
 				)				
-
-				
 				ip_match_count [key] += subst_count
-				if subst_count >= 1: ip_file_count[key] +=1					
-
-
-				# s = r'\1(' + '{}'.format (value) + r')\2'
-				# #print (s)
-				# o_text, subst_count=re.subn (
-				# 	r'("url"\s*:\s"\S*indexPattern=){}(\S*")'.format (key),
-				# 	s,	
-				# 	o_text
-				# )
-				
-				# ip_match_count [key] += subst_count
-				# if subst_count >= 1: 
-				# 	print (o_text)
-				# 	ip_file_count[key] +=1					
-
-				
-
+				if subst_count >= 1: ip_file_count[key] +=1													
 		
 				# get new file name - if needed
 				if 'index-pattern_' + key in fname:
