@@ -639,7 +639,8 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 						continue
 
 				elif (obj.type == 'config'):
-					if 'config' in obj.obj['_source'].keys():
+					if 'config' in obj.obj['_source'].keys() \
+					and obj.obj['_source']['config']['defaultIndex'] + "_*" not in INDEXPATTERNS:
 						obj.obj['_source']['config'].pop ('defaultIndex', None)
 					print ('Including {0} object, as {0}s are always included.'.format (obj.type))					
 
