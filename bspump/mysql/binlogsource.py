@@ -125,7 +125,7 @@ class MySQLBinaryLogSource(Source):
 		for binlogevent in self.Stream:
 			
 			if not self.Running:
-				return
+				return False
 			
 			event = {}
 
@@ -190,10 +190,11 @@ class MySQLBinaryLogSource(Source):
 				event['value'] = binlogevent.value
 			
 			self.Queue.put_nowait(({},event))
+		return True
 	
 
 	async def main(self):
-		await self.ProactorService.run(self.stream_data)
+		worker = self.ProactorService.run(self.stream_data)
 
 		try:
 			while True:
@@ -211,4 +212,4 @@ class MySQLBinaryLogSource(Source):
 
 		finally:
 			self.Running = False
-			
+			print(worker.result())
