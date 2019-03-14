@@ -18,7 +18,9 @@ class FileBlockSource(FileABCSource):
 	async def read(self, filename, f):
 		await self.Pipeline.ready()
 		# Load the file in a worker thread (to prevent blockage of the main loop)
-		event = await self.ProactorService.run(f.read)
+		worker = self.ProactorService.execute(f.read)
+		await worker
+		event = worker.result()
 		await self.process(event, {
 			"filename": filename
 		})
