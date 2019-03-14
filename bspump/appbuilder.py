@@ -32,7 +32,7 @@ class ApplicationBuilder(object):
 		svc = app.get_service("bspump.PumpService")
 		module = importlib.import_module(connection["module"])
 		connection_class = getattr(module, connection["class"])
-		connection_instance = connection_class.construct(connection)
+		connection_instance = connection_class.construct(app, connection)
 		svc.add_connection(connection_instance)
 
 
@@ -50,13 +50,13 @@ class ApplicationBuilder(object):
 		svc = app.get_service("bspump.PumpService")
 		module = importlib.import_module(lookup["module"])
 		lookup_class = getattr(module, lookup["class"])
-		lookup_instance = lookup_class.construct(lookup)
+		lookup_instance = lookup_class.construct(app, lookup)
 		svc.add_lookup(lookup_instance)
 
 	
 	def create_pipelines(self, app):
 		pipelines = self.Definition.get('pipelines')
-		pipelines is None:
+		if pipelines is None:
 			return 
 
 		for i in range(0, len(pipelines)):
@@ -73,10 +73,10 @@ class ApplicationBuilder(object):
 		processors_definition = pipeline_definition.get("processors")
 		sink = pipeline_definition["sink"]
 
-		sources = self.create_processors(app, sources_definition)
+		sources = self.create_processors(app, pipeline, sources_definition)
 		pipeline.set_source(sources)
-		processors = self.create_processors(app, processors_definition)
-		sink = self.create_processors(app, sink_definition)
+		processors = self.create_processors(app, pipeline, processors_definition)
+		sink = self.create_processor(app, pipeline, sink_definition)
 
 		processors.extend(sink)
 		for processor in processors:
@@ -86,21 +86,21 @@ class ApplicationBuilder(object):
 
 
 
-	def create_processors(self, app, definition):
+	def create_processors(self, app, pipeline, definition):
 		if definition is None:
 			return []
 		
 		processors = []
 		for i in range(0, len(definition)):
 			processor_definition = definition[str(i)]
-			processor = self.create_processor(app, processor_definition)
+			processor = self.create_processor(app, pipeline, processor_definition)
 			processors.append(processor)
 
 		return processors
 
 
-	def create_processor(self, app, definition):
+	def create_processor(self, app, pipeline, definition):
 		module = importlib.import_module(definition["module"])
 		processor_class = getattr(module, definition["class"])
-		processor = processor_class.construct(definition)
+		processor = processor_class.construct(app, pipeline, definition)
 		return processor
