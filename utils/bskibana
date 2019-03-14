@@ -683,176 +683,137 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 ###########
 
 def do_rename(DIRS, index_pattern, new_id, args):
-	
-	# TODO: This needs to be changed to use json structure instead of regular expressions.
 
-	ip_dict = {} # index pattern dict
-
-	# go trough library and get all index patterns titles and ids
 	library = load_library(DIRS)
-	for obj in sorted(library.values(), key=lambda obj: obj.id):
-		
-		if (obj.type == 'index-pattern'):
-			key = obj.obj['_id'].replace ('index-pattern:','')
-			val = obj.obj ['_source']['index-pattern']['title'].strip ('_*')
-			ip_dict [key] = val				
+	ip_dict = {} # index pattern dict
 	
 
-	# filter selected index-pattern
-	if index_pattern != None:		
-		unwanted = set(ip_dict.keys()) - set([index_pattern])
-		for unwanted_key in unwanted: del ip_dict[unwanted_key]
+	# add selected index-pattern
+	if index_pattern != None:				
+		if new_id == None:			
+			obj = library.get('index-pattern:' + index_pattern)
+			if obj != None:
+				new_id = obj.obj ['_source']['index-pattern']['title'].strip ('_*')
+			else:
+				print ('Error: Index pattern "{}" has not been found.'.format (index_pattern))
+				return 
+			
+		ip_dict [index_pattern] = new_id			
 
-	# overwrite id
-	if new_id != None:
-		ip_dict [index_pattern] = new_id
-
+	# go trough library and get all index patterns titles and ids	
+	else:				
+		for obj in sorted(library.values(), key=lambda obj: obj.id):
+			
+			if (obj.type == 'index-pattern'):
+				key = obj.obj['_id'].replace ('index-pattern:','')
+				val = obj.obj ['_source']['index-pattern']['title'].strip ('_*')
+				ip_dict [key] = val				
 
 	
 	# let go of indexes-patterns that are already named correctly
-	# ip_dict = {k:v for k,v in ip_dict.items () if k!=v}
+	ip_dict = {k:v for k,v in ip_dict.items () if k!=v}
 
-	# TODO: remove
-	ip_dict ['bs'] = 'kapr'
 
+	# set up metrics
 	ip_match_count = {x:0 for x in ip_dict.keys ()}
-	ip_file_count = {x:0 for x in ip_dict.keys ()}
+	ip_object_referece_count = {x:0 for x in ip_dict.keys ()}
 	count_replaced = 0
 	count_renamed = 0
+	rename_dict = {}
 
-	pprint.pprint (ip_dict)
-	####
-
-	updated_objects = 0
+	
+	# Go through objects rename and replace
 	for idx, obj in library.items ():
 		obj_updated = 0
 
-		if obj.type == 'index-pattern':
-			# TODO: rename and change id
-			continue
+		if obj.type == 'index-pattern':			
+			key = obj.obj ['_id'].split ('index-pattern:')[1]
+			
+			if key in ip_dict.keys():				
+				rename_list = [obj.fname]
 
-		# elif obj.type == 'search' or \
-		# obj.type == 'visualization' or obj.type == 'dashboard':
-		elif obj.type == 'dashboard':
+				# get all @ include file names
+				for include in list(obj.includes.keys ()):
+					include_f_name = obj.fname.replace ('.json',include + '.json')
+					rename_list.append (include_f_name)
 
-			print ('\n'+'-'*30 + '  {} '.format(obj.id) + '-'*30 + '\n')
+				# create replace dict for all related file names
+				for file_name in rename_list:
+					new_file_name = file_name.replace (
+						'index-pattern_' + key, 
+						'index-pattern_' + ip_dict [key]
+					)				
+					rename_dict [file_name] = new_file_name
+
+				# replace id
+				obj.obj ['_id'] = 'index-pattern:' + ip_dict [key]
+				obj_updated +=1
+				ip_match_count [key] += 1
+
+
+		elif obj.type == 'search' or \
+		obj.type == 'visualization' or obj.type == 'dashboard':
 			
 			if '@searchSourceJSON' in obj.includes.keys():
 				search_source = obj.includes ['@searchSourceJSON']
 				if 'index' in search_source:
 					if search_source['index'] in ip_dict.keys():
-						search_source['index'] = ip_dict [search_source['index']]
-						obj_updated += 1
-						print (search_source['index'])
+						
+						key = search_source['index']
+						search_source['index'] = ip_dict [key]	
+						ip_match_count [key] += 1					
+						obj_updated += 1						
 
 				if 'filter' in search_source:
-					for search_filter in search_source['filter']:
+					for idx, search_filter in enumerate(search_source['filter']):
 						if 'meta' in search_filter:					
 							if search_filter['meta']['index'] in ip_dict.keys():
 								key = search_filter['meta']['index']
-								search_filter['meta']['index'] = ip_dict [key]
-								obj_updated += 1
-								print (search_filter['meta']['index'])
+								search_source['filter'][idx]['meta']['index'] = ip_dict [key]
+								ip_match_count [key] += 1
+								obj_updated += 1	
+
+				if obj_updated > 0:	
+					ssj = json.dumps (search_source)							
+					obj.obj ['_source'][obj.type]['kibanaSavedObjectMeta']['searchSourceJSON'] = ssj					
 
 		elif obj.type == 'url':
 			# TODO: treat URLS
-			continue
+			pass
+			
+		elif obj.type == 'config':						
+			if 'defaultIndex' in obj.obj["_source"]["config"]:				
+				if obj.obj["_source"]["config"]['defaultIndex'] in ip_dict.keys():
+					key = obj.obj["_source"]["config"]['defaultIndex']
+					obj.obj["_source"]["config"]['defaultIndex'] = ip_dict [key]
+					ip_match_count [key] += 1
+					obj_updated += 1				
+					
 
-		elif obj.type == 'config':
-			# TODO: treat default index pattern
-			continue
+		# SAVE OBJECT
+		if obj_updated > 0:	
+			ip_object_referece_count [key] += 1
+			count_replaced += 1				
+			obj.save()
 
 
-		# if obj.type == 'dashboard':
-		# 	print ('\n'+'-'*30 + '  {} '.format(obj.id) + '-'*30 + '\n')
-
-
-
-							
-		if obj_updated > 0:
-			updated_objects += 1
-
-
-	print ('updated_objects: ', updated_objects)
+	# RENAME FILES
+	for key, value in rename_dict.items ():
+		if PRINT_LEVEL >= 1:
+			print ('Renaming {} to {}'.format (key, value))
+		count_renamed += 1
+		os.rename (key, value)
 						
-
-
-
-	# for root, dirs, files in itertools.chain.from_iterable([os.walk(DIR) for DIR in DIRS]):
-	# 	for fname in filter(lambda fname: os.path.splitext(fname)[1] == '.json', files):
-
-	# 		rename_file = False
-			
-	# 		with open (os.path.join(root, fname), 'r') as file:
-	# 			text = file.read()
-			
-	# 		o_text = text
-	# 		for key, value in ip_dict.items ():
-				
-	# 			# replace index-pattern id
-	# 			o_text, subst_count=re.subn(
-	# 				r'"_id"\s*:\s*"index-pattern:{}"'.format (key),
-	# 				'"_id": "index-pattern:{}"'.format (value),
-	# 				o_text
-	# 			)
-	# 			ip_match_count [key] += subst_count
-	# 			if subst_count >= 1: ip_file_count[key] +=1
-
-	# 			# replace standard references to index-pattern id
-	# 			o_text, subst_count=re.subn(
-	# 				r'"index"\s*:\s*"{}"'.format (key), 
-	# 				'"index": "{}"'.format (value),
-	# 				o_text
-	# 			)
-	# 			ip_match_count [key] += subst_count
-	# 			if subst_count >= 1: ip_file_count[key] +=1					
-
-
-	# 			# replace special visualization references to index-pattern id
-	# 			o_text, subst_count=re.subn(
-	# 				r'"indexPattern"\s*:\s*"{}"'.format (key), 
-	# 				'"index": "{}"'.format (value),
-	# 				o_text
-	# 			)				
-	# 			ip_match_count [key] += subst_count
-	# 			if subst_count >= 1: ip_file_count[key] +=1													
-		
-	# 			# get new file name - if needed
-	# 			if 'index-pattern_' + key in fname:
-	# 				rename_file = True
-	# 				new_file_name = fname.replace (
-	# 					'index-pattern_' + key, 
-	# 					'index-pattern_' + value
-	# 				)					
-
-	# 		# save to file
-	# 		if text != o_text:
-	# 			if PRINT_LEVEL >= 1:
-	# 				print ('Replacing id references in {}'.format (fname))
-	# 			count_replaced+=1
-	# 			#print ('"{}",'.format (fname))
-	# 			with open (os.path.join(root, fname), 'w') as file:
-	# 				file.write (o_text)			
-
-	# 		# rename file
-	# 		if rename_file:
-	# 			if PRINT_LEVEL >= 1:
-	# 				print ('Renaming {} to {}'.format (fname, new_file_name))
-	# 			count_renamed += 1
-	# 			os.rename(
-	# 				os.path.join(root, fname), 
-	# 				os.path.join(root, new_file_name)
-	# 			)
-
-
 
 	if PRINT_LEVEL >= 1:
 		for key in ip_match_count.keys():
-			msg = 'For index-pattern {0:36} there were {1:2} replacements done across {2:2} files.'
-			print (msg.format (key, ip_match_count[key], ip_file_count[key]))
+			msg = 'For index-pattern {0:16} there were {1:2} replacements done across {2:2} objects.'
+			print (msg.format (key, ip_match_count[key], ip_object_referece_count[key]))
 	
 	if PRINT_LEVEL >= 0:
 		print("BSKibana made changes in {} files and renamed {}.".format(count_replaced, count_renamed))
+
+
 
 ###########
 
