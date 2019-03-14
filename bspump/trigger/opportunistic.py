@@ -38,3 +38,16 @@ class OpportunisticTrigger(Trigger):
 
 	def done(self, trigger_source):
 		self.Loop.call_soon(self.on_tick)
+
+
+	@classmethod
+	def construct(cls, app, definition:dict):
+		newid = definition.get('id')
+		args = definition.get("args")
+		if args is not None:
+			run_immediately = args.get("run_immediately")
+			chilldown_period = args.get("chilldown_period")
+			return cls(app, newid, run_immediately, chilldown_period)
+		else:
+			return cls(app, newid)
+

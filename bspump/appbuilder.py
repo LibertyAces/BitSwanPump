@@ -1,5 +1,13 @@
+import logging
 import json
 import importlib
+
+from .abc import TriggerSource
+
+##
+L = logging.getLogger(__name__)
+##
+
 
 class ApplicationBuilder(object):
 	
@@ -85,7 +93,39 @@ class ApplicationBuilder(object):
 		svc.add_pipeline(pipeline)
 
 
+	def create_sources(self, app, pipeline, definition):
+		
+		sources = []
+		for i in range(0, len(definition)):
+			source_definition = definition[str(i)]
+			source = self.create_processor(app, pipeline, source_definition)
+			sources.append(source)
 
+		return sources
+
+
+	def create_source(self, app, pipeline, definition):
+		module = importlib.import_module(definition["module"])
+		processor_class = getattr(module, definition["class"])
+		processor = processor_class.construct(app, pipeline, definition)
+		if isinstance(processor, TriggerSource):
+			trigger_definition = definition.get("trigger")
+			if trigger_definition is None:
+				return processor
+			
+			trigger = self.create_trigger(app, trigger_definition)
+			return processor.on(trigger)
+		
+		return processor
+
+
+	def create_trigger(self, app, definition):
+		module = importlib.import_module(definition["module"])
+		processor_class = getattr(module, definition["class"])
+		trigger = construct(app, definition)
+		return trigger
+
+	
 	def create_processors(self, app, pipeline, definition):
 		if definition is None:
 			return []

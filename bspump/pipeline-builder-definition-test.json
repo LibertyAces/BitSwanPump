@@ -38,7 +38,13 @@
 					"module": "bspump.file",
 					"class" : "FileLineSource",
 					"args": {},
-					"config": {}
+					"config": {},
+					"trigger": {
+						"module": "bspump.trigger",
+						"class": "OpportunisticTrigger",
+						"id": "",
+						"args": {}
+					}
 				},
 				"1": {
 					"id": "AMQPSource",
@@ -74,13 +80,12 @@
 					"id": "InternalSource",
 					"module":"bspump.common",
 					"class": "InternalSource",
-					"args": {},
 					"config": {}
 				}
 			},
 			"processors": {
 				"0": {
-					"id": "Enricher10",
+					"id": "Processor10",
 					"class": "/",
 					"args": {
 						"lookup": "ESLookup"
