@@ -682,7 +682,7 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 
 ###########
 
-def do_rename(DIRS, index_pattern, new_id, args):
+def do_rename(DIRS, index_pattern = None, new_id = None, args = None):
 
 	library = load_library(DIRS)
 	ip_dict = {} # index pattern dict
@@ -751,8 +751,7 @@ def do_rename(DIRS, index_pattern, new_id, args):
 				ip_match_count [key] += 1
 
 
-		elif obj.type == 'search' or \
-		obj.type == 'visualization' or obj.type == 'dashboard':
+		elif obj.type in ['search', 'visualization', 'dashboard']:
 			
 			if '@searchSourceJSON' in obj.includes.keys():
 				search_source = obj.includes ['@searchSourceJSON']
@@ -1081,7 +1080,7 @@ def parse_cmdline():
 	compile_parser.set_defaults(COMMAND='compile')
 
 	# rename command
-	compile_parser = subparsers.add_parser('rename', help='Change id of Kibana index-pattern object')
+	compile_parser = subparsers.add_parser('rename', help='Change ids of Kibana index-pattern objects and fix references.')
 	compile_parser.add_argument('DIR', action='store', nargs='+', help='a directories that will be scanned for Kibana objects.')
 	compile_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='index pattern id to be changed')	
 	compile_parser.add_argument('--new-id', '-o', metavar='NEWID', action='store', help='new id')
