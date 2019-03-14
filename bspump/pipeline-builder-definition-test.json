@@ -54,11 +54,11 @@
 						"connection": "AMQPConnection"
 					},
 					"config": {}
-				},
+				}
 			},
 			"processors": {
 				"0": {
-					"module":"",
+					"module":"bspump-appbuilder",
 					"class": "Processor00",
 					"args": {},
 					"config": {}
@@ -86,14 +86,15 @@
 			"processors": {
 				"0": {
 					"id": "Processor10",
-					"class": "/",
+					"module" : "bspump-appbuilder",
+					"class": "Processor10",
 					"args": {
 						"lookup": "ESLookup"
-					},
+					}
 				},
 				"1": {
 					"id": "Processor11",
-					"module": "",
+					"module": "bspump-appbuilder",
 					"class": "Processor11",
 					"args": {},
 					"config": {}
@@ -102,9 +103,9 @@
 			"sink": {
 				"module":"bspump.common",
 				"class": "PPrintSink",
-				"args": {},
+				"args": {}
 			}
-		},
+		}
 	}
 	
 }

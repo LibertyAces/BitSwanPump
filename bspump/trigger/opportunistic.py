@@ -13,7 +13,7 @@ class OpportunisticTrigger(Trigger):
 	'''
 
 	def __init__(self, app, id=None, run_immediately=True, chilldown_period=5):
-		super().__init__(app, id)
+		super().__init__(app, id=id)
 		self.ChilldownPeriod = chilldown_period # Seconds
 
 		app.PubSub.subscribe("Application.tick/10!", self.on_tick)
@@ -44,10 +44,6 @@ class OpportunisticTrigger(Trigger):
 	def construct(cls, app, definition:dict):
 		newid = definition.get('id')
 		args = definition.get("args")
-		if args is not None:
-			run_immediately = args.get("run_immediately")
-			chilldown_period = args.get("chilldown_period")
-			return cls(app, newid, run_immediately, chilldown_period)
-		else:
-			return cls(app, newid)
+		# TODO: fix
+		return cls(app, newid)
 

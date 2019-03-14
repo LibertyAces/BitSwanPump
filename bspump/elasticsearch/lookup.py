@@ -165,3 +165,10 @@ class ProjectLookup(bspump.elasticsearch.ElasticSearchLookup):
 		if key is not None:
 			self.Cache[key] = element['_source']
 		return key
+
+	@classmethod
+	def construct(cls, app, definition:dict):
+		newid = definition.get('id')
+		config = definition.get('config')
+		connection = definition['args']['connection']
+		return cls(app, newid, connection, config)

@@ -53,7 +53,6 @@ class FileABCSource(TriggerSource):
 		else:
 			self.MoveDestination = None
 
-
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Gauge = metrics_service.create_gauge("file_count",
 			tags = {

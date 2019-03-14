@@ -41,7 +41,6 @@ class Trigger(abc.ABC):
 					triggered.append(source)
 				else:
 					untriggered.append(source)
-
 			to_trigger = self._max_triggered - len(triggered)
 			random.shuffle(untriggered)
 

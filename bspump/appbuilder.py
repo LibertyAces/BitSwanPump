@@ -2,7 +2,9 @@ import logging
 import json
 import importlib
 
-from .abc import TriggerSource
+from .abc.source import TriggerSource
+from .application import BSPumpApplication
+from .pipeline import Pipeline
 
 ##
 L = logging.getLogger(__name__)
@@ -12,8 +14,8 @@ L = logging.getLogger(__name__)
 class ApplicationBuilder(object):
 	
 	def __init__(self, definition):
-		self.Definition = json.load(definition)
-		print("definition:", self.Definition)
+		with open(definition) as f:
+			self.Definition = json.load(f)
 
 	def create_application(self, web_listen=None):
 		app = BSPumpApplication(web_listen=web_listen)
@@ -75,18 +77,18 @@ class ApplicationBuilder(object):
 	def create_pipeline(self, app, pipeline_definition):
 		svc = app.get_service("bspump.PumpService")
 		pipeline_id = pipeline_definition["id"]
-		pipeline = bspump.Pipeline(app, pipeline_id)
+		pipeline = Pipeline(app, pipeline_id)
 		
 		sources_definition = pipeline_definition["sources"]
 		processors_definition = pipeline_definition.get("processors")
-		sink = pipeline_definition["sink"]
+		sink_definition = pipeline_definition["sink"]
 
-		sources = self.create_processors(app, pipeline, sources_definition)
+		sources = self.create_sources(app, pipeline, sources_definition)
 		pipeline.set_source(sources)
 		processors = self.create_processors(app, pipeline, processors_definition)
 		sink = self.create_processor(app, pipeline, sink_definition)
 
-		processors.extend(sink)
+		processors.append(sink)
 		for processor in processors:
 			pipeline.append_processor(processor)
 		
@@ -94,11 +96,11 @@ class ApplicationBuilder(object):
 
 
 	def create_sources(self, app, pipeline, definition):
-		
+
 		sources = []
 		for i in range(0, len(definition)):
 			source_definition = definition[str(i)]
-			source = self.create_processor(app, pipeline, source_definition)
+			source = self.create_source(app, pipeline, source_definition)
 			sources.append(source)
 
 		return sources
@@ -108,21 +110,17 @@ class ApplicationBuilder(object):
 		module = importlib.import_module(definition["module"])
 		processor_class = getattr(module, definition["class"])
 		processor = processor_class.construct(app, pipeline, definition)
-		if isinstance(processor, TriggerSource):
-			trigger_definition = definition.get("trigger")
-			if trigger_definition is None:
-				return processor
-			
-			trigger = self.create_trigger(app, trigger_definition)
-			return processor.on(trigger)
+		trigger_definition = definition.get("trigger")
+		if trigger_definition is None:
+			return processor
+		trigger = self.create_trigger(app, trigger_definition)
+		return processor.on(trigger)
 		
-		return processor
-
 
 	def create_trigger(self, app, definition):
 		module = importlib.import_module(definition["module"])
-		processor_class = getattr(module, definition["class"])
-		trigger = construct(app, definition)
+		trigger_class = getattr(module, definition["class"])
+		trigger = trigger_class.construct(app, definition)
 		return trigger
 
 	

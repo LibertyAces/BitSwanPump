@@ -1,4 +1,5 @@
 from bspump.appbuilder import ApplicationBuilder 
+from bspump.abc.processor import Processor
 import logging
 
 
@@ -9,6 +10,7 @@ L = logging.getLogger(__name__)
 
 class Processor00(Processor):
 	def process(self, context, event):
+		# print(event, "quak!!!!!!!")
 		return event
 
 
@@ -20,6 +22,7 @@ class Processor10(Processor):
 		self.Lookup = svc.locate_lookup(lookup)
 	
 	def process(self, context, event):
+
 		return event
 
 
@@ -33,11 +36,13 @@ class Processor10(Processor):
 
 class Processor11(Processor):	
 	def process(self, context, event):
+
 		return event
 
 
 if __name__ == '__main__':
-	definition = "bspump/pipeline-builder-definition-test.json"
+	definition = "bspump/pipeline-builder-definition-test1.json"
 	app_builder = ApplicationBuilder(definition)
 	app = app_builder.create_application()
-	# app.run()
+	# print(app)
+	app.run()
