@@ -1,0 +1,108 @@
+{
+	"connections": {
+		"0": {
+			"id": "ESConnection",
+			"module": "bspump.elasticsearch",
+			"class": "ElasticSearchConnection",
+			"args": {},
+			"config": {}
+		},
+		"1": {
+			"id": "AMQPConnection",
+			"module" : "bspump.amqp",
+			"class": "AMQPConnection",
+			"args": {},
+			"config": {}
+		}
+
+	},
+	"pipelines" : {
+		"0": {
+			"id": "MyPipeline0",
+			"args": {},
+			"config": {},
+			"sources": {
+				"0": {
+					"id": "FileLineSource",
+					"module": "bspump.file",
+					"class" : "FileLineSource",
+					"args": {},
+					"config": {}
+				},
+				"1": {
+					"id": "AMQPSource",
+					"module": "bspump.amqp",
+					"class" : "AMQPSource",
+					"args": {
+						"connection": "AMQPConnection"
+					},
+					"config": {}
+				},
+			},
+			"processors": {
+				"0": {
+					"id": "Processor00",
+					"module":"..test",
+					"class": "Processor00",
+					"args": {},
+					"config": {}
+				}
+			},
+			"sink": {
+				"module":"bspump.common",
+				"class": "PPrintSink",
+				"args": {},
+				"config": {}
+			}
+		},
+		"1": {
+			"id": "MyPipeline1",
+			"args": {},
+			"config": {},
+			"sources": {
+				"0": {
+					"id": "InternalSource",
+					"module":"",
+					"class": "/",
+					"args": {},
+					"config": {}
+				}
+			},
+			"processors": {
+				"0": {
+					"id": "Enricher10",
+					"class": "/",
+					"args": {
+						"lookup": "ESLookup"
+					},
+					"config": {}
+				},
+				"1": {
+					"id": "Processor11",
+					"module": "",
+					"class": "/",
+					"args": {},
+					"config": {}
+				}
+			},
+			"sink": {
+				"module":"bspump.common",
+				"class": "PPrintSink",
+				"args": {},
+				"config": {}
+			}
+		},
+	},
+	"lookups": {
+		"0": {
+			"id": "ESLookup",
+			"module":"bspump.elasticsearch",
+			"class": "ElasticSearchLookup",
+			"args": {
+				"connection":"ESConnection"
+			},
+			"config": {}
+		}
+	}
+	
+}
