@@ -1,4 +1,6 @@
 from bspump.appbuilder import ApplicationBuilder 
+import logging
+
 
 ##
 L = logging.getLogger(__name__)

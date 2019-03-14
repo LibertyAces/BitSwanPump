@@ -16,6 +16,17 @@
 		}
 
 	},
+	"lookups": {
+		"0": {
+			"id": "ESLookup",
+			"module":"bspump.elasticsearch",
+			"class": "ElasticSearchLookup",
+			"args": {
+				"connection":"ESConnection"
+			},
+			"config": {}
+		}
+	},
 	"pipelines" : {
 		"0": {
 			"id": "MyPipeline0",
@@ -41,8 +52,7 @@
 			},
 			"processors": {
 				"0": {
-					"id": "Processor00",
-					"module":"..test",
+					"module":"",
 					"class": "Processor00",
 					"args": {},
 					"config": {}
@@ -62,8 +72,8 @@
 			"sources": {
 				"0": {
 					"id": "InternalSource",
-					"module":"",
-					"class": "/",
+					"module":"bspump.common",
+					"class": "InternalSource",
 					"args": {},
 					"config": {}
 				}
@@ -75,12 +85,11 @@
 					"args": {
 						"lookup": "ESLookup"
 					},
-					"config": {}
 				},
 				"1": {
 					"id": "Processor11",
 					"module": "",
-					"class": "/",
+					"class": "Processor11",
 					"args": {},
 					"config": {}
 				}
@@ -89,20 +98,8 @@
 				"module":"bspump.common",
 				"class": "PPrintSink",
 				"args": {},
-				"config": {}
 			}
 		},
-	},
-	"lookups": {
-		"0": {
-			"id": "ESLookup",
-			"module":"bspump.elasticsearch",
-			"class": "ElasticSearchLookup",
-			"args": {
-				"connection":"ESConnection"
-			},
-			"config": {}
-		}
 	}
 	
 }
