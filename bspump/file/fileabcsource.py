@@ -96,6 +96,9 @@ class FileABCSource(TriggerSource):
 			os.rename(filename, locked_filename)
 		except FileNotFoundError:
 			return
+		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
+			L.exception("Error when locking the file '{}'".format(filename))
+			return
 		except BaseException as e:
 			L.exception("Error when locking the file '{}'".format(filename))
 			self.Pipeline.set_error(None, None, e)
@@ -118,6 +121,9 @@ class FileABCSource(TriggerSource):
 				f = open(locked_filename, self.mode, newline=self.newline,
 						encoding=self.encoding if len(self.encoding) > 0 else None)
 
+		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
+			L.exception("Error when opening the file '{}'".format(filename))
+			return
 		except BaseException as e:
 			L.exception("Error when opening the file '{}'".format(filename))
 			self.Pipeline.set_error(None, None, e)
@@ -135,7 +141,7 @@ class FileABCSource(TriggerSource):
 				else:
 					# Otherwise rename to ...-failed and continue processing
 					os.rename(locked_filename, filename + '-failed')
-			except:
+			except BaseException as e:
 				L.exception("Error when finalizing the file '{}'".format(filename))
 			return
 		finally:
@@ -159,6 +165,9 @@ class FileABCSource(TriggerSource):
 					file_to = filename + "-processed"
 
 				os.rename(file_from, file_to)
+		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
+			L.exception("Error when finalizing the file '{}'".format(filename))
+			return
 		except BaseException as e:
 			L.exception("Error when finalizing the file '{}'".format(filename))
 			self.Pipeline.set_error(None, None, e)
