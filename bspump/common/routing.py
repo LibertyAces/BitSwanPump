@@ -40,8 +40,13 @@ class InternalSource(Source):
 
 	def put(self, context, event, copy_event=True):
 		'''
-		Context can be an empty dictionary if is not provided
+		Context can be an empty dictionary if is not provided.
+
+		If you are getting a `asyncio.queues.QueueFull` exception,
+		you likely did not implemented backpressure handling.
+		The simpliest approach is to use RouterSink / RouterProcessor.
 		'''
+
 		if copy_event:
 			event = copy.deepcopy(event)
 
