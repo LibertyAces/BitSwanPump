@@ -1,5 +1,6 @@
 from .application import BSPumpApplication
 from .pipeline import Pipeline
+from .pumpbuilder import PumpBuilder
 from .abc.source import Source
 from .abc.source import TriggerSource
 from .abc.sink import Sink

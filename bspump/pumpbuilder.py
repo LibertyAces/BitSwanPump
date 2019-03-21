@@ -3,7 +3,6 @@ import json
 import importlib
 
 from .abc.source import TriggerSource
-from .application import BSPumpApplication
 from .pipeline import Pipeline
 
 ##
@@ -11,52 +10,50 @@ L = logging.getLogger(__name__)
 ##
 
 
-class ApplicationBuilder(object):
+class PumpBuilder(object):
 	
 	def __init__(self, definition):
 		with open(definition) as f:
 			self.Definition = json.load(f)
 
-	def create_application(self, web_listen=None):
-		app = BSPumpApplication(web_listen=web_listen)
+
+	def construct_pump(self, app, svc):
 		
-		self.create_connections(app)
-		self.create_lookups(app)
-		self.create_pipelines(app)
-
-		return app
+		self.construct_connections(app, svc)
+		self.construct_lookups(app, svc)
+		self.construct_pipelines(app, svc)
 
 
-	def create_connections(self, app):
+	def construct_connections(self, app, svc):
 		
 		connections = self.Definition.get('connections')
 		if connections is None:
 			return 
 
 		for i in range(0, len(connections)):
-			connection_definition = connections[str(i)]
-			self.create_connection(app, connection_definition)
+			connection_definition = connections[i]
+			self.construct_connection(app, svc, connection_definition)
 
 	
-	def create_connection(self, app, connection):
-		svc = app.get_service("bspump.PumpService")
+	def construct_connection(self, app, svc, connection):
+		
 		module = importlib.import_module(connection["module"])
 		connection_class = getattr(module, connection["class"])
 		connection_instance = connection_class.construct(app, connection)
 		svc.add_connection(connection_instance)
 
 
-	def create_lookups(self, app):
+	def construct_lookups(self, app, svc) :
 		lookups = self.Definition.get('lookups')
 		if lookups is None:
 			return 
 
 		for i in range(0, len(lookups)):
-			lookup_definition = lookups[str(i)]
-			self.create_lookup(app, lookup_definition)
+			lookup_definition = lookups[i]
+			self.construct_lookup(app, svc, lookup_definition)
 
 
-	def create_lookup(self, app, lookup):
+	def construct_lookup(self, app, svc, lookup):
 		svc = app.get_service("bspump.PumpService")
 		module = importlib.import_module(lookup["module"])
 		lookup_class = getattr(module, lookup["class"])
@@ -64,17 +61,17 @@ class ApplicationBuilder(object):
 		svc.add_lookup(lookup_instance)
 
 	
-	def create_pipelines(self, app):
+	def construct_pipelines(self, app, svc) :
 		pipelines = self.Definition.get('pipelines')
 		if pipelines is None:
 			return 
 
 		for i in range(0, len(pipelines)):
-			pipeline_definition = pipelines[str(i)]
-			self.create_pipeline(app, pipeline_definition)
+			pipeline_definition = pipelines[i]
+			self.construct_pipeline(app, svc, pipeline_definition)
 		
 
-	def create_pipeline(self, app, pipeline_definition):
+	def construct_pipeline(self, app, svc, pipeline_definition):
 		svc = app.get_service("bspump.PumpService")
 		pipeline_id = pipeline_definition["id"]
 		pipeline = Pipeline(app, pipeline_id)
@@ -83,10 +80,10 @@ class ApplicationBuilder(object):
 		processors_definition = pipeline_definition.get("processors")
 		sink_definition = pipeline_definition["sink"]
 
-		sources = self.create_sources(app, pipeline, sources_definition)
+		sources = self.construct_sources(app, svc, pipeline, sources_definition)
 		pipeline.set_source(sources)
-		processors = self.create_processors(app, pipeline, processors_definition)
-		sink = self.create_processor(app, pipeline, sink_definition)
+		processors = self.construct_processors(app, svc, pipeline, processors_definition)
+		sink = self.construct_processor(app, svc, pipeline, sink_definition)
 
 		processors.append(sink)
 		for processor in processors:
@@ -95,49 +92,49 @@ class ApplicationBuilder(object):
 		svc.add_pipeline(pipeline)
 
 
-	def create_sources(self, app, pipeline, definition):
+	def construct_sources(self, app, svc, pipeline, definition):
 
 		sources = []
 		for i in range(0, len(definition)):
-			source_definition = definition[str(i)]
-			source = self.create_source(app, pipeline, source_definition)
+			source_definition = definition[i]
+			source = self.construct_source(app, svc, pipeline, source_definition)
 			sources.append(source)
 
 		return sources
 
 
-	def create_source(self, app, pipeline, definition):
+	def construct_source(self, app, svc, pipeline, definition):
 		module = importlib.import_module(definition["module"])
 		processor_class = getattr(module, definition["class"])
 		processor = processor_class.construct(app, pipeline, definition)
 		trigger_definition = definition.get("trigger")
 		if trigger_definition is None:
 			return processor
-		trigger = self.create_trigger(app, trigger_definition)
+		trigger = self.construct_trigger(app, svc, trigger_definition)
 		return processor.on(trigger)
 		
 
-	def create_trigger(self, app, definition):
+	def construct_trigger(self, app, svc, definition):
 		module = importlib.import_module(definition["module"])
 		trigger_class = getattr(module, definition["class"])
 		trigger = trigger_class.construct(app, definition)
 		return trigger
 
 	
-	def create_processors(self, app, pipeline, definition):
+	def construct_processors(self, app, svc, pipeline, definition):
 		if definition is None:
 			return []
 		
 		processors = []
 		for i in range(0, len(definition)):
-			processor_definition = definition[str(i)]
-			processor = self.create_processor(app, pipeline, processor_definition)
+			processor_definition = definition[i]
+			processor = self.construct_processor(app, svc, pipeline, processor_definition)
 			processors.append(processor)
 
 		return processors
 
 
-	def create_processor(self, app, pipeline, definition):
+	def construct_processor(self, app, svc, pipeline, definition):
 		module = importlib.import_module(definition["module"])
 		processor_class = getattr(module, definition["class"])
 		processor = processor_class.construct(app, pipeline, definition)

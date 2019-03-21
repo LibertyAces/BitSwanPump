@@ -1,4 +1,5 @@
-from bspump.appbuilder import ApplicationBuilder 
+from bspump.pumpbuilder import PumpBuilder
+from bspump.application import BSPumpApplication 
 from bspump.abc.processor import Processor
 import logging
 
@@ -10,7 +11,7 @@ L = logging.getLogger(__name__)
 
 class Processor00(Processor):
 	def process(self, context, event):
-		# print(event, "quak!!!!!!!")
+		print("!!!!!!")
 		return event
 
 
@@ -41,8 +42,11 @@ class Processor11(Processor):
 
 
 if __name__ == '__main__':
-	definition = "bspump/pipeline-builder-definition-test1.json"
-	app_builder = ApplicationBuilder(definition)
-	app = app_builder.create_application()
-	# print(app)
+	definition = "etc/pipeline-builder-definition-test1.json"
+	
+	app = BSPumpApplication()
+	svc = app.get_service("bspump.PumpService")
+	pump_builder = PumpBuilder(definition)
+	pump_builder.construct_pump(app, svc)
+	
 	app.run()

@@ -33,7 +33,6 @@ class FileABCSource(TriggerSource):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-
 		self.path = self.Config['path']
 		self.mode = self.Config['mode']
 		self.newline = self.Config['newline']

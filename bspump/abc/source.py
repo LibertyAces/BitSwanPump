@@ -117,7 +117,7 @@ It is acomplished by `await self.Pipeline.ready()` call.
 	def construct(cls, app, pipeline, definition:dict):
 		newid = definition.get('id')
 		config = definition.get('config')
-		return cls(app, pipeline, newid, config)
+		return cls(app, pipeline, id=newid, config=config)
 
 
 #

@@ -1,23 +1,22 @@
 {
-	"connections": {
-		"0": {
+	"connections": [
+		{
 			"id": "ESConnection",
 			"module": "bspump.elasticsearch",
 			"class": "ElasticSearchConnection",
 			"args": {},
 			"config": {}
 		},
-		"1": {
+		{
 			"id": "AMQPConnection",
 			"module" : "bspump.amqp",
 			"class": "AMQPConnection",
 			"args": {},
 			"config": {}
 		}
-
-	},
-	"lookups": {
-		"0": {
+		],
+	"lookups": [
+		{
 			"id": "ESLookup",
 			"module":"bspump.elasticsearch",
 			"class": "ElasticSearchLookup",
@@ -26,14 +25,14 @@
 			},
 			"config": {}
 		}
-	},
-	"pipelines" : {
-		"0": {
+	],
+	"pipelines" : [
+		{
 			"id": "MyPipeline0",
 			"args": {},
 			"config": {},
-			"sources": {
-				"0": {
+			"sources": [
+				{
 					"id": "FileLineSource",
 					"module": "bspump.file",
 					"class" : "FileLineSource",
@@ -46,7 +45,7 @@
 						"args": {}
 					}
 				},
-				"1": {
+				{
 					"id": "AMQPSource",
 					"module": "bspump.amqp",
 					"class" : "AMQPSource",
@@ -55,15 +54,15 @@
 					},
 					"config": {}
 				}
-			},
-			"processors": {
-				"0": {
-					"module":"bspump-appbuilder",
+			],
+			"processors": [
+				{
+					"module":"bspump-pumpbuilder",
 					"class": "Processor00",
 					"args": {},
 					"config": {}
 				}
-			},
+			],
 			"sink": {
 				"module":"bspump.common",
 				"class": "PPrintSink",
@@ -71,41 +70,40 @@
 				"config": {}
 			}
 		},
-		"1": {
+		{
 			"id": "MyPipeline1",
 			"args": {},
 			"config": {},
-			"sources": {
-				"0": {
+			"sources": [
+				{
 					"id": "InternalSource",
 					"module":"bspump.common",
 					"class": "InternalSource",
 					"config": {}
 				}
-			},
-			"processors": {
-				"0": {
+			],
+			"processors": [
+				{
 					"id": "Processor10",
-					"module" : "bspump-appbuilder",
+					"module" : "bspump-pumpbuilder",
 					"class": "Processor10",
 					"args": {
 						"lookup": "ESLookup"
 					}
 				},
-				"1": {
+				{
 					"id": "Processor11",
-					"module": "bspump-appbuilder",
+					"module": "bspump-pumpbuilder",
 					"class": "Processor11",
 					"args": {},
 					"config": {}
 				}
-			},
+			],
 			"sink": {
 				"module":"bspump.common",
 				"class": "PPrintSink",
 				"args": {}
 			}
-		}
-	}
+		}]
 	
 }
