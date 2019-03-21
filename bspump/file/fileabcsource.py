@@ -33,7 +33,6 @@ class FileABCSource(TriggerSource):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-
 		self.path = self.Config['path']
 		self.mode = self.Config['mode']
 		self.newline = self.Config['newline']
@@ -52,7 +51,6 @@ class FileABCSource(TriggerSource):
 				os.makedirs(self.MoveDestination)
 		else:
 			self.MoveDestination = None
-
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Gauge = metrics_service.create_gauge("file_count",

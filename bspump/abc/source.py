@@ -113,6 +113,13 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		return '%s(%r)' % (self.__class__.__name__, self.locate_address())
 
 
+	@classmethod
+	def construct(cls, app, pipeline, definition:dict):
+		newid = definition.get('id')
+		config = definition.get('config')
+		return cls(app, pipeline, id=newid, config=config)
+
+
 #
 
 class TriggerSource(Source):

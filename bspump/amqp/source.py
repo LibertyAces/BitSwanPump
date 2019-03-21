@@ -100,6 +100,13 @@ class AMQPSource(Source):
 		except:
 			channel.basic_nack(method.delivery_tag, requeue=True)
 
+	@classmethod
+	def construct(cls, app, pipeline, definition:dict):
+		newid = definition.get('id')
+		config = definition.get('config')
+		connection = definition['args']['connection']
+		return cls(app, pipeline, connection, newid, config)
+
 
 class AMQPFullMessageSource(AMQPSource):
 

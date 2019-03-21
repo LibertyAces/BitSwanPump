@@ -1,0 +1,38 @@
+{
+	"pipelines" : [
+		{
+			"id": "MyPipeline0",
+			"args": {},
+			"config": {},
+			"sources": [
+				{
+					"id": "FileCSVSource",
+					"module": "bspump.file",
+					"class" : "FileCSVSource",
+					"args": {},
+					"config": {"path":"etc/test.csv", "post":"noop"},
+					"trigger": {
+						"module": "bspump.trigger",
+						"class": "OpportunisticTrigger",
+						"id": "",
+						"args": {}
+					}
+				}
+			],
+			"processors": [
+				{
+					"module":"bspump-pumpbuilder",
+					"class": "Processor00",
+					"args": {},
+					"config": {}
+				}
+			],
+			"sink": {
+				"module":"bspump.common",
+				"class": "PPrintSink",
+				"args": {},
+				"config": {}
+			}
+		}
+	]
+}
