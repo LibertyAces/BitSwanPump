@@ -89,6 +89,9 @@ class MatrixContainer(object):
 		else:
 			L.warn("Unknown mode '{}'".format(mode))
 
+	def get_row(self, row_name):
+		return self.RowMap.get(row_name)
+
 
 
 class TimeWindowMatrixContainer(MatrixContainer):
@@ -172,8 +175,7 @@ class TimeWindowMatrixContainer(MatrixContainer):
 		self.Matrix[-1]["warming_up_count"] = self.Dimensions[0]
 
 	
-	def get_row(self, row_name):
-		return self.RowMap.get(row_name)
+	
 
 	
 	def get_column(self, event_timestamp):
