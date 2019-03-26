@@ -95,7 +95,7 @@ class FileABCSource(TriggerSource):
 		except FileNotFoundError:
 			return
 		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
-			L.exception("Error when locking the file '{}'".format(filename))
+			L.exception("Error when locking the file '{}'  - will try again".format(filename))
 			return
 		except BaseException as e:
 			L.exception("Error when locking the file '{}'".format(filename))
@@ -120,7 +120,7 @@ class FileABCSource(TriggerSource):
 						encoding=self.encoding if len(self.encoding) > 0 else None)
 
 		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
-			L.exception("Error when opening the file '{}'".format(filename))
+			L.exception("Error when opening the file '{}' - will try again".format(filename))
 			return
 		except BaseException as e:
 			L.exception("Error when opening the file '{}'".format(filename))
@@ -140,7 +140,7 @@ class FileABCSource(TriggerSource):
 					# Otherwise rename to ...-failed and continue processing
 					os.rename(locked_filename, filename + '-failed')
 			except BaseException as e:
-				L.exception("Error when finalizing the file '{}'".format(filename))
+				L.exception("Error when renaming the file '{}'  - will try again".format(filename))
 			return
 		finally:
 			f.close()
@@ -164,7 +164,7 @@ class FileABCSource(TriggerSource):
 
 				os.rename(file_from, file_to)
 		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
-			L.exception("Error when finalizing the file '{}'".format(filename))
+			L.exception("Error when finalizing the file '{}' - will try again".format(filename))
 			return
 		except BaseException as e:
 			L.exception("Error when finalizing the file '{}'".format(filename))
