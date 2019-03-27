@@ -999,30 +999,21 @@ def do_document(DIRS, TEMPLATEDIR, OUTPUT):
 			continue
 
 		# Render template into a MarkDown page
-		out = template.render(obj=obj, title="Black Swan")
+		out = template.render(obj=obj, title="Bit Swan")
 		trg_file = os.path.join(OUTPUT, obj.type, obj.id.replace(':','_')+'.md')
 		render_to_file(out, trg_file)
 
 
 	# Build the summary
-	template = env.get_template('SUMMARY.md')
+	template = env.get_template('index.md')
 	# Render template into a MarkDown page
 	out = template.render(
 		library=sorted(library.values(), key=lambda o: o.title),
-		title="Black Swan Reference")
-	trg_file = os.path.join(OUTPUT, 'SUMMARY.md')
+		title="Bit Swan Reference")
+	trg_file = os.path.join(OUTPUT, 'index.md')
 	render_to_file(out, trg_file)
 
 
-	# Build the readme
-	template = env.get_template('README.md')
-	# Render template into a MarkDown page
-	out = template.render(
-		library=sorted(library.values(), key=lambda o: o.title),
-		title="Black Swan Reference"
-	)
-	trg_file = os.path.join(OUTPUT, 'README.md')
-	render_to_file(out, trg_file)
 
 
 ###########
