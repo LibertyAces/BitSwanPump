@@ -10,7 +10,9 @@ Welcome to BSPump reference documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+.. automodule:: bspump
+    :members:
+    :undoc-members:
 
 Indices and tables
 ==================
