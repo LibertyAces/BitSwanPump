@@ -17,5 +17,9 @@ __all__ = [
 	"BSPumpApplication",
 	"Pipeline",
 	"TriggerSource",
-	"Connection"
+	"Connection",
+	"PumpBuilder",
+	"Source",
+	"Generator",
+	"load_json_file",
 ]
