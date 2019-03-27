@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'BSPump Reference Documentation'
+project = 'BSPump Reference'
 copyright = '2019, TeskaLabs'
 author = 'TeskaLabs'
 
