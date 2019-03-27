@@ -27,18 +27,20 @@ class Pipeline(abc.ABC):
 A pipeline can have multiple sources.
 They are simply passed as an list of sources to a pipeline `build()` method.
 
-class MyPipeline(bspump.Pipeline):
+.. code:: python
 
-	def __init__(self, app, pipeline_id):
-		super().__init__(app, pipeline_id)
-		self.build(
-			[
-				MySource1(app, self),
-				MySource2(app, self),
-				MySource3(app, self),
-			]
-			bspump.common.NullSink(app, self),
-		)
+	class MyPipeline(bspump.Pipeline):
+
+		def __init__(self, app, pipeline_id):
+			super().__init__(app, pipeline_id)
+			self.build(
+				[
+					MySource1(app, self),
+					MySource2(app, self),
+					MySource3(app, self),
+				]
+				bspump.common.NullSink(app, self),
+			)
 
 	'''
 
@@ -163,24 +165,25 @@ class MyPipeline(bspump.Pipeline):
 		Override to evaluate on the pipeline processing error.
 		Return True for hard errors (stop the pipeline processing) or False for soft errors that will be ignored 
 
+.. code:: python
 
-class SampleInternalPipeline(bspump.Pipeline):
+	class SampleInternalPipeline(bspump.Pipeline):
 
-	def __init__(self, app, pipeline_id):
-		super().__init__(app, pipeline_id)
+		def __init__(self, app, pipeline_id):
+			super().__init__(app, pipeline_id)
 
-		self.build(
-			bspump.common.InternalSource(app, self),
-			bspump.common.JSONParserProcessor(app, self),
-			bspump.common.PPrintSink(app, self)
-		)
+			self.build(
+				bspump.common.InternalSource(app, self),
+				bspump.common.JSONParserProcessor(app, self),
+				bspump.common.PPrintSink(app, self)
+			)
 
-	def catch_error(self, exception, event):
-		if isinstance(exception, json.decoder.JSONDecodeError):
-			return False
-		return True
+		def catch_error(self, exception, event):
+			if isinstance(exception, json.decoder.JSONDecodeError):
+				return False
+			return True
 
-		'''
+			'''
 		return True
 
 
