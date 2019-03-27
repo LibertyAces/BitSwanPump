@@ -22,4 +22,5 @@ __all__ = [
 	"Source",
 	"Generator",
 	"load_json_file",
+	"Sink",
 ]
