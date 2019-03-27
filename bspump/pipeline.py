@@ -22,27 +22,26 @@ class Pipeline(abc.ABC):
 
 	'''
 
-## Multiple sources
+Multiple sources
 
 A pipeline can have multiple sources.
 They are simply passed as an list of sources to a pipeline `build()` method.
 
 .. code:: python
 
-	class MyPipeline(bspump.Pipeline):
+    class MyPipeline(bspump.Pipeline):
 
-		def __init__(self, app, pipeline_id):
-			super().__init__(app, pipeline_id)
-			self.build(
-				[
-					MySource1(app, self),
-					MySource2(app, self),
-					MySource3(app, self),
-				]
-				bspump.common.NullSink(app, self),
-			)
-
-	'''
+        def __init__(self, app, pipeline_id):
+            super().__init__(app, pipeline_id)
+            self.build(
+                [
+                    MySource1(app, self),
+                    MySource2(app, self),
+                    MySource3(app, self),
+                ]
+                bspump.common.NullSink(app, self),
+            )
+    '''
 
 
 	def __init__(self, app, id=None):
@@ -161,29 +160,29 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	def catch_error(self, exception, event):
-		'''
-		Override to evaluate on the pipeline processing error.
-		Return True for hard errors (stop the pipeline processing) or False for soft errors that will be ignored 
+		"""
+        Override to evaluate on the pipeline processing error.
+        Return True for hard errors (stop the pipeline processing) or False for soft errors that will be ignored
 
 .. code:: python
 
-	class SampleInternalPipeline(bspump.Pipeline):
+    class SampleInternalPipeline(bspump.Pipeline):
 
-		def __init__(self, app, pipeline_id):
-			super().__init__(app, pipeline_id)
+        def __init__(self, app, pipeline_id):
+            super().__init__(app, pipeline_id)
 
-			self.build(
-				bspump.common.InternalSource(app, self),
-				bspump.common.JSONParserProcessor(app, self),
-				bspump.common.PPrintSink(app, self)
-			)
+            self.build(
+                bspump.common.InternalSource(app, self),
+                bspump.common.JSONParserProcessor(app, self),
+                bspump.common.PPrintSink(app, self)
+            )
 
-		def catch_error(self, exception, event):
-			if isinstance(exception, json.decoder.JSONDecodeError):
-				return False
-			return True
+        def catch_error(self, exception, event):
+            if isinstance(exception, json.decoder.JSONDecodeError):
+                return False
+            return True
+        """
 
-			'''
 		return True
 
 
@@ -219,9 +218,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	async def ready(self):
-		'''
+		"""
 		Can be used in source: `await self.Pipeline.ready()`
-		'''
+		"""
 
 		self._chillout_counter += 1
 		if self._chillout_counter >= self._chillout_trigger:
@@ -321,9 +320,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	def iter_processors(self):
-		'''
+		"""
 		Iterate thru all processors.
-		'''
+		"""
 		for processors in self.Processors:
 			for processor in processors:
 				yield processor
@@ -332,9 +331,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 	# Locate  ...
 
 	def locate_source(self, address):
-		'''
+		"""
 		Find a source by id.
-		'''
+		"""
 		for source in self.Sources:
 			if source.Id == address:
 				return source
@@ -349,9 +348,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		return connection
 
 	def locate_processor(self, processor_id):
-		'''
+		"""
 		Find by a processor by id.
-		'''
+		"""
 		for processor in self.iter_processors():
 				if processor.Id == processor_id:
 					return processor

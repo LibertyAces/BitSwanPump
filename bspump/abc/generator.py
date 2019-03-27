@@ -1,17 +1,19 @@
 from .processor import ProcessorBase
 
 class Generator(ProcessorBase):
-	'''
-	Example of use:
+	"""
+    Example of use:
 
-	class GeneratingProcessor(bspump.Generator):
+.. code:: python
 
-		def process(self, context, event):
+    class GeneratingProcessor(bspump.Generator):
 
-			def generate(items):
-				for item in items:
-					yield item
+        def process(self, context, event):
 
-			return generate(event.items)
-	'''
+            def generate(items):
+                for item in items:
+                    yield item
+
+            return generate(event.items)
+    """
 	pass

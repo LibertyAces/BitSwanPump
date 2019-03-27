@@ -61,15 +61,17 @@ class Lookup(abc.ABC, asab.ConfigObject):
 
 	@abc.abstractmethod
 	async def load(self) -> bool:
-		'''
-		Return True is lookup has been changed.
+		"""
+        Return True is lookup has been changed.
 
-		Example:
+        Example:
 
-		async def load(self):
-			self.set(bspump.load_json_file('./examples/data/country_names.json'))
-			return True
-		'''
+.. code:: python
+
+        async def load(self):
+            self.set(bspump.load_json_file('./examples/data/country_names.json'))
+            return True
+    """
 		pass
 
 
@@ -85,10 +87,10 @@ class Lookup(abc.ABC, asab.ConfigObject):
 	# Cache control
 
 	def load_from_cache(self):
-		'''
+		"""
 		Load the lookup data from a cache.
 		Data (bytes) are read from a file and passed to deserialize function.
-		'''
+		"""
 		path = os.path.join(os.path.abspath(asab.Config["general"]["var_dir"]), "lookup_{}.cache".format(self.Id))
 
 		# Load the ETag from cached file, if have one

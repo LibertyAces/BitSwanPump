@@ -1,6 +1,7 @@
 import abc
 from asab import ConfigObject
 
+
 class Connection(abc.ABC, ConfigObject):
 
 	def __init__(self, app, connection_id, config=None):
