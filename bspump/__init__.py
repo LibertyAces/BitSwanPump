@@ -20,4 +20,11 @@ __all__ = [
 	"Lookup",
 	"MappingLookup",
 	"DictionaryLookup",
+	"TriggerSource",
+	"Connection",
+	"PumpBuilder",
+	"Source",
+	"Generator",
+	"load_json_file",
+	"Sink",
 ]
