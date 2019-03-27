@@ -16,4 +16,6 @@ from .__version__ import __version__, __build__
 __all__ = [
 	"BSPumpApplication",
 	"Pipeline",
+	"TriggerSource",
+	"Connection"
 ]
