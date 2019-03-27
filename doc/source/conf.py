@@ -16,6 +16,13 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import os
+import sys
+
+root_directory = os.path.join(os.path.dirname(os.getcwd()), "..")
+sys.path.insert(0, root_directory)
+
+import bspump
 
 # -- Project information -----------------------------------------------------
 
