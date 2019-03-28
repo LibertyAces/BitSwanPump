@@ -510,6 +510,12 @@ def do_decompile(FILE, DIRS, CSVLOG):
 		counter += 1
 
 		trg_obj = library.get(obj.id)
+		
+		# skipping unwanted lookups
+		if trg_obj and "skip" in trg_obj.obj and trg_obj.obj["skip"] == True:
+			print (f"Skipping {obj.obj['_id']}")
+			continue
+
 		if trg_obj is None:
 			# Object is not found in the library
 			obj.save(os.path.join(DIRS[0], 'new'))
@@ -590,6 +596,11 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 	with open(FILE + '~', "w") as fo:
 		fo.write('[\n')
 		for obj in sorted(library.values(), key=lambda obj: obj.id):
+			
+			# skipping unwanted lookups
+			if "skip" in obj.obj and obj.obj["skip"] == True:
+				print (f"Skipping {obj.obj['_id']}")
+				continue
 
 			if INDEXPATTERN != None:
 				if obj.type not in encountered_type_counter:
