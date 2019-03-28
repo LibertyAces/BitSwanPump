@@ -28,15 +28,16 @@ class KafkaSource(Source):
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		topics = re.split(r'\s*,\s*', self.Config['topic'])
+		self.topics = re.split(r'\s*,\s*', self.Config['topic'])
 
 		self._group_id = self.Config['group_id']
 		if len(self._group_id) == 0: self._group_id = None
 
 		self.Connection = pipeline.locate_connection(app, connection)
+		self.App = app
 		self.Consumer = aiokafka.AIOKafkaConsumer(
-			*topics,
-			loop = app.Loop,
+			*self.topics,
+			loop = self.App.Loop,
 			bootstrap_servers = self.Connection.get_bootstrap_servers(),
 			client_id = self.Config['client_id'],
 			group_id = self._group_id,
@@ -45,21 +46,27 @@ class KafkaSource(Source):
 			api_version = self.Config['api_version'],
 			enable_auto_commit=False
 		)
+		self.Partitions = None
 
 
 	async def main(self):
 		await self.Consumer.start()
+		self.Partitions = self.Consumer.assignment()
 		try:
 			while 1:
 				await self.Pipeline.ready()
-				data = await self.Consumer.getmany(timeout_ms=10000)
+				data = await self.Consumer.getmany(timeout_ms=20000)
+				if data == {}:
+					for partition in self.Partitions:
+						await self.Consumer.seek_to_end(partition)
+				
+					data = await self.Consumer.getmany(timeout_ms=20000)
 				for tp, messages in data.items():
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.process_message(message)
 				if self._group_id is not None:
 					await self.Consumer.commit()
-
 		except concurrent.futures._base.CancelledError:
 			pass
 		except BaseException as e:
