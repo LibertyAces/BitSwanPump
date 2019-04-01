@@ -69,6 +69,14 @@ if __name__ == '__main__':
 			password=password
 			db=sampledb
 		```
+		
+		To use chunking, just change default 'rows_in_chunk' from 1 to something else
+		and use query with variable 'chunk':
+		```
+			[sink:MySQLSink]
+			rows_in_chunk=40
+			query='INSERT INTO people (name, surname) VALUES {chunk}'
+		```
 
 		Run bspump
 		```
