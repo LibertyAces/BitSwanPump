@@ -11,7 +11,22 @@ L = logging.getLogger(__name__)
 
 
 class KafkaSink(Sink):
+	"""
+    KafkaSink is a sink processor that expects a user-defined message (such as string) and publishes it to a defined
+    Apache Kafka instance configured in a KafkaConnection object.
 
+.. code:: python
+
+    class KafkaPipeline(bspump.Pipeline):
+
+        def __init__(self, app, pipeline_id):
+            super().__init__(app, pipeline_id)
+            self.build(
+                bspump.kafka.KafkaSource(app, self, "KafkaConnection", config={'topic': 'messages'}),
+                bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
+        )
+
+    """
 
 	ConfigDefaults = {
 		'topic': '',

@@ -13,7 +13,22 @@ L = logging.getLogger(__name__)
 
 
 class KafkaSource(Source):
+	"""
+    KafkaSource object consumes messages from an Apache Kafka system, which is configured in the KafkaConnection object.
+    It then passes them to other processors in the pipeline.
 
+.. code:: python
+
+    class KafkaPipeline(bspump.Pipeline):
+
+        def __init__(self, app, pipeline_id):
+            super().__init__(app, pipeline_id)
+            self.build(
+                bspump.kafka.KafkaSource(app, self, "KafkaConnection", config={'topic': 'messages'}),
+                bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
+            )
+
+    """
 
 	ConfigDefaults = {
 		'topic': '', # Multiple values are allowed, separated by , character

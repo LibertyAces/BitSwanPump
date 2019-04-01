@@ -23,6 +23,7 @@ root_directory = os.path.join(os.path.dirname(os.getcwd()), "..")
 sys.path.insert(0, root_directory)
 
 import bspump
+import bspump.kafka
 
 # -- Project information -----------------------------------------------------
 

@@ -14,6 +14,10 @@ Welcome to BSPump reference documentation!
     :members:
     :undoc-members:
 
+.. automodule:: bspump.kafka
+    :members:
+    :undoc-members:
+
 Indices and tables
 ==================
 
