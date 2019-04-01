@@ -24,6 +24,7 @@ sys.path.insert(0, root_directory)
 
 import bspump
 import bspump.kafka
+import bspump.influxdb
 
 # -- Project information -----------------------------------------------------
 

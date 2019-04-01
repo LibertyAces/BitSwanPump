@@ -18,6 +18,10 @@ Welcome to BSPump reference documentation!
     :members:
     :undoc-members:
 
+.. automodule:: bspump.influxdb
+    :members:
+    :undoc-members:
+
 Indices and tables
 ==================
 

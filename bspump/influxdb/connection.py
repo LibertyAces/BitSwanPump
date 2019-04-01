@@ -13,7 +13,22 @@ L = logging.getLogger(__name__)
 
 #
 
+
 class InfluxDBConnection(Connection):
+	"""
+    InfluxDBConnection serves to connect BSPump application with an InfluxDB database.
+    The InfluxDB server is accessed via URL, and the database is specified
+    using the `db` parameter in the configuration.
+
+.. code:: python
+
+    app = bspump.BSPumpApplication()
+    svc = app.get_service("bspump.PumpService")
+    svc.add_connection(
+        bspump.influxdb.InfluxDBConnection(app, "InfluxConnection1")
+    )
+
+    """
 
 	ConfigDefaults = {
 		"url": 'http://localhost:8086/',
@@ -48,6 +63,9 @@ class InfluxDBConnection(Connection):
 
 
 	def consume(self, data):
+		"""
+		Consumes user-defined data to be stored in the InfluxDB database.
+		"""
 		self._output_bucket += data
 		if len(self._output_bucket) > self._output_bucket_max_size:
 			self.flush()
@@ -71,12 +89,15 @@ class InfluxDBConnection(Connection):
 				L.exception("Influx error observed, restoring the order")
 
 
-			self._future = asyncio.ensure_future(self._loader())			
+			self._future = asyncio.ensure_future(self._loader())
 
 		self.flush()
 
 
 	def flush(self, event_name=None):
+		"""
+		Directly flushes the content of the internal bucket with data to InfluxDB database.
+		"""
 		if len(self._output_bucket) == 0:
 			return
 

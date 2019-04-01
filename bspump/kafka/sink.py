@@ -12,8 +12,8 @@ L = logging.getLogger(__name__)
 
 class KafkaSink(Sink):
 	"""
-    KafkaSink is a sink processor that expects a user-defined message (such as string) and publishes it to a defined
-    Apache Kafka instance configured in a KafkaConnection object.
+    KafkaSink is a sink processor that expects the event to be a user-defined message (such as string)
+    and publishes it to a defined Apache Kafka instance configured in a KafkaConnection object.
 
 .. code:: python
 
