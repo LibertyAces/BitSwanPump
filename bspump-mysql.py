@@ -35,6 +35,11 @@ class ToggleCaseProcessor(bspump.Processor):
 class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
+
+		self.Sink = bspump.mysql.MySQLSink(app, self, "MySQLConnection1", config={
+			'query': 'UPDATE people SET name={name}, surname={surname} WHERE id={id};'
+		})
+
 		self.build(
 			bspump.mysql.MySQLSource(app, self, "MySQLConnection1",
 				config={'query':'SELECT id, name, surname FROM people;'}
@@ -43,10 +48,17 @@ class SamplePipeline(bspump.Pipeline):
 			),
 			ReverseProcessor(app, self),
 			ToggleCaseProcessor(app, self),
-			bspump.mysql.MySQLSink(app, self, "MySQLConnection1", config={
-				'query': 'UPDATE people SET name={name}, surname={surname} WHERE id={id};'
-				})
+
 		)
+
+		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
+
+
+	def on_cycle_end(self, event_name, pipeline):
+		'''
+		This ensures that at the end of the file scan, the target file is closed
+		'''
+		self.Sink.rotate()
 
 
 if __name__ == '__main__':
