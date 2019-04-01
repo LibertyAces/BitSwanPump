@@ -57,7 +57,6 @@ class MySQLSink(Sink):
 	def flush(self):
 		chunk = ''
 		for row in self.Chunk:
-			# print(str(row))
 			chunk += str(row) + ','
 
 		chunk = chunk[:-1]
