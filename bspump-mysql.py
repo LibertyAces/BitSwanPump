@@ -48,7 +48,7 @@ class SamplePipeline(bspump.Pipeline):
 			),
 			ReverseProcessor(app, self),
 			ToggleCaseProcessor(app, self),
-
+			self.Sink,
 		)
 
 		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
