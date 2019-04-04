@@ -15,6 +15,10 @@ L = logging.getLogger(__name__)
 #
 
 class ElasticSearchSink(Sink):
+	"""
+	ElasticSearchSink allows you to insert events into ElasticSearch through POST requests
+
+	"""
 
 
 	ConfigDefaults = {
@@ -24,7 +28,6 @@ class ElasticSearchSink(Sink):
 		"rollover_mechanism": 'time',
 		"max_index_size": 30*1024*1024*1024, #This is 30GB
 		"timeout": 30,
-
 	}
 
 

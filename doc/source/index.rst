@@ -22,6 +22,10 @@ Welcome to BSPump reference documentation!
     :members:
     :undoc-members:
 
+.. automodule:: bspump.elasticsearch
+    :members:
+    :undoc-members:
+
 Indices and tables
 ==================
 

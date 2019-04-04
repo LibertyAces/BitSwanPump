@@ -10,10 +10,37 @@ L = logging.getLogger(__name__)
 
 class ElasticSearchSource(TriggerSource):
 	"""
-	request_body - https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html
 
-	scroll_timeout - Timeout of single scroll request. Allowed time units:
+	ElasticSearchSource is using standard Elastic's search API to fetch data.
+
+	**configs**
+
+	*index* - Elastic's index (default is 'index-``*``').
+
+	*scroll_timeout* - Timeout of single scroll request (default is '1m'). Allowed time units:
 	https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#time-units
+
+	**specific pamameters**
+
+	*paging* - boolean (default is True)
+
+	*request_body* - dictionary described by Elastic's doc:
+	https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html
+
+	Default is:
+
+.. code:: python
+
+	default_request_body = {
+		'query': {
+			'bool': {
+				'must': {
+					'match_all': {}
+				}
+			}
+		},
+	}
+
 	"""
 
 	ConfigDefaults = {
@@ -30,8 +57,6 @@ class ElasticSearchSource(TriggerSource):
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Paging = paging
 
-
-		#print("index", self.Index)
 		if request_body is not None:
 			self.RequestBody = request_body
 		else:
@@ -43,7 +68,6 @@ class ElasticSearchSource(TriggerSource):
 						}
 					}
 				}}
-
 
 	async def cycle(self):
 
@@ -91,7 +115,32 @@ class ElasticSearchSource(TriggerSource):
 
 class ElasticSearchAggsSource(TriggerSource):
 	"""
-	request_body - https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html
+
+	ElasticSearchAggsSource is used for Elastic's search aggregations.
+
+	**configs**
+
+	*index*: - Elastic's index (default is 'index-``*``').
+
+	**specific pamameters**
+
+	*request_body*
+	dictionary described by Elastic's doc:
+	https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html
+
+	Default is:
+
+.. code:: python
+
+	default_request_body = {
+		'query': {
+			'bool': {
+				'must': {
+					'match_all': {}
+				}
+			}
+		},
+	}
 	"""
 
 	ConfigDefaults = {
@@ -117,9 +166,6 @@ class ElasticSearchAggsSource(TriggerSource):
 				}
 			}
 
-
-
-
 	async def cycle(self):
 		request_body = self.RequestBody
 		path = '{}/_search?'.format(self.Index)
@@ -140,7 +186,6 @@ class ElasticSearchAggsSource(TriggerSource):
 
 		aggs = msg['aggregations']
 
-		
 		if len(aggs) == 0:
 			return
 
@@ -150,9 +195,6 @@ class ElasticSearchAggsSource(TriggerSource):
 		path = {}
 		await self.process_aggs(path, start_name, start)
 
-		
-
-	
 	async def process_aggs(self, path, aggs_name, aggs):
 		
 		if 'buckets' in aggs:
@@ -166,15 +208,14 @@ class ElasticSearchAggsSource(TriggerSource):
 			await self.process(event)
 			path.pop(aggs_name)
 
-
-
-
 	async def process_buckets(self, path, parent, buckets):
 		'''
+
 		Recursive function for buckets processing.
 		It iterates through keys of the dictionary, looking for 'buckets' or 'value'.
 		If there are 'buckets', calls itself, if there is 'value', calls process_aggs 
 		and sends an event to process
+
 		'''
 
 		for bucket in buckets:
@@ -183,9 +224,3 @@ class ElasticSearchAggsSource(TriggerSource):
 					path[parent] = bucket[k]
 				elif isinstance(bucket[k], dict): 
 					await self.process_aggs(path, k, bucket[k])
-					
-
-
-
-
-
