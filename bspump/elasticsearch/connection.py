@@ -23,18 +23,18 @@ class ElasticSearchConnection(Connection):
 
 	usage:
 
-	1. adding connection to PumpService
-
 .. code:: python
 
+
+	# adding connection to PumpService
 	svc = app.get_service("bspump.PumpService")
 	svc.add_connection(
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection")
 	)
 
-	2. pass connection name ("ESConnection" in our example) to relevant BSPump's object:
-
 .. code:: python
+
+	# pass connection name ("ESConnection" in our example) to relevant BSPump's object:
 
 	self.build(
 			bspump.kafka.KafkaSource(app, self, "KafkaConnection"),
