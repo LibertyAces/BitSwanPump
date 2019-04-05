@@ -3,7 +3,6 @@ import logging
 import asyncio
 import json
 from ..abc.connection import Connection
-import smtplib
 from email.mime.text import MIMEText
 import aiosmtplib
 from pprint import pprint
