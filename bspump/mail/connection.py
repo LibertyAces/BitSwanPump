@@ -41,22 +41,6 @@ class SmtpConnection(Connection):
 		self.Sender_email = self.Config['sender_email']
 		self.Receiver_email = self.Config['receiver_email']
 
-		print('*' * 50)
-		print ('self.Use_start_tls',self.Use_start_tls)
-		print('self.Use_tls', self.Use_tls)
-		print('self.Login', self.Login)
-		print('self.Password', self.Password)
-		print (self.Login != None)
-		print(self.Login == None)
-		print ('empty string')
-		print(self.Login != '')
-		print(self.Login == '')
-		print('string None')
-		print(self.Login != 'None')
-		print(self.Login == 'None')
-		print (type (self.Login))
-		print('*' * 50)
-
 		self.Loop = app.Loop
 		self.PubSub = app.PubSub
 
@@ -82,33 +66,6 @@ class SmtpConnection(Connection):
 
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.PubSub.publish("MailConnection.pause!", self)
-
-
-	# async def _loader(self):
-	# 	while True:
-	# 		mail_message = await self._output_queue.get()
-	# 		if mail_message is None:
-	# 			break
-	#
-	# 		if self._output_queue.qsize() == self._output_queue_max_size - 1:
-	# 			self.PubSub.publish("MailConnection.unpause!", self, asynchronously=True)
-	#
-	# 		message = str(mail_message)
-	# 		print(message + "..... jenze kapri smrdi")
-	#
-	# 		with smtplib.SMTP(self.Smtp_server, self.Port) as server:
-	# 			server.helo()
-	# 			server.sendmail(self.Sender_email, self.Receiver_email, message)
-	#
-	# 		# async with session.post(self.Url, data=mail_message, headers={'content-type': 'application/json'}) as resp:
-	# 		# 	resp_body = await resp.text()
-	# 		# 	if resp.status != 200:
-	# 		# 		L.error("Failed to send Mail message status:{} body:{}".format(resp.status, resp_body))
-	# 		#
-	# 		# 		# Requeue the message, wait a bit and try again
-	# 		# 		self._output_queue.put_nowait(mail_message)
-	# 		# 		await asyncio.sleep(5)
-
 
 
 	async def _loader(self):

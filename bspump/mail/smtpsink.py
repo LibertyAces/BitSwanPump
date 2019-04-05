@@ -26,8 +26,4 @@ class SmtpSink(Sink):
 		'''
 
 		'''
-		# print ('***')
-		# print (type(event))
-		# print (event.decode("utf-8"))
-		# print('***')
 		self.Connection.consume(event.decode("utf-8"))
