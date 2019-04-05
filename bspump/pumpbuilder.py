@@ -11,6 +11,53 @@ L = logging.getLogger(__name__)
 
 
 class PumpBuilder(object):
+	'''
+	PumpBuilder is meant to create the pipeline with connections, processors, sources alternatively.
+	``definition`` is a path to the json file, containing description of the pump.
+	Example of such file:
+
+.. code-block:: json
+
+	{
+		"pipelines" : [
+			{
+				"id": "MyPipeline0",
+				"args": {},
+				"config": {},
+				"sources": [
+					{
+						"id": "FileCSVSource",
+						"module": "bspump.file",
+						"class" : "FileCSVSource",
+						"args": {},
+						"config": {"path":"etc/test.csv", "post":"noop"},
+						"trigger": {
+							"module": "bspump.trigger",
+							"class": "OpportunisticTrigger",
+							"id": "",
+							"args": {}
+						}
+					}
+				],
+				"processors": [
+					{
+						"module":"bspump-pumpbuilder",
+						"class": "Processor00",
+						"args": {},
+						"config": {}
+					}
+				],
+				"sink": {
+					"module":"bspump.common",
+					"class": "PPrintSink",
+					"args": {},
+					"config": {}
+				}
+			}
+		]
+	} 
+
+	'''
 	
 	def __init__(self, definition):
 		with open(definition) as f:
@@ -18,7 +65,20 @@ class PumpBuilder(object):
 
 
 	def construct_pump(self, app, svc):
+		'''
+		The main method to construct the pump.
+		``app`` is a BspumpApplication object, ``svc``` is service. 
+		Example of use:
 		
+	.. code-block:: python
+
+		app = BSPumpApplication()
+		svc = app.get_service("bspump.PumpService")
+		pump_builder = PumpBuilder(definition)
+		pump_builder.construct_pump(app, svc)
+		app.run()
+
+		'''
 		self.construct_connections(app, svc)
 		self.construct_lookups(app, svc)
 		self.construct_pipelines(app, svc)
