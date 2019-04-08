@@ -1,28 +1,43 @@
 import abc
 import requests
+import logging
 import json
 
 from ..abc.lookup import MappingLookup
 
+L = logging.getLogger(__name__)
+
+
 class ElasticSearchLookup(MappingLookup):
 
-	'''
-The lookup that is linked with a ES.
-It provides a mapping (dictionary-like) interface to pipelines.
-It feeds lookup data from ES using a query.
-It also has a simple cache to reduce a number of datbase hits.
+	"""
+	The lookup that is linked with a ES.
+	It provides a mapping (dictionary-like) interface to pipelines.
+	It feeds lookup data from ES using a query.
+	It also has a simple cache to reduce a number of datbase hits.
 
-Example:
+	**configs**
 
-class ProjectLookup(bspump.elasticsearch.ElasticSearchLookup):
+	*index* - Elastic's index
 
-	async def count(self, database):
-		return await database['projects'].count_documents({})
+	*key* - field name to match
 
-	def find_one(self, database, key):
-		return database['projects'].find_one({'_id':key})
+	*scroll_timeout* - Timeout of single scroll request (default is '1m'). Allowed time units:
+	https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#time-units
 
-	'''
+	Example:
+
+.. code:: python
+
+	class ProjectLookup(bspump.elasticsearch.ElasticSearchLookup):
+
+		async def count(self, database):
+			return await database['projects'].count_documents({})
+
+		def find_one(self, database, key):
+			return database['projects'].find_one({'_id':key})
+
+	"""
 
 	ConfigDefaults = {
 		'index': '', # Specify an index
@@ -44,8 +59,6 @@ class ProjectLookup(bspump.elasticsearch.ElasticSearchLookup):
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("es.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
 
-
-	
 	def _find_one(self, key):
 		prefix = '_search'
 		request = {

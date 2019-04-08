@@ -42,6 +42,4 @@ class ProcessorBase(abc.ABC, asab.ConfigObject):
 
 
 class Processor(ProcessorBase):
-
 	pass
-	

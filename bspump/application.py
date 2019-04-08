@@ -8,6 +8,9 @@ from .__version__ import __version__, __build__
 
 
 class BSPumpApplication(asab.Application):
+	"""
+	Application object for BSPump.
+	"""
 
 	def __init__(self, web_listen=None):
 		super().__init__()

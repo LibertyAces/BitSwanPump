@@ -14,6 +14,22 @@ L = logging.getLogger(__name__)
 #
 
 class InfluxDBSink(Sink):
+	"""
+    InfluxDBSink is a sink processor, that stores the event into an InfluxDB database
+    specified in the InfluxDBConnection object.
+
+.. code:: python
+
+    class SamplePipeline(bspump.Pipeline):
+
+        def __init__(self, app, pipeline_id):
+            super().__init__(app, pipeline_id)
+            self.build(
+                bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
+                bspump.influxdb.InfluxDBSink(app, self, "InfluxConnection1")
+            )
+
+    """
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)

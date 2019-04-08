@@ -17,6 +17,31 @@ L = logging.getLogger(__name__)
 
 
 class ElasticSearchConnection(Connection):
+	"""
+
+	ElasticSearchConnection allows your ES source, sink or lookup to connect to ElasticSearch instance
+
+	usage:
+
+.. code:: python
+
+
+	# adding connection to PumpService
+	svc = app.get_service("bspump.PumpService")
+	svc.add_connection(
+		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection")
+	)
+
+.. code:: python
+
+	# pass connection name ("ESConnection" in our example) to relevant BSPump's object:
+
+	self.build(
+			bspump.kafka.KafkaSource(app, self, "KafkaConnection"),
+			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
+	)
+
+	"""
 
 	ConfigDefaults = {
 		'url': 'http://localhost:9200/', # Could be multiline, each line is a URL to a node in ElasticSearch cluster
@@ -28,7 +53,6 @@ class ElasticSearchConnection(Connection):
 		'timeout': 300,
 		'allowed_bulk_response_codes': '201',
 	}
-
 
 	def __init__(self, app, connection_id, config=None):
 		super().__init__(app, connection_id, config=config)

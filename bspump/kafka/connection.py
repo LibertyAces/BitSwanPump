@@ -12,6 +12,19 @@ L = logging.getLogger(__name__)
 
 
 class KafkaConnection(Connection):
+	"""
+    KafkaConnection serves to connect BSPump application with an instance of Apache Kafka messaging system.
+    It can later be used by processors to consume or provide user-defined messages.
+
+.. code:: python
+
+    app = bspump.BSPumpApplication()
+    svc = app.get_service("bspump.PumpService")
+    svc.add_connection(
+        bspump.kafka.KafkaConnection(app, "KafkaConnection")
+    )
+
+    """
 
 	ConfigDefaults = {
 		'bootstrap_servers': 'localhost:9092',
@@ -86,6 +99,9 @@ class KafkaConnection(Connection):
 
 
 	def consume(self, topic, message):
+		"""
+        Consumes a user-defined message by storing it in a queue and later publishing to Apache Kafka.
+        """
 		self._output_queue.put_nowait((topic, message))
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.PubSub.publish("KafkaConnection.pause!", self)
