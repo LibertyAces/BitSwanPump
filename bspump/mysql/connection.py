@@ -27,7 +27,7 @@ class MySQLConnection(Connection):
 		'connect_timeout': 1,
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
-		'max_bulk_size': 10,
+		'max_bulk_size': 2,
 	}
 
 	def __init__(self, app, connection_id, config=None):
@@ -53,7 +53,6 @@ class MySQLConnection(Connection):
 
 		self._conn_future = None
 		self._connection_request = False
-		self._started = True
 		self._pause = False
 
 		# Subscription
@@ -168,7 +167,7 @@ class MySQLConnection(Connection):
 
 
 	async def _loader(self):
-		while self._started:
+		while True:
 			query, data = await self._output_queue.get()
 
 			if query is None:
