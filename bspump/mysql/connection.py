@@ -26,8 +26,8 @@ class MySQLConnection(Connection):
 		'db': '',
 		'connect_timeout': 1,
 		'reconnect_delay': 5.0,
-		'output_queue_max_size': 3,
-		'max_bulk_size': 2,
+		'output_queue_max_size': 10,
+		'max_bulk_size': 10,
 	}
 
 	def __init__(self, app, connection_id, config=None):
