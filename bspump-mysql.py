@@ -37,7 +37,8 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.Sink = bspump.mysql.MySQLSink(app, self, "MySQLConnection1", config={
-			'query': 'UPDATE people SET name={name}, surname={surname} WHERE id={id};'
+			'query': 'UPDATE people SET name=%s, surname=%s WHERE id=%s;',
+			'data': 'name,surname,id'
 		})
 
 		self.build(
@@ -51,14 +52,6 @@ class SamplePipeline(bspump.Pipeline):
 			self.Sink,
 		)
 
-		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
-
-
-	def on_cycle_end(self, event_name, pipeline):
-		'''
-		This ensures that at the end of the file scan, the target file is closed
-		'''
-		self.Sink.rotate()
 
 
 if __name__ == '__main__':
@@ -80,14 +73,6 @@ if __name__ == '__main__':
 			user=username
 			password=password
 			db=sampledb
-		```
-		
-		To use chunking, just change default 'rows_in_chunk' from 1 to something else
-		and use query with variable 'chunk':
-		```
-			[sink:MySQLSink]
-			rows_in_chunk=40
-			query='INSERT INTO people (name, surname) VALUES {chunk}'
 		```
 
 		Run bspump

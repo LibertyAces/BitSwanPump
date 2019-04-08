@@ -26,7 +26,8 @@ class MySQLConnection(Connection):
 		'db': '',
 		'connect_timeout': 1,
 		'reconnect_delay': 5.0,
-		'output_queue_max_size': 3,
+		'output_queue_max_size': 10,
+		'max_bulk_size': 2,
 	}
 
 	def __init__(self, app, connection_id, config=None):
@@ -46,22 +47,55 @@ class MySQLConnection(Connection):
 		self._db = self.Config['db']
 		self._reconnect_delay = self.Config['reconnect_delay']
 		self._output_queue_max_size = self.Config['output_queue_max_size']
+		self._max_bulk_size = int(self.Config['max_bulk_size'])
 
 
 
 		self._conn_future = None
 		self._connection_request = False
+		self._pause = False
 
 		# Subscription
 		self._on_health_check('connection.open!')
 		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
 		app.PubSub.subscribe("Application.tick!", self._on_health_check)
+		app.PubSub.subscribe("MySQLConnection.pause!", self._on_pause)
+		app.PubSub.subscribe("MySQLConnection.unpause!", self._on_unpause)
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
+		self._bulks = {} # We have a "bulk" per query
+
+
+	def _on_pause(self):
+		self._pause = True
+
+	def _on_unpause(self):
+		self._pause = False
+
+
+	def _flush(self):
+		for query in self._bulks.keys():
+			# Break if throttling was requested during the flush,
+			# so that put_nowait doesn't raise 
+			if self._pause:
+				break
+
+			self._flush_bulk(query)
+
+	def _flush_bulk(self, query):
+
+		# Enqueue and thorttle if needed
+		self._output_queue.put_nowait((query, self._bulks[query]))
+		if self._output_queue.qsize() == self._output_queue_max_size:
+			self.PubSub.publish("MySQLConnection.pause!", self)
+
+		# Reset bulk
+		self._bulks[query] = []
 
 
 	def _on_application_stop(self, message_type, counter):
-		self._output_queue.put_nowait(None)
+		self._flush()
+		self._output_queue.put_nowait((None, None))
 
 
 	def _on_health_check(self, message_type):
@@ -119,15 +153,22 @@ class MySQLConnection(Connection):
 		return self._conn_pool.acquire()
 
 
-	def consume(self, query):
-		self._output_queue.put_nowait(query)
-		if self._output_queue.qsize() == self._output_queue_max_size:
-			self.PubSub.publish("MySQLConnection.pause!", self)
+	def consume(self, query, data):
+		# Create a bulk for this query if doesn't yet exist
+		if query not in self._bulks:
+			self._bulks[query] = []
+
+		# Add data to the query's bulk
+		self._bulks[query].append(data)
+
+		# Flush on _max_bulk_size
+		if len(self._bulks[query]) >= self._max_bulk_size:
+			self._flush_bulk(query)
 
 
 	async def _loader(self):
 		while True:
-			query = await self._output_queue.get()
+			query, data = await self._output_queue.get()
 
 			if query is None:
 				break
@@ -139,7 +180,7 @@ class MySQLConnection(Connection):
 				async with self.acquire() as conn:
 					try:
 						async with conn.cursor() as cur:
-							await cur.execute(query)
+							await cur.executemany(query, data)
 							await conn.commit()
 					except BaseException as e:
 						L.exception("Unexpected error when processing MySQL query.")
