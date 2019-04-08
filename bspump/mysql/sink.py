@@ -9,7 +9,7 @@ class MySQLSink(Sink):
 
 	ConfigDefaults = {
 		'query': '',
-		'_bulk_size': 1
+		'data': '',
 	}
 
 
@@ -26,7 +26,7 @@ class MySQLSink(Sink):
 
 	def process(self, context, event):
 		# Prepare data
-		data = tuple([event.get(x) for x in self._data_keys])
+		data = tuple(event.get(x) for x in self._data_keys)
 
 		# Consume
 		self._connection.consume(self._query, data)
