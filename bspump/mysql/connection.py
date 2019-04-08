@@ -76,12 +76,12 @@ class MySQLConnection(Connection):
 
 	def _flush(self):
 		for query in self._bulks.keys():
-			# Break if throttling requested during the flush
+			# Break if throttling was requested during the flush,
 			# so that put_nowait doesn't raise 
 			if self._pause:
 				break
 
-			self._output_queue.put_nowait((query, self._bulks[query]))
+			self._flush_bulk(query)
 
 	def _flush_bulk(self, query):
 
