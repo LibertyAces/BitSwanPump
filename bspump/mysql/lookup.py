@@ -93,7 +93,7 @@ class ProjectLookup(bspump.mysql.MySQLLookup):
 
 
 	def __iter__(self):
-		query = query = "SELECT * FROM {}".format(self.Table)
+		query = "SELECT * FROM {}".format(self.Table)
 		self.CursorSync.execute(query)
 		result = self.CursorSync.fetchall()
 		self.Iterator = result.__iter__()
