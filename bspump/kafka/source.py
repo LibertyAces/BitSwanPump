@@ -20,7 +20,7 @@ class KafkaSource(Source):
 		'client_id': 'BSPump-KafkaSource',
 		'group_id': '',
 		'max_partition_fetch_bytes': 1048576,
-		'auto_offset_reset': 'latest',
+		'auto_offset_reset': 'earliest',
 		'api_version': 'auto', # or e.g. 0.9.0
 	}
 
@@ -55,18 +55,20 @@ class KafkaSource(Source):
 		try:
 			while 1:
 				await self.Pipeline.ready()
-				data = await self.Consumer.getmany(timeout_ms=20000)
-				if data == {}:
+				data = await self.Consumer.getmany(timeout_ms=20000) # actually we are here
+				if len(data) == 0:
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
-				
 					data = await self.Consumer.getmany(timeout_ms=20000)
+				
 				for tp, messages in data.items():
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.process_message(message)
+				
 				if self._group_id is not None:
 					await self.Consumer.commit()
+		
 		except concurrent.futures._base.CancelledError:
 			pass
 		except BaseException as e:
