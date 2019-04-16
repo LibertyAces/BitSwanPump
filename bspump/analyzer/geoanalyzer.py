@@ -4,7 +4,7 @@ import asab
 
 import numpy as np
 
-from .analyzer import Analyzer, MatrixContainer
+from .analyzer import Analyzer
 from .geomatrixcontainer import GeoMatrixContainer 
 
 

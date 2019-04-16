@@ -2,7 +2,7 @@ import logging
 import time
 
 import numpy as np
-from .analyzer import MatrixContainer
+from .matrixcontainer import MatrixContainer
 
 
 ##
