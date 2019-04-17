@@ -67,7 +67,12 @@ class KafkaSource(Source):
 						await self.process_message(message)
 				
 				if self._group_id is not None:
-					await self.Consumer.commit()
+					try:
+						await self.Consumer.commit()
+					except Exception:
+						self.Consumer.assign(self.Partitions)
+						self.Partitions = self.Consumer.assignment()
+						await self.Consumer.commit()
 		
 		except concurrent.futures._base.CancelledError:
 			pass
