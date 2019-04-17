@@ -116,7 +116,7 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 			self.advance(self.MaxTimestamp)
 
 		# find the column in timewindow matrix to fit in
-		column = self.get_column(ts)
+		column = self.TimeWindow.get_column(ts)
 		if column is None:
 			return
 
