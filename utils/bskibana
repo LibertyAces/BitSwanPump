@@ -584,6 +584,10 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 	if INDEXPATTERN != None: 
 		INDEXPATTERNS = INDEXPATTERN.split (',')
 
+		# if id passed, convert to index_prefix (ensure "_*" on string end)
+		INDEXPATTERNS  = [ip if ip[-2:] == "_*" else ip + "_*" for ip in INDEXPATTERNS]
+
+
 	if FILE == None:
 		FILE = 'out.json'
 	
