@@ -155,7 +155,7 @@ class TimeWindowMatrixContainer(MatrixContainer):
 		if self.Matrix.shape[0] == 0:
 			return
 
-		column = np.zeros([len(self.RowMap), 1, self.Dimensions[1]])
+		column = np.zeros([self.Matrix["time_window"].shape[0], 1, self.Dimensions[1]])
 		time_window = np.hstack((self.Matrix["time_window"], column))
 		time_window = np.delete(time_window, 0, axis=1)
 
@@ -167,6 +167,12 @@ class TimeWindowMatrixContainer(MatrixContainer):
 
 	
 	def add_row(self, row_id):
+		
+		if row_id in self.RowMap:
+			return
+		if row_id is None:
+			return
+
 		row = np.zeros(1, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
 		self.Matrix = np.append(self.Matrix, row)
 		row_counter = len(self.RowMap)
