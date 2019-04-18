@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
 import bspump
 import bspump.file
 import bspump.common
@@ -15,27 +13,7 @@ L = logging.getLogger(__name__)
 
 ###
 
-
 # python -m smtpd -c DebuggingServer -n localhost:1025
-
-
-smtp_connection_config = {
-	"smtp_server": "localhost",
-	"port": 1025,
-	"use_tls": False,
-	"use_start_tls": False,
-	# login:"",
-	# password:"",
-
-	"from": "my@email.com",
-	"to": "your@email.com,his@email.com",
-	"cc": "her@email.com",
-	"bcc": "its@email.com",
-
-	"output_queue_max_size": 10,
-
-	"subject": "SMTPSink Test mail"
-}
 
 class SamplePipeline(bspump.Pipeline):
 
@@ -48,6 +26,18 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.common.PPrintProcessor(app, self),
 			bspump.mail.SmtpSink(app, self, 'SmptConnection')
 		)
+
+
+smtp_connection_config = {
+	"smtp_server": "localhost",
+	"port": 1025,
+	"from": "my@email.com",
+	"to": "your@email.com,his@email.com",
+	"cc": "her@email.com",
+	"bcc": "its@email.com",
+	"subject": "SMTPSink Test mail",
+	"output_queue_max_size": 10
+}
 
 
 if __name__ == '__main__':

@@ -22,17 +22,18 @@ class SmtpConnection(Connection):
 		'to':'',
 		'cc':'',
 		'bcc':'',
-		'output_queue_max_size': 10,
-		'subject':''
+		'subject': '',
+		'output_queue_max_size': 10
+
 	}
 
 	def __init__(self, app, connection_id, config=None):
 		super().__init__(app, connection_id, config=config)
 
-		self.Smtp_server = self.Config['smtp_server']
+		self.SMTPServer = self.Config['smtp_server']
 		self.Port = self.Config['port']
-		self.Use_tls = self.Config.getboolean('use_tls')
-		self.Use_start_tls = self.Config.getboolean('use_start_tls')
+		self.UseTLS = self.Config.getboolean('use_tls')
+		self.Use_STARTTLS = self.Config.getboolean('use_start_tls')
 
 		self.Login = self.Config['login']
 		self.Password = self.Config['password']
@@ -78,15 +79,16 @@ class SmtpConnection(Connection):
 		loop = self.Loop
 
 		self.Smtp = aiosmtplib.SMTP(
-			hostname=self.Smtp_server,
+			hostname=self.SMTPServer,
 			port=self.Port,
 			loop=loop,
-			use_tls=self.Use_tls
+			use_tls=self.UseTLS
 		)
 
 		await self.Smtp.connect()
 
-		if self.Use_start_tls == True:
+		if self.Use_STARTTLS == True:
+			#print("="*299)
 			await self.Smtp.starttls()
 
 
@@ -114,3 +116,4 @@ class SmtpConnection(Connection):
 			print(smtp_responese, resp_text)
 			if resp_text[:2].lower() != 'ok':
 				L.error(f"Failed to send message: {resp_text}:{smtp_responese}")
+
