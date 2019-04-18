@@ -26,4 +26,4 @@ class SmtpSink(Sink):
 		'''
 
 		'''
-		self.Connection.consume(event.decode("utf-8"))
+		self.Connection.consume(event)

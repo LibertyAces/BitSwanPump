@@ -1,7 +1,5 @@
-import aiohttp
 import logging
 import asyncio
-import json
 from ..abc.connection import Connection
 from email.mime.text import MIMEText
 import aiosmtplib
@@ -20,9 +18,12 @@ class SmtpConnection(Connection):
 		'use_start_tls':False,
 		'login':'',
 		'password':'',
-		'sender_email':'',
-		'receiver_email':'',
-		'output_queue_max_size': 10
+		'from':'',
+		'to':'',
+		'cc':'',
+		'bcc':'',
+		'output_queue_max_size': 10,
+		'subject':''
 	}
 
 	def __init__(self, app, connection_id, config=None):
@@ -37,9 +38,14 @@ class SmtpConnection(Connection):
 		self.Password = self.Config['password']
 
 
-		self.Sender_email = self.Config['sender_email']
-		self.Receiver_email = self.Config['receiver_email']
+		self.From = self.Config['from']
+		self.To = self.Config['to']
+		self.Cc = self.Config ['cc']
+		self.Bcc = self.Config['bcc']
 
+		self.Subject = self.Config['subject']
+
+		self.Smtp = None
 		self.Loop = app.Loop
 		self.PubSub = app.PubSub
 
@@ -57,10 +63,11 @@ class SmtpConnection(Connection):
 			# By sending None via queue, we signalize end of life
 			await self._output_queue.put(None)
 			done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+			if self.Smtp != None:
+				self.Smtp.close ()
 
 
 	def consume(self, mail_message):
-		# mail_message = json.dumps(mail_message)
 		self._output_queue.put_nowait(mail_message)
 
 		if self._output_queue.qsize() == self._output_queue_max_size:
@@ -70,36 +77,40 @@ class SmtpConnection(Connection):
 	async def _loader(self):
 		loop = self.Loop
 
-		smtp = aiosmtplib.SMTP(
+		self.Smtp = aiosmtplib.SMTP(
 			hostname=self.Smtp_server,
 			port=self.Port,
 			loop=loop,
 			use_tls=self.Use_tls
 		)
 
-		await smtp.connect()
+		await self.Smtp.connect()
 
 		if self.Use_start_tls == True:
-			await smtp.starttls()
+			await self.Smtp.starttls()
 
 
 		if self.Login != '' and self.Password != '':
-			await smtp.auth_login (self.Login, self.Password)
+			await self.Smtp.auth_login (self.Login, self.Password)
 
 
 		while True:
-				message_text = await self._output_queue.get()
-				if message_text is None:
-					break
+			message_text = await self._output_queue.get()
+			if message_text is None:
+				break
 
-				if self._output_queue.qsize() == self._output_queue_max_size - 1:
-					self.PubSub.publish("MailConnection.unpause!", self, asynchronously=True)
+			if self._output_queue.qsize() == self._output_queue_max_size - 1:
+				self.PubSub.publish("MailConnection.unpause!", self, asynchronously=True)
 
-				print(message_text)
+			message = MIMEText(message_text)
+			message["From"] = self.From
+			message["To"] = self.To
+			message["Cc"] = self.Cc
+			message["Bcc"] = self.Bcc
+			message["Subject"] = self.Subject
 
-				message = MIMEText(message_text)
-				message["From"] = self.Sender_email
-				message["To"] = self.Receiver_email
-				message["Subject"] = "BSPump SMTPSink message"
 
-				await smtp.send_message(message)
+			smtp_responese, resp_text = await self.Smtp.send_message(message)
+			print(smtp_responese, resp_text)
+			if resp_text[:2].lower() != 'ok':
+				L.error(f"Failed to send message: {resp_text}:{smtp_responese}")
