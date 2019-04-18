@@ -55,7 +55,7 @@ class KafkaSource(Source):
 		try:
 			while 1:
 				await self.Pipeline.ready()
-				data = await self.Consumer.getmany(timeout_ms=20000) # actually we are here
+				data = await self.Consumer.getmany(timeout_ms=20000)
 				if len(data) == 0:
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
@@ -70,6 +70,7 @@ class KafkaSource(Source):
 					try:
 						await self.Consumer.commit()
 					except Exception:
+					    L.warn("Was not able to commit")
 						self.Consumer.assign(self.Partitions)
 						self.Partitions = self.Consumer.assignment()
 						await self.Consumer.commit()
