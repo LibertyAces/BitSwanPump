@@ -112,8 +112,8 @@ class SmtpConnection(Connection):
 			message["Subject"] = self.Subject
 
 
-			smtp_responese, resp_text = await self.Smtp.send_message(message)
-			print(smtp_responese, resp_text)
+			smtp_response, resp_text = await self.Smtp.send_message(message)
+			#TODO: Not ideal way of the error detection, we need to investigate and refactor this.
 			if resp_text[:2].lower() != 'ok':
-				L.error(f"Failed to send message: {resp_text}:{smtp_responese}")
+				L.error(f"Failed to send message: {resp_text}:{smtp_response}")
 
