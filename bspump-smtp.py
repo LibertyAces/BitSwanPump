@@ -46,7 +46,7 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	svc.add_connection(
-		bspump.mail.SmtpConnection(app, "SmptConnection", config = smtp_connection_config)
+		bspump.mail.SmtpConnection(app, "SmtpConnection", config = smtp_connection_config)
 	)
 
 	# Construct and register Pipeline
