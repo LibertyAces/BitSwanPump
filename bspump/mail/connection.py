@@ -72,7 +72,7 @@ class SmtpConnection(Connection):
 		self._output_queue.put_nowait(mail_message)
 
 		if self._output_queue.qsize() == self._output_queue_max_size:
-			self.PubSub.publish("MailConnection.pause!", self)
+			self.PubSub.publish("SMTPConnection.pause!", self)
 
 
 	async def _loader(self):
@@ -88,7 +88,6 @@ class SmtpConnection(Connection):
 		await self.Smtp.connect()
 
 		if self.Use_STARTTLS == True:
-			#print("="*299)
 			await self.Smtp.starttls()
 
 
@@ -102,14 +101,17 @@ class SmtpConnection(Connection):
 				break
 
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
-				self.PubSub.publish("MailConnection.unpause!", self, asynchronously=True)
+				self.PubSub.publish("SMTPConnection.unpause!", self, asynchronously=True)
 
 			message = MIMEText(message_text)
 			message["From"] = self.From
 			message["To"] = self.To
-			message["Cc"] = self.Cc
-			message["Bcc"] = self.Bcc
 			message["Subject"] = self.Subject
+			if self.Cc != '':
+				message["Cc"] = self.Cc
+			if self.Bcc != '':
+				message["Bcc"] = self.Bcc
+
 
 
 			smtp_responese, resp_text = await self.Smtp.send_message(message)
