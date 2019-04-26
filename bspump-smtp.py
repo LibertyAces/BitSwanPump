@@ -19,7 +19,7 @@ L = logging.getLogger(__name__)
 asab.Config.add_defaults(
 	{
 		'connection:SmtpConnection1': {
-			"smtp_server": "localhost",
+			"server": "localhost",
 			"port": 1025,
 			"from": "my@email.com",
 			"to": "your@email.com,his@email.com",

@@ -23,7 +23,4 @@ class SmtpSink(Sink):
 			raise RuntimeError("Unexpected event name '{}'".format(event_name))
 
 	def process(self, context, event):
-		'''
-
-		'''
 		self.Connection.consume(event)

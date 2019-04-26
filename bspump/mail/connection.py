@@ -1,18 +1,17 @@
 import logging
 import asyncio
-from ..abc.connection import Connection
-from email.mime.text import MIMEText
+import email.mime.text
 import aiosmtplib
-from pprint import pprint
+from ..abc.connection import Connection
+
 
 L = logging.getLogger(__name__)
-
 
 
 class SmtpConnection(Connection):
 
 	ConfigDefaults = {
-		'smtp_server': '',
+		'server': '',
 		'port':None,
 		'use_tls':False,
 		'use_start_tls':False,
@@ -22,7 +21,7 @@ class SmtpConnection(Connection):
 		'to':'',
 		'cc':'',
 		'bcc':'',
-		'subject': '',
+		'subject': 'Mail from ASAB',
 		'output_queue_max_size': 10
 
 	}
@@ -30,7 +29,7 @@ class SmtpConnection(Connection):
 	def __init__(self, app, connection_id, config=None):
 		super().__init__(app, connection_id, config=config)
 
-		self.SMTPServer = self.Config['smtp_server']
+		self.Server = self.Config['server']
 		self.Port = self.Config['port']
 		self.UseTLS = self.Config.getboolean('use_tls')
 		self.Use_STARTTLS = self.Config.getboolean('use_start_tls')
@@ -79,7 +78,7 @@ class SmtpConnection(Connection):
 		loop = self.Loop
 
 		self.Smtp = aiosmtplib.SMTP(
-			hostname=self.SMTPServer,
+			hostname=self.Server,
 			port=self.Port,
 			loop=loop,
 			use_tls=self.UseTLS
@@ -103,7 +102,7 @@ class SmtpConnection(Connection):
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
 				self.PubSub.publish("SMTPConnection.unpause!", self, asynchronously=True)
 
-			message = MIMEText(message_text)
+			message = email.mime.text.MIMEText(message_text)
 			message["From"] = self.From
 			message["To"] = self.To
 			message["Subject"] = self.Subject
