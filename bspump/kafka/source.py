@@ -69,11 +69,11 @@ class KafkaSource(Source):
 				if self._group_id is not None:
 					try:
 						await self.Consumer.commit()
-					except Exception:
-					    L.warn("Was not able to commit")
-						self.Consumer.assign(self.Partitions)
+					except Exception as e:
+						L.warn("Cannot commit {}".format(e))
+						self.Consumer.subscribe(self.topics)
 						self.Partitions = self.Consumer.assignment()
-						await self.Consumer.commit()
+						#await self.Consumer.commit()
 		
 		except concurrent.futures._base.CancelledError:
 			pass
