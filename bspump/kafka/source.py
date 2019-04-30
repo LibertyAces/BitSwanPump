@@ -2,6 +2,7 @@ import re
 import logging
 import aiokafka
 import concurrent
+import asyncio
 
 from ..abc.source import Source
 
@@ -22,6 +23,7 @@ class KafkaSource(Source):
 		'max_partition_fetch_bytes': 1048576,
 		'auto_offset_reset': 'earliest',
 		'api_version': 'auto', # or e.g. 0.9.0
+		'retry': 10,
 	}
 
 
@@ -47,6 +49,7 @@ class KafkaSource(Source):
 			enable_auto_commit=False
 		)
 		self.Partitions = None
+		self.Retry = int(self.Config['retry'])
 
 
 	async def main(self):
@@ -67,14 +70,16 @@ class KafkaSource(Source):
 						await self.process_message(message)
 				
 				if self._group_id is not None:
-					try:
-						await self.Consumer.commit()
-					except Exception as e:
-						L.warn("Cannot commit {}".format(e))
-						self.Consumer.subscribe(self.topics)
-						self.Partitions = self.Consumer.assignment()
-						#await self.Consumer.commit()
-		
+					for i in range(0, self.Retry):
+						try:
+							await self.Consumer.commit()
+							break
+						except Exception as e:
+							L.warn("Error {} during Kafka commit - will retry in 5 seconds".format(e))
+							self.Consumer.subscribe(self.topics)
+							self.Partitions = self.Consumer.assignment()
+							asyncio.sleep(5)
+						
 		except concurrent.futures._base.CancelledError:
 			pass
 		except BaseException as e:
