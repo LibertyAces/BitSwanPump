@@ -8,9 +8,11 @@ import logging
 import string
 import random
 
+
 ##
 L = logging.getLogger(__name__)
 ##
+
 
 class MyApplication(BSPumpApplication):
 	def __init__(self):
@@ -27,19 +29,19 @@ class MyPipeline(Pipeline):
 			"$or":
 				[
 					{
-						'user':
+						"user":
 							{
 								'$in':["user_0", "user_2", "user_10"]
 							}
 					}, 
 					{
-						'num':
+						"num":
 							{
-								"$gte": 5000
+								"$gte": 500
 							}
 					},
 					{
-						'st':{
+						"st":{
 							"$regex":"/^L/i"
 						}
 					}
@@ -52,8 +54,8 @@ class MyPipeline(Pipeline):
 				 	"path":"test.csv"
 				 }).on(OpportunisticTrigger(app)),
 			RandomProcessor(app, self), 
-			MyContentFilter(app, self, query)
-			PPrintSink(app, self)
+			MyContentFilter(app, self, query),
+			PPrintSink(app, self),
 		)
 
 

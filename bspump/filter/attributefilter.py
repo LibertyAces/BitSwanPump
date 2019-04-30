@@ -1,5 +1,6 @@
 from ..abc.processor import Processor
 import asab
+import logging
 
 ###
 
