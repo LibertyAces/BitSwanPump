@@ -66,7 +66,6 @@ class AMQPSource(Source):
 			self._channel = None
 			self._channel_ready.clear()
 
-
 	async def process_message(self, method, properties, body):
 		context = {
 			'amqp:method': method,
@@ -87,11 +86,14 @@ class AMQPSource(Source):
 
 
 	def _on_channel_open(self, channel):
-		channel.basic_qos(self._on_qos_applied, prefetch_count=int(self.Config['prefetch_count']));
+		channel.basic_qos(
+			prefetch_count=int(self.Config['prefetch_count']),
+			callback=self._on_qos_applied
+		);
 
 
 	def _on_qos_applied(self, channel):
-		self._channel.basic_consume(self._on_consume_message, self.Config['queue'])
+		self._channel.basic_consume(self.Config['queue'], self._on_consume_message)
 
 
 	def _on_consume_message(self, channel, method, properties, body):
