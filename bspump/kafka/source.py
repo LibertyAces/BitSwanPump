@@ -74,10 +74,11 @@ class KafkaSource(Source):
 						try:
 							await self.Consumer.commit()
 						except Exception as e:
-							L.warn("Error {} during Kafka commit - will retry in 5 seconds".format(e))
+							await asyncio.sleep(5)
+							L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
 							self.Consumer.subscribe(self.topics)
 							self.Partitions = self.Consumer.assignment()
-							asyncio.sleep(5)
+							
 						else:
 							break
 						
