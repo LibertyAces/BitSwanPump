@@ -23,7 +23,7 @@ class KafkaSource(Source):
 		'max_partition_fetch_bytes': 1048576,
 		'auto_offset_reset': 'earliest',
 		'api_version': 'auto', # or e.g. 0.9.0
-		'retry': 10,
+		'retry': 20,
 	}
 
 
@@ -50,6 +50,7 @@ class KafkaSource(Source):
 		)
 		self.Partitions = None
 		self.Retry = int(self.Config['retry'])
+		self.Pipeline = pipeline
 
 
 	async def main(self):
@@ -70,6 +71,8 @@ class KafkaSource(Source):
 						await self.process_message(message)
 				
 				if self._group_id is not None:
+					f = None
+					exc = None
 					for i in range(0, self.Retry):
 						try:
 							await self.Consumer.commit()
@@ -78,9 +81,14 @@ class KafkaSource(Source):
 							L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
 							self.Consumer.subscribe(self.topics)
 							self.Partitions = self.Consumer.assignment()
-							
+							exc = e	
 						else:
+							f = i
 							break
+					
+					if f is None:
+						self.Pipeline.set_error(None, None, exc)
+						return
 						
 		except concurrent.futures._base.CancelledError:
 			pass
