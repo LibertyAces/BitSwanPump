@@ -12,7 +12,7 @@ class SmtpConnection(Connection):
 
 	ConfigDefaults = {
 		'server': '',
-		'port':None,
+		'port':-1,
 		'use_tls':False,
 		'use_start_tls':False,
 		'login':'',
