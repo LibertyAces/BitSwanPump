@@ -199,8 +199,20 @@ class TimeWindowMatrixContainer(MatrixContainer):
 
 		column_idx = int((event_timestamp - self.End) // self.Resolution)
 
-		assert(column_idx >= 0)
-		assert(column_idx < self.Dimensions[0])
+		# assert(column_idx >= 0)
+		# assert(column_idx < self.Dimensions[0])
+
+		# These are temporal debug lines
+		if column_idx < 0:
+			L.exception("The column index {} is less then 0, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(column_idx, 
+				event_timestamp, self.Start, self.End, self.Resolution, self.Dimensions[0]))
+			raise
+
+		if column_idx >= self.Dimensions[0]:
+			L.exception("The column index {} is more then columns number, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(column_idx, 
+				event_timestamp, self.Start, self.End, self.Resolution, self.Dimensions[0]))
+			raise
+
 		return column_idx
 
 	
