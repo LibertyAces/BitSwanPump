@@ -2,6 +2,7 @@ import re
 import logging
 import aiokafka
 import concurrent
+import asyncio
 
 from ..abc.source import Source
 
@@ -35,8 +36,9 @@ class KafkaSource(Source):
 		'client_id': 'BSPump-KafkaSource',
 		'group_id': '',
 		'max_partition_fetch_bytes': 1048576,
-		'auto_offset_reset': 'latest',
+		'auto_offset_reset': 'earliest',
 		'api_version': 'auto', # or e.g. 0.9.0
+		'retry': 20,
 	}
 
 
@@ -62,6 +64,8 @@ class KafkaSource(Source):
 			enable_auto_commit=False
 		)
 		self.Partitions = None
+		self.Retry = int(self.Config['retry'])
+		self.Pipeline = pipeline
 
 
 	async def main(self):
@@ -71,17 +75,30 @@ class KafkaSource(Source):
 			while 1:
 				await self.Pipeline.ready()
 				data = await self.Consumer.getmany(timeout_ms=20000)
-				if data == {}:
+				if len(data) == 0:
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
-				
 					data = await self.Consumer.getmany(timeout_ms=20000)
+				
 				for tp, messages in data.items():
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.process_message(message)
+				
 				if self._group_id is not None:
-					await self.Consumer.commit()
+					for i in range(self.Retry, 0, -1):
+						try:
+							await self.Consumer.commit()
+							break
+						except Exception as e:
+							L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
+							await asyncio.sleep(5)
+							self.Consumer.subscribe(self.topics)
+							self.Partitions = self.Consumer.assignment()
+							if i == 1:
+								self.Pipeline.set_error(None, None, e)
+								return
+						
 		except concurrent.futures._base.CancelledError:
 			pass
 		except BaseException as e:
