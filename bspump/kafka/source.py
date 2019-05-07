@@ -71,24 +71,18 @@ class KafkaSource(Source):
 						await self.process_message(message)
 				
 				if self._group_id is not None:
-					exc = None
-					i = self.Retry
-					while i < 0:
+					for i in range(self.Retry, 0, -1):
 						try:
 							await self.Consumer.commit()
+							break
 						except Exception as e:
-							await asyncio.sleep(5)
 							L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
+							await asyncio.sleep(5)
 							self.Consumer.subscribe(self.topics)
 							self.Partitions = self.Consumer.assignment()
-							i -= 1
-							exc = e	
-						else:
-							break
-					
-					if i == 0:
-						self.Pipeline.set_error(None, None, exc)
-						return
+							if i == 1:
+								self.Pipeline.set_error(None, None, e)
+								return
 						
 		except concurrent.futures._base.CancelledError:
 			pass
