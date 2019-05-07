@@ -193,7 +193,7 @@ class TimeWindowMatrixContainer(MatrixContainer):
 			self.Counters.add('events.late', 1)
 			return None
 
-		if event_timestamp > self.Start:
+		if event_timestamp >= self.Start:
 			self.Counters.add('events.early', 1)
 			return None
 
