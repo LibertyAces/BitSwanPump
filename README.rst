@@ -50,6 +50,11 @@ Stream processor example
         svc.add_pipeline(MyPipeline(app))
         app.run()
 
+Video tutorial
+^^^^^^^^^^^^^^
+
+.. image:: http://img.youtube.com/vi/QvjiPxO4w6w/0.jpg
+   :target: https://www.youtube.com/watch?v=QvjiPxO4w6w&list=PLb0LvCJCZKt_1QcQwpJXqsm-AY_ty4udo
 
 Blank application setup
 -----------------------
