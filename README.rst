@@ -58,7 +58,7 @@ Video tutorial
 
 Blank application setup
 -----------------------
-You can clone blank application from `it's own repository <https://github.com/TeskaLabs/bspump-blank-app>`_.
+You can clone blank application from `it's own repository <https://github.com/LibertyAces/BitSwanTelco-BlankApp>`_.
 
 
 Available technologies
