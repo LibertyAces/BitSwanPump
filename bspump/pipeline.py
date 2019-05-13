@@ -292,7 +292,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			
 			ngevent = self._do_process(gevent, depth, context.copy())
 			if ngevent is not None:
-				self._generator_process(ngevent, depth+1, context)
+				await self._generator_process(ngevent, depth+1, context)
 
 
 	# Construction
