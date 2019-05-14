@@ -1,2 +1,2 @@
 from .smtpsink import SmtpSink
-from .connection import SmtpConnection
+from .smtpconnection import SmtpConnection
