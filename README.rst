@@ -79,6 +79,7 @@ Available technologies
 * ``bspump.slack`` Slack connection and sink
 * ``bspump.trigger`` Opportunistic, PubSub and Periodic triggers
 * ``bspump.crypto`` Cryptography
+* ``bspump.mail`` SMTP connection and sink
 
   * Hashing: SHA224, SHA256, SHA384, SHA512, SHA1, MD5, BLAKE2b, BLAKE2s
   * Symmetric Encryption: AES 128, AES 192, AES 256
