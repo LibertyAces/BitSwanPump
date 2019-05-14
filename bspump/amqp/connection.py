@@ -48,6 +48,7 @@ class AMQPConnection(Connection):
 			parameters.client_properties = dict()
 		parameters.client_properties['application'] = self.Config['appname']
 
+
 		self.Connection = pika.adapters.asyncio_connection.AsyncioConnection(
 			parameters = parameters,
 			on_open_callback=self._on_connection_open,

@@ -1,6 +1,7 @@
 import asab
 import asyncio
 import logging
+import pika
 
 from ..abc.source import Source
 
@@ -37,8 +38,7 @@ class AMQPSource(Source):
 	async def main(self):
 
 		if self._connection.ConnectionEvent.is_set() and self._channel is None:
-			self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
-			self._channel_ready.set()
+			self._on_connection_open(".local!")
 
 		try:
 			while 1:
@@ -66,7 +66,6 @@ class AMQPSource(Source):
 			self._channel = None
 			self._channel_ready.clear()
 
-
 	async def process_message(self, method, properties, body):
 		context = {
 			'amqp:method': method,
@@ -77,7 +76,11 @@ class AMQPSource(Source):
 
 	def _on_connection_open(self, event_name):
 		assert self._channel is None
-		self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
+		pika_version = int(pika.__version__.split('.')[0])
+		if pika_version >=1:
+			self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open_v1_0)
+		else:
+			self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open_v0_13)
 		self._channel_ready.set()
 
 
@@ -85,13 +88,20 @@ class AMQPSource(Source):
 		self._channel = None
 		self._channel_ready.clear()
 
+	def _on_channel_open_v0_13(self, channel):
+		channel.basic_qos(self._on_qos_applied_v0_13, prefetch_count=int(self.Config['prefetch_count']));
 
-	def _on_channel_open(self, channel):
-		channel.basic_qos(self._on_qos_applied, prefetch_count=int(self.Config['prefetch_count']));
-
-
-	def _on_qos_applied(self, channel):
+	def _on_qos_applied_v0_13(self, channel):
 		self._channel.basic_consume(self._on_consume_message, self.Config['queue'])
+
+	def _on_channel_open_v1_0(self, channel):
+		channel.basic_qos(
+			prefetch_count=int(self.Config['prefetch_count']),
+			callback=self._on_qos_applied_v1_0
+		);
+
+	def _on_qos_applied_v1_0(self, channel):
+		self._channel.basic_consume(self.Config['queue'], self._on_consume_message)
 
 
 	def _on_consume_message(self, channel, method, properties, body):
