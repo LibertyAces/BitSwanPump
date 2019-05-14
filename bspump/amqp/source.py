@@ -38,7 +38,7 @@ class AMQPSource(Source):
 	async def main(self):
 
 		if self._connection.ConnectionEvent.is_set() and self._channel is None:
-			self._on_connection_open("AMQPConnection.open!")
+			self._on_connection_open(".local!")
 
 		try:
 			while 1:
@@ -77,10 +77,6 @@ class AMQPSource(Source):
 	def _on_connection_open(self, event_name):
 		assert self._channel is None
 		pika_version = int(pika.__version__.split('.')[0])
-		print("*"*100)
-		print(pika_version)
-		print(type(pika_version))
-		print("*" * 100)
 		if pika_version >=1:
 			self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open_v1_0)
 		else:
