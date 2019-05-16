@@ -39,7 +39,7 @@ class ContentFilter(Processor):
 			raise
 
 
-	def do_on_hit(self, event):
+	def on_hit(self, context, event):
 		'''
 			This function tranforms the event, if it 
 			matched the query.
@@ -47,7 +47,7 @@ class ContentFilter(Processor):
 		return event
 
 
-	def do_on_miss(self, event):
+	def on_miss(self, context, event):
 		'''
 			This function tranforms the event, if it did not 
 			matched the query.
@@ -58,8 +58,8 @@ class ContentFilter(Processor):
 	def process(self, context, event):
 		matched = self.Query.match(event)
 		if matched:
-			new_event = self.do_on_hit(event)
+			new_event = self.on_hit(context, event)
 		else:
-			new_event = self.do_on_miss(event)
+			new_event = self.on_miss(context, event)
 
 		return new_event
