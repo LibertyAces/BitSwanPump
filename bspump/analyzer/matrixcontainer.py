@@ -136,7 +136,7 @@ class TimeWindowMatrixContainer(MatrixContainer):
 		self.End = self.Start - (self.Resolution * self.Dimensions[0])
 
 		svc = app.get_service("bspump.PumpService")
-		self.Counters = svc.locate_metrics("EarlyLateEventCounter")
+		self.Counters = svc.locate_metric("EarlyLateEventCounter")
 		
 
 

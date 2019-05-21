@@ -46,25 +46,6 @@ class TimeWindowAnalyzer(Analyzer):
 
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
-		if time_window_id is None:
-			self.TimeWindow = TimeWindowMatrixContainer(
-				app,
-				tw_dimensions=tw_dimensions,
-				tw_format=tw_format,
-				resolution=resolution,
-				start_time=start_time
-			)	
-			svc.add_matrix_container(self.GeoMatrixContainer)
-		else:
-			# locate
-			self.TimeWindow = svc.locate_matrix_container(container_id)
-
-		if clock_driven:
-			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
-			self.Timer.start(resolution / 4) # 1/4 of the sampling
-		else:
-			self.Timer = None
-
 		metrics_service = app.get_service('asab.MetricsService')
 		counters = metrics_service.create_counter(
 			"EarlyLateEventCounter",
@@ -77,8 +58,25 @@ class TimeWindowAnalyzer(Analyzer):
 				'events.late': 0,
 			}
 		)
-		svc.add_metrics(counters)
+		svc.add_metric(counters)
+		if time_window_id is None:
+			self.TimeWindow = TimeWindowMatrixContainer(
+				app,
+				tw_dimensions=tw_dimensions,
+				tw_format=tw_format,
+				resolution=resolution,
+				start_time=start_time
+			)	
+			svc.add_matrix_container(self.TimeWindow)
+		else:
+			# locate
+			self.TimeWindow = svc.locate_matrix_container(container_id)
 
+		if clock_driven:
+			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
+			self.Timer.start(resolution / 4) # 1/4 of the sampling
+		else:
+			self.Timer = None
 		
 
 	def advance(self, target_ts):

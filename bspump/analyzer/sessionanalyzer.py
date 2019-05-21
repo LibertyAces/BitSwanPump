@@ -33,12 +33,14 @@ class SessionAnalyzer(Analyzer):
 
 	'''
 
-	def __init__(self, app, pipeline, column_formats, column_names, sessions=None, id=None, config=None):
+	def __init__(self, app, pipeline, column_formats, column_names, sessions_id=None, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
-		if sessions is None:
-			self.Sessions =  SessionMatrixContainer(app, column_formats, column_names)	
+		svc = app.get_service("bspump.PumpService")
+		if sessions_id is None:
+			self.Sessions =  SessionMatrixContainer(app, column_formats, column_names)
+			svc.add_matrix_container(self.Sessions)
 		else:
-			self.Sessions = sessions
+			self.Sessions = svc.locate_matrix_container(sessions_id)
 	
 
 

@@ -6,8 +6,10 @@ from .abc.connection import Connection
 from .abc.lookup import Lookup
 
 from asab.metrics.metrics import Metric
-from bspump.analyzer import MatrixContainer
-
+# import bspump.analyzer
+from .analyzer.matrixcontainer import MatrixContainer
+import os
+print(os.getcwd())
 #
 
 L = logging.getLogger(__file__)
@@ -124,15 +126,18 @@ class BSPumpService(asab.Service):
 
 	# MatrixContainers
 
-	def add_matrix_container(self, container):
-		pass
+	def add_matrix_container(self, matrix_container):
+		if matrix_container.Id in self.MatrixContainers:
+			raise RuntimeError("Matrix container '{}' already created".format(matrix_container.Id))	
+			
+		self.MatrixContainers[matrix_container.Id] = matrix_container
+		return matrix_container
 
-	def add_matrix_container(self, *matrix_containers):
+	def add_matrix_containers(self, *matrix_containers):
 		for matrix_container in matrix_containers:
 			self.add_matrix_container(matrix_container)
 
 	def locate_matrix_container(self, matrix_container_id):
-		# TODO:
 		if isinstance(matrix_container_id, MatrixContainer): return matrix_container_id
 		try:
 			return self.MatrixContainers[matrix_container_id]
