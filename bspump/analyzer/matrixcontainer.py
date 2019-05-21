@@ -47,7 +47,7 @@ class MatrixContainer(object):
 	'''
 
 
-	def __init__(self, app, pipeline, column_names, column_formats):
+	def __init__(self, app, column_names, column_formats, id=None):
 		self.ColumnNames = column_names
 		self.ColumnFormats = column_formats
 		
@@ -56,6 +56,7 @@ class MatrixContainer(object):
 		self.Storage = {}
 		self.ClosedRows = set()
 		self.Matrix = np.zeros(0, dtype={'names':self.ColumnNames, 'formats':self.ColumnFormats})
+		self.Id = id if id is not None else self.__class__.__name__
 
 
 	def rebuild_rows(self, mode):	
@@ -114,7 +115,7 @@ class TimeWindowMatrixContainer(MatrixContainer):
 	End (past)   <          Start (== now)
 
 	'''
-	def __init__(self, app, pipeline, tw_dimensions, tw_format, resolution, start_time=None):
+	def __init__(self, app, tw_dimensions, tw_format, resolution, start_time=None, id=None):
 		column_names = []
 		column_formats = []
 		column_names.append("time_window")
@@ -123,7 +124,7 @@ class TimeWindowMatrixContainer(MatrixContainer):
 		column_names.append("warming_up_count")
 		column_formats.append("i8")
 
-		super().__init__(app, pipeline, column_names, column_formats)
+		super().__init__(app, column_names, column_formats, id=id)
 		if start_time is None:
 			start_time = time.time()
 
@@ -134,18 +135,9 @@ class TimeWindowMatrixContainer(MatrixContainer):
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
 		self.End = self.Start - (self.Resolution * self.Dimensions[0])
 
-		metrics_service = app.get_service('asab.MetricsService')
-		self.Counters = metrics_service.create_counter(
-			"counters",
-			tags={
-				'pipeline': pipeline.Id,
-				'tw': "TimeWindow",
-			},
-			init_values={
-				'events.early': 0,
-				'events.late': 0,
-			}
-		)
+		svc = app.get_service("bspump.PumpService")
+		self.Counters = svc.locate_metrics("EarlyLateEventCounter")
+		
 
 
 	def add_column(self):
@@ -224,12 +216,12 @@ class TimeWindowMatrixContainer(MatrixContainer):
 
 class SessionMatrixContainer(MatrixContainer):
 
-	def __init__(self, app, pipeline, column_formats, column_names):
+	def __init__(self, app, column_formats, column_names, id=None):
 		column_formats.append("i8")
 		column_names.append("@timestamp_start")
 		column_formats.append("i8")
 		column_names.append("@timestamp_end")	
-		super().__init__(app, pipeline, column_names, column_formats)
+		super().__init__(app, column_names, column_formats, id=id)
 
 	
 	def add_row(self, row_id, start_time):

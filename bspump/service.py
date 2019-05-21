@@ -5,6 +5,9 @@ import asab
 from .abc.connection import Connection
 from .abc.lookup import Lookup
 
+from asab.metrics.metrics import Metric
+from bspump.analyzer import MatrixContainer
+
 #
 
 L = logging.getLogger(__file__)
@@ -19,6 +22,8 @@ class BSPumpService(asab.Service):
 		self.Pipelines = dict()
 		self.Connections = dict()
 		self.Lookups = dict()
+		self.Metrics = dict()
+		self.MatrixContainers = dict()
 
 
 	def locate(self, address):
@@ -95,6 +100,44 @@ class BSPumpService(asab.Service):
 			return self.Lookups[lookup_id]
 		except KeyError:
 			raise KeyError("Cannot find lookup id '{}' (did you call add_lookup() ?)".format(lookup_id))
+
+
+	# Metrics
+
+	def add_metric(self, metric):
+		if metric.Name in self.Metrics:
+			raise RuntimeError("Metric '{}' already created".format(metric.Name))		
+		self.Metrics[metric.Name] = metric
+		return metric
+
+	def add_metrics(self, *metrics):
+		for metric in metrics:
+			self.add_metric(metric)
+
+	def locate_metric(self, metric_id):
+		if isinstance(metric_id, Metric): return metric_id
+		try:
+			return self.Metrics[metric_id]
+		except KeyError:
+			raise KeyError("Cannot find metric id '{}' (did you call add_metric() ?)".format(metric_id))
+
+
+	# MatrixContainers
+
+	def add_matrix_container(self, container):
+		pass
+
+	def add_matrix_container(self, *matrix_containers):
+		for matrix_container in matrix_containers:
+			self.add_matrix_container(matrix_container)
+
+	def locate_matrix_container(self, matrix_container_id):
+		# TODO:
+		if isinstance(matrix_container_id, MatrixContainer): return matrix_container_id
+		try:
+			return self.MatrixContainers[matrix_container_id]
+		except KeyError:
+			raise KeyError("Cannot find matrix_container id '{}' (did you call add_matrix_container() ?)".format(matrix_container_id))
 
 	#
 

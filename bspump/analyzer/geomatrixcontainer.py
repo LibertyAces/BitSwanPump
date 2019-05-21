@@ -12,13 +12,13 @@ L = logging.getLogger(__name__)
 ##
 
 class GeoMatrixContainer(MatrixContainer):
-	def __init__(self, app, pipeline, bbox, resolution=5):
+	def __init__(self, app, bbox, resolution=5, id=None):
 		self.Bbox = bbox
 		self.Resolution = resolution
 		self.get_matrix_dimensions()
 		column_formats = ["({},1)i4".format(self.MapWidth)]
 		column_names = ["geo_matrix"]
-		super().__init__(app, pipeline, column_names, column_formats)
+		super().__init__(app, column_names, column_formats, id=id)
 		self.MembersToIds = self.Storage
 		self.IdsToMembers = {}
 		self.Matrix = np.ones(self.MapHeight, dtype={'names': self.ColumnNames,'formats': self.ColumnFormats})

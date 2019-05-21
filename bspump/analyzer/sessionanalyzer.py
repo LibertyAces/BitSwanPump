@@ -36,7 +36,7 @@ class SessionAnalyzer(Analyzer):
 	def __init__(self, app, pipeline, column_formats, column_names, sessions=None, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		if sessions is None:
-			self.Sessions =  SessionMatrixContainer(app, pipeline, column_formats, column_names)	
+			self.Sessions =  SessionMatrixContainer(app, column_formats, column_names)	
 		else:
 			self.Sessions = sessions
 	

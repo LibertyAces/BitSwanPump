@@ -26,7 +26,7 @@ class TimeWindowAnalyzer(Analyzer):
 		'resolution': 60, # Resolution (aka column width) in seconds
 	}
 
-	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, start_time=None, clock_driven=True, time_window=None, id=None, config=None):
+	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, start_time=None, clock_driven=True, time_window_id=None, id=None, config=None):
 		
 		'''
 		TimeWindowAnalyzer operates over the TimeWindowMatrixContainer object. It requires
@@ -45,23 +45,39 @@ class TimeWindowAnalyzer(Analyzer):
 		'''
 
 		super().__init__(app, pipeline, id, config)
-		if time_window is None:
+		svc = app.get_service("bspump.PumpService")
+		if time_window_id is None:
 			self.TimeWindow = TimeWindowMatrixContainer(
 				app,
-				pipeline,
 				tw_dimensions=tw_dimensions,
 				tw_format=tw_format,
 				resolution=resolution,
 				start_time=start_time
 			)	
+			svc.add_matrix_container(self.GeoMatrixContainer)
 		else:
-			self.TimeWindow = time_window
+			# locate
+			self.TimeWindow = svc.locate_matrix_container(container_id)
 
 		if clock_driven:
 			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
 			self.Timer.start(resolution / 4) # 1/4 of the sampling
 		else:
 			self.Timer = None
+
+		metrics_service = app.get_service('asab.MetricsService')
+		counters = metrics_service.create_counter(
+			"EarlyLateEventCounter",
+			tags={
+				'pipeline': pipeline.Id,
+				'tw': "TimeWindow",
+			},
+			init_values={
+				'events.early': 0,
+				'events.late': 0,
+			}
+		)
+		svc.add_metrics(counters)
 
 		
 
