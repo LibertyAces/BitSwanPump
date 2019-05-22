@@ -71,12 +71,12 @@ class RandomProcessor(Processor):
 
 
 class MyContentFilter(ContentFilter):
-	def do_on_hit(self, event):
+	def on_hit(self, context, event):
 		event["tag"] = ":)"
 		return event
 
 
-	def do_on_miss(self, event):
+	def on_miss(self, context, event):
 		event["tag"] = ":("
 		return event
 
