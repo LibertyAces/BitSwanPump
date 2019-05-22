@@ -47,5 +47,5 @@ class FileBlockSink(Sink):
 		fname = self.get_file_name(context, event)
 
 		fd = os.open(fname, os.O_WRONLY | self._oflags)
-		with os.fdopen(fd, "wb") as fo:
+		with os.fdopen(fd, self.Config['mode']) as fo:
 			fo.write(event)
