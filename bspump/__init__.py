@@ -3,6 +3,7 @@ from .pipeline import Pipeline
 from .pumpbuilder import PumpBuilder
 from .abc.source import Source
 from .abc.source import TriggerSource
+from .abc.matrix import MatrixABC
 from .abc.sink import Sink
 from .abc.processor import Processor
 from .abc.generator import Generator

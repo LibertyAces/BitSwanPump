@@ -5,7 +5,7 @@ import numpy as np
 import asab
 
 from .analyzer import Analyzer
-from .matrixcontainer import SessionMatrixContainer
+from .sessionmatrix import SessionMatrix
 
 ###
 
@@ -33,12 +33,14 @@ class SessionAnalyzer(Analyzer):
 
 	'''
 
-	def __init__(self, app, pipeline, column_formats, column_names, sessions=None, id=None, config=None):
-		super().__init__(app, pipeline, id, config)
-		if sessions is None:
-			self.Sessions =  SessionMatrixContainer(app, pipeline, column_formats, column_names)	
+	def __init__(self, app, pipeline, column_formats, column_names, sessions_id=None, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+		svc = app.get_service("bspump.PumpService")
+		if sessions_id is None:
+			self.Sessions =  SessionMatrix(app, column_formats, column_names)
+			svc.add_matrix(self.Sessions)
 		else:
-			self.Sessions = sessions
+			self.Sessions = svc.locate_matrix(sessions_id)
 	
 
 

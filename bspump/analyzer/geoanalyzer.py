@@ -5,7 +5,7 @@ import asab
 import numpy as np
 
 from .analyzer import Analyzer
-from .geomatrixcontainer import GeoMatrixContainer 
+from .geomatrix import GeoMatrix 
 
 
 ##
@@ -24,18 +24,19 @@ class GeoAnalyzer(Analyzer):
 		"max_lon": 40.6,
 	}
 
-	def __init__(self, app, pipeline, container=None, id=None, config=None):
+	def __init__(self, app, pipeline, container_id=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		
-		if container is None:
+		svc = app.get_service("bspump.PumpService")
+		if container_id is None:
 			bbox = {
 				"min_lat": float(self.ConfigDefaults["min_lat"]),
 				"max_lat": float(self.ConfigDefaults["max_lat"]),
 				"min_lon": float(self.ConfigDefaults["min_lon"]),
 				"max_lon": float(self.ConfigDefaults["max_lon"]),
 			}
-			self.GeoMatrixContainer = GeoMatrixContainer(app, pipeline, bbox, resolution=5)
+			self.GeoMatrix = GeoMatrix(app, bbox, resolution=5)
+			svc.add_matrix(self.GeoMatrix)
 		else:
-			self.GeoMatrixContainer = container
+			self.GeoMatrix = svc.locate_matrix(container_id)
 		
-		self.Matrix = self.GeoMatrixContainer.Matrix['geo_matrix']  # alias
+		self.Matrix = self.GeoMatrix.Matrix['geo_matrix']  # alias

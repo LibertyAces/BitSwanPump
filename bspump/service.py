@@ -5,6 +5,8 @@ import asab
 from .abc.connection import Connection
 from .abc.lookup import Lookup
 
+from .abc.matrix import MatrixABC
+
 #
 
 L = logging.getLogger(__file__)
@@ -19,6 +21,7 @@ class BSPumpService(asab.Service):
 		self.Pipelines = dict()
 		self.Connections = dict()
 		self.Lookups = dict()
+		self.Matrixes = dict()
 
 
 	def locate(self, address):
@@ -95,6 +98,27 @@ class BSPumpService(asab.Service):
 			return self.Lookups[lookup_id]
 		except KeyError:
 			raise KeyError("Cannot find lookup id '{}' (did you call add_lookup() ?)".format(lookup_id))
+
+
+	# Matrixes
+
+	def add_matrix(self, matrix):
+		if matrix.Id in self.Matrixes:
+			raise RuntimeError("Matrix '{}' already created".format(matrix.Id))	
+			
+		self.Matrixes[matrix.Id] = matrix
+		return matrix
+
+	def add_matrixes(self, *matrixes):
+		for matrix in matrixes:
+			self.add_matrix(matrix)
+
+	def locate_matrix(self, matrix_id):
+		if isinstance(matrix_id, MatrixABC): return matrix_id
+		try:
+			return self.Matrixes[matrix_id]
+		except KeyError:
+			raise KeyError("Cannot find matrix id '{}' (did you call add_matrix() ?)".format(matrix_id))
 
 	#
 
