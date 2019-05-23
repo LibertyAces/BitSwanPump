@@ -5,7 +5,7 @@ import asab
 from .abc.connection import Connection
 from .abc.lookup import Lookup
 
-from .analyzer.matrix import MatrixABC
+from .abc.matrix import MatrixABC
 
 #
 

@@ -6,7 +6,7 @@ import numpy as np
 import asab
 
 from .analyzer import Analyzer
-from .matrix import TimeWindowMatrix
+from .timewindowmatrix import TimeWindowMatrix
 
 ###
 

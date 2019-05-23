@@ -1,8 +1,6 @@
 import abc
 import logging
-import bspump
-
-from bspump.abc.processor import Processor
+from ..abc.processor import Processor
 
 
 ###

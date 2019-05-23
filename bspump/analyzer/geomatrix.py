@@ -2,7 +2,7 @@ import logging
 import time
 
 import numpy as np
-from .matrix import MatrixABC
+from ..abc.matrix import MatrixABC
 
 
 ##
