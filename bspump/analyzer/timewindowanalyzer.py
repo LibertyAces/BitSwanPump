@@ -6,7 +6,7 @@ import numpy as np
 import asab
 
 from .analyzer import Analyzer
-from .matrixcontainer import TimeWindowMatrixContainer
+from .matrix import TimeWindowMatrix
 
 ###
 
@@ -46,37 +46,26 @@ class TimeWindowAnalyzer(Analyzer):
 
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
-		metrics_service = app.get_service('asab.MetricsService')
-		counters = metrics_service.create_counter(
-			"EarlyLateEventCounter",
-			tags={
-				'pipeline': pipeline.Id,
-				'tw': "TimeWindow",
-			},
-			init_values={
-				'events.early': 0,
-				'events.late': 0,
-			}
-		)
-		svc.add_metric(counters)
 		if time_window_id is None:
-			self.TimeWindow = TimeWindowMatrixContainer(
+			self.TimeWindow = TimeWindowMatrix(
 				app,
 				tw_dimensions=tw_dimensions,
 				tw_format=tw_format,
 				resolution=resolution,
 				start_time=start_time
 			)	
-			svc.add_matrix_container(self.TimeWindow)
+			svc.add_matrix(self.TimeWindow)
 		else:
 			# locate
-			self.TimeWindow = svc.locate_matrix_container(container_id)
+			self.TimeWindow = svc.locate_matrix(container_id)
 
 		if clock_driven:
 			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
 			self.Timer.start(resolution / 4) # 1/4 of the sampling
 		else:
 			self.Timer = None
+
+		self.Matrix = self.TimeWindow.Matrix['time_window'] #alias
 		
 
 	def advance(self, target_ts):

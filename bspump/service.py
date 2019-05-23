@@ -5,11 +5,8 @@ import asab
 from .abc.connection import Connection
 from .abc.lookup import Lookup
 
-from asab.metrics.metrics import Metric
-# import bspump.analyzer
-from .analyzer.matrixcontainer import MatrixContainer
-import os
-print(os.getcwd())
+from .analyzer.matrix import MatrixABC
+
 #
 
 L = logging.getLogger(__file__)
@@ -24,8 +21,7 @@ class BSPumpService(asab.Service):
 		self.Pipelines = dict()
 		self.Connections = dict()
 		self.Lookups = dict()
-		self.Metrics = dict()
-		self.MatrixContainers = dict()
+		self.Matrixes = dict()
 
 
 	def locate(self, address):
@@ -104,45 +100,25 @@ class BSPumpService(asab.Service):
 			raise KeyError("Cannot find lookup id '{}' (did you call add_lookup() ?)".format(lookup_id))
 
 
-	# Metrics
+	# Matrixes
 
-	def add_metric(self, metric):
-		if metric.Name in self.Metrics:
-			raise RuntimeError("Metric '{}' already created".format(metric.Name))		
-		self.Metrics[metric.Name] = metric
-		return metric
-
-	def add_metrics(self, *metrics):
-		for metric in metrics:
-			self.add_metric(metric)
-
-	def locate_metric(self, metric_id):
-		if isinstance(metric_id, Metric): return metric_id
-		try:
-			return self.Metrics[metric_id]
-		except KeyError:
-			raise KeyError("Cannot find metric id '{}' (did you call add_metric() ?)".format(metric_id))
-
-
-	# MatrixContainers
-
-	def add_matrix_container(self, matrix_container):
-		if matrix_container.Id in self.MatrixContainers:
-			raise RuntimeError("Matrix container '{}' already created".format(matrix_container.Id))	
+	def add_matrix(self, matrix):
+		if matrix.Id in self.Matrixes:
+			raise RuntimeError("Matrix '{}' already created".format(matrix.Id))	
 			
-		self.MatrixContainers[matrix_container.Id] = matrix_container
-		return matrix_container
+		self.Matrixes[matrix.Id] = matrix
+		return matrix
 
-	def add_matrix_containers(self, *matrix_containers):
-		for matrix_container in matrix_containers:
-			self.add_matrix_container(matrix_container)
+	def add_matrixes(self, *matrixes):
+		for matrix in matrixes:
+			self.add_matrix(matrix)
 
-	def locate_matrix_container(self, matrix_container_id):
-		if isinstance(matrix_container_id, MatrixContainer): return matrix_container_id
+	def locate_matrix(self, matrix_id):
+		if isinstance(matrix_id, MatrixABC): return matrix_id
 		try:
-			return self.MatrixContainers[matrix_container_id]
+			return self.Matrixes[matrix_id]
 		except KeyError:
-			raise KeyError("Cannot find matrix_container id '{}' (did you call add_matrix_container() ?)".format(matrix_container_id))
+			raise KeyError("Cannot find matrix id '{}' (did you call add_matrix() ?)".format(matrix_id))
 
 	#
 

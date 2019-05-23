@@ -5,7 +5,7 @@ import asab
 import numpy as np
 
 from .analyzer import Analyzer
-from .geomatrixcontainer import GeoMatrixContainer 
+from .geomatrix import GeoMatrix 
 
 
 ##
@@ -34,9 +34,9 @@ class GeoAnalyzer(Analyzer):
 				"min_lon": float(self.ConfigDefaults["min_lon"]),
 				"max_lon": float(self.ConfigDefaults["max_lon"]),
 			}
-			self.GeoMatrixContainer = GeoMatrixContainer(app, bbox, resolution=5)
-			svc.add_matrix_container(self.GeoMatrixContainer)
+			self.GeoMatrix = GeoMatrix(app, bbox, resolution=5)
+			svc.add_matrix(self.GeoMatrix)
 		else:
-			self.GeoMatrixContainer = svc.locate_matrix_container(container_id)
+			self.GeoMatrix = svc.locate_matrix(container_id)
 		
-		self.Matrix = self.GeoMatrixContainer.Matrix['geo_matrix']  # alias
+		self.Matrix = self.GeoMatrix.Matrix['geo_matrix']  # alias
