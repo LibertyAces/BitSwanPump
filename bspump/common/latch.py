@@ -26,3 +26,6 @@ class LatchProcessor(Processor):
 	def process(self, context, event):
 		self.Queue.append(event)
 		return event
+
+	def get_queue(self):
+		return self.Queue
