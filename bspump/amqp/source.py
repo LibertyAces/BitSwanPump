@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 import pika
-from pkg_resources import parse_version
+import pkg_resources
 
 from ..abc.source import Source
 
@@ -86,7 +86,7 @@ class AMQPSource(Source):
 		self._channel_ready.clear()
 
 	def _on_qos_applied(self, channel):
-		if parse_version(pika.__version__) >= parse_version('1.0.a'):
+		if pkg_resources.parse_version(pika.__version__) >= pkg_resources.parse_version('1.0.a'):
 			self._channel.basic_consume(self.Config['queue'], self._on_consume_message)
 		else:
 			self._channel.basic_consume(self._on_consume_message, self.Config['queue'])
