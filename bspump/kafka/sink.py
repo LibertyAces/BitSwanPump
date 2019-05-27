@@ -1,5 +1,5 @@
+import json
 import logging
-import aiokafka
 
 from ..abc.sink import Sink
 
@@ -30,6 +30,7 @@ class KafkaSink(Sink):
 
 	ConfigDefaults = {
 		'topic': '',
+		'encoding': 'utf-8',
 	}
 
 
@@ -38,12 +39,17 @@ class KafkaSink(Sink):
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.Topic = self.Config['topic']
+		self.Encoding = self.Config['encoding']
 
 		app.PubSub.subscribe("KafkaConnection.pause!", self._connection_throttle)
 		app.PubSub.subscribe("KafkaConnection.unpause!", self._connection_throttle)
 
 
 	def process(self, context, event):
+		if type(event) == dict:
+			event = json.dumps(event)
+		if type(event) == str:
+			event = event.encode(self.Encoding)
 		self.Connection.consume(self.Topic, event)
 
 
