@@ -44,7 +44,8 @@ class KafkaSink(Sink):
 
 
 	def process(self, context, event):
-		self.Connection.consume(self.Topic, event)
+		kafka_key_bytes = str.encode(context.get ("kafka_key"))
+		self.Connection.consume(self.Topic, event, kafka_key_bytes)
 
 
 	def _connection_throttle(self, event_name, connection):
