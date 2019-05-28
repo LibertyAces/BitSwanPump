@@ -58,3 +58,10 @@ class KafkaSink(Sink):
 			self.Pipeline.throttle(self, False)
 		else:
 			raise RuntimeError("Unexpected event name '{}'".format(event_name))
+
+
+class KafkaMultiSink (KafkaSink):
+	def process(self, context, event):
+		topic = context.get("kafka_topic")
+		kafka_key_bytes = str.encode(context.get("kafka_key"))
+		self.Connection.consume(topic, event, kafka_key_bytes)
