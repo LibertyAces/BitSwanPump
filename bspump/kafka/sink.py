@@ -61,6 +61,25 @@ class KafkaSink(Sink):
 
 
 class KafkaMultiSink (KafkaSink):
+	"""
+	KafkaMultiSink is mostly the same as KafkaSink. It can feed multiple Kafka topics though.
+	When you want to categorize pipeline events in to multiple kafka topics, provide the pipeline
+	with some processor, that will set kafka_topic in event context and end it with KafkaMultiSink.
+	'topic' in configuration is not being used by KafkaMultiSink.
+	Processor example:
+.. code:: python
+
+	class KafkaTopicProviderProcessor(bspump.Processor):
+
+		def process(self, context, event):
+			if event.get("weight") > 10:
+				context["kafka_topic"] = "heavy"
+			else:
+				context["kafka_topic"] = "light"
+
+			return event
+	"""
+
 	def process(self, context, event):
 		topic = context.get("kafka_topic")
 		kafka_key_bytes = str.encode(context.get("kafka_key"))
