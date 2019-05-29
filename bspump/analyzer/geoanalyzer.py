@@ -24,7 +24,7 @@ class GeoAnalyzer(Analyzer):
 		"max_lon": 40.6,
 	}
 
-	def __init__(self, app, pipeline, maxtrix_id=None, id=None, config=None):
+	def __init__(self, app, pipeline, matrix_id=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
