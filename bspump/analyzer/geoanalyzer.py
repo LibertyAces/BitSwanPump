@@ -24,10 +24,10 @@ class GeoAnalyzer(Analyzer):
 		"max_lon": 40.6,
 	}
 
-	def __init__(self, app, pipeline, container_id=None, id=None, config=None):
+	def __init__(self, app, pipeline, maxtrix_id=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
-		if container_id is None:
+		if matrix_id is None:
 			bbox = {
 				"min_lat": float(self.ConfigDefaults["min_lat"]),
 				"max_lat": float(self.ConfigDefaults["max_lat"]),
@@ -37,6 +37,6 @@ class GeoAnalyzer(Analyzer):
 			self.GeoMatrix = GeoMatrix(app, bbox, resolution=5)
 			svc.add_matrix(self.GeoMatrix)
 		else:
-			self.GeoMatrix = svc.locate_matrix(container_id)
+			self.GeoMatrix = svc.locate_matrix(matrix_id)
 		
 		self.Matrix = self.GeoMatrix.Matrix['geo_matrix']  # alias
