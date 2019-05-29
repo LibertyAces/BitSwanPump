@@ -63,6 +63,9 @@ class OOBEEngine(object):
 		if self.Context is None:
 			self.Context = context
 
+		if event is None:
+			return
+
 		self._queue.put_nowait(event)
 		self.eventStatsCounter.add("event.in", 1)
 
@@ -77,6 +80,8 @@ class OOBEEngine(object):
 				break
 
 			input_event = await self._queue.get()
+			if input_event is None:
+				break
 
 			if self._queue.qsize() == self._queue_max_size - 1:
 				self.App.PubSub.publish("OOBEEngine.unpause!", self, asynchronously=True)
@@ -95,6 +100,9 @@ class OOBEEngine(object):
 
 	async def _on_exit(self, event_name):
 		self._started = False
+
+		for i in range(0, self._workers_size):
+			self._queue.put_nowait(None)
 
 		pending = self._workers_pool
 		while len(pending) > 0:
