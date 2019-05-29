@@ -9,8 +9,7 @@ import aiohttp.web
 import asab
 import asab.web.rest
 
-from ..__version__ import __version__ as bspump_version
-from ..__version__ import __build__ as bspump_build
+from .. import __version__ as bspump_version
 
 ####
 
@@ -103,7 +102,6 @@ KEY2=${ENVIRONMENT_VARIABLE}
 	d = {
 		'ASAB_VERSION': asab.__version__,
 		'BSPUMP_VERSION': bspump_version,
-		'BSPUMP_BUILD': bspump_build,
 		'LAUNCHED_AT': datetime.datetime.utcfromtimestamp(app.LaunchTime).isoformat(),
 	}
 

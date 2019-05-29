@@ -4,8 +4,7 @@ import sys
 import asab
 
 from .service import BSPumpService
-from .__version__ import __version__, __build__
-
+from . import __version__
 
 class BSPumpApplication(asab.Application):
 	"""
@@ -65,8 +64,7 @@ BSPump is a stream processor. It is a part of BitSwan.
 For more information, visit: https://github.com/TeskaLabs/bspump
 
 version: {}
-build: {} [{}]
-'''.format(__version__, __build__, __build__[:7])
+'''.format(__version__)
 
 
 		parser = super().create_argument_parser(
