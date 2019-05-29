@@ -6,11 +6,11 @@ class KafkaKeyFilterProcessor(bspump.Processor):
 	KafkaKeyFilter reduces the incoming event stream from Kafka based on a
 	key provided in each event.
 
-	Every kafka message has a key, KafkaKeyFilter selects only those events where
+	Every Kafka message has a key, KafkaKeyFilter selects only those events where
 	the key matches selected "filter_key", other events will be discarded. You may set `filter_key`
 	in processor configuration.
 
-	This processor is meant to be inserted after KafkaSource in a Pipeline.
+	KafkaKeyFilter	 is meant to be inserted after KafkaSource in a Pipeline.
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
