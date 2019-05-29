@@ -17,9 +17,43 @@ L = logging.getLogger(__name__)
 
 class TimeWindowAnalyzer(Analyzer):
 	'''
-	This is the analyzer for events with a temporal dimension (aka timestamp).
-	Configurable sliding window records events withing specified windows and implements functions to find the exact time slot.
-	Timer periodically shifts the window by time window resolution, dropping previous events.
+		This is the analyzer for events with a temporal dimension (aka timestamp).
+		Configurable sliding window records events withing specified windows and implements functions to find the exact time slot.
+		Timer periodically shifts the window by time window resolution, dropping previous events.
+
+		`TimeWindowAnalyzer` operates over the `TimeWindowMatrix` object.
+		`tw_dimensions` is matrix dimensions parameter as the tuple `(column_number, third_dimension)`.
+		Example: `(5,1)` will create the matrix with n rows, 5 columns and 1 additional third dimension.
+		`tw_format` is the letter from the table + number:
+
+			+------------+------------------+
+			| Name       | Definition       |
+			+============+==================+
+			| 'b'        | Byte             |
+			+------------+------------------+
+			| 'i'        | Signed integer   |
+			+------------+------------------+
+			| 'u'        | Unsigned integer |
+			+------------+------------------+
+			| 'f'        | Floating point   |
+			+------------+------------------+
+			| 'c'        | Complex floating |
+			|            | point            |
+			+------------+------------------+
+			| 'S'        | String           |
+			+------------+------------------+
+			| 'U'        | Unicode string   |
+			+------------+------------------+
+			| 'V'        | Raw data         |
+			+------------+------------------+
+
+		Example: 'i8' stands for int64.
+		`resolution`is how many seconds fit in one time cell, default value is `60`.
+		`start_time` is a unix timestamp for time to start. Default value is `None`, which will be equivalent current time.
+		`clock_driven` is a boolean parameter, specifying how the matrix should be advanced. If `True`, it advances on timer's tick, 
+		else manually. Default value is `True`.
+		`time_window_id` is an id of `TimeWindowMatrix` object alternatively passed.
+		
 	'''
 
 	ConfigDefaults = {
@@ -27,23 +61,6 @@ class TimeWindowAnalyzer(Analyzer):
 	}
 
 	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, start_time=None, clock_driven=True, time_window_id=None, id=None, config=None):
-		
-		'''
-		TimeWindowAnalyzer operates over the TimeWindowMatrixContainer object. It requires
-		tw_dimensions parameter as the tuple (column_number, third_dimension), format in form
-		'b'	Byte	np.dtype('b')
-		'i'	Signed integer	np.dtype('i4') == np.int32
-		'u'	Unsigned integer	np.dtype('u1') == np.uint8
-		'f'	Floating point	np.dtype('f8') == np.int64
-		'c'	Complex floating point	np.dtype('c16') == np.complex128
-		'S', 'a'	String	np.dtype('S5')
-		'U'	Unicode string	np.dtype('U') == np.str_
-		'V'	Raw data (void)	np.dtype('V') == np.void
-		Example: 'i8' stands for int64.
-		It also requires resolution, how many seconds fit in one time cell, default value is 60.
-
-		'''
-
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
 		if time_window_id is None:
@@ -70,16 +87,19 @@ class TimeWindowAnalyzer(Analyzer):
 
 	def advance(self, target_ts):
 		'''
-		Advance time window (add columns) so it covers target timestamp (target_ts)
-		Also, if target_ts is in top 75% of the last existing column, add a new column too.
+			Advance time window (add columns) so it covers target `timestamp` (`target_ts`)
+			Also, if `target_ts` is in top 75% of the last existing column, add a new column too.
+		
+		.. code-block:: python
 
-		------------------|-----------
-		target_ts  ^ >>>  |
-		                  ^ 
-		                  Start
+			------------------|-----------
+			target_ts  ^ >>>  |          
+			                  ^           
+			                Start         
+			------------------------------
 
 		'''
-		
+
 		while True:
 			dt = (self.TimeWindow.Start - target_ts) / self.TimeWindow.Resolution
 			if dt > 0.25: break
@@ -87,5 +107,8 @@ class TimeWindowAnalyzer(Analyzer):
 			
 
 	async def _on_tick(self):
+		'''
+			React on timer's tick and advance the window.
+		'''
 		target_ts = time.time()
 		self.advance(target_ts)

@@ -12,6 +12,14 @@ L = logging.getLogger(__name__)
 ##
 
 class GeoMatrix(MatrixABC):
+	'''
+		Matrix, specific for `GeoAnalyzer`.
+		`bbox` is the dictionary with `max_lat`, `min_lat`, `max_lon` and `min_lon` 
+		for corner gps-coordinates.
+		`GeoMatrix` is 2d projection of real-world coordinates on a plane with pointers
+		to `Storage`, where objects can be kept. 
+
+	'''
 	def __init__(self, app, bbox, resolution=5, id=None, config=None):
 		self.Bbox = bbox
 		self.Resolution = resolution
@@ -26,6 +34,9 @@ class GeoMatrix(MatrixABC):
 
 	
 	def is_in_boundaries(self, lat, lon):
+		'''
+			Check, if coordinates are within the bbox coordinates.
+		'''
 		if (lat >= self.Bbox["max_lat"]) or (lat <= self.Bbox["min_lat"]):
 			return False
 
@@ -36,6 +47,9 @@ class GeoMatrix(MatrixABC):
 
 
 	def get_matrix_dimensions(self):
+		'''
+			Calculation of MapHeight and MapWidth.
+		'''
 		self.SizeWidth = self.get_gps_distance(self.Bbox["min_lat"], self.Bbox["min_lon"], self.Bbox["min_lat"], self.Bbox["max_lon"])
 		self.SizeHeight = self.get_gps_distance(self.Bbox["min_lat"], self.Bbox["min_lon"], self.Bbox["max_lat"], self.Bbox["min_lon"])
 		self.MapHeight = int(np.ceil(self.SizeHeight / self.Resolution))
@@ -51,7 +65,9 @@ class GeoMatrix(MatrixABC):
 
 
 	def get_gps_distance(self, lat1, lon1, lat2, lon2):
-		# in km
+		'''
+			Calculation of distance between 2 gps-coordinates in km.
+		'''
 		R = 6371
 		dLat = self.degrees_to_radians(lat2-lat1)
 		dLon = self.degrees_to_radians(lon2-lon1)
@@ -63,12 +79,18 @@ class GeoMatrix(MatrixABC):
 
 
 	def project_equirectangular(self, lat, lon):
+		'''
+			Converts latitude and longitude into row and column indexes.
+		'''
 		column = ((lon - self.Bbox['min_lon']) * ((self.MapWidth - 1) / (self.Bbox['max_lon'] - self.Bbox['min_lon'])))
 		row = (((lat * (-1)) + self.Bbox['max_lat']) * ((self.MapHeight - 1) / (self.Bbox['max_lat'] - self.Bbox['min_lat'])))
 		return int(row), int(column)
 
 
 	def inverse_equirectangular(self, row, column):
+		'''
+			Converts row and column into latitude and longitude.
+		'''
 		row += 0.5
 		column += 0.5
 		
@@ -79,6 +101,9 @@ class GeoMatrix(MatrixABC):
 
 
 	def close_storage(self, storage_id, label):
+		'''
+			Remove a record from storage.
+		'''
 		storage_member = self.Storage.get('id')
 		if storage_member is not None:
 			self.Storage['id'].pop(label)

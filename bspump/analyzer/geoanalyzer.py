@@ -15,7 +15,13 @@ L = logging.getLogger(__name__)
 ##
 
 class GeoAnalyzer(Analyzer):
-	
+		'''
+		This is the analyzer for events with geografical points dimension.
+
+		`GeoAnalyzer` operates over the `GeoMatrix` object.
+		`matrix_id` is an id of `GeoMatrix` object defined alternatively.
+
+	'''
 	ConfigDefaults = {
 		"resolution": 5,  # 5 km in one cell
 		"max_lat": 71.26,  # Europe endpoints
@@ -24,7 +30,7 @@ class GeoAnalyzer(Analyzer):
 		"max_lon": 40.6,
 	}
 
-	def __init__(self, app, pipeline, maxtrix_id=None, id=None, config=None):
+	def __init__(self, app, pipeline, matrix_id=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:

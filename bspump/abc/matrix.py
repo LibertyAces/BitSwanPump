@@ -16,36 +16,48 @@ L = logging.getLogger(__name__)
 
 
 class MatrixABC(abc.ABC, asab.ConfigObject):
+	'''
+		General `Matrix` object.
+		`column_formats` is an array, each element contains the letter from the table + number:
+
+			+------------+------------------+
+			| Name       | Definition       |
+			+============+==================+
+			| 'b'        | Byte             |
+			+------------+------------------+
+			| 'i'        | Signed integer   |
+			+------------+------------------+
+			| 'u'        | Unsigned integer |
+			+------------+------------------+
+			| 'f'        | Floating point   |
+			+------------+------------------+
+			| 'c'        | Complex floating |
+			|            | point            |
+			+------------+------------------+
+			| 'S'        | String           |
+			+------------+------------------+
+			| 'U'        | Unicode string   |
+			+------------+------------------+
+			| 'V'        | Raw data         |
+			+------------+------------------+
+
+		Example: 'i8' stands for int64.
+		It is possible to create a matrix with elements of specified format. The tuple with number of dimensions should 
+		stand before the letter.
+		Example: '(6, 3)i8' will create the matrix with n rows, 6 columns and 3 third dimensions with integer elements.
+		`column_names` is an array with names of each column, with the same length as `column_formats`.
+		
+		Object main attributes:
+		`Matrix` is numpy matrix, where number of rows is a number of unique ids and
+		specified columns.
+		`RowMap` is a mapping from a event unique id to the matrix row index.
+		`RevRowMap` is a mapping from matrix row index to unique id.
+		`Storage` is a dictionary without specific structure, where additional 
+		information can be kept.
+		`ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.
 
 	'''
-		Each column has name and type. Types can be identified from table:
 
-		'b'	Byte	np.dtype('b')
-		'i'	Signed integer	np.dtype('i4') == np.int32
-		'u'	Unsigned integer	np.dtype('u1') == np.uint8
-		'f'	Floating point	np.dtype('f8') == np.int64
-		'c'	Complex floating point	np.dtype('c16') == np.complex128
-		'S', 'a'	String	np.dtype('S5')
-		'U'	Unicode string	np.dtype('U') == np.str_
-		'V'	Raw data (void)	np.dtype('V') == np.void
-
-		storage has structure:
-		{
-			"row_id0":{
-				"storage_id0": object,
-				...
-			},
-			...
-		}
-
-		It is possible to specify the column as a matrix with different dimension, the tuple (second_dim, third_dim, ...). 
-		E.g: '(4, 3)i8' will create for each row the matrix 
-		[0 0 0
-		 0 0 0
-		 0 0 0
-		 0 0 0]
-
-	'''
 
 	def __init__(self, app, column_names, column_formats, id=None, config=None):
 		self.Id = id if id is not None else self.__class__.__name__
@@ -60,7 +72,14 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 		self.Matrix = np.zeros(0, dtype={'names':self.ColumnNames, 'formats':self.ColumnFormats})
 
 
-	def rebuild_rows(self, mode):	
+	def rebuild_rows(self, mode):
+		'''
+			Function meant to rebuild the matrix.
+			`mode` can be `full`, which means the matrix will be recreated, 
+			or `partial`, which means the matrix will be recreated without rows
+			from `ClosedRows`.
+		'''
+	
 		if mode == "full":
 			self.RowMap = collections.OrderedDict()
 			self.RevRowMap = collections.OrderedDict()

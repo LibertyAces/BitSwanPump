@@ -16,24 +16,60 @@ L = logging.getLogger(__name__)
 
 class TimeWindowMatrix(MatrixABC):
 	'''
-    ## Time window
+		Container, specific for `TimeWindowAnalyzer`.
+		`tw_dimensions` is matrix dimensions parameter as the tuple `(column_number, third_dimension)`.
+		Example: `(5,1)` will create the matrix with n rows, 5 columns and 1 additional third dimension.
+		`tw_format` is the letter from the table + number:
 
-    --> Columns (time dimension), column "width" = resolution
-	+---+---+---+---+---+---+
-	|   |   |   |   |   |   |
-	+---+---+---+---+---+---+
-	|   |   |   |   |   |   |
-	+---+---+---+---+---+---+
-	|   |   |   |   |   |   |
-	+---+---+---+---+---+---+
-	|   |   |   |   |   |   |
-	+---+---+---+---+---+---+
-	|   |   |   |   |   |   |
-	+---+---+---+---+---+---+
-	^                       ^
-	End (past)   <          Start (== now)
+			+------------+------------------+
+			| Name       | Definition       |
+			+============+==================+
+			| 'b'        | Byte             |
+			+------------+------------------+
+			| 'i'        | Signed integer   |
+			+------------+------------------+
+			| 'u'        | Unsigned integer |
+			+------------+------------------+
+			| 'f'        | Floating point   |
+			+------------+------------------+
+			| 'c'        | Complex floating |
+			|            | point            |
+			+------------+------------------+
+			| 'S'        | String           |
+			+------------+------------------+
+			| 'U'        | Unicode string   |
+			+------------+------------------+
+			| 'V'        | Raw data         |
+			+------------+------------------+
+
+		Example: 'i8' stands for int64.
+		By default the `Matrix` contains 2 fields `time_window` with the main
+		time matrix and `warming_up_counter`, the integer value for each row,
+		indicating how "old" is the row.
+		The main specific attributes are:
+		`Start` is the starting timestamp of the first column of the matrix;
+		`End` is the ending timestamp of the last column;
+		`Resolution` is the width of the column in seconds.
+
+	.. code-block:: python
+
+		--> Columns (time dimension), column "width" = resolution
+		+---+---+---+---+---+---+
+		|   |   |   |   |   |   |
+		+---+---+---+---+---+---+
+		|   |   |   |   |   |   |
+		+---+---+---+---+---+---+
+		|   |   |   |   |   |   |
+		+---+---+---+---+---+---+
+		|   |   |   |   |   |   |
+		+---+---+---+---+---+---+
+		|   |   |   |   |   |   |
+		+---+---+---+---+---+---+
+		^                       ^
+		End (past)   <          Start (== now)
 
 	'''
+
 	def __init__(self, app, tw_dimensions, tw_format, resolution, start_time=None, id=None, config=None):
 		column_names = []
 		column_formats = []
@@ -70,6 +106,11 @@ class TimeWindowMatrix(MatrixABC):
 
 
 	def add_column(self):
+		'''
+			Adds new time column to the matrix and deletes the first one, simulating
+			the time flow. `Start` and `End` attributes are advanced as well. 
+		'''
+
 		self.Start += self.Resolution
 		self.End += self.Resolution
 
@@ -88,7 +129,10 @@ class TimeWindowMatrix(MatrixABC):
 
 	
 	def add_row(self, row_id):
-		
+		'''
+			Adds new row with `row_id` to the matrix and sets `warming_up_count`.
+		'''
+
 		if row_id in self.RowMap:
 			return
 		if row_id is None:
@@ -104,8 +148,11 @@ class TimeWindowMatrix(MatrixABC):
 	
 	def get_column(self, event_timestamp):
 		'''
-		The timestamp should be provided in seconds
+			Returns the right column, where the timestamp fits.
+			If if falls earlier or later, returns `None`.
+			The timestamp should be provided in seconds.
 		'''
+
 
 		if event_timestamp <= self.End:
 			self.Counters.add('events.late', 1)
@@ -135,6 +182,10 @@ class TimeWindowMatrix(MatrixABC):
 
 	
 	def close_row(self, row_id):
+		'''
+			Puts the `row_id` to the `ClosedRows`.
+		'''
+
 		row_counter = self.RowMap.get(row_id)
 		if row_counter is not None:
 			self.ClosedRows.add(row_counter)

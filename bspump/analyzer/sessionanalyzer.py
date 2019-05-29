@@ -15,21 +15,39 @@ L = logging.getLogger(__name__)
 
 
 class SessionAnalyzer(Analyzer):
-	
 	'''
-	SessionAnalyzer operates over the SessionMatrixContainer object. It provides analyzis over the 
-	specified MatrixContainers/ other informations about the sessions, start time and the end time. It 
-	requires column format in form
-	'b'	Byte	np.dtype('b')
-	'i'	Signed integer	np.dtype('i4') == np.int32
-	'u'	Unsigned integer	np.dtype('u1') == np.uint8
-	'f'	Floating point	np.dtype('f8') == np.int64
-	'c'	Complex floating point	np.dtype('c16') == np.complex128
-	'S', 'a'	String	np.dtype('S5')
-	'U'	Unicode string	np.dtype('U') == np.str_
-	'V'	Raw data (void)	np.dtype('V') == np.void
-	Example: 'i8' stands for int64.
-	It also requires column_names to ease the access to the columns.
+		This is the analyzer for events with multiple different dimensions.
+
+		`SessionAnalyzer` operates over the `SessionMatrix` object.
+		`column_formats` is an array, each element contains the letter from the table + number:
+
+			+------------+------------------+
+			| Name       | Definition       |
+			+============+==================+
+			| 'b'        | Byte             |
+			+------------+------------------+
+			| 'i'        | Signed integer   |
+			+------------+------------------+
+			| 'u'        | Unsigned integer |
+			+------------+------------------+
+			| 'f'        | Floating point   |
+			+------------+------------------+
+			| 'c'        | Complex floating |
+			|            | point            |
+			+------------+------------------+
+			| 'S'        | String           |
+			+------------+------------------+
+			| 'U'        | Unicode string   |
+			+------------+------------------+
+			| 'V'        | Raw data         |
+			+------------+------------------+
+
+		Example: 'i8' stands for int64.
+		It is possible to create a matrix with elements of specified format. The tuple with number of dimensions should 
+		stand before the letter.
+		Example: '(6, 3)i8' will create the matrix with n rows, 6 columns and 3 third dimensions with integer elements.
+		`column_names` is an array with names of each column, with the same length as `column_formats`.
+		`sessions_id` is an id of `SessionMatrix` object defined alternatively.
 
 	'''
 
