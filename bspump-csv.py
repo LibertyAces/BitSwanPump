@@ -21,7 +21,9 @@ class SamplePipeline(bspump.Pipeline):
 		self.Sink = bspump.file.FileCSVSink(app, self, config={'path': 'out.csv'})
 
 		self.build(
-			bspump.file.FileCSVSource(app, self, config={'path': 'sample.csv', 'delimiter': ';'}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.file.FileCSVSource(
+				app, self, config={'path': 'examples/data/sample.csv', 'delimiter': ';', 'post': 'noop'}
+			).on(bspump.trigger.RunOnceTrigger(app)),
 			bspump.common.PPrintProcessor(app, self),
 			self.Sink
 		)
@@ -33,7 +35,7 @@ class SamplePipeline(bspump.Pipeline):
 		'''
 		This ensures that at the end of the file scan, the target file is closed
 		'''
-		self.sink.rotate()
+		self.Sink.rotate()
 
 
 if __name__ == '__main__':
