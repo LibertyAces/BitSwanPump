@@ -49,6 +49,9 @@ class KafkaSink(Sink):
 
 	def _consume_event (self, context, event, topic):
 		kafka_key = str.encode(context.get("kafka_key"))
+
+		# TODO: Make KafkaConnection create separate producer for every sink
+		#  	- key/value serialization could be moved there.
 		if self._key_serializer is not None:
 			kafka_key = self._key_serializer(kafka_key)
 		self.Connection.consume(topic, event, kafka_key)
