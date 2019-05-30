@@ -15,6 +15,8 @@ class KafkaSink(Sink):
     KafkaSink is a sink processor that expects the event to be a user-defined message (such as string)
     and publishes it to a defined Apache Kafka instance configured in a KafkaConnection object.
 
+    KafkaSink expects bytes as an input. If the input is string or dictionary, it is automatically transformed to bytes using encoding charset specified in the configuration.
+    
 .. code:: python
 
     class KafkaPipeline(bspump.Pipeline):
