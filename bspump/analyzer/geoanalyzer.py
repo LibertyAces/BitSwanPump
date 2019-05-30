@@ -15,13 +15,13 @@ L = logging.getLogger(__name__)
 ##
 
 class GeoAnalyzer(Analyzer):
-		'''
-		This is the analyzer for events with geografical points dimension.
-
-		`GeoAnalyzer` operates over the `GeoMatrix` object.
-		`matrix_id` is an id of `GeoMatrix` object defined alternatively.
-
 	'''
+        This is the analyzer for events with geografical points dimension.
+
+        `GeoAnalyzer` operates over the `GeoMatrix` object.
+        `matrix_id` is an id of `GeoMatrix` object defined alternatively.
+'''
+
 	ConfigDefaults = {
 		"resolution": 5,  # 5 km in one cell
 		"max_lat": 71.26,  # Europe endpoints
