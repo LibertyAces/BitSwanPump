@@ -9,15 +9,12 @@ class LatchPipeline(bspump.Pipeline):
 		super().__init__(app, id)
 
 		self.Source = bspump.common.InternalSource(app, self)
-		self.Latch = bspump.common.LatchProcessor(app, self,
-			config={
-				'queue_max_size': 25,
-			}
-		)
 
 		self.build(
 			self.Source,
-			self.Latch,
+			bspump.common.LatchProcessor(app, self, config={
+				'queue_max_size': 25,
+			}),
 			bspump.common.PPrintSink(app, self)
 		)
 
@@ -29,7 +26,8 @@ class LatchPipeline(bspump.Pipeline):
 			await self.Source.put_async({}, "Tick {}".format(message_type))
 
 	async def on_print(self, message_type):
-		await self.Source.put_async({}, "Queue has {} items".format(len(self.Latch.Queue)))
+		latch = self.locate_processor("LatchProcessor")
+		await self.Source.put_async({}, "Queue has {} items".format(len(latch.list_queue())))
 
 
 if __name__ == '__main__':

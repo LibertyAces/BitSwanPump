@@ -19,10 +19,13 @@ class LatchProcessor(Processor):
 		super().__init__(app, pipeline, id=id, config=config)
 		max_size = int(self.Config.get('queue_max_size'))
 		if max_size == 0:
-			self.Queue = collections.deque()
+			self._Queue = collections.deque()
 		else:
-			self.Queue = collections.deque(maxlen=max_size)
+			self._Queue = collections.deque(maxlen=max_size)
 
 	def process(self, context, event):
-		self.Queue.append(event)
+		self._Queue.append(event)
 		return event
+
+	def list_queue(self):
+		return list(self._Queue)
