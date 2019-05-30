@@ -8,19 +8,21 @@ class KafkaKeyFilter(bspump.Processor):
 
 	Every Kafka message has a key, KafkaKeyFilter selects only those events where
 	the key matches selected "filter_key", other events will be discarded. You may set `filter_key`
-	in processor configuration.
+	as a processor parameter.
 
 	KafkaKeyFilter	 is meant to be inserted after KafkaSource in a Pipeline.
 	"""
 
-	def __init__(self, app, pipeline, id=None, config=None):
+	def __init__(self, app, pipeline, key, id=None, config=None):
+		self.key = key.encode()
 		super().__init__(app, pipeline, id, config)
 
 	def process(self, context, event):
-		assert context.get("kafka") != None
-		assert self.Config.get("filter_key") != None
+		kafka_ctx = context.get("kafka")
+		assert (kafka_ctx is not None)
 
 		key = context.get("kafka").key
-		filter_key = self.Config.get("filter_key")
-		if key != None and key.decode() == filter_key:
+		if key is not None and key == self.key:
 			return event
+		else:
+			return None
