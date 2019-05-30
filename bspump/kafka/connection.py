@@ -78,7 +78,7 @@ class KafkaConnection(Connection):
 
 
 	def _on_application_stop(self, message_type, counter):
-		self._output_queue.put_nowait((None, None))
+		self._output_queue.put_nowait((None, None, None))
 
 
 	async def _connection(self):
@@ -98,18 +98,18 @@ class KafkaConnection(Connection):
 		return self.Config['bootstrap_servers'].split(';')
 
 
-	def consume(self, topic, message):
+	def consume(self, topic, message, kafka_key=None):
 		"""
         Consumes a user-defined message by storing it in a queue and later publishing to Apache Kafka.
         """
-		self._output_queue.put_nowait((topic, message))
+		self._output_queue.put_nowait((topic, message, kafka_key))
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.PubSub.publish("KafkaConnection.pause!", self)
 
 
 	async def _loader(self, producer):
 		while True:
-			topic, message = await self._output_queue.get()
+			topic, message, kafka_key = await self._output_queue.get()
 
 			if topic is None and message is None:
 				break
@@ -117,4 +117,4 @@ class KafkaConnection(Connection):
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
 				self.PubSub.publish("KafkaConnection.unpause!", self, asynchronously=True)
 
-			await producer.send_and_wait(topic, message)
+			await producer.send_and_wait(topic, message, key=kafka_key)
