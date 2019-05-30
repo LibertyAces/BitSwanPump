@@ -1,5 +1,4 @@
 import logging
-import aiokafka
 
 from ..abc.sink import Sink
 
