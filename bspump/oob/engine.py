@@ -20,13 +20,13 @@ class OOBEEngine(object):
 		}
 	})
 
-	def __init__(self, app):
+	def __init__(self, app, destination):
 		super().__init__()
 
 		self._started = True
 
 		self.App = app
-		self.OutputProcessors = []
+		self.DestinationSource = destination
 
 		self.Context = None
 
@@ -50,13 +50,8 @@ class OOBEEngine(object):
 				'event.drop': 0,
 				'event.in': 0,
 				'event.out': 0,
-				'event.post': 0,
 			}
 		)
-
-
-	def add_output_processor(self, processor):
-		self.OutputProcessors.append(processor)
 
 
 	def put(self, context, event):
@@ -88,9 +83,7 @@ class OOBEEngine(object):
 
 			output_event = await self.process(self.Context, input_event)
 			if output_event is not None:
-				for output_processors in self.OutputProcessors:
-					await output_processors.put_async(self.Context, output_event)
-					self.eventStatsCounter.add("event.post", 1)
+				await self.DestinationSource.put_async(self.Context, output_event)
 				self.eventStatsCounter.add("event.out", 1)
 			else:
 				self.eventStatsCounter.add("event.drop", 1)

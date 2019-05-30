@@ -11,7 +11,21 @@ L = logging.getLogger(__name__)
 
 class OOBESink(Sink):
 	"""
-	OOBESink allows you to perform long synchronous operations without limiting the pipeline.
+	OOBESink allows you to perform long synchronous operations "out-of-band" e.g. out of the synchronous processing within the pipeline.
+
+	The following diagram illustrates the architecture of the "out-of-band" module with OOBESink and OOBEEngine:
+
+	Pipeline A (synchronous)
+	+---+---+---+---+---+---+
+	Source	Processors	OOBESink
+	+---+---+---+---+---+---+
+							|
+						OOBEEngine (asynchronous)
+							|
+							Pipeline B (synchronous)
+							+---+---+---+---+---+---+---+
+							InternalSource  Processors  Sink
+							+---+---+---+---+---+---+---+
 	"""
 
 	def __init__(self, app, pipeline, engine, id=None, config=None):
