@@ -16,7 +16,11 @@ L = logging.getLogger(__name__)
 
 
 class TimeDriftAnalyzer(Analyzer):
-
+	'''
+		The analyzer, which shows how different is time of the stream from the current time.
+		The output of the analyzis is a metric with average time, median time, minimum time, 
+		maximum time and a standart deviation. 
+	'''
 	ConfigDefaults = {
 		'stats_period' : 5*60, # once per 5 minutes
 		'history_size' : 100, # keep maximum 100 array members
@@ -70,6 +74,9 @@ class TimeDriftAnalyzer(Analyzer):
 
 
 	def get_diff(self, event_timestamp):
+		'''
+			Returns the time difference of current event.
+		'''
 		diff = self.App.time()*1000 - event_timestamp
 		return diff
 

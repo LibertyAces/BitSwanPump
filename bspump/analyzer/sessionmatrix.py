@@ -1,11 +1,14 @@
 import time
 import logging
+
 import numpy as np
 
 import asab
+import collections
+import abc
 
-from .analyzer import Analyzer
-from .sessionmatrix import SessionMatrix
+from ..abc.matrix import MatrixABC
+
 
 ###
 
@@ -14,11 +17,9 @@ L = logging.getLogger(__name__)
 ###
 
 
-class SessionAnalyzer(Analyzer):
+class SessionMatrix(MatrixABC):
 	'''
-		This is the analyzer for events with multiple different dimensions.
-
-		`SessionAnalyzer` operates over the `SessionMatrix` object.
+		Matrix, specific for `SessionAnalyzer`.
 		`column_formats` is an array, each element contains the letter from the table + number:
 
 			+------------+------------------+
@@ -47,31 +48,37 @@ class SessionAnalyzer(Analyzer):
 		stand before the letter.
 		Example: '(6, 3)i8' will create the matrix with n rows, 6 columns and 3 third dimensions with integer elements.
 		`column_names` is an array with names of each column, with the same length as `column_formats`.
-		`sessions_id` is an id of `SessionMatrix` object defined alternatively.
 
 	'''
 
-	def __init__(self, app, pipeline, column_formats, column_names, sessions_id=None, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
-		svc = app.get_service("bspump.PumpService")
-		if sessions_id is None:
-			self.Sessions =  SessionMatrix(app, column_formats, column_names)
-			svc.add_matrix(self.Sessions)
-		else:
-			self.Sessions = svc.locate_matrix(sessions_id)
-	
-
-
-
-		
+	def __init__(self, app, column_formats, column_names, id=None, config=None):
+		column_formats.append("i8")
+		column_names.append("@timestamp_start")
+		column_formats.append("i8")
+		column_names.append("@timestamp_end")	
+		super().__init__(app, column_names, column_formats, id=id, config=config)
 
 	
-	
-	
+	def add_row(self, row_id, start_time):
+		'''
+			Adds new row with `row_id` to the matrix and assigns the `@timestamp_start`
+			the `start_time`.
+		'''
+
+		row = np.zeros(1, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
+		self.Matrix = np.append(self.Matrix, row)
+		row_counter = len(self.RowMap)
+		self.RowMap[row_id] = row_counter
+		self.RevRowMap[row_counter] = row_id
+		self.Matrix[-1]["@timestamp_start"] = start_time
 
 
+	def close_row(self, row_id, end_time):
+		'''
+			Puts the `row_id` to the ClosedRows and assigns the `@timestamp_end` the `end_time`.
+		'''
 
-
-
-	
-
+		row_counter = self.RowMap.get(row_id)
+		if row_counter is not None:
+			self.ClosedRows.add(row_counter)
+			self.Matrix[row_counter]["@timestamp_end"] = end_time

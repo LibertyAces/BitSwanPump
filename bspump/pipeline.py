@@ -313,6 +313,28 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			self.Processors.append([])
 
 
+	def insert_before(self, id, processor):
+		"""
+		Insert the processor into a pipeline before another processor specified by id
+		"""
+		for processors in self.Processors:
+			for idx, _processor in enumerate(processors):
+				if _processor.Id == id:
+					processors.insert(idx, processor)
+					return
+
+
+	def insert_after(self, id, processor):
+		"""
+		Insert the processor into a pipeline after another processor specified by id
+		"""
+		for processors in self.Processors:
+			for idx, _processor in enumerate(processors):
+				if _processor.Id == id:
+					processors.insert(idx + 1, processor)
+					return
+
+
 	def build(self, source, *processors):
 		self.set_source(source)
 		for processor in processors:

@@ -9,15 +9,17 @@ Principles
 ----------
 
 * Write once, use many times
+* Everything is a stream
 * Schema-less
+* Kappa architecture
+* Real-Time
 * High performance
-* Back pressure
 * Simple to use and well documented, so anyone can write their own stream processor
-* Sliding time window
 * Asynchronous via Python 3.5+ ``async``/``await`` and ``asyncio``
 * `Event driven Architecture <https://en.wikipedia.org/wiki/Event-driven_architecture>`_ / `Reactor pattern <https://en.wikipedia.org/wiki/Reactor_pattern>`_
 * Single-threaded core but compatible with threads
 * Compatible with `pypy <http://pypy.org>`_, Just-In-Time compiler capable of boosting Python code performace more then 5x times
+* Good citizen of the Python ecosystem 
 * Modularized
 
 

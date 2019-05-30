@@ -1,3 +1,4 @@
+import json
 import logging
 
 from ..abc.sink import Sink
@@ -13,6 +14,8 @@ class KafkaSink(Sink):
 	"""
     KafkaSink is a sink processor that forwards the event to a Apache Kafka specified by a KafkaConnection object.
 
+    KafkaSink expects bytes as an input. If the input is string or dictionary, it is automatically transformed to bytes using encoding charset specified in the configuration.
+    
 .. code:: python
 
     class KafkaPipeline(bspump.Pipeline):
@@ -51,6 +54,7 @@ class KafkaSink(Sink):
 
 	ConfigDefaults = {
 		'topic': '',
+		'encoding': 'utf-8',
 	}
 
 
@@ -60,12 +64,17 @@ class KafkaSink(Sink):
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.Topic = self.Config['topic']
 		self._key_serializer = key_serializer
+		self.Encoding = self.Config['encoding']
 
 		app.PubSub.subscribe("KafkaConnection.pause!", self._connection_throttle)
 		app.PubSub.subscribe("KafkaConnection.unpause!", self._connection_throttle)
 
 
 	def process(self, context, event):
+		if type(event) == dict:
+			event = json.dumps(event)
+		if type(event) == str:
+			event = event.encode(self.Encoding)
 		kafka_topic = context.get("kafka_topic", self.Topic)
 		kafka_key = context.get("kafka_key")
 
