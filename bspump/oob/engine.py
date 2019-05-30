@@ -5,13 +5,13 @@ import asab
 
 class OOBEEngine(object):
 	"""
-	OOBEEngine processes originally synchronous events asynchronously.
-	Specific implementation of OOBEEngine should override the process method.
+    OOBEEngine processes originally synchronous events asynchronously.
+    Specific implementation of OOBEEngine should override the process method.
 
-		async def process(self, context, event):
-			pass
+        async def process(self, context, event):
+            pass
 
-	"""
+"""
 
 	asab.Config.add_defaults({
 		"OOBEEngine": {

@@ -19,22 +19,22 @@ L = logging.getLogger(__name__)
 
 class SampleOOBEngine(bspump.oob.OOBEEngine):
 	"""
-	OOBEngine allows you to perform long synchronous operations "out-of-band" e.g. out of the synchronous processing within the pipeline.
+    OOBEngine allows you to perform long synchronous operations "out-of-band" e.g. out of the synchronous processing within the pipeline.
 
-	The following diagram illustrates the architecture of the "out-of-band" module with OOBESink and OOBEEngine:
+    The following diagram illustrates the architecture of the "out-of-band" module with OOBESink and OOBEEngine:
 
-	PipelineA (synchronous)
-	+---+---+---+---+---+---+
-	Source	Processors	OOBESink
-	+---+---+---+---+---+---+
-							|
-					SampleOOBEngine (asynchronous)
-							|
-							PipelineB (synchronous)
-							+---+---+---+---+---+---+---+
-							InternalSource  Processors  Sink
-							+---+---+---+---+---+---+---+
-	"""
+    PipelineA (synchronous)
+    +---+---+---+---+---+---+
+    Source	Processors	OOBESink
+    +---+---+---+---+---+---+
+                            |
+                SampleOOBEngine (asynchronous)
+                            |
+                            PipelineB (synchronous)
+                            +---+---+---+---+---+---+---+
+                            InternalSource  Processors  Sink
+                            +---+---+---+---+---+---+---+
+"""
 
 	async def process(self, context, event):
 
