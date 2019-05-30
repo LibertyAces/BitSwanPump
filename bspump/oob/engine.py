@@ -17,7 +17,7 @@ class OOBEEngine(object):
         async def process(self, context, event):
 
             async with aiohttp.ClientSession() as session:
-                async with session.get("https://reqres.in/api/{}/2".format(event.get("description", "unknown"))) as resp:
+                async with session.get("https://example.com/resolve_color/{}".format(event.get("color_id", "unknown"))) as resp:
                     if resp.status != 200:
                         return event
                 color = await resp.json()
