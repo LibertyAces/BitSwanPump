@@ -33,19 +33,25 @@ class KafkaSink(Sink):
 	}
 
 
-	def __init__(self, app, pipeline, connection, id=None, config=None):
+	def __init__(self, app, pipeline, connection, key_serializer=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.Topic = self.Config['topic']
+		self._key_serializer = key_serializer
 
 		app.PubSub.subscribe("KafkaConnection.pause!", self._connection_throttle)
 		app.PubSub.subscribe("KafkaConnection.unpause!", self._connection_throttle)
 
 
 	def process(self, context, event):
-		kafka_key_bytes = str.encode(context.get ("kafka_key"))
-		self.Connection.consume(self.Topic, event, kafka_key_bytes)
+		self._consume_event(context, event, self.Topic)
+
+	def _consume_event (self, context, event, topic):
+		kafka_key = str.encode(context.get("kafka_key"))
+		if self._key_serializer is not None:
+			kafka_key = self._key_serializer(kafka_key)
+		self.Connection.consume(topic, event, kafka_key)
 
 
 	def _connection_throttle(self, event_name, connection):
@@ -81,6 +87,6 @@ class KafkaMultiSink (KafkaSink):
 	"""
 
 	def process(self, context, event):
-		topic = context.get("kafka_topic")
-		kafka_key = context.get("kafka_key")
-		self.Connection.consume(topic, event, kafka_key)
+		kafka_topic = context.get("kafka_topic")
+		self._consume_event(context, event, kafka_topic)
+
