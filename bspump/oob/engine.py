@@ -1,3 +1,5 @@
+import abc
+
 import asyncio
 
 import asab
@@ -5,11 +7,23 @@ import asab
 
 class OOBEEngine(object):
 	"""
-    OOBEEngine processes originally synchronous events asynchronously.
-    Specific implementation of OOBEEngine should override the process method.
+    OOBEEngine processes originally synchronous events "out-of-band" e.g. out of the synchronous processing within the pipeline.
+
+    Specific implementation of OOBEEngine should implement the process method to process events while performing long running (asynchronous) tasks such as HTTP requests.
+    The long running tasks may enrich events with relevant information, such as output of external calculations.
+
+    Example of process method:
 
         async def process(self, context, event):
-            pass
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://reqres.in/api/{}/2".format(event.get("description", "unknown"))) as resp:
+                    if resp.status != 200:
+                        return event
+                color = await resp.json()
+                event["color"] = color
+
+            return event
 
 """
 
@@ -23,7 +37,7 @@ class OOBEEngine(object):
 	def __init__(self, app, destination):
 		super().__init__()
 
-		self._started = True
+		self.IsStarted = True
 
 		self.App = app
 		self.DestinationSource = destination
@@ -71,7 +85,7 @@ class OOBEEngine(object):
 	async def _worker(self):
 		while True:
 
-			if not self._started and self._queue.qsize() == 0:
+			if not self.IsStarted and self._queue.qsize() == 0:
 				break
 
 			input_event = await self._queue.get()
@@ -92,7 +106,7 @@ class OOBEEngine(object):
 
 
 	async def _on_exit(self, event_name):
-		self._started = False
+		self.IsStarted = False
 
 		for i in range(0, self._workers_size):
 			self._queue.put_nowait(None)
@@ -102,5 +116,6 @@ class OOBEEngine(object):
 			done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
 
 
+	@abc.abstractmethod
 	async def process(self, context, event):
 		pass
