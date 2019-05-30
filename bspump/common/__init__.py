@@ -5,6 +5,8 @@ from .json import JsonToDictParser as JSONParserProcessor # For backward compata
 from .json import DictToJsonParser
 from .bytes import StringToBytesParser
 from .bytes import BytesToStringParser
+from .jsonbytes import JsonBytesToDictParser
+from .jsonbytes import DictToJsonBytesParser
 from .flatten import FlattenDictProcessor
 from .latch import LatchProcessor
 from .null import NullSink
