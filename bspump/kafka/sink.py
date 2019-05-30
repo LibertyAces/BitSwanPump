@@ -12,11 +12,6 @@ L = logging.getLogger(__name__)
 class KafkaSink(Sink):
 	"""
     KafkaSink is a sink processor that forwards the event to a Apache Kafka specified by a KafkaConnection object.
-    
-    TODO: How to specify topic ...
-
-    TODO: Key in context['kafka_key'] or None ...
-
 
 .. code:: python
 
@@ -29,11 +24,11 @@ class KafkaSink(Sink):
                 bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
         )
 
-    If you want to send all events to same topic, simply provide it in KafkaSink configuration in topic attribute.
-    In case you want to distribute events to different topics on individual basis,
-    you can use event context - context['kafka_topic'].
-    To provide business logic for event distribution, you can create topic selector processor.
-
+	There are to ways to use KafkaSink:
+		 - Specify a single topic in KafkaSink config - topic, to be used for all the events in pipeline.
+		 - Specify topic separetly for each event in event context - context['kafk_topic'].
+		   Topic from configuration is than used as a default topic.
+		   To provide business logic for event distribution, you can create topic selector processor.
 	Processor example:
 
 .. code:: python
@@ -47,6 +42,10 @@ class KafkaSink(Sink):
 				context["kafka_topic"] = "light"
 
 			return event
+
+
+    Every kafka message can be a key:value pair. Key is read from event context - context['kafka_key'].
+    If kafka_key is not provided, key defaults to None.
 
     """
 
