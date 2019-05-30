@@ -1,7 +1,7 @@
 import bspump
 
 
-class KafkaKeyFilterProcessor(bspump.Processor):
+class KafkaKeyFilter(bspump.Processor):
 	"""
 	KafkaKeyFilter reduces the incoming event stream from Kafka based on a
 	key provided in each event.
