@@ -27,7 +27,7 @@ class LatchPipeline(bspump.Pipeline):
 
 	async def on_print(self, message_type):
 		latch = self.locate_processor("LatchProcessor")
-		await self.Source.put_async({}, "Queue has {} items".format(len(latch.get_queue())))
+		await self.Source.put_async({}, "Queue has {} items".format(len(latch.list_queue())))
 
 
 if __name__ == '__main__':
