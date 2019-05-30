@@ -33,7 +33,7 @@ class KafkaConnection(Connection):
 	}
 
 
-	def __init__(self, app, connection_id, config=None):
+	def __init__(self, app, connection_id, key_serializer=None, config=None):
 		super().__init__(app, connection_id, config=config)
 
 		self.Loop = app.Loop
@@ -41,6 +41,7 @@ class KafkaConnection(Connection):
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._conn_future = None
+		self.key_serializer = key_serializer
 
 		# Subscription
 		self.PubSub = app.PubSub
@@ -84,7 +85,8 @@ class KafkaConnection(Connection):
 	async def _connection(self):
 		producer = aiokafka.AIOKafkaProducer(
 			loop=self.Loop,
-			bootstrap_servers=self.get_bootstrap_servers()
+			bootstrap_servers=self.get_bootstrap_servers(),
+			key_serializer=self.key_serializer
 		)
 		try:
 			await producer.start()
