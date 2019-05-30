@@ -315,7 +315,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def insert_before(self, id, processor):
 		"""
-		Insert processor before another by its id
+		Insert the processor into a pipeline before another processor specified by id
 		"""
 		for processors in self.Processors:
 			for idx, _processor in enumerate(processors):
@@ -326,7 +326,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def insert_after(self, id, processor):
 		"""
-		Insert processor after another by its id
+		Insert the processor into a pipeline after another processor specified by id
 		"""
 		for processors in self.Processors:
 			for idx, _processor in enumerate(processors):
