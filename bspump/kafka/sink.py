@@ -80,7 +80,7 @@ class KafkaSink(Sink):
 
 		# TODO: Make KafkaConnection create separate producer for every sink
 		#  	- key/value serialization could be moved there.
-		if self._key_serializer is not None:
+		if self._key_serializer is not None and kafka_key is not None:
 			kafka_key = self._key_serializer(kafka_key)
 		self.Connection.consume(kafka_topic, event, kafka_key)
 
