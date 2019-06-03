@@ -64,12 +64,14 @@ class TimeWindowAnalyzer(Analyzer):
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
 		if time_window_id is None:
+		    tw_id = self.Id + "Matrix"
 			self.TimeWindow = TimeWindowMatrix(
 				app,
 				tw_dimensions=tw_dimensions,
 				tw_format=tw_format,
 				resolution=resolution,
-				start_time=start_time
+				start_time=start_time, 
+				id=tw_id
 			)	
 			svc.add_matrix(self.TimeWindow)
 		else:
