@@ -26,7 +26,7 @@ class FileABCSource(TriggerSource):
 		'post': 'move', # one of 'delete', 'noop' and 'move'
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
-		'encoding': 'utf-8',
+		'encoding': '',
 		'move_destination': '' # destination folder for 'move'. Make sure it's outside of the glob search
 	}
 
@@ -42,7 +42,8 @@ class FileABCSource(TriggerSource):
 			self.post = 'move'
 		self.include = self.Config['include']
 		self.exclude = self.Config['exclude']
-		self.encoding = self.Config['encoding']
+		conf_encoding = self.Config['encoding']
+		self.encoding = conf_encoding if len(conf_encoding) > 0 else None
 		
 		self.MoveDestination = self.Config['move_destination']
 
@@ -116,8 +117,7 @@ class FileABCSource(TriggerSource):
 				f = lzma.open(locked_filename, self.mode, encoding=self.encoding)
 
 			else:
-				f = open(locked_filename, self.mode, newline=self.newline,
-						encoding=self.encoding)
+				f = open(locked_filename, self.mode, newline=self.newline, encoding=self.encoding)
 
 		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
 			L.exception("Error when opening the file '{}' - will try again".format(filename))
