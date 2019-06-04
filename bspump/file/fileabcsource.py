@@ -105,15 +105,15 @@ class FileABCSource(TriggerSource):
 		try:
 			if filename.endswith(".gz"):
 				import gzip
-				f = gzip.open(locked_filename, self.mode)
+				f = gzip.open(locked_filename, self.mode, encoding=self.encoding)
 
 			elif filename.endswith(".bz2"):
 				import bz2
-				f = bz2.open(locked_filename, self.mode)
+				f = bz2.open(locked_filename, self.mode, encoding=self.encoding)
 
 			elif filename.endswith(".xz") or filename.endswith(".lzma"):
 				import lzma
-				f = lzma.open(locked_filename, self.mode)
+				f = lzma.open(locked_filename, self.mode, encoding=self.encoding)
 
 			else:
 				f = open(locked_filename, self.mode, newline=self.newline,
