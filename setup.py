@@ -1,4 +1,3 @@
-import os.path
 import pathlib
 import re
 import subprocess
@@ -8,7 +7,7 @@ from setuptools.command.build_py import build_py
 
 here = pathlib.Path(__file__).parent
 if (here / '.git').exists():
-	module_dir = os.path.dirname(__file__)
+	module_dir = (here / 'bspump')
 
 	version = subprocess.check_output(
 		['git', 'describe', '--abbrev=7', '--tags', '--dirty=+dirty', '--always'], cwd=module_dir)
@@ -30,7 +29,7 @@ class custom_build_py(build_py):
 	def run(self):
 		super().run()
 
-		version_file_name = os.path.join(self.build_lib, 'bspump/__version__.py')
+		version_file_name = pathlib.Path(self.build_lib, 'bspump/__version__.py')
 		with open(version_file_name, 'w') as f:
 			f.write("__version__ = '{}'\n".format(version))
 			f.write("__build__ = '{}'\n".format(build))
