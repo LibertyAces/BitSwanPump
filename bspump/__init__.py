@@ -1,5 +1,3 @@
-__version__ = '19.5.rc1'
-
 from .application import BSPumpApplication
 from .pipeline import Pipeline
 from .pumpbuilder import PumpBuilder
@@ -14,6 +12,7 @@ from .exception import ProcessingError
 from .abc.lookup import Lookup, MappingLookup, DictionaryLookup
 from .fileloader import load_json_file
 
+from .__version__ import __version__, __build__
 
 __all__ = [
 	"BSPumpApplication",

@@ -1,20 +1,28 @@
-import pathlib
-import re
+import os.path
 
-from setuptools import find_packages
 from setuptools import setup
+from setuptools import find_packages
+from setuptools.command.build_py import build_py
 
-here = pathlib.Path(__file__).parent
-txt = (here / 'asab' / '__init__.py').read_text('utf-8')
-try:
-	version = re.findall(r"^__version__ = '([^']+)'\r?$", txt, re.M)[0]
-except IndexError:
-	raise RuntimeError('Unable to determine version.')
+import bspump
+
+
+class custom_build_py(build_py):
+
+	def run(self):
+		super().run()
+
+		# Install a proper __version__py, if needed.
+		version_file_name = os.path.join(self.build_lib, 'bspump/__version__.py')
+		with open(version_file_name, 'w') as f:
+			f.write("__version__ = '''{}'''\n".format(bspump.__version__))
+			f.write("__build__ = '''{}'''\n".format(bspump.__build__))
+			f.write("\n")
 
 
 setup(
 	name='bspump',
-	version=version,
+	version=bspump.__version__,
 	description='BSPump is a real-time stream processor for Python 3.5+',
 	long_description=open('README.rst').read(),
 	url='https://github.com/TeskaLabs/bspump',
@@ -45,4 +53,7 @@ setup(
 	scripts=[
 		'utils/bselastic'
 	],
+	cmdclass={
+		'build_py': custom_build_py,
+	},
 )
