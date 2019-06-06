@@ -77,6 +77,7 @@ setup(
 		'numpy>=1.16.3',
 		'pandas>=0.24.2',
 		'pika>=1.0.1',
+		'pymysql<=0.9.2',  # aiomysql 0.0.20 requires PyMySQL<=0.9.2
 		'pyarrow>=0.13.0',
 		'requests>=2.21.0',
 	],
