@@ -66,7 +66,19 @@ setup(
 		'Source': 'https://github.com/TeskaLabs/bspump'
 	},
 	install_requires=[
-		'requests', # for bselastic tool
+		'aiohttp>=3.5.4',
+		'aiokafka>=0.5.1',
+		'aiomysql>=0.0.20',
+		'aiosmtplib>=1.0.5',
+		'asab>=18.12',
+		'fastavro>=0.21.24',
+		'mongoquery>=1.3.5',
+		'mysql-replication>=0.19',
+		'numpy>=1.16.3',
+		'pandas>=0.24.2',
+		'pika>=1.0.1',
+		'pyarrow>=0.13.0',
+		'requests>=2.21.0',
 	],
 	scripts=[
 		'utils/bselastic'
