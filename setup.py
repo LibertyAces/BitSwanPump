@@ -1,10 +1,28 @@
 import os.path
+import pathlib
+import re
+import subprocess
 
-from setuptools import setup
-from setuptools import find_packages
+from setuptools import find_packages, setup
 from setuptools.command.build_py import build_py
 
-import bspump
+here = pathlib.Path(__file__).parent
+if (here / '.git').exists():
+	module_dir = os.path.dirname(__file__)
+
+	version = subprocess.check_output(
+		['git', 'describe', '--abbrev=7', '--tags', '--dirty=+dirty', '--always'], cwd=module_dir)
+	version = version.decode('utf-8').strip()
+	if version[:1] == 'v':
+		version = version[1:]
+
+	build = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=module_dir)
+	build = build.decode('utf-8').strip()
+
+else:
+	txt = (here / 'bspump' / '__version__.py').read_text('utf-8')
+	version = re.findall(r"^__version__ = '([^']+)'\r?$", txt, re.M)[0]
+	build = re.findall(r"^__build__ = '([^']+)'\r?$", txt, re.M)[0]
 
 
 class custom_build_py(build_py):
@@ -12,17 +30,18 @@ class custom_build_py(build_py):
 	def run(self):
 		super().run()
 
-		# Install a proper __version__py, if needed.
 		version_file_name = os.path.join(self.build_lib, 'bspump/__version__.py')
 		with open(version_file_name, 'w') as f:
-			f.write("__version__ = '''{}'''\n".format(bspump.__version__))
-			f.write("__build__ = '''{}'''\n".format(bspump.__build__))
+			f.write("__version__ = '{}'\n".format(version))
+			f.write("__build__ = '{}'\n".format(build))
+			f.write("\n")
+			f.write("__all__ = ['__version__', '__build__']")
 			f.write("\n")
 
 
 setup(
 	name='bspump',
-	version=bspump.__version__,
+	version=version,
 	description='BSPump is a real-time stream processor for Python 3.5+',
 	long_description=open('README.rst').read(),
 	url='https://github.com/TeskaLabs/bspump',
