@@ -67,20 +67,20 @@ setup(
 		'Source': 'https://github.com/TeskaLabs/bspump'
 	},
 	install_requires=[
-		'aiohttp>=3.5.4',
-		'aiokafka>=0.5.1',
-		'aiomysql>=0.0.20',
-		'aiosmtplib>=1.0.5',
-		'asab>=18.12',
-		'fastavro>=0.21.24',
-		'mongoquery>=1.3.5',
-		'mysql-replication>=0.19',
-		'numpy>=1.16.3',
-		'pandas>=0.24.2',
-		'pika>=1.0.1',
-		'pymysql<=0.9.2',  # aiomysql 0.0.20 requires PyMySQL<=0.9.2
-		'pyarrow>=0.13.0',
-		'requests>=2.21.0',
+		'aiohttp>=3.5.4,<4.0',
+		'aiokafka>=0.5.1,<1.0',
+		'aiomysql>=0.0.20,<0.1',
+		'aiosmtplib>=1.0.5,<2.0',
+		'asab>=18.12,<19.0',
+		'fastavro>=0.21.24,<0.22',
+		'mongoquery>=1.3.5,<2.0',
+		'mysql-replication>=0.19,<1.0',
+		'numpy>=1.16.3,<2.0',
+		'pandas>=0.24.2,<1.0',
+		'pika>=1.0.1,<2.0',
+		'pymysql>=0.9,<=0.9.2',  # aiomysql 0.0.20 requires PyMySQL<=0.9.2
+		'pyarrow>=0.13.0,<1.0',
+		'requests>=2.21.0,<3.0',
 	],
 	scripts=[
 		'utils/bselastic'
