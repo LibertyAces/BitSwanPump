@@ -7,6 +7,7 @@ from setuptools.command.build_py import build_py
 
 here = pathlib.Path(__file__).parent
 if (here / '.git').exists():
+	# This branch is happening during build from git version
 	module_dir = (here / 'bspump')
 
 	version = subprocess.check_output(
@@ -19,6 +20,7 @@ if (here / '.git').exists():
 	build = build.decode('utf-8').strip()
 
 else:
+	# This is executed from packaged & distributed version
 	txt = (here / 'bspump' / '__version__.py').read_text('utf-8')
 	version = re.findall(r"^__version__ = '([^']+)'\r?$", txt, re.M)[0]
 	build = re.findall(r"^__build__ = '([^']+)'\r?$", txt, re.M)[0]
@@ -29,6 +31,7 @@ class custom_build_py(build_py):
 	def run(self):
 		super().run()
 
+		# This replace content of `__version__.py` in build folder
 		version_file_name = pathlib.Path(self.build_lib, 'bspump/__version__.py')
 		with open(version_file_name, 'w') as f:
 			f.write("__version__ = '{}'\n".format(version))
