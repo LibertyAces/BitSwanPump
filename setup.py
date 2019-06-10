@@ -37,8 +37,6 @@ class custom_build_py(build_py):
 			f.write("__version__ = '{}'\n".format(version))
 			f.write("__build__ = '{}'\n".format(build))
 			f.write("\n")
-			f.write("__all__ = ['__version__', '__build__']")
-			f.write("\n")
 
 
 setup(
