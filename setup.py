@@ -72,7 +72,7 @@ setup(
 		'aiomysql>=0.0.20,<0.1',
 		'aiosmtplib>=1.0.5,<2.0',
 		'asab>=18.12,<19.0',
-		'fastavro>=0.21.24,<0.22',
+		'fastavro>=0.21.24,<1.0',
 		'mongoquery>=1.3.5,<2.0',
 		'mysql-replication>=0.19,<1.0',
 		'numpy>=1.16.3,<2.0',
