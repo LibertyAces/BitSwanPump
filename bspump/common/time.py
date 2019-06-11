@@ -11,7 +11,7 @@ L = logging.getLogger(__name__)
 
 class TimeZoneNormalizer(bspump.Processor):
 	"""
-	Normalize datetime from timezone in config to UTC
+	Normalizes datetime from local timezone (e.g. in config) to UTC, which is preferred internal datetime form
 	"""
 
 	ConfigDefaults = {
@@ -24,14 +24,16 @@ class TimeZoneNormalizer(bspump.Processor):
 		self.TimeZoneSource = pytz.timezone(self.Config.get("timezone"))
 
 
-	def normalize(self, time_stamp: datetime.datetime) -> datetime.datetime:
+	def normalize(self, local_time: datetime.datetime) -> datetime.datetime:
 		"""
-		Normalize time_stamp - Adds missing information about time-zone from config
-		:param time_stamp: Time stamp to normalize
-		:return: Normalized datetime in UTC
+		If `local_time` doesn't contain a time zone (e.g. it is naive), the timezone will be added from config
+
+		:param local_time: Local time to normalize
+		:return: Normalized `local_time` in UTC
 		"""
-		local_date_time = self.TimeZoneSource.localize(time_stamp)
-		return local_date_time.astimezone(pytz.utc)
+		if not local_time.tzinfo:
+			local_time = self.TimeZoneSource.localize(local_time)
+		return local_time.astimezone(pytz.utc)
 
 
 	@abc.abstractmethod
