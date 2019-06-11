@@ -19,12 +19,8 @@ class TimeZoneNormalizer(bspump.Processor):
 	}
 
 
-	def __init__(self, app, pipeline, id=None, config=None, field_name="@timestamp"):
-		"""
-		:param field_name: Field name to normalize
-		"""
+	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
-		self.FieldName = field_name
 		self.TimeZoneSource = pytz.timezone(self.Config.get("timezone"))
 
 
@@ -45,9 +41,9 @@ class TimeZoneNormalizer(bspump.Processor):
 
 		Example:
 
-			>>> time_stamp = event[self.FieldName]
-			>>> time_stamp = self.normalize(time_stamp)
-			>>> event[self.FieldName] = time_stamp
+			>>> native_time = event["@timestamp"]
+			>>> local_time = self.normalize(native_time)
+			>>> event["@timestamp"] = local_time
 		"""
 		raise NotImplemented()
 
