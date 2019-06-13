@@ -13,17 +13,56 @@ class KafkaKeyFilter(bspump.Processor):
 	KafkaKeyFilter	 is meant to be inserted after KafkaSource in a Pipeline.
 	"""
 
-	def __init__(self, app, pipeline, key, id=None, config=None):
+	def __init__(self, app, pipeline, keys, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
-		self.Key = key
+		if isinstance (keys,list):
+			self._keys = keys
+			self.process = self.process_keys
+		else:
+			self._key = keys
+			self.process = self.process_key
 
+	def process (self, context, event):
+		pass
 
-	def process(self, context, event):
+	def process_key(self, context, event):
 		kafka_ctx = context.get("kafka")
 		assert (kafka_ctx is not None)
 
 		key = kafka_ctx.key
-		if key is not None and key == self.Key:
+		if key is not None and key == self._key:
 			return event
 		else:
 			return None
+
+	def process_keys(self, context, event):
+		kafka_ctx = context.get("kafka")
+		assert (kafka_ctx is not None)
+
+		key = kafka_ctx.key
+		if key is not None and key in self._keys:
+			return event
+		else:
+			return None
+
+
+	# simple version
+
+	# def __init__(self, app, pipeline, keys, id=None, config=None):
+	# 	super().__init__(app, pipeline, id, config)
+	# 	if not isinstance (keys,list):
+	# 		self._keys = [keys]
+	# 	else:
+	# 		self._keys = keys
+	#
+	#
+	#
+	# def process(self, context, event):
+	# 	kafka_ctx = context.get("kafka")
+	# 	assert (kafka_ctx is not None)
+	#
+	# 	key = kafka_ctx.key
+	# 	if key is not None and key in self._keys:
+	# 		return event
+	# 	else:
+	# 		return None
