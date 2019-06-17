@@ -1,5 +1,6 @@
 from bspump import Processor
 import collections
+import mongoquery
 
 
 class LatchProcessor(Processor):
@@ -27,5 +28,16 @@ class LatchProcessor(Processor):
 		self._Queue.append(event)
 		return event
 
-	def list_queue(self):
-		return list(self._Queue)
+	def list_queue(self, query=None):
+		if query is None:
+			return list(self._Queue)
+
+		
+		q = mongoquery.Query(query)
+		output = []
+
+		for event in self._Queue:
+			if q.match(event):
+				output.append(event)
+
+		return output
