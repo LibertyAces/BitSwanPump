@@ -115,6 +115,10 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 		return self.RowMap.get(row_name)
 
 
+	def get_row_id(self, row_idx):
+		return self.RevRowMap.get(row_idx)
+
+
 	#@abc.abstractmethod
 	async def analyze(self):
 		pass

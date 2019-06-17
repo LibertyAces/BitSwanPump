@@ -55,10 +55,13 @@ class SessionAnalyzer(Analyzer):
 		super().__init__(app, pipeline, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if sessions_id is None:
-			self.Sessions =  SessionMatrix(app, column_formats, column_names)
+			s_id = self.Id + "Matrix"
+			self.Sessions =  SessionMatrix(app, column_formats, column_names, id=s_id)
 			svc.add_matrix(self.Sessions)
 		else:
 			self.Sessions = svc.locate_matrix(sessions_id)
+
+		self.Matrix = self.Sessions.Matrix #alias
 	
 
 

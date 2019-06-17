@@ -144,6 +144,7 @@ class TimeWindowMatrix(MatrixABC):
 		self.RowMap[row_id] = row_counter
 		self.RevRowMap[row_counter] = row_id
 		self.Matrix[-1]["warming_up_count"] = self.Dimensions[0]
+		return row_counter
 
 	
 	def get_column(self, event_timestamp):
