@@ -10,7 +10,10 @@ class KafkaPipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.kafka.KafkaSource(app, self, "KafkaConnection", config={'topic': 'messages'}),
-			# bspump.common.NullSink(app, self),
+			bspump.common.BytesToStringParser(app, self),
+			bspump.common.JsonToDictParser(app, self),
+			bspump.common.PPrintProcessor(app, self),
+			# KafkaSink can accept both bytes,  str or dict
 			bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
 		)
 

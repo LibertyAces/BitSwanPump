@@ -14,15 +14,16 @@ class KafkaKeyFilter(bspump.Processor):
 	"""
 
 	def __init__(self, app, pipeline, key, id=None, config=None):
-		self.key = key
 		super().__init__(app, pipeline, id, config)
+		self.Key = key
+
 
 	def process(self, context, event):
 		kafka_ctx = context.get("kafka")
 		assert (kafka_ctx is not None)
 
-		key = context.get("kafka").key
-		if key is not None and key == self.key:
+		key = kafka_ctx.key
+		if key is not None and key == self.Key:
 			return event
 		else:
 			return None

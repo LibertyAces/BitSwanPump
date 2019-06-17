@@ -42,7 +42,8 @@ class FileABCSource(TriggerSource):
 			self.post = 'move'
 		self.include = self.Config['include']
 		self.exclude = self.Config['exclude']
-		self.encoding = self.Config['encoding']
+		conf_encoding = self.Config['encoding']
+		self.encoding = conf_encoding if len(conf_encoding) > 0 else None
 		
 		self.MoveDestination = self.Config['move_destination']
 
@@ -105,19 +106,18 @@ class FileABCSource(TriggerSource):
 		try:
 			if filename.endswith(".gz"):
 				import gzip
-				f = gzip.open(locked_filename, self.mode)
+				f = gzip.open(locked_filename, self.mode, encoding=self.encoding)
 
 			elif filename.endswith(".bz2"):
 				import bz2
-				f = bz2.open(locked_filename, self.mode)
+				f = bz2.open(locked_filename, self.mode, encoding=self.encoding)
 
 			elif filename.endswith(".xz") or filename.endswith(".lzma"):
 				import lzma
-				f = lzma.open(locked_filename, self.mode)
+				f = lzma.open(locked_filename, self.mode, encoding=self.encoding)
 
 			else:
-				f = open(locked_filename, self.mode, newline=self.newline,
-						encoding=self.encoding if len(self.encoding) > 0 else None)
+				f = open(locked_filename, self.mode, newline=self.newline, encoding=self.encoding)
 
 		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
 			L.exception("Error when opening the file '{}' - will try again".format(filename))

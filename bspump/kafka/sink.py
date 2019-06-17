@@ -1,5 +1,6 @@
 import json
 import logging
+import typing
 
 from ..abc.sink import Sink
 
@@ -70,10 +71,11 @@ class KafkaSink(Sink):
 		app.PubSub.subscribe("KafkaConnection.unpause!", self._connection_throttle)
 
 
-	def process(self, context, event):
+	def process(self, context, event:typing.Union[dict, str, bytes]):
 		if type(event) == dict:
 			event = json.dumps(event)
-		if type(event) == str:
+			event = event.encode(self.Encoding)
+		elif type(event) == str:
 			event = event.encode(self.Encoding)
 		kafka_topic = context.get("kafka_topic", self.Topic)
 		kafka_key = context.get("kafka_key")
