@@ -24,7 +24,7 @@ class LatchProcessor(Processor):
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, query={}, inclusive=True, id=id, config=config)
+		super().__init__(app, pipeline, query=True, id=id, config=config)
 		self.Inclusive = inclusive
 		max_size = int(self.Config.get('latch_max_size'))
 		if max_size == 0:
@@ -32,17 +32,26 @@ class LatchProcessor(Processor):
 		else:
 			self.Latch = collections.deque(maxlen=max_size)
 
-		# Check if the query is correctly implemented		
-		try:
-			self.Query = mongoquery.Query(query)
-			self.Query.match({})
-		except mongoquery.QueryError:
-			L.warn("Incorrect query")
-			raise
+		# Check if the query is correctly implemented
+		if (query == True) or (query == False):
+			self.Query = query
+		else:
+			try:
+				self.Query = mongoquery.Query(query)
+				self.Query.match({})
+			except mongoquery.QueryError:
+				L.warn("Incorrect query")
+				raise
 		
 
 	def process(self, context, event):
-		if self.Query.match(event) == self.Inclusive:
+		if self.Query == True:
+			self.Latch.append(event)
+		
+		elif self.Query == False:
+			return event
+		
+		elif self.Query.match(event) == self.Inclusive:
 			self.Latch.append(event)
 		return event
 
