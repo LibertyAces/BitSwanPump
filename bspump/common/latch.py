@@ -17,27 +17,36 @@ class LatchProcessor(Processor):
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
+		super().__init__(app, pipeline, query={}, id=id, config=config)
 		max_size = int(self.Config.get('queue_max_size'))
 		if max_size == 0:
 			self._Queue = collections.deque()
 		else:
 			self._Queue = collections.deque(maxlen=max_size)
 
+		# Check if the query is correctly implemented
+		
+		try:
+			self.Query = mongoquery.Query(query)
+			self.Query.match({})
+		except mongoquery.QueryError:
+			L.warn("Incorrect query")
+			raise
+		
+
 	def process(self, context, event):
-		self._Queue.append(event)
+		if self.Query.match(event):
+			self._Queue.append(event)
 		return event
 
+
 	def list_queue(self, query=None):
-		if query is None:
-			return list(self._Queue)
+		if query is not None:
+			try:
+				self.Query = mongoquery.Query(query)
+				self.Query.match({})
+			except mongoquery.QueryError:
+				L.warn("Incorrect query")
+				raise
+		return list(self._Queue)
 
-		
-		q = mongoquery.Query(query)
-		output = []
-
-		for event in self._Queue:
-			if q.match(event):
-				output.append(event)
-
-		return output
