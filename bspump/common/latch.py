@@ -12,8 +12,8 @@ class LatchProcessor(Processor):
 		If accumulated events exceeds `latch_max_size` then first event is dropped.
 
 		The latch can be filled based on the query (empty by default). The query is mongo-like,
-		see the rules in `ContentFilter`. If inclusive is True (default), matched with the query event is 
-		added to the latch, otherwise skipped.
+		see the rules in `ContentFilter`. If the query is True (default), then all events are added to the latch.
+		If it is False, all events will be skipped. Dictionary-like query is executed as filter.
 
 		The query can be injected with an API call to allow to control events in the latch.
 
