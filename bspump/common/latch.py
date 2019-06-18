@@ -5,15 +5,15 @@ import mongoquery
 
 class LatchProcessor(Processor):
 	"""
-		Latch accumulates events in the Latch of maximum specified size - `latch_max_size`
+		LatchProcessor accumulates events in the `self.Latch` of maximum specified size - `latch_max_size`
 
 		If `latch_max_size` is 0 then latch is not limited
 
 		If accumulated events exceeds `latch_max_size` then first event is dropped.
 
-		The latch can be filled based on the query (empty by default). The query is mongo-like,
-		see the rules in `ContentFilter`. If the query is True (default), then all events are added to the latch.
-		If it is False, all events will be skipped. Dictionary-like query is executed as filter.
+		`self.Latch` can be filled based on the `query` (True by default). The query is mongo-like,
+		see the rules in `ContentFilter`. If the `query` is True (default), then all events are added to `self.Latch`.
+		If it is False, all events will be skipped. Dictionary-like `query` is executed as filter.
 
 		The query can be injected with an API call to allow to control events in the latch.
 
