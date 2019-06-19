@@ -5,15 +5,18 @@ import mongoquery
 
 class LatchProcessor(Processor):
 	"""
-		LatchProcessor accumulates events in the `self.Latch` of maximum specified size - `latch_max_size`
+		The `LatchProcessor` accumulates events in the `Latch`variable of maximum size specified in configuration - `latch_max_size`
 
-		If `latch_max_size` is 0 then latch is not limited
+		If `latch_max_size` is 0 then `Latch` is not limited
 
 		If accumulated events exceeds `latch_max_size` then first event is dropped.
 
-		`self.Latch` can be filled based on the `query` (True by default). The query is mongo-like,
-		see the rules in `ContentFilter`. If the `query` is True (default), then all events are added to `self.Latch`.
-		If it is False, all events will be skipped. Dictionary-like `query` is executed as filter.
+		`Latch` can be filled based on the `query` variable (True by default). 
+		The query may be:
+		1. `True`, then all events will be added to `Latch`.
+		2. `False`, all events will be skipped.
+		3. Dictionary, following the mongo-like query syntaxis (see the rules in `ContentFilter`).
+		In this case only events matched with this query will be added to the `Latch`.
 
 		The query can be injected with an API call to allow to control events in the latch.
 
@@ -23,9 +26,8 @@ class LatchProcessor(Processor):
 		'latch_max_size': 50,  # 0 means unlimited size
 	}
 
-	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, query=True, id=id, config=config)
-		self.Inclusive = inclusive
+	def __init__(self, app, pipeline, query=True, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
 		max_size = int(self.Config.get('latch_max_size'))
 		if max_size == 0:
 			self.Latch = collections.deque()
