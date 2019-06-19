@@ -5,7 +5,8 @@ import mongoquery
 
 class LatchProcessor(Processor):
 	"""
-		The `LatchProcessor` accumulates events in the `Latch`variable of maximum size specified in configuration - `latch_max_size`
+		The `LatchProcessor` accumulates events in the `Latch` variable.
+		The `Latch` is a queue of maximum size specified in configuration - `latch_max_size`
 
 		If `latch_max_size` is 0 then `Latch` is not limited
 
