@@ -13,11 +13,11 @@ L = logging.getLogger(__name__)
 
 #
 
-class PostgresConnection(Connection):
+class PostgreSQLConnection(Connection):
 
 
 	ConfigDefaults = {
-		'host': 'localhost',
+		'host': '127.0.0.1',
 		'port': 5432,
 		'user': '',
 		'password': '',
@@ -57,8 +57,8 @@ class PostgresConnection(Connection):
 		self._on_health_check('connection.open!')
 		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
 		app.PubSub.subscribe("Application.tick!", self._on_health_check)
-		app.PubSub.subscribe("PostgresConnection.pause!", self._on_pause)
-		app.PubSub.subscribe("PostgresConnection.unpause!", self._on_unpause)
+		app.PubSub.subscribe("PostgreSQLConnection.pause!", self._on_pause)
+		app.PubSub.subscribe("PostgreSQLConnection.unpause!", self._on_unpause)
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._bulks = {} # We have a "bulk" per query
@@ -85,7 +85,7 @@ class PostgresConnection(Connection):
 		# Enqueue and thorttle if needed
 		self._output_queue.put_nowait((query, self._bulks[query]))
 		if self._output_queue.qsize() == self._output_queue_max_size:
-			self.PubSub.publish("PostgresConnection.pause!", self)
+			self.PubSub.publish("PostgreSQLConnection.pause!", self)
 
 		# Reset bulk
 		self._bulks[query] = []
@@ -121,16 +121,38 @@ class PostgresConnection(Connection):
 			loop=self.Loop
 		)
 
+	def build_dsn(self):
+		dsn = ""
+		# Database
+		#if len(self._db) > 0:
+		dsn += "dbname={} ".format(self._db)
+
+		# Host
+		#if len(self._host) > 0:
+		dsn += "host={} ".format(self._host)
+
+		# Port
+		#if self._port is not None:
+		dsn += "port={} ".format(self._port)
+		
+		# User
+		if len(self._user) > 0:
+			dsn += "user={} ".format(self._user)
+
+		# Password
+		if len(self._password):
+			dsn += "password={} ".format(self._password)
+		
+		dsn = dsn.strip()
+		return dsn
 
 	async def _connection(self):
+		dsn = self.build_dsn()
+
 		try:
 			async with create_pool(
-				host=self._host,
-				port=self._port,
-				user=self._user,
-				password=self._password,
-				db=self._db,
-				connect_timeout=self._connect_timeout, #Doesn't work! See socket.timeout exception below
+				dsn=dsn,
+				timeout=self._connect_timeout,
 				loop=self.Loop) as pool:
 
 				self._conn_pool = pool
@@ -139,10 +161,10 @@ class PostgresConnection(Connection):
 		except socket.timeout:
 			# Socket timeout not implemented in aiomysql as it sets a keepalive to the connection
 			# it has been placed as an issue on GitHub: https://github.com/aio-libs/aiomysql/issues/257
-			L.exception("Postgres connection timeout")
+			L.exception("PostgreSQL connection timeout")
 			pass
 		except BaseException:
-			L.exception("Unexpected Postgres connection error")
+			L.exception("Unexpected PostgreSQL connection error")
 			raise
 
 
@@ -172,18 +194,18 @@ class PostgresConnection(Connection):
 				break
 
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
-					self.PubSub.publish("PostgresConnection.unpause!", self, asynchronously=True)
+					self.PubSub.publish("PostgreSQLConnection.unpause!", self, asynchronously=True)
 
 			try:
 				async with self.acquire() as conn:
 					try:
 						async with conn.cursor() as cur:
-							#await cur.executemany(query, data)
-							for (item in data):
-								cur.execute("INSERT INTO test (num, data) VALUES (%s, %s)", (42, 'bar'))
-							await conn.commit()
+							for item in data:
+								_query = await cur.mogrify(query, item)
+								print(_query)
+								await cur.execute(_query)
 					except BaseException as e:
-						L.exception("Unexpected error when processing Postgres query.")
+						L.exception("Unexpected error when processing PostgreSQL query.")
 			except BaseBaseException as e:
 				L.exception("Couldn't acquire connection")
 

@@ -4,7 +4,7 @@ import asab
 
 from ..abc.sink import Sink
 
-class PostgresSink(Sink):
+class PostgreSQLSink(Sink):
 
 
 	ConfigDefaults = {
@@ -20,8 +20,8 @@ class PostgresSink(Sink):
 		self._query = self.Config['query']
 		self._data_keys = self.Config['data'].split(',')
 
-		app.PubSub.subscribe("PostgresConnection.pause!", self._connection_throttle)
-		app.PubSub.subscribe("PostgresConnection.unpause!", self._connection_throttle)
+		app.PubSub.subscribe("PostgreSQLConnection.pause!", self._connection_throttle)
+		app.PubSub.subscribe("PostgreSQLConnection.unpause!", self._connection_throttle)
 
 
 	def process(self, context, event):
@@ -36,9 +36,9 @@ class PostgresSink(Sink):
 		if connection != self._connection:
 			return
 
-		if event_name == "PostgresConnection.pause!":
+		if event_name == "PostgreSQLConnection.pause!":
 			self.Pipeline.throttle(self, True)
-		elif event_name == "PostgresConnection.unpause!":
+		elif event_name == "PostgreSQLConnection.unpause!":
 			self.Pipeline.throttle(self, False)
 		else:
 			raise RuntimeError("Unexpected event name '{}'".format(event_name))
