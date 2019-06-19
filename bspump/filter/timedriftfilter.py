@@ -43,7 +43,6 @@ class TimeDriftFilter(Processor):
 		timestamp = event.get("@timestamp")
 		if timestamp is None:
 			self.TimeDriftFilterCounter.add('timestamp.error', 1)
-			self.TimeDriftFilterCounter.add('event.drop', 1)
 			return None
 
 		difference = self.App.time() - timestamp
