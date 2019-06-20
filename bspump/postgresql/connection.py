@@ -25,7 +25,7 @@ class PostgreSQLConnection(Connection):
 		'connect_timeout': 1,
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
-		'max_bulk_size': 2,
+		'max_bulk_size': 1, # This is because execute many is not supported by aiopg
 	}
 
 	def __init__(self, app, connection_id, config=None):
@@ -202,7 +202,6 @@ class PostgreSQLConnection(Connection):
 						async with conn.cursor() as cur:
 							for item in data:
 								_query = await cur.mogrify(query, item)
-								print(_query)
 								await cur.execute(_query)
 					except BaseException as e:
 						L.exception("Unexpected error when processing PostgreSQL query.")
