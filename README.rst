@@ -81,8 +81,8 @@ Available technologies
 * ``bspump.mongodb`` MongoDB connection and lookup
 * ``bspump.slack`` Slack connection and sink
 * ``bspump.trigger`` Opportunistic, PubSub and Periodic triggers
-* ``bspump.crypto`` Cryptography
 * ``bspump.mail`` SMTP connection and sink
+* ``bspump.crypto`` Cryptography
 
   * Hashing: SHA224, SHA256, SHA384, SHA512, SHA1, MD5, BLAKE2b, BLAKE2s
   * Symmetric Encryption: AES 128, AES 192, AES 256
@@ -90,6 +90,8 @@ Available technologies
 * ``bspump.analyzer``
 
   * Time Window analyzer
+  * Session analyzer
+  * Geographical analyzer
   * Time Drift analyzer
 
 * ``bspump.lookup``
