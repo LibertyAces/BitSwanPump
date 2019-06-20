@@ -27,7 +27,6 @@ class InternalSource(Source):
 		self.BackPressure = False
 		maxsize = int(self.Config.get('queue_max_size'))
 		if maxsize == 0:
-			maxsize = None
 			self.BackPressureLimit = None
 		else:
 			if maxsize == 1: maxsize = 2 # Special case
