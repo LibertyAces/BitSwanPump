@@ -1,4 +1,5 @@
 import bspump
+from collections.abc import Iterable
 
 
 class KafkaKeyFilter(bspump.Processor):
@@ -15,7 +16,7 @@ class KafkaKeyFilter(bspump.Processor):
 
 	def __init__(self, app, pipeline, keys, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
-		if not isinstance (keys,list):
+		if not isinstance(keys, Iterable):
 			self.Keys = frozenset([keys])
 		else:
 			self.Keys = frozenset(keys)
