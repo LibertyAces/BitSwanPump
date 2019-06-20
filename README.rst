@@ -74,6 +74,7 @@ Available technologies
 * ``bspump.influxdb`` InfluxDB connection and sink
 * ``bspump.kafka`` Kafka connection, source and sink
 * ``bspump.mysql`` MySQL connection, source and sink
+* ``bspump.postgres`` PostgreSQL connection and sink
 * ``bspump.parquet`` Apache Parquet file sink
 * ``bspump.avro`` Apache Avro file source and sink
 * ``bspump.socket`` TCP source, UDP source
