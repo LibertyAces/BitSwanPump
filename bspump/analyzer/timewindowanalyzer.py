@@ -52,7 +52,7 @@ class TimeWindowAnalyzer(Analyzer):
 		`start_time` is a unix timestamp for time to start. Default value is `None`, which will be equivalent current time.
 		`clock_driven` is a boolean parameter, specifying how the matrix should be advanced. If `True`, it advances on timer's tick, 
 		else manually. Default value is `True`.
-		`maxtrix_id` is an id of `TimeWindowMatrix` object alternatively passed.
+		`maxtrix_id` is an id of `TimeWindowMatrix` object alternatively passed, if not provided, the new matrix will be created with and ID derived from the Analyzer Id
 		
 	'''
 
