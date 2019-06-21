@@ -52,7 +52,7 @@ class TimeWindowAnalyzer(Analyzer):
 		`start_time` is a unix timestamp for time to start. Default value is `None`, which will be equivalent current time.
 		`clock_driven` is a boolean parameter, specifying how the matrix should be advanced. If `True`, it advances on timer's tick, 
 		else manually. Default value is `True`.
-		`time_window_id` is an id of `TimeWindowMatrix` object alternatively passed.
+		`maxtrix_id` is an id of `TimeWindowMatrix` object alternatively passed.
 		
 	'''
 
@@ -60,10 +60,10 @@ class TimeWindowAnalyzer(Analyzer):
 		'resolution': 60, # Resolution (aka column width) in seconds
 	}
 
-	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, start_time=None, clock_driven=True, time_window_id=None, id=None, config=None):
+	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, start_time=None, clock_driven=True, maxtrix_id=None, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
-		if time_window_id is None:
+		if maxtrix_id is None:
 			tw_id = self.Id + "Matrix"
 			self.TimeWindow = TimeWindowMatrix(
 				app,
@@ -76,7 +76,7 @@ class TimeWindowAnalyzer(Analyzer):
 			svc.add_matrix(self.TimeWindow)
 		else:
 			# locate
-			self.TimeWindow = svc.locate_matrix(container_id)
+			self.TimeWindow = svc.locate_matrix(maxtrix_id)
 
 		if clock_driven:
 			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
