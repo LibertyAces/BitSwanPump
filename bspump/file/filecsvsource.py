@@ -24,7 +24,6 @@ class FileCSVSource(FileABCSource):
 		'quoting': None,
 		'skipinitialspace': None,
 		'strict': None,
-		'one_breath_lines': 10000,
 	}
 
 
@@ -33,8 +32,6 @@ class FileCSVSource(FileABCSource):
 
 		self.Dialect = csv.get_dialect(self.Config['dialect'])
 		self.FieldNames = fieldnames
-
-		self.OneBreathLines = self.Config["one_breath_lines"]
 
 
 	def reader(self, f):
@@ -72,14 +69,10 @@ class FileCSVSource(FileABCSource):
 
 
 	async def read(self, filename, f):
-		counter = 0
+
 		for line in self.reader(f):
 			await self.process(line, {
 				"filename": filename
 			})
 
-			# Give chance to others when we are in the middle of massive processing
-			counter += 1
-			if counter >= self.OneBreathLines:
-				await asyncio.sleep(0.01)
-				counter = 0
+			await self.simulate_event()
