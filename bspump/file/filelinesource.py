@@ -1,4 +1,7 @@
 import logging
+
+import asyncio
+
 from .fileabcsource import FileABCSource
 
 #
@@ -7,18 +10,27 @@ L = logging.getLogger(__file__)
 
 #
 
+
 class FileLineSource(FileABCSource):
 
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+
+
 	async def read(self, filename, f):
+
 		for line in f:
+
 			await self.process(line, {
 				"filename": filename
 			})
 
+			await self.simulate_event()
+
 #
 
-class FileMultiLineSource(FileABCSource):
 
+class FileMultiLineSource(FileABCSource):
 	'''
 	Read file line by line but try to join multi-line events by separator.
 	Separator is a (fixed) pattern that should present at the begin of the line, if it is a new event.
@@ -32,7 +44,6 @@ class FileMultiLineSource(FileABCSource):
 	The separatpr is '<' string in this case
 
 	'''
-
 
 	def __init__(self, app, pipeline, separator, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -58,8 +69,9 @@ class FileMultiLineSource(FileABCSource):
 				else:
 					latch = latch + b'\n' + line
 
+		await self.simulate_event()
+
 		if latch is not None:
 			await self.process(latch, {
 				"filename": filename
 			})
-

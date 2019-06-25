@@ -27,7 +27,9 @@ class FileABCSource(TriggerSource):
 		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
 		'include': '', # glob of filenames that should be included
 		'encoding': '',
-		'move_destination': '' # destination folder for 'move'. Make sure it's outside of the glob search
+		'move_destination': '', # destination folder for 'move'. Make sure it's outside of the glob search
+		'lines_per_event': 10000, # the number of lines after which the read method enters the idle state to allow other operations to perform their tasks
+		'event_idle_time': 0.01, # the time for which the read method enters the idle state (see above)
 	}
 
 
@@ -70,6 +72,9 @@ class FileABCSource(TriggerSource):
 
 		self.Loop = app.Loop
 
+		self.LinesCounter = 0
+		self.LinesPerEvent = int(self.Config["lines_per_event"])
+		self.EventIdleTime = float(self.Config["event_idle_time"])
 
 	async def cycle(self):
 		filename = None
@@ -171,6 +176,18 @@ class FileABCSource(TriggerSource):
 			self.Pipeline.set_error(None, None, e)
 			return
 
+	async def simulate_event(self):
+		'''
+		The simulate_event method should be called in read method after a file line has been processed.
+
+		It ensures that all other asynchronous events receive enough time to perform their tasks.
+		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
+		'''
+
+		self.LinesCounter += 1
+		if self.LinesCounter >= self.LinesPerEvent:
+			await asyncio.sleep(self.EventIdleTime)
+			self.LinesCounter = 0
 
 	@abc.abstractmethod
 	async def read(self, filename, f):
