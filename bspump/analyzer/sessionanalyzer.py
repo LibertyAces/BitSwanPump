@@ -47,19 +47,19 @@ class SessionAnalyzer(Analyzer):
 		stand before the letter.
 		Example: '(6, 3)i8' will create the matrix with n rows, 6 columns and 3 third dimensions with integer elements.
 		`column_names` is an array with names of each column, with the same length as `column_formats`.
-		`sessions_id` is an id of `SessionMatrix` object defined alternatively.
+		`matrix_id` is an id of `SessionMatrix` object defined alternatively.
 
 	'''
 
-	def __init__(self, app, pipeline, column_formats, column_names, sessions_id=None, id=None, config=None):
+	def __init__(self, app, pipeline, column_formats, column_names, matrix_id=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
-		if sessions_id is None:
+		if matrix_id is None:
 			s_id = self.Id + "Matrix"
 			self.Sessions =  SessionMatrix(app, column_formats, column_names, id=s_id)
 			svc.add_matrix(self.Sessions)
 		else:
-			self.Sessions = svc.locate_matrix(sessions_id)
+			self.Sessions = svc.locate_matrix(matrix_id)
 
 		self.Matrix = self.Sessions.Matrix #alias
 	
