@@ -74,6 +74,7 @@ setup(
 		'asab>=18.12,<19.0',
 		'fastavro>=0.21.24,<1.0',
 		'mongoquery>=1.3.5,<2.0',
+		'motor>=2.0.0,<3.0',
 		'mysql-replication>=0.19,<1.0',
 		'numpy>=1.16.3,<2.0',
 		'pandas>=0.24.2,<1.0',
