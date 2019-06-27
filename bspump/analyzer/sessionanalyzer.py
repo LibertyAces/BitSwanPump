@@ -51,8 +51,8 @@ class SessionAnalyzer(Analyzer):
 
 	'''
 
-	def __init__(self, app, pipeline, column_formats, column_names, matrix_id=None, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
+	def __init__(self, app, pipeline, column_formats, column_names, clock_driven_analyze=False, matrix_id=None, id=None, config=None):
+		super().__init__(app, pipeline, clock_driven_analyze=clock_driven_analyze, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
 			s_id = self.Id + "Matrix"

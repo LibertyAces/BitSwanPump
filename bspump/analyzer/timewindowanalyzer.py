@@ -60,8 +60,10 @@ class TimeWindowAnalyzer(Analyzer):
 		'resolution': 60, # Resolution (aka column width) in seconds
 	}
 
-	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, start_time=None, clock_driven=True, matrix_id=None, id=None, config=None):
-		super().__init__(app, pipeline, id, config)
+	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, 
+				start_time=None, clock_driven_advance=True, clock_driven_analyze=False, 
+				matrix_id=None, id=None, config=None):
+		super().__init__(app, pipeline, clock_driven_analyze=clock_driven_analyze, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
 			matrix_id = self.Id + "Matrix"
@@ -78,11 +80,11 @@ class TimeWindowAnalyzer(Analyzer):
 			# locate
 			self.TimeWindow = svc.locate_matrix(matrix_id)
 
-		if clock_driven:
-			self.Timer = asab.Timer(app, self._on_tick, autorestart=True)
-			self.Timer.start(resolution / 4) # 1/4 of the sampling
+		if clock_driven_advance:
+			self.AdvanceTimer = asab.Timer(app, self._on_tick_advance, autorestart=True)
+			self.AdvanceTimer.start(resolution / 4) # 1/4 of the sampling
 		else:
-			self.Timer = None
+			self.AdvanceTimer = None
 
 		self.Matrix = self.TimeWindow.Matrix['time_window'] #alias
 		
@@ -108,7 +110,7 @@ class TimeWindowAnalyzer(Analyzer):
 			self.TimeWindow.add_column()
 			
 
-	async def _on_tick(self):
+	async def _on_tick_advance(self):
 		'''
 			React on timer's tick and advance the window.
 		'''
