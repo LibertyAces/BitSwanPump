@@ -62,15 +62,7 @@ class SessionAnalyzer(Analyzer):
 			self.Sessions = svc.locate_matrix(matrix_id)
 
 		self.Matrix = self.Sessions.Matrix #alias
-	
 
-
-
-		
-
-	
-	
-	
 
 
 

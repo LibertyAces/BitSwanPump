@@ -19,15 +19,6 @@ class Analyzer(Processor):
 
 	## Implementation interface
 	@abc.abstractmethod
-	def predicate(self, event):
-		'''
-			This function is meant to check, if the event is worth to process.
-			If it is, should return True.
-			Specific for each analyzer.
-		'''
-		raise NotImplemented("")
-
-	@abc.abstractmethod
 	def analyze(self):
 		'''
 			The main function, which runs through the analyzed object.
@@ -36,20 +27,29 @@ class Analyzer(Processor):
 		raise NotImplemented("")
 
 	@abc.abstractmethod
-	def evaluate(self, event):
+	def evaluate(self, context, event):
 		'''
 			The function which records the information from the event into the analyzed object.
 			Specific for each analyzer.
 		'''
 		raise NotImplemented("")
 
+
+	def predicate(self, context, event):
+		'''
+			This function is meant to check, if the event is worth to process.
+			If it is, should return True.
+			Specific for each analyzer, but default one always returns True.
+		'''
+		return True
+
 	def process(self, context, event):
 		'''
 			The event passes through `process(context, event)` unchanged.
 			Meanwhile it is evaluated. 
 		'''
-		if self.predicate(event):
-			self.evaluate(event)
+		if self.predicate(context, event):
+			self.evaluate(context, event)
 
 		return event
 
