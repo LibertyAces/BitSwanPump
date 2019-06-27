@@ -114,7 +114,10 @@ class KafkaConnection(Connection):
 		"""
 		Returns compression type to use in connection
 		"""
-		return self.Config['compression_type'] or None
+		compression_type = self.Config.get("compression_type")
+		if compression_type in ("", "none", "None"):
+			compression_type = None
+		return compression_type
 
 
 	def consume(self, topic, message, kafka_key=None):
