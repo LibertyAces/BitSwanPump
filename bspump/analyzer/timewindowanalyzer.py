@@ -86,10 +86,6 @@ class TimeWindowAnalyzer(Analyzer):
 			self.Timer = asab.Timer(app, self._on_clock_tick, autorestart=True)
 			self.Timer.start(self.Resolution / 4) # 1/4 of the sampling
 
-		if clock_driven and analyze_on_clock:
-			self.Devisor = int(self.AnalyzePeriod * 4 / resolution)
-
-		self.AnalyzeRunner = 0
 
 		self.Matrix = self.TimeWindow.Matrix['time_window'] #alias
 		
@@ -115,20 +111,15 @@ class TimeWindowAnalyzer(Analyzer):
 			self.TimeWindow.add_column()
 			
 
-	async def _on_clock_tick(self):
-		'''
-			React on timer's tick and advance the window.
-		'''
 
-		if self.AnalyzeOnClock and (self.AnalyzeRunner % self.Resolution == 0):
-			self.AnalyzeRunner = 0
-			await self.analyze()
-
-		if self.ClockDriven:
-			target_ts = time.time()
+	async def on_clock_tick(self):
+		'''
+			React on timer's tick and advance the window. And analyze.
+		'''
+    	super().on_clock_tick()
+    	if self.AdvanceOnClock:
+        	target_ts = time.time()
 			self.advance(target_ts)
-		
-		self.AnalyzeRunner += 1
 
 
 

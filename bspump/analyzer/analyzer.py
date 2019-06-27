@@ -67,7 +67,7 @@ class Analyzer(Processor):
 		return event
 
 
-	async def _on_clock_tick(self):
+	async def on_clock_tick(self):
 		'''
 			Run analyzis every tick.
 		'''
