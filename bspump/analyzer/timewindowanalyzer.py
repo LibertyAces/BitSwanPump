@@ -99,8 +99,8 @@ class TimeWindowAnalyzer(Analyzer):
 
 			------------------|-----------
 			target_ts  ^ >>>  |          
-			                  ^           
-			                Start         
+							  ^           
+							Start         
 			------------------------------
 
 		'''
@@ -116,9 +116,10 @@ class TimeWindowAnalyzer(Analyzer):
 		'''
 			React on timer's tick and advance the window. And analyze.
 		'''
-    	super().on_clock_tick()
-    	if self.AdvanceOnClock:
-        	target_ts = time.time()
+		if self.AnalyzeOnClock:
+			super().on_clock_tick()
+		if self.ClockDriven:
+			target_ts = time.time()
 			self.advance(target_ts)
 
 
