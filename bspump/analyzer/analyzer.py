@@ -18,21 +18,20 @@ class Analyzer(Processor):
 		super().__init__(app, pipeline, id=id, config=config)
 
 	## Implementation interface
-	@abc.abstractmethod
 	def analyze(self):
 		'''
 			The main function, which runs through the analyzed object.
 			Specific for each analyzer.
 		'''
-		raise NotImplemented("")
+		pass
 
-	@abc.abstractmethod
+
 	def evaluate(self, context, event):
 		'''
 			The function which records the information from the event into the analyzed object.
 			Specific for each analyzer.
 		'''
-		raise NotImplemented("")
+		pass
 
 
 	def predicate(self, context, event):
