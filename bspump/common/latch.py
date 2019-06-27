@@ -1,11 +1,11 @@
-from bspump import Processor
+from ..analyzer.analyzer import Analyzer
 import collections
 import mongoquery
 
 
-class LatchProcessor(Processor):
+class LatchAnalyzer(Analyzer):
 	"""
-		The `LatchProcessor` accumulates events in the `Latch` variable.
+		The `LatchAnalyzer` accumulates events in the `Latch` variable.
 		The `Latch` is a queue of maximum size specified in configuration - `latch_max_size`
 
 		If `latch_max_size` is 0 then `Latch` is not limited
@@ -27,8 +27,8 @@ class LatchProcessor(Processor):
 		'latch_max_size': 50,  # 0 means unlimited size
 	}
 
-	def __init__(self, app, pipeline, query=True, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
+	def __init__(self, app, pipeline, query=True, clock_driven_analyze=False, id=None, config=None):
+		super().__init__(app, pipeline, clock_driven_analyze=clock_driven_analyze, id=id, config=config)
 		max_size = int(self.Config.get('latch_max_size'))
 		if max_size == 0:
 			self.Latch = collections.deque()
