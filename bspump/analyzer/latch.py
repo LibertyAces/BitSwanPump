@@ -1,4 +1,4 @@
-from ..analyzer.analyzer import Analyzer
+from .analyzer import Analyzer
 import collections
 import mongoquery
 

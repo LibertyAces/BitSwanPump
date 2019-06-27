@@ -93,22 +93,22 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		start_time=datetime.datetime(year=2016, month=1, day=1, hour=0, minute=0, second=0).timestamp()
-		super().__init__(app=app, pipeline=pipeline, start_time=start_time, id=id, config=config)
+		super().__init__(app=app, pipeline=pipeline, start_time=start_time, clock_driven_advance=False, id=id, config=config)
 
-		self.add_row("P+R Zličín 1")
-		self.add_row("P+R Rajská zahrada")
+		self.TimeWindow.add_row("P+R Zličín 1")
+		self.TimeWindow.add_row("P+R Rajská zahrada")
 
 		self.MaxTimestamp = 0.0
 
 
 	# simple checker if event contains time related fields
-	def predicate(self, event):
+	def predicate(self, context, event):
 		if '@timestamp' not in event:
 			return False
 
 		return True
 
-	def evaluate(self, event):
+	def evaluate(self, context, event):
 		ts = event["@timestamp"].timestamp()
 
 		if self.MaxTimestamp < ts:
@@ -120,19 +120,19 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 		if column is None:
 			return
 
-		row = self.get_row(event["Parkoviste"])
+		row = self.TimeWindow.get_row(event["Parkoviste"])
 		if row is None:
 			return
 
-		self.TimeWindow.Matrix[row, column] += 1
+		self.TimeWindow.Matrix[row, column, 0] += 1
 
 
 	async def analyze(self):
-		if self.TimeWindow.Matrix is None:
+		if self.TimeWindow.Matrix.shape[0] == 0:
 			return
 
 		# selecting part of matrix specified in configuration
-		x = self.TimeWindow.Matrix[:]
+		x = self.TimeWindow.Matrix[:, :, 0]
 
 		# if any of time slots is 0
 		if np.any(x == 0):
