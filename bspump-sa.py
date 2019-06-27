@@ -6,7 +6,6 @@ from bspump.analyzer import SessionAnalyzer, TimeWindowAnalyzer
 
 import logging
 import time
-import copy
 
 import asab
 
@@ -41,12 +40,11 @@ class MyPipeline(Pipeline):
 
 class UserTimeWindowAnalyzer(TimeWindowAnalyzer):
 	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, 'S20', (2,2), 2)
-		self.AnalyzeTimer = asab.Timer(app, self._on_tick_analyze, autorestart=True)
-		self.AnalyzeTimer.start(2)
+		super().__init__(app, pipeline, tw_format='S20', tw_dimensions=(2,2), resolution=2, clock_driven_analyze=True, id=id, config=config)
+
 
 	
-	def predicate(self, event):
+	def predicate(self, context, event):
 
 		if '@timestamp' not in event:
 			return False
@@ -60,7 +58,7 @@ class UserTimeWindowAnalyzer(TimeWindowAnalyzer):
 		return True
 
 	
-	def evaluate(self, event):
+	def evaluate(self, context, event):
 		user = event["user"]
 		msg = event.get('message')
 		er = event.get('error')
@@ -71,18 +69,15 @@ class UserTimeWindowAnalyzer(TimeWindowAnalyzer):
 
 		if msg is not None:
 			user_ind = self.TimeWindow.RowMap[user]
-			self.TimeWindow.Matrix['time_window'][user_ind][column, 0] = msg
+			self.Matrix[user_ind][column, 0] = msg
 
 		if er is not None:
-			self.TimeWindow.Matrix['time_window'][self.TimeWindow.RowMap[user]][column, 1] = er
-
-	async def _on_tick_analyze(self):
-		await self.analyze()
+			self.Matrix[self.TimeWindow.RowMap[user]][column, 1] = er
 
 	
 	async def analyze(self):
 		print("Analyzing ....")
-		tw_snapshot = copy.copy(self.TimeWindow.Matrix['time_window'])
+		tw_snapshot = self.Matrix
 		for i in range(0, tw_snapshot.shape[0]):
 			for j in range(0, 2):
 				if tw_snapshot[i][j, 1] == b'':
@@ -98,12 +93,11 @@ class UserTimeWindowAnalyzer(TimeWindowAnalyzer):
 class GraphSessionAnalyzer(SessionAnalyzer):
 
 	def __init__(self, app, pipeline, column_formats, column_names, id=None, config=None):
-		super().__init__(app, pipeline, column_formats, column_names, id, config)
-		self.AnalyzeTimer = asab.Timer(app, self._on_tick_analyze, autorestart=True)
-		self.AnalyzeTimer.start(3)
+		super().__init__(app, pipeline, column_formats, column_names, clock_driven_analyze=True, id=id, config=config)
+
 	
 	
-	def predicate(self, event):
+	def predicate(self, context, event):
 		if "user" not in event:
 			return False
 
@@ -116,7 +110,7 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 		return True
 
 	
-	def evaluate(self, event):
+	def evaluate(self, context, event):
 		
 		start_time = time.time()
 		user_from = event["user"]
@@ -125,8 +119,8 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 		if user_from not in self.Sessions.RowMap:
 			self.Sessions.add_row(user_from, start_time)
 			
-		self.Sessions.Matrix[self.Sessions.RowMap[user_from]]["duration"] = duration
-		self.Sessions.Matrix[self.Sessions.RowMap[user_from]]["user_link"] = user_to
+		self.Matrix[self.Sessions.RowMap[user_from]]["duration"] = duration
+		self.Matrix[self.Sessions.RowMap[user_from]]["user_link"] = user_to
 
 		if user_to not in self.Sessions.RowMap:
 			self.Sessions.add_row(user_to, start_time)
@@ -135,7 +129,7 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 	async def analyze(self):
 		graph = {}
 		self.Sessions.close_row('user_1', time.time())
-		sessions_snapshot = copy.copy(self.Sessions.Matrix)
+		sessions_snapshot = self.Matrix
 		for i in range(0, sessions_snapshot.shape[0]):
 			if i in self.Sessions.ClosedRows:
 				continue
@@ -160,10 +154,6 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 
 		self.Sessions.rebuild_rows('full')
 		L.warn("Graph is {}".format(graph))
-
-
-	async def _on_tick_analyze(self):
-		await self.analyze()
 
 
 if __name__ == '__main__':
