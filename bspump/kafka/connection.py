@@ -1,4 +1,5 @@
 import asyncio
+
 import aiokafka
 import logging
 
@@ -13,23 +14,33 @@ L = logging.getLogger(__name__)
 
 class KafkaConnection(Connection):
 	"""
-    KafkaConnection serves to connect BSPump application with an instance of Apache Kafka messaging system.
-    It can later be used by processors to consume or provide user-defined messages.
+	KafkaConnection serves to connect BSPump application with an instance of Apache Kafka messaging system.
+	It can later be used by processors to consume or provide user-defined messages.
 
 .. code:: python
 
-    app = bspump.BSPumpApplication()
-    svc = app.get_service("bspump.PumpService")
-    svc.add_connection(
-        bspump.kafka.KafkaConnection(app, "KafkaConnection")
-    )
+	config = {"compression_type": "gzip"}
+	app = bspump.BSPumpApplication()
+	svc = app.get_service("bspump.PumpService")
+	svc.add_connection(
+		bspump.kafka.KafkaConnection(app, "KafkaConnection", config)
+	)
 
-    """
+..
+
+
+	``ConfigDefaults`` options:
+
+		* ``compression_type``: Kafka supports several compression types: ``gzip``, ``snappy`` and ``lz4``.
+		  This option needs to be specified in Kafka Producer only, Consumer will decompress automatically.
+
+	"""
 
 	ConfigDefaults = {
 		'bootstrap_servers': 'localhost:9092',
+		'compression_type': '',
+		'disabled': 0,
 		'output_queue_max_size': 100,
-		'disabled': 0
 	}
 
 
@@ -84,7 +95,8 @@ class KafkaConnection(Connection):
 	async def _connection(self):
 		producer = aiokafka.AIOKafkaProducer(
 			loop=self.Loop,
-			bootstrap_servers=self.get_bootstrap_servers()
+			bootstrap_servers=self.get_bootstrap_servers(),
+			compression_type=self.get_compression(),
 		)
 		try:
 			await producer.start()
@@ -98,10 +110,20 @@ class KafkaConnection(Connection):
 		return self.Config['bootstrap_servers'].split(';')
 
 
+	def get_compression(self):
+		"""
+		Returns compression type to use in connection
+		"""
+		compression_type = self.Config.get("compression_type")
+		if compression_type in ("", "none", "None"):
+			compression_type = None
+		return compression_type
+
+
 	def consume(self, topic, message, kafka_key=None):
 		"""
-        Consumes a user-defined message by storing it in a queue and later publishing to Apache Kafka.
-        """
+		Consumes a user-defined message by storing it in a queue and later publishing to Apache Kafka.
+		"""
 		self._output_queue.put_nowait((topic, message, kafka_key))
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.PubSub.publish("KafkaConnection.pause!", self)
