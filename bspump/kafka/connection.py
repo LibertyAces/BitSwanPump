@@ -1,5 +1,4 @@
 import asyncio
-from typing import Union
 
 import aiokafka
 import logging
@@ -111,7 +110,7 @@ class KafkaConnection(Connection):
 		return self.Config['bootstrap_servers'].split(';')
 
 
-	def get_compression(self) -> Union[str, None]:
+	def get_compression(self):
 		"""
 		Returns compression type to use in connection
 		"""
