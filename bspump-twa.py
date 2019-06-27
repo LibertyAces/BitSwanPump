@@ -93,7 +93,7 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		start_time=datetime.datetime(year=2016, month=1, day=1, hour=0, minute=0, second=0).timestamp()
-		super().__init__(app=app, pipeline=pipeline, start_time=start_time, clock_driven_advance=False, id=id, config=config)
+		super().__init__(app=app, pipeline=pipeline, start_time=start_time, clock_driven=False, id=id, config=config)
 
 		self.TimeWindow.add_row("P+R Zličín 1")
 		self.TimeWindow.add_row("P+R Rajská zahrada")

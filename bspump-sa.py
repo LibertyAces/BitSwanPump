@@ -39,7 +39,7 @@ class MyPipeline(Pipeline):
 class GraphSessionAnalyzer(SessionAnalyzer):
 
 	def __init__(self, app, pipeline, column_formats, column_names, id=None, config=None):
-		super().__init__(app, pipeline, column_formats, column_names, clock_driven_analyze=True, id=id, config=config)
+		super().__init__(app, pipeline, column_formats, column_names, analyze_on_clock=True, id=id, config=config)
 
 	
 	
