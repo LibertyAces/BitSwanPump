@@ -1,4 +1,6 @@
 import asyncio
+from typing import Union
+
 import aiokafka
 import logging
 
@@ -18,19 +20,28 @@ class KafkaConnection(Connection):
 
 .. code:: python
 
+	config = {"compression_type": "gzip"}
 	app = bspump.BSPumpApplication()
 	svc = app.get_service("bspump.PumpService")
 	svc.add_connection(
-		bspump.kafka.KafkaConnection(app, "KafkaConnection")
+		bspump.kafka.KafkaConnection(app, "KafkaConnection", config)
 	)
+
+..
+
+
+	``ConfigDefaults`` options:
+
+		* ``compression_type``: Kafka supports several compression types: ``gzip``, ``snappy`` and ``lz4``.
+		  This option needs to be specified in Kafka Producer only, Consumer will decompress automatically.
 
 	"""
 
 	ConfigDefaults = {
 		'bootstrap_servers': 'localhost:9092',
-		'output_queue_max_size': 100,
+		'compression_type': '',
 		'disabled': 0,
-		'compression_type': None,
+		'output_queue_max_size': 100,
 	}
 
 
@@ -100,7 +111,10 @@ class KafkaConnection(Connection):
 		return self.Config['bootstrap_servers'].split(';')
 
 
-	def get_compression(self):
+	def get_compression(self) -> Union[str, None]:
+		"""
+		Returns compression type to use in connection
+		"""
 		return self.Config['compression_type'] or None
 
 
