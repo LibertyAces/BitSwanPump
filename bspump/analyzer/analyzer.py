@@ -27,7 +27,7 @@ class Analyzer(Processor):
 		self.AnalyzeOnClock = analyze_on_clock
 		
 		if analyze_on_clock:
-			self.Timer = asab.Timer(app, self._on_tick_analyze, autorestart=True) 
+			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True) 
 			self.Timer.start(self.AnalyzePeriod)
 		else:
 			self.Timer = None
