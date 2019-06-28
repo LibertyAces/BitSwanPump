@@ -22,13 +22,14 @@ class TimeDriftAnalyzer(Analyzer):
 		maximum time and a standart deviation. 
 	'''
 	ConfigDefaults = {
-		'stats_period' : 5*60, # once per 5 minutes
+		'analyze_period' : 5*60, # once per 5 minutes
 		'history_size' : 100, # keep maximum 100 array members
 		'sparse_count' : 1, # process every single event
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
+		# def __init__(self, app, pipeline, analyze_on_clock=False, analyze_period=None, id=None, config=None):
+		super().__init__(app, pipeline, analyze_on_clock=True, id=id, config=config)
 		
 		self.History = []
 		self.HistorySize = int(self.Config['history_size'])
@@ -52,17 +53,10 @@ class TimeDriftAnalyzer(Analyzer):
 		self.EventCount = 0
 		self.SparseCount = int(self.Config['sparse_count'])
 
-		self.Timer = asab.Timer(app, self.on_tick, autorestart=True)
-		self.Timer.start(int(self.Config['stats_period']))
-
 		self.App = app
 
 
-	async def on_tick(self):
-		await self.analyze()
-
-
-	def predicate(self, event):
+	def predicate(self, context, event):
 		if "@timestamp" not in event:
 			return False
 
@@ -81,7 +75,7 @@ class TimeDriftAnalyzer(Analyzer):
 		return diff
 
 
-	def evaluate(self, event):
+	def evaluate(self, context, event):
 		timestamp = event["@timestamp"]
 		diff = self.get_diff(timestamp)
 

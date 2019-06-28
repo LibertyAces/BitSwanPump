@@ -51,8 +51,8 @@ class SessionAnalyzer(Analyzer):
 
 	'''
 
-	def __init__(self, app, pipeline, column_formats, column_names, matrix_id=None, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
+	def __init__(self, app, pipeline, column_formats, column_names, analyze_on_clock=False, matrix_id=None, id=None, config=None):
+		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
 			s_id = self.Id + "Matrix"
@@ -62,15 +62,7 @@ class SessionAnalyzer(Analyzer):
 			self.Sessions = svc.locate_matrix(matrix_id)
 
 		self.Matrix = self.Sessions.Matrix #alias
-	
 
-
-
-		
-
-	
-	
-	
 
 
 
