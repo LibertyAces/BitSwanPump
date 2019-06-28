@@ -89,8 +89,6 @@ class TimeWindowAnalyzer(Analyzer):
 		self.ClockDriven = clock_driven
 		self.Resolution = resolution
 		
-
-
 		self.Matrix = self.TimeWindow.Matrix['time_window'] #alias
 		
 
