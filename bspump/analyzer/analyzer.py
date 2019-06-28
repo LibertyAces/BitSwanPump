@@ -18,13 +18,16 @@ class Analyzer(Processor):
 		"analyze_period": 60, # every 60 seconds
 	}
 
-	def __init__(self, app, pipeline, analyze_on_clock=False, id=None, config=None):
+	def __init__(self, app, pipeline, analyze_on_clock=False, analyze_period=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		self.AnalyzePeriod = int(self.Config['analyze_period'])
+		if analyze_period is None:
+			self.AnalyzePeriod = int(self.Config['analyze_period'])
+		else:
+			self.AnalyzePeriod = analyze_period
 		self.AnalyzeOnClock = analyze_on_clock
 		
 		if analyze_on_clock:
-			self.Timer = asab.Timer(app, self._on_tick_analyze, autorestart=True)
+			self.Timer = asab.Timer(app, self._on_tick_analyze, autorestart=True) 
 			self.Timer.start(self.AnalyzePeriod)
 		else:
 			self.Timer = None

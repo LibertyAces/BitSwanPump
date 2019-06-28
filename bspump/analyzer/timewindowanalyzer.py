@@ -63,7 +63,13 @@ class TimeWindowAnalyzer(Analyzer):
 	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, 
 				start_time=None, clock_driven=True, analyze_on_clock=False, 
 				matrix_id=None, id=None, config=None):
-		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
+
+		if clock_driven:
+			analyze_period = self.Resolution / 4
+		else:
+			analyze_period = None
+		
+		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, analyze_period=analyze_period, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
 			matrix_id = self.Id + "Matrix"
@@ -82,9 +88,7 @@ class TimeWindowAnalyzer(Analyzer):
 
 		self.ClockDriven = clock_driven
 		self.Resolution = resolution
-		if clock_driven:
-			self.Timer = asab.Timer(app, self._on_clock_tick, autorestart=True)
-			self.Timer.start(self.Resolution / 4) # 1/4 of the sampling
+		
 
 
 		self.Matrix = self.TimeWindow.Matrix['time_window'] #alias
