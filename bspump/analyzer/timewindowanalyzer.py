@@ -120,6 +120,7 @@ class TimeWindowAnalyzer(Analyzer):
 		'''
 		if self.AnalyzeOnClock:
 			super().on_clock_tick()
+		
 		if self.ClockDriven:
 			target_ts = time.time()
 			self.advance(target_ts)
