@@ -53,7 +53,11 @@ class TimeWindowAnalyzer(Analyzer):
 		`clock_driven` is a boolean parameter, specifying how the matrix should be advanced. If `True`, it advances on timer's tick, 
 		else manually. Default value is `True`.
 		`matrix_id` is an id of `TimeWindowMatrix` object alternatively passed, if not provided, the new matrix will be created with and ID derived from the Analyzer Id
-		
+		`analyze_on_clock` enables enables analyzis by timer.
+
+
+		If the `TimeWindowAnalyzer` is `clock_driven`, the time should be periodically shifted (`on_clock_tick()`). The same
+		function runs analyzis, if it's enabled.
 	'''
 
 	ConfigDefaults = {

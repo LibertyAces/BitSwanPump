@@ -12,8 +12,15 @@ L = logging.getLogger(__name__)
 class Analyzer(Processor):
 	'''
 		This is general analyzer interface, which can be the basement of different analyzers. 
-
+		`analyze_on_clock` enables analyzis by timer, which period can be set by `analyze_period` or 
+		`Config["analyze_period"]`.
+		
+		In general, the `Analyzer` contains some object, where it accumulates some information about events.
+		Events go through analyzer unchanged, the information is recorded by `evaluate()` function.
+		The internal object sometimes should be processed and sent somewhere (e.g. another pipeline), 
+		this process can be done by `analyze()` function, which can be triggered by time, pubsub or externally.
 	'''
+	
 	ConfigDefaults = {
 		"analyze_period": 60, # every 60 seconds
 	}
