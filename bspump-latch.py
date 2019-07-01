@@ -12,7 +12,7 @@ class LatchPipeline(bspump.Pipeline):
 
 		self.build(
 			self.Source,
-			bspump.common.LatchAnalyzer(app, self, config={
+			LatchAnalyzer(app, self, config={
 				'latch_max_size': 25,
 			}),
 			bspump.common.PPrintSink(app, self)
