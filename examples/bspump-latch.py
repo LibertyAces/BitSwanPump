@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import bspump
 
-from bspump.common import LatchProcessor
+from bspump.analyzer import LatchAnalyzer
 
 
 class LatchPipeline(bspump.Pipeline):
@@ -12,8 +12,8 @@ class LatchPipeline(bspump.Pipeline):
 
 		self.build(
 			self.Source,
-			bspump.common.LatchProcessor(app, self, config={
-				'queue_max_size': 25,
+			LatchAnalyzer(app, self, config={
+				'latch_max_size': 25,
 			}),
 			bspump.common.PPrintSink(app, self)
 		)
@@ -26,8 +26,8 @@ class LatchPipeline(bspump.Pipeline):
 			await self.Source.put_async({}, "Tick {}".format(message_type))
 
 	async def on_print(self, message_type):
-		latch = self.locate_processor("LatchProcessor")
-		await self.Source.put_async({}, "Queue has {} items".format(len(latch.list_queue())))
+		latch = self.locate_processor("LatchAnalyzer")
+		await self.Source.put_async({}, "Queue has {} items".format(len(latch.Latch)))
 
 
 if __name__ == '__main__':
