@@ -13,11 +13,7 @@ class TestDictToJsonParser(bspump.unittest.ProcessorTestCase):
 			(None, {'spam': 'eggs'}),
 		]
 
-<<<<<<< HEAD
-		self.set_up_processor(DictToJsonParser)
-=======
-		self.setUpProcessor(bspump.common.DictToJsonParser)
->>>>>>> Review of the unit test implementation.
+		self.set_up_processor(bspump.common.DictToJsonParser)
 
 		output = self.execute(
 			events
@@ -41,11 +37,7 @@ class TestDictToJsonParserNotDictionary(bspump.unittest.ProcessorTestCase):
 		# TODO self.assertIn(AssertionError(), pipeline._error)
 		# TODO mock set_error
 
-<<<<<<< HEAD
-		self.set_up_processor(DictToJsonParser)
-=======
-		self.setUpProcessor(bspump.common.DictToJsonParser)
->>>>>>> Review of the unit test implementation.
+		self.set_up_processor(bspump.common.DictToJsonParser)
 		svc = self.App.get_service("bspump.PumpService")
 		pipeline = svc.locate("UnitTestPipeline")
 		pipeline.set_error = MagicMock()

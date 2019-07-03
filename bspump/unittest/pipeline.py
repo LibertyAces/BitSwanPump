@@ -1,7 +1,7 @@
 from .sink import UnitTestSink
 from .source import UnitTestSource
 from ..pipeline import Pipeline
-from ..trigger import RunOnceTrigger
+from ..trigger import PubSubTrigger
 
 
 class UnitTestPipeline(Pipeline):
@@ -11,11 +11,7 @@ class UnitTestPipeline(Pipeline):
 		super().__init__(app, "UnitTestPipeline")
 
 		self.Source = UnitTestSource(app, self).on(
-<<<<<<< HEAD
-			RunOnceTrigger(app)
-=======
-			bspump.trigger.PubSubTrigger(app, "unittest.go!", self.PubSub)
->>>>>>> Extends unit test to work nicely.
+			PubSubTrigger(app, "unittest.go!", self.PubSub)
 		)
 		self.Processor = processor(app, self)
 		self.Sink = UnitTestSink(app, self)

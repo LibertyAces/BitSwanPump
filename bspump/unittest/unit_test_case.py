@@ -17,10 +17,8 @@ class ProcessorTestCase(unittest.TestCase):
 
 
 	def setUp(self) -> None:
-<<<<<<< HEAD
-		self.App = BSPumpApplication()
-=======
-		self.App = bspump.BSPumpApplication(args=[])
+		self.App = BSPumpApplication(args=[])
+
 
 	def tearDown(self):
 		asab.abc.singleton.Singleton.delete(self.App.__class__)
@@ -28,7 +26,6 @@ class ProcessorTestCase(unittest.TestCase):
 		root_logger = logging.getLogger()
 		root_logger.handlers = []
 
->>>>>>> Extends unit test to work nicely.
 
 	def set_up_processor(self, processor):
 
