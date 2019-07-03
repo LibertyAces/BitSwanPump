@@ -63,6 +63,45 @@ Blank application setup
 You can clone blank application from `it's own repository <https://github.com/LibertyAces/BitSwanTelco-BlankApp>`_.
 
 
+
+Example of unit test
+--------------------
+
+.. code:: python
+
+    from bspump.unittest import ProcessorTestCase
+    from unittest.mock import MagicMock
+
+    import bspump.unittest
+
+    class MyProcessorTestCase(ProcessorTestCase)
+
+        def test_my_processor(self):
+
+            # setup processor for test
+            self.set_up_processor(my_project.processor.MyProcessor)
+
+            # mock methods to suit your needs on pipieline ..
+            self.Pipeline.method = MagicMock()
+
+            # .. or instance of processor
+            my_processor = self.Pipeline.locate_processor("MyProcessor")
+            my_processor.method = MagicMock()
+
+            output = self.execute(
+                [(None, {'foo': 'bar'})]  # Context, event
+            )
+
+            # assert output
+            self.assertEqual(
+                [event for context, event in output],
+                [{'FOO': 'BAR'}]
+            )
+
+            # asssert expected calls on `self.Pipeline.method` or `my_processor.method`
+            my_processor.method.assert_called_with(**expected)
+
+
 Available technologies
 ----------------------
 
@@ -97,6 +136,10 @@ Available technologies
 * ``bspump.lookup``
 
   * GeoIP Lookup
+
+* ``bspump.unittest``
+
+  * Interface for testing Processors / Pipelines
 
 Google Sheet with technological compatiblity matrix:
 https://docs.google.com/spreadsheets/d/1L1DvSuHuhKUyZ3FEFxqEKNpSoamPH2Z1ZaFuHyageoI/edit?usp=sharing
