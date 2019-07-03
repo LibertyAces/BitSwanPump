@@ -102,6 +102,11 @@ Example of unit test
             my_processor.method.assert_called_with(**expected)
 
 
+Runnig tests
+------------
+`python3 -m unittest path_to_my_test`
+
+
 Available technologies
 ----------------------
 
