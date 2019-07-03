@@ -1,19 +1,44 @@
-import unittest
 import logging
+import unittest
 
 import asab.abc.singleton
-import bspump
-
-
 from .pipeline import UnitTestPipeline
 from ..application import BSPumpApplication
+from ..abc.processor import Processor
 
 
 class ProcessorTestCase(unittest.TestCase):
 
-	'''
-	This is processor test case
-	'''
+	"""
+	A class whose instances are single processor test cases.
+
+	Test authors should subclass ProcessorTestCase for their own tests. Construction
+	and deconstruction of the test's environment ('fixture') can be
+	implemented by overriding the 'setUp' and 'tearDown' methods respectively.
+
+	See :class: `unittest.TestCase` for more details
+
+	Example of use:
+
+	.. code-block:: python
+
+		class MyProcessorTestCase(ProcessorTestCase)
+
+			def test_my_processor(self):
+
+				# setup processor for test
+				self.set_up_processor(my_project.processors.MyProcessor)
+
+				output = self.execute(
+					[(None, {'foo': 'bar'})]  # Context, event
+				)
+
+				self.assertEqual(
+					[event for context, event in output],
+					[{'FOO': 'BAR'}]
+				)
+
+	"""
 
 
 	def setUp(self) -> None:
@@ -27,7 +52,12 @@ class ProcessorTestCase(unittest.TestCase):
 		root_logger.handlers = []
 
 
-	def set_up_processor(self, processor):
+	def set_up_processor(self, processor: type(Processor)) -> None:
+		"""
+		Construct Pipeline from processor and appends it to PumpService
+
+		:param processor: Processor you want to test
+		"""
 
 		svc = self.App.get_service("bspump.PumpService")
 
@@ -35,10 +65,14 @@ class ProcessorTestCase(unittest.TestCase):
 		svc.add_pipeline(self.Pipeline)
 
 
-	def execute(self, input_data):
-		'''
-		This is universal and become part of bspump.unitest.ProcessorTestCase module
-		'''
+	def execute(self, input_data: []):
+		"""
+		Executes ProcessorTestCase
+
+		You can define custom mocks between calling `set_up_processor` and `execute`
+
+		:return: `input_data` processed by testing processor
+		"""
 
 		self.Pipeline.Source.Input = input_data
 

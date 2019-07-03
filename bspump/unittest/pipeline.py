@@ -2,12 +2,19 @@ from .sink import UnitTestSink
 from .source import UnitTestSource
 from ..pipeline import Pipeline
 from ..trigger import PubSubTrigger
+from ..abc.processor import Processor
+from ..application import BSPumpApplication
 
 
 class UnitTestPipeline(Pipeline):
 
+	def __init__(self, app: type(BSPumpApplication), processor: type(Processor)):
+		"""
+		Build Pipeline with given app and processor
 
-	def __init__(self, app, processor):
+		:param app:
+		:param processor:
+		"""
 		super().__init__(app, "UnitTestPipeline")
 
 		self.Source = UnitTestSource(app, self).on(
@@ -22,7 +29,10 @@ class UnitTestPipeline(Pipeline):
 
 
 	def unittest_start(self):
-		# Start the pipeline
+		"""
+		Start the pipeline
+		"""
+
 		self.PubSub.publish("unittest.go!")
 
 
