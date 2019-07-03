@@ -1,17 +1,16 @@
-import bspump
-import bspump.trigger
-
 from .sink import UnitTestSink
 from .source import UnitTestSource
+from ..pipeline import Pipeline
+from ..trigger import RunOnceTrigger
 
 
-class UnitTestPipeline(bspump.Pipeline):
+class UnitTestPipeline(Pipeline):
 
 	def __init__(self, app, processor):
 		super().__init__(app, "UnitTestPipeline")
 
 		self.Source = UnitTestSource(app, self).on(
-			bspump.trigger.RunOnceTrigger(app)
+			RunOnceTrigger(app)
 		)
 		self.Processor = processor(app, self)
 		self.Sink = UnitTestSink(app, self)

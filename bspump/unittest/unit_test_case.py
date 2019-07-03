@@ -1,7 +1,7 @@
-import bspump
 import unittest
 
 from .pipeline import UnitTestPipeline
+from ..application import BSPumpApplication
 
 
 class ProcessorTestCase(unittest.TestCase):
@@ -11,7 +11,7 @@ class ProcessorTestCase(unittest.TestCase):
 	'''
 
 	def setUp(self) -> None:
-		self.App = bspump.BSPumpApplication()
+		self.App = BSPumpApplication()
 
 	def setUpProcessor(self, processor):
 
