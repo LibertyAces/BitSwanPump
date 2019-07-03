@@ -13,7 +13,7 @@ class ProcessorTestCase(unittest.TestCase):
 	def setUp(self) -> None:
 		self.App = BSPumpApplication()
 
-	def setUpProcessor(self, processor):
+	def set_up_processor(self, processor):
 
 		svc = self.App.get_service("bspump.PumpService")
 
