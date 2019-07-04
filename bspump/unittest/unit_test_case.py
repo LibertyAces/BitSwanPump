@@ -76,6 +76,9 @@ class ProcessorTestCase(unittest.TestCase):
 
 		self.Pipeline.Source.Input = input_data
 
+		# TODO catch AttributeError: 'TestIteratorSource' object has no attribute 'Pipeline'
+		# Add help text - did you forget to `set_up_processor`?
+
 		self.Pipeline.unittest_start()
 		self.App.run()
 
