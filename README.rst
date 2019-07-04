@@ -26,7 +26,6 @@ Principles
 Stream processor example
 ------------------------
 
-
 .. code:: python
 
     #!/usr/bin/env python3
@@ -52,14 +51,17 @@ Stream processor example
         svc.add_pipeline(MyPipeline(app))
         app.run()
 
+
 Video tutorial
 ^^^^^^^^^^^^^^
 
 .. image:: http://img.youtube.com/vi/QvjiPxO4w6w/0.jpg
    :target: https://www.youtube.com/watch?v=QvjiPxO4w6w&list=PLb0LvCJCZKt_1QcQwpJXqsm-AY_ty4udo
 
+
 Blank application setup
 -----------------------
+
 You can clone blank application from `it's own repository <https://github.com/LibertyAces/BitSwanTelco-BlankApp>`_.
 
 
@@ -119,19 +121,18 @@ Unit test
 
 .. code:: python
 
-    from bspump.unittest import ProcessorTestCase
     from unittest.mock import MagicMock
+    from bspump.unittest import ProcessorTestCase
 
-    import bspump.unittest
 
-    class MyProcessorTestCase(ProcessorTestCase)
+    class MyProcessorTestCase(ProcessorTestCase):
 
         def test_my_processor(self):
 
             # setup processor for test
             self.set_up_processor(my_project.processor.MyProcessor)
 
-            # mock methods to suit your needs on pipieline ..
+            # mock methods to suit your needs on pipeline ..
             self.Pipeline.method = MagicMock()
 
             # .. or instance of processor
@@ -152,9 +153,13 @@ Unit test
             my_processor.method.assert_called_with(**expected)
 
 
-Runnig tests
-------------
-`python3 -m unittest path_to_my_test`
+
+Running of unit tests
+---------------------
+
+``python3 -m unittest test``
+
+You can replace ``test`` with a location of your unit test module.
 
 
 Licence
