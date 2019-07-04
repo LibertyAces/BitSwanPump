@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 import bspump.unittest
-import bspump.common 
+import bspump.common
 
 
 class TestDictToJsonParser(bspump.unittest.ProcessorTestCase):
