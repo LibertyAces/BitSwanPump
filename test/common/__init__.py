@@ -5,3 +5,4 @@ from .test_iterator import *
 from .test_json import *
 from .test_jsonbytes import *
 from .test_mapping import *
+from .test_null import *
