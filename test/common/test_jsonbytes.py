@@ -6,7 +6,7 @@ import bspump.common
 
 class TestDictToJsonBytesParser(bspump.unittest.ProcessorTestCase):
 
-	def test_dict_to_json(self):
+	def test_dict_to_json_bytes(self):
 		events = [
 			(None, {'foo': 'bar'}),
 			(None, {'fizz': 'buzz'}),
@@ -43,7 +43,7 @@ class TestDictToJsonBytesParser(bspump.unittest.ProcessorTestCase):
 
 class TestJsonBytesToDictParser(bspump.unittest.ProcessorTestCase):
 
-	def test_json_to_dict(self):
+	def test_json_bytes_to_dict(self):
 		events = {
 			(None, b'{"key": "1"}'),
 			(None, b'{"key": "2"}'),

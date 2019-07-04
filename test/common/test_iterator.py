@@ -7,7 +7,7 @@ import bspump.common
 
 class TestIteratorGenerator(bspump.unittest.ProcessorTestCase):
 
-	def test_string_to_bytes_parser(self):
+	def test_iterator_generator(self):
 		event_message = "Generate me!"
 		events = {
 			(None, event_message),

@@ -4,7 +4,7 @@ import bspump.common
 
 class TestHexlifyProcessor(bspump.unittest.ProcessorTestCase):
 
-	def test_string_to_bytes_parser(self):
+	def test_hexlify_processor(self):
 		events = {
 			(None, b'\x124Vx'),
 			(None, b'\xab\xba\xba\xbe'),
@@ -16,7 +16,7 @@ class TestHexlifyProcessor(bspump.unittest.ProcessorTestCase):
 		output = self.execute(
 			events
 		)
-		print([event for context, event in output])
+
 		self.assertEqual(
 			sorted([event for context, event in output]),
 			[b'12345678', b'abbababe', b'deadc0de']
