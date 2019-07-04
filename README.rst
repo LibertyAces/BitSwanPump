@@ -26,7 +26,6 @@ Principles
 Stream processor example
 ------------------------
 
-
 .. code:: python
 
     #!/usr/bin/env python3
@@ -52,14 +51,17 @@ Stream processor example
         svc.add_pipeline(MyPipeline(app))
         app.run()
 
+
 Video tutorial
 ^^^^^^^^^^^^^^
 
 .. image:: http://img.youtube.com/vi/QvjiPxO4w6w/0.jpg
    :target: https://www.youtube.com/watch?v=QvjiPxO4w6w&list=PLb0LvCJCZKt_1QcQwpJXqsm-AY_ty4udo
 
+
 Blank application setup
 -----------------------
+
 You can clone blank application from `it's own repository <https://github.com/LibertyAces/BitSwanTelco-BlankApp>`_.
 
 
@@ -98,6 +100,10 @@ Available technologies
 
   * GeoIP Lookup
 
+* ``bspump.unittest``
+
+  * Interface for testing Processors / Pipelines
+
 Google Sheet with technological compatiblity matrix:
 https://docs.google.com/spreadsheets/d/1L1DvSuHuhKUyZ3FEFxqEKNpSoamPH2Z1ZaFuHyageoI/edit?usp=sharing
 
@@ -108,6 +114,52 @@ High-level architecture
 
 .. image:: ./doc/_static/bspump-architecture.png
     :alt: Schema of BSPump high-level achitecture
+
+
+Unit test
+---------
+
+.. code:: python
+
+    from unittest.mock import MagicMock
+    from bspump.unittest import ProcessorTestCase
+
+
+    class MyProcessorTestCase(ProcessorTestCase):
+
+        def test_my_processor(self):
+
+            # setup processor for test
+            self.set_up_processor(my_project.processor.MyProcessor)
+
+            # mock methods to suit your needs on pipeline ..
+            self.Pipeline.method = MagicMock()
+
+            # .. or instance of processor
+            my_processor = self.Pipeline.locate_processor("MyProcessor")
+            my_processor.method = MagicMock()
+
+            output = self.execute(
+                [(None, {'foo': 'bar'})]  # Context, event
+            )
+
+            # assert output
+            self.assertEqual(
+                [event for context, event in output],
+                [{'FOO': 'BAR'}]
+            )
+
+            # asssert expected calls on `self.Pipeline.method` or `my_processor.method`
+            my_processor.method.assert_called_with(**expected)
+
+
+
+Running of unit tests
+---------------------
+
+``python3 -m unittest test``
+
+You can replace ``test`` with a location of your unit test module.
 
 
 Licence

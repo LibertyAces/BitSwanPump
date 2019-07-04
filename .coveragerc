@@ -1,0 +1,5 @@
+[run]
+source=bspump/
+
+[report]
+include=bspump*
