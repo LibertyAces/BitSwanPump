@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import bspump
-import bspump.common
 
 from bspump.analyzer import LatchAnalyzer
 
