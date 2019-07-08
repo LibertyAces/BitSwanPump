@@ -3,7 +3,7 @@ import logging
 import asyncio
 import asab
 import bspump
-import bspump.avro
+import bspump.parquet
 import bspump.file
 import bspump.common
 import bspump.trigger
@@ -20,15 +20,21 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
+		self.sink = bspump.parquet.ParquetSink(app, self, config={'rows_in_chunk': 500, 'rows_per_file': 1000,
+																  'schema_file': './data/sample2-schema.json'})
+
 		self.build(
-			bspump.avro.AvroSource(app, self, config={'path': './examples/data/*.avro'}).on(bspump.trigger.RunOnceTrigger(app)),
-			bspump.common.PPrintSink(app, self)
+			bspump.file.FileCSVSource(app, self, config={'path': './data/sample2.csv', 'delimiter': ','}).on(bspump.trigger.RunOnceTrigger(app)),
+			self.sink
 		)
+
+		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
 
 	def on_cycle_end(self, event_name, pipeline):
 		'''
 		This ensures that at the end of the file scan, the target file is closed
 		'''
+		self.sink.rotate()
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ import logging
 import asyncio
 import asab
 import bspump
-import bspump.parquet
+import bspump.avro
 import bspump.file
 import bspump.common
 import bspump.trigger
@@ -20,11 +20,11 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.sink = bspump.parquet.ParquetSink(app, self, config={'rows_in_chunk': 500, 'rows_per_file': 1000,
-																  'schema_file': './examples/data/sample2-schema.json'})
+		self.sink = bspump.avro.AvroSink(app, self, 
+			config={'schema_file': './data/avro_schema.avsc'})
 
 		self.build(
-			bspump.file.FileCSVSource(app, self, config={'path': './examples/data/sample2.csv', 'delimiter': ','}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.file.FileJSONSource(app, self, config={'path': './data/sample_to_avro.json'}).on(bspump.trigger.RunOnceTrigger(app)),
 			self.sink
 		)
 

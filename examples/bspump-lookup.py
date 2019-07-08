@@ -28,7 +28,7 @@ class SamplePipeline(bspump.Pipeline):
 
 		self.build(
 			bspump.file.FileCSVSource(app, self, config={
-					'path': './examples/data/sample.csv',
+					'path': './data/sample.csv',
 					'delimiter': ';',
 					'post': 'noop'}
 				)
@@ -55,7 +55,7 @@ class MyDictionaryLookup(bspump.DictionaryLookup):
 
 	async def load(self):
 		# Called only when we are master (no master_url provided)
-		self.set(bspump.load_json_file('./examples/data/country_names.json'))
+		self.set(bspump.load_json_file('./data/country_names.json'))
 		return True
 
 

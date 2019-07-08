@@ -35,7 +35,7 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.file.FileJSONSource(app, self, config={'path': './examples/data/sample.json', 'post': 'noop',})
+			bspump.file.FileJSONSource(app, self, config={'path': './data/sample.json', 'post': 'noop',})
 				.on(bspump.trigger.PubSubTrigger(app, "Application.tick!")),
 			MyTransformator(app, self),
 			bspump.common.MappingItemsProcessor(app, self),
