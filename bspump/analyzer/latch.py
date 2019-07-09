@@ -2,6 +2,13 @@ from .analyzer import Analyzer
 import collections
 import mongoquery
 
+###
+
+L = logging.getLogger(__name__)
+
+###
+
+
 
 class LatchAnalyzer(Analyzer):
 	"""
