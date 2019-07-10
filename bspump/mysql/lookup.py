@@ -104,7 +104,7 @@ The configuration option "from" can include a table name or a query string inclu
 
 
 	def __iter__(self):
-		query = "SELECT * FROM {}".format(self.From)
+		query = "SELECT {} FROM {}".format(self.Select, self.From)
 		self.CursorSync.execute(query)
 		result = self.CursorSync.fetchall()
 		self.Iterator = result.__iter__()
