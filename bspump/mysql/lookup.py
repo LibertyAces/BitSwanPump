@@ -26,18 +26,29 @@ class ProjectLookup(bspump.mysql.MySQLLookup):
 	def find_one(self, database, key):
 		return database['projects'].find_one({'_id':key})
 
+The configuration option "from" can include a table name or a query string including joins like:
+
+	Orders INNER JOIN Customers ON Orders.CustomerID=Customers.CustomerID
+
 	'''
 
 	ConfigDefaults = {
-		'table': '', # Specify a database if you want to overload the connection setting
-		'key':'' # Specify key name used for search
+		'select': '*',  # Specify what to select
+		'from': '',  # Specify the FROM object, which can be a table or a query string
+		'table': '',  # Backward compatibility (`from` alias)
+		'key': ''  # Specify key name used for search
 	}
 
 	def __init__(self, app, lookup_id, mysql_connection, config=None):
 		super().__init__(app, lookup_id=lookup_id, config=config)
 		self.Connection = mysql_connection
 
-		self.Table = self.Config['table']
+		self.Select = self.Config['select']
+
+		self.From = self.Config['from']
+		if len(self.From) < 1:
+			self.From = self.Config['table']
+
 		self.Key = self.Config['key']
 
 		self.Count = -1
@@ -55,7 +66,7 @@ class ProjectLookup(bspump.mysql.MySQLLookup):
 
 
 	def _find_one(self, key):
-		query = "SELECT * FROM {} WHERE {}='{}'".format(self.Table, self.Key, key)
+		query = "SELECT {} FROM {} WHERE {}='{}'".format(self.Select, self.From, self.Key, key)
 		self.CursorSync.execute(query)
 		result = self.CursorSync.fetchone()
 		return result
@@ -63,7 +74,7 @@ class ProjectLookup(bspump.mysql.MySQLLookup):
 	
 	async def _count(self):
 
-		query = """SELECT COUNT(*) as "Number_of_Rows" FROM {};""".format(self.Table)
+		query = """SELECT COUNT({}) as "Number_of_Rows" FROM {};""".format(self.Select, self.From)
 		await self.CursorAsync.execute(query)
 		count = await self.CursorAsync.fetchone()
 		return count['Number_of_Rows']
@@ -93,7 +104,7 @@ class ProjectLookup(bspump.mysql.MySQLLookup):
 
 
 	def __iter__(self):
-		query = "SELECT * FROM {}".format(self.Table)
+		query = "SELECT * FROM {}".format(self.From)
 		self.CursorSync.execute(query)
 		result = self.CursorSync.fetchall()
 		self.Iterator = result.__iter__()
