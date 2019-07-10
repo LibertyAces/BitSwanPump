@@ -15,6 +15,7 @@ L = logging.getLogger(__name__)
 
 #
 
+
 class MySQLConnection(Connection):
 
 	"""
