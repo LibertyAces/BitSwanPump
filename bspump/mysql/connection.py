@@ -17,6 +17,32 @@ L = logging.getLogger(__name__)
 
 class MySQLConnection(Connection):
 
+	"""
+	MySQLConnection is a top BitSwan object, that is used to connect the application to an external MySQL database.
+	MySQLConnection is thus used in MySQL-related sources, sinks, processors and lookups such as MySQLLookup.
+
+	MySQLConnection is built on top of aiomysql library and utilizes its functions: https://aiomysql.readthedocs.io/en/latest/
+
+	The following code illustrates how to create and register the MySQL connection inside the application object.
+	The connection's ID is set to "MySQLConnection" (the second argument of the connection's constructor),
+	which is also then used as a section name in configuration files.
+
+.. code:: python
+
+	app = bspump.BSPumpApplication()
+	svc = app.get_service("bspump.PumpService")
+	svc.add_connection(
+		bspump.mysql.MySQLConnection(app, "MySQLConnection")
+	)
+
+	In order to locate MySQLConnection in the constructor method of sources, sinks, processors etc., the following code can be used:
+
+.. code:: python
+
+	svc = app.get_service("bspump.PumpService")
+	connection = svc.locate_connection("MySQLConnection")
+
+	"""
 
 	ConfigDefaults = {
 		'host': 'localhost',
