@@ -83,8 +83,8 @@ build: {} [{}]
 		return parser
 
 
-	def parse_arguments(self):
-		args = super().parse_arguments()
+	def parse_arguments(self, args=None):
+		args = super().parse_arguments(args=args)
 		self._web_listen = args.web
 
 
