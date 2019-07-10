@@ -73,7 +73,7 @@ Available technologies
 * ``bspump.common`` Common processors and parsers
 * ``bspump.elasticsearch`` ElasticSearch connection, source and sink
 * ``bspump.file`` File sources and sinks (plain files, JSON, CSV)
-* ``bspump.filter`` Content, Attribute and TimeDrift filter processors 
+* ``bspump.filter`` Content, Attribute and TimeDrift filters
 * ``bspump.http.client``  HTTP client source, WebSocket client sink
 * ``bspump.http.web`` HTTP server source and sink, WebSocket server source
 * ``bspump.influxdb`` InfluxDB connection and sink
@@ -81,13 +81,11 @@ Available technologies
 * ``bspump.mail`` SMTP connection and sink
 * ``bspump.mongodb`` MongoDB connection and lookup
 * ``bspump.mysql`` MySQL connection, source and sink
-* ``bspump.oob`` Out-of-band sink and engine
 * ``bspump.parquet`` Apache Parquet file sink
 * ``bspump.postgresql`` PostgreSQL connection and sink
 * ``bspump.slack`` Slack connection and sink
 * ``bspump.socket`` TCP source, UDP source
 * ``bspump.trigger`` Opportunistic, PubSub and Periodic triggers
-* ``bspump.web`` Pump API endpoints for pipelines, lookups etc.
 * ``bspump.crypto`` Cryptography
 
   * Hashing: SHA224, SHA256, SHA384, SHA512, SHA1, MD5, BLAKE2b, BLAKE2s
@@ -107,6 +105,9 @@ Available technologies
 * ``bspump.unittest``
 
   * Interface for testing Processors / Pipelines
+
+* ``bspump.oob`` Out-of-band sink and engine
+* ``bspump.web`` Pump API endpoints for pipelines, lookups etc.
 
 Google Sheet with technological compatiblity matrix:
 https://docs.google.com/spreadsheets/d/1L1DvSuHuhKUyZ3FEFxqEKNpSoamPH2Z1ZaFuHyageoI/edit?usp=sharing
