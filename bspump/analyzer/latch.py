@@ -1,6 +1,7 @@
 from .analyzer import Analyzer
 import collections
 import mongoquery
+import logging
 
 ###
 
