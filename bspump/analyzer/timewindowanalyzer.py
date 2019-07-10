@@ -69,7 +69,7 @@ class TimeWindowAnalyzer(Analyzer):
 				matrix_id=None, id=None, config=None):
 
 		if clock_driven:
-			analyze_period = self.Resolution / 4
+			analyze_period = resolution / 4
 		else:
 			analyze_period = None
 		
