@@ -26,16 +26,19 @@ class ProjectLookup(bspump.mysql.MySQLLookup):
 	def find_one(self, database, key):
 		return database['projects'].find_one({'_id':key})
 
-The configuration option "from" can include a table name or a query string including joins like:
+The configuration option "from" can include a table name ...
 
-	Orders INNER JOIN Customers ON Orders.CustomerID=Customers.CustomerID
+    from="Orders"
+
+...or a query string including joins like:
+
+	from="Orders INNER JOIN Customers ON Orders.CustomerID=Customers.CustomerID"
 
 	'''
 
 	ConfigDefaults = {
-		'select': '*',  # Specify what to select
+		'statement': '*',  # Specify the statement what to select
 		'from': '',  # Specify the FROM object, which can be a table or a query string
-		'table': '',  # Backward compatibility (`from` alias)
 		'key': ''  # Specify key name used for search
 	}
 
@@ -43,12 +46,8 @@ The configuration option "from" can include a table name or a query string inclu
 		super().__init__(app, lookup_id=lookup_id, config=config)
 		self.Connection = mysql_connection
 
-		self.Select = self.Config['select']
-
+		self.Statement = self.Config['statement']
 		self.From = self.Config['from']
-		if len(self.From) < 1:
-			self.From = self.Config['table']
-
 		self.Key = self.Config['key']
 
 		self.Count = -1
@@ -66,7 +65,7 @@ The configuration option "from" can include a table name or a query string inclu
 
 
 	def _find_one(self, key):
-		query = "SELECT {} FROM {} WHERE {}='{}'".format(self.Select, self.From, self.Key, key)
+		query = "SELECT {} FROM {} WHERE {}='{}'".format(self.Statement, self.From, self.Key, key)
 		self.CursorSync.execute(query)
 		result = self.CursorSync.fetchone()
 		return result
@@ -74,7 +73,7 @@ The configuration option "from" can include a table name or a query string inclu
 	
 	async def _count(self):
 
-		query = """SELECT COUNT({}) as "Number_of_Rows" FROM {};""".format(self.Select, self.From)
+		query = """SELECT COUNT({}) as "Number_of_Rows" FROM {};""".format(self.Statement, self.From)
 		await self.CursorAsync.execute(query)
 		count = await self.CursorAsync.fetchone()
 		return count['Number_of_Rows']
@@ -104,7 +103,7 @@ The configuration option "from" can include a table name or a query string inclu
 
 
 	def __iter__(self):
-		query = "SELECT {} FROM {}".format(self.Select, self.From)
+		query = "SELECT {} FROM {}".format(self.Statement, self.From)
 		self.CursorSync.execute(query)
 		result = self.CursorSync.fetchall()
 		self.Iterator = result.__iter__()
