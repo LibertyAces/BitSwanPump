@@ -109,6 +109,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._context = {}
 
 
+	def time(self):
+		return self.App.time()
+
+
 	def _on_metrics_flush(self, event_type, metric, values):
 		if metric != self.MetricsCounter:
 			return
