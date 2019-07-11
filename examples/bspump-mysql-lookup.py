@@ -30,7 +30,7 @@ class MyApplication(BSPumpApplication):
 		self.MySQLLookup =  MySQLLookup(self, "MySQLLookup", 
 			mysql_connection=mysql_connection,
 			config={
-				'table':'user_loc',
+				'from': 'user_loc',
 				'key': 'user'
 			})
 
