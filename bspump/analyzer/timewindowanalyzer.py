@@ -130,4 +130,62 @@ class TimeWindowAnalyzer(Analyzer):
 			self.advance(target_ts)
 
 
+	async def export_to_csv(self):
+		'''
+		| row_id | timestamp | dim_0 | dim_1 | ... | dim_n |
+		'''
+		if internal_source is None:
+			L.warn("Internal source is None, are you sure you called locate?")
+			return
+
+		for i in range(0, self.Matrix.shape[0]):
+			row_id = self.Sessions.get_row_id(i)
+			for j in range(0, self.TimeWindow.Dimensions[0]):
+				event = collections.OrderedDict()
+				event['id'] = row_id
+				event['timestamp'] = self.TimeWindow.Start + j * self.TimeWindow.Resolution
+				for k in range(0, self.TimeWindow.Dimensions[1]):
+					field_name = "value_{}".format(k)
+					event[field_name] = self.Matrix[i, j, k]
+				
+				await internal_source.put_async({}, event)
+		
+
+	def export_to_tableau(self):
+		if internal_source is None:
+			L.warn("Internal source is None, are you sure you called locate?")
+			return
+
+		for i in range(0, self.Matrix.shape[0]):
+			row_id = self.Sessions.get_row_id(i)
+			field_type = self.Matrix.subdtype[0].kind
+			if field_type in ['f']:
+				event[name]["type"] = "double"
+			elif field_type in ['i', 'u', 'b']:
+				if re.search(r'timestamp', name) is not None:
+					field_type = "datetime"
+				else:
+					field_type = "integer"
+				
+			elif field_type in ['U']: 
+				field_type = "unicodestring"
+			else:
+				L.warn("Incorrect type {}, skipping".format(field_type))
+				break
+			
+			for j in range(0, self.TimeWindow.Dimensions[0]):
+				event = collections.OrderedDict()
+				event['id'] = {"value": row_id, "type": "unicodestring"}
+				value = self.TimeWindow.Start + j * self.TimeWindow.Resolution
+				event['timestamp'] = {"value":value, "type": "datetime"}
+				for k in range(0, self.TimeWindow.Dimensions[1]):
+					field_name = "value_{}".format(k)
+					field_value = self.Matrix[i, j, k]
+					event[field_name] = {"value":field_value, "type":field_type}
+				
+				await internal_source.put_async({}, event)
+
+
+
+
 
