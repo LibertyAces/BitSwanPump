@@ -5,11 +5,13 @@ from bspump.trigger import OpportunisticTrigger
 from bspump.common import PPrintSink
 from bspump import BSPumpApplication, Pipeline, Processor
 import logging
-import bspump.common
 
 ##
+
 L = logging.getLogger(__name__)
+
 ##
+
 
 class MyApplication(BSPumpApplication):
 	def __init__(self):
