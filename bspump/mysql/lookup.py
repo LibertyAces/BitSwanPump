@@ -65,8 +65,8 @@ The configuration option "from" can include a table name ...
 
 
 	def _find_one(self, key):
-		query = "SELECT {} FROM {} WHERE {}='{}'".format(self.Statement, self.From, self.Key, key)
-		self.CursorSync.execute(query)
+		query = "SELECT {} FROM {} WHERE {}=%s".format(self.Statement, self.From, self.Key)
+		self.CursorSync.execute(query, key)
 		result = self.CursorSync.fetchone()
 		return result
 
