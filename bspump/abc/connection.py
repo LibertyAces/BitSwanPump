@@ -6,7 +6,16 @@ class Connection(abc.ABC, ConfigObject):
 
 	def __init__(self, app, connection_id, config=None):
 		super().__init__("connection:{}".format(connection_id), config=config)
+
+		self.App = app
+		self.Loop = app.Loop
+
 		self.Id = connection_id
+
+
+	def time(self):
+		return self.App.time()
+
 
 	@classmethod
 	def construct(cls, app, definition:dict):

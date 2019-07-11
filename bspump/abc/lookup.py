@@ -30,6 +30,10 @@ class Lookup(abc.ABC, asab.ConfigObject):
 	def __init__(self, app, lookup_id, config=None):
 		assert(lookup_id is not None)
 		super().__init__("lookup:{}".format(lookup_id), config=config)
+
+		self.App = app
+		self.Loop = app.Loop
+
 		self.Id = lookup_id
 		self.PubSub = asab.PubSub(app)
 
@@ -43,6 +47,10 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			self.MasterURL = master_url + '/lookup/' + master_lookup_id
 		else:
 			self.MasterURL = None # No master is defined
+
+
+	def time(self):
+		return self.App.time()
 
 
 	def ensure_future_update(self, loop):
