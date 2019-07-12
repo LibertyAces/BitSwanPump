@@ -27,14 +27,14 @@ class Lookup(abc.ABC, asab.ConfigObject):
 	}
 
 
-	def __init__(self, app, lookup_id, config=None):
-		assert(lookup_id is not None)
-		super().__init__("lookup:{}".format(lookup_id), config=config)
+	def __init__(self, app, id=None, config=None):
+		_id = id if id is not None else self.__class__.__name__
+		super().__init__("lookup:{}".format(_id), config=config)
 
 		self.App = app
 		self.Loop = app.Loop
 
-		self.Id = lookup_id
+		self.Id = _id
 		self.PubSub = asab.PubSub(app)
 
 		self.ETag = None
@@ -203,9 +203,9 @@ class MappingLookup(Lookup, collections.abc.Mapping):
 
 class DictionaryLookup(MappingLookup):
 
-	def __init__(self, app, lookup_id, config=None):
+	def __init__(self, app, id=None, config=None):
 		self.Dictionary = {}
-		super().__init__(app, lookup_id, config=config)
+		super().__init__(app, id, config=config)
 
 
 	def __getitem__(self, key):

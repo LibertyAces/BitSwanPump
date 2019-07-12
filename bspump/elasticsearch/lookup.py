@@ -47,9 +47,9 @@ class ElasticSearchLookup(MappingLookup):
 		'scroll_timeout': '1m',
 	}
 
-	def __init__(self, app, lookup_id, es_connection, config=None, cache=None):
-		super().__init__(app, lookup_id=lookup_id, config=config)
-		self.Connection = es_connection
+	def __init__(self, app, connection, id=None, config=None, cache=None):
+		super().__init__(app, id=id, config=config)
+		self.Connection = connection
 
 		self.Index = self.Config['index']
 		self.ScrollTimeout = self.Config['scroll_timeout']

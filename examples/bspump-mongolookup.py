@@ -20,8 +20,9 @@ class MyApplication(BSPumpApplication):
 		mongodb_connection = MongoDBConnection(self, "MongoDBConnection", config={
 			"host":"mongodb://127.0.0.1:27017"})
 		
-		self.MongoDBLookup = MongoDBLookup(self, "MongoDBLookup", 
-			mongodb_connection=mongodb_connection,
+		self.MongoDBLookup = MongoDBLookup(self,
+			connection=mongodb_connection,
+			id="MongoDBLookup",
 			config={
 				'collection':'user_location',
 				'database': 'users',

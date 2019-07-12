@@ -4,13 +4,14 @@ from asab import ConfigObject
 
 class Connection(abc.ABC, ConfigObject):
 
-	def __init__(self, app, connection_id, config=None):
-		super().__init__("connection:{}".format(connection_id), config=config)
+	def __init__(self, app, id=None, config=None):
+		_id = id if id is not None else self.__class__.__name__
+		super().__init__("connection:{}".format(_id), config=config)
 
 		self.App = app
 		self.Loop = app.Loop
 
-		self.Id = connection_id
+		self.Id = _id
 
 
 	def time(self):

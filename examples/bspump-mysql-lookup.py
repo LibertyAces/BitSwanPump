@@ -29,8 +29,9 @@ class MyApplication(BSPumpApplication):
 		# mysql_connection.
 		# print(">>>>>", mysql_connection.acquire())
 		
-		self.MySQLLookup =  MySQLLookup(self, "MySQLLookup", 
-			mysql_connection=mysql_connection,
+		self.MySQLLookup =  MySQLLookup(self,
+			connection=mysql_connection,
+			id="MySQLLookup",
 			config={
 				'from': 'user_loc',
 				'key': 'user'
@@ -38,7 +39,7 @@ class MyApplication(BSPumpApplication):
 
 		svc.add_lookup(self.MySQLLookup)
 		svc.add_pipeline(MyPipeline(self))
-		
+
 
 class MyPipeline(Pipeline):
 	# Enriches the event with location from ES lookup
