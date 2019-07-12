@@ -29,5 +29,7 @@ class AnalyzingSource(InternalSource):
 	async def on_clock_tick(self):
 		if not self.BackPressure:
 			await self.AnalyzeMatrix.analyze()
+		else:
+			print("Backpressure, sorry")
 
 

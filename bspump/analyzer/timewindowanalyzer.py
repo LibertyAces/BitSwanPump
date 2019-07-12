@@ -91,9 +91,9 @@ class TimeWindowAnalyzer(Analyzer):
 			self.TimeWindow = svc.locate_matrix(matrix_id)
 
 		self.ClockDriven = clock_driven
-		self.Resolution = resolution
 		
-		self.Matrix = self.TimeWindow.Matrix['time_window'] #alias
+		# self.Matrix = self.TimeWindow.Matrix['time_window'] #alias
+		self.Resolution = self.TimeWindow.Resolution
 		
 
 	def advance(self, target_ts):
