@@ -18,8 +18,9 @@ MySQLLookup also has a simple cache to reduce a number of database hits.
 
 First, it is needed to create MySQLLookup instance and register it inside the BSPump service:
 
-	self.MySQLLookup =  MySQLLookup(self, "MySQLLookup",
-		mysql_connection=mysql_connection,
+	self.MySQLLookup =  MySQLLookup(self,
+		connection=mysql_connection,
+		id="MySQLLookup",
 		config={
 			'from': 'user_loc',
 			'key': 'user'
@@ -61,9 +62,9 @@ The MySQLLookup can be then located and used inside a custom processor:
 		'query_iter': 'SELECT {} FROM {};',  # Specify general query string for the iterator
 	}
 
-	def __init__(self, app, lookup_id, mysql_connection, config=None, cache=None):
-		super().__init__(app, lookup_id=lookup_id, config=config)
-		self.Connection = mysql_connection
+	def __init__(self, app, connection, id=None, config=None, cache=None):
+		super().__init__(app, id=id, config=config)
+		self.Connection = connection
 
 		self.Statement = self.Config['statement']
 		self.From = self.Config['from']
@@ -79,10 +80,10 @@ The MySQLLookup can be then located and used inside a custom processor:
 		else:
 			self.Cache = cache
 
-		conn_sync = pymysql.connect(host=mysql_connection._host,
-					 user=mysql_connection._user,
-					 passwd=mysql_connection._password,
-					 db=mysql_connection._db)
+		conn_sync = pymysql.connect(host=connection._host,
+					 user=connection._user,
+					 passwd=connection._password,
+					 db=connection._db)
 		self.CursorSync = pymysql.cursors.DictCursor(conn_sync)
 		self.CursorAsync = None
 

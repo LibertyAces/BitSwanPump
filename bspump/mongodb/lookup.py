@@ -30,9 +30,9 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 		'key':'' # Specify key name used for search
 	}
 
-	def __init__(self, app, lookup_id, mongodb_connection, config=None, cache=None):
-		super().__init__(app, lookup_id=lookup_id, config=config)
-		self.Connection = mongodb_connection
+	def __init__(self, app, connection, id=None, config=None, cache=None):
+		super().__init__(app, id=id, config=config)
+		self.Connection = connection
 
 		self.Database = self.Config['database']
 		self.Collection = self.Config['collection']

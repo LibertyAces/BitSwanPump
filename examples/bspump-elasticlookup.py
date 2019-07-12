@@ -19,8 +19,9 @@ class MyApplication(BSPumpApplication):
 
 		es_connection = ElasticSearchConnection(self, "ElasticSearchConnection")
 		
-		self.ElasticSearchLookup = ElasticSearchLookup(self, "ElasticSearchLookup", 
-			es_connection=es_connection,
+		self.ElasticSearchLookup = ElasticSearchLookup(self,
+			connection=es_connection,
+			id="ElasticSearchLookup",
 			config={
 				'key': 'user'
 			})

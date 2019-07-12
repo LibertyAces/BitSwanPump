@@ -57,8 +57,8 @@ class MySQLConnection(Connection):
 		'max_bulk_size': 2,
 	}
 
-	def __init__(self, app, connection_id, config=None):
-		super().__init__(app, connection_id, config=config)
+	def __init__(self, app, id=None, config=None):
+		super().__init__(app, id=id, config=config)
 
 		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
 		self.ConnectionEvent.clear()
