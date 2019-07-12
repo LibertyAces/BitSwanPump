@@ -1,8 +1,8 @@
-from bspump.mysql import MySQLLookup, MySQLConnection
+from bspump.mongodb import MongoDBLookup, MongoDBConnection
 
 from bspump.file import FileCSVSource
 from bspump.trigger import OpportunisticTrigger
-from bspump.common import PPrintSink
+from bspump.common import PPrintSink, NullSink
 from bspump import BSPumpApplication, Pipeline, Processor
 import logging
 import bspump.common
@@ -17,37 +17,34 @@ class MyApplication(BSPumpApplication):
 
 		svc = self.get_service("bspump.PumpService")
 
-		mysql_connection = MySQLConnection(self, "MySQLConnection", config={
-			"user":"user",
-			"password":"password",
-			"db":"users"
-		})
-
-		svc.add_connection(mysql_connection)
-		# mysql_connection.
-		# print(">>>>>", mysql_connection.acquire())
+		mongodb_connection = MongoDBConnection(self, "MongoDBConnection", config={
+			"host":"mongodb://127.0.0.1:27017"})
 		
-		self.MySQLLookup =  MySQLLookup(self, "MySQLLookup", 
-			mysql_connection=mysql_connection,
+		self.MongoDBLookup = MongoDBLookup(self,
+			connection=mongodb_connection,
+			id="MongoDBLookup",
 			config={
-				'table':'user_loc',
+				'collection':'user_location',
+				'database': 'users',
 				'key': 'user'
 			})
 
-		svc.add_lookup(self.MySQLLookup)
+		svc.add_lookup(self.MongoDBLookup)
 		svc.add_pipeline(MyPipeline(self))
 		
 
 class MyPipeline(Pipeline):
-	# Enriches the event with location from ES lookup
+	# Enriches the event with location from Mogodb lookup
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
 			FileCSVSource(app, self, 
-				config={"post":"noop", "path":"bspump/mysql/var/users.csv"}
+				config={"post":"noop", "path":"bspump/mongodb/var/users.csv"}
 				).on(OpportunisticTrigger(app)),
 			MyProcessor(app, self), 
 			PPrintSink(app, self)
+			# NullSink(app, self)
+
 		)
 
 
@@ -56,8 +53,7 @@ class MyProcessor(Processor):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
-		self.Lookup = svc.locate_lookup("MySQLLookup")
-
+		self.Lookup = svc.locate_lookup("MongoDBLookup")
 	
 	def process(self, context, event):
 		if 'user' not in event:
@@ -65,9 +61,11 @@ class MyProcessor(Processor):
 
 		info = self.Lookup.get(event['user'])
 		if info is not None:
-			event['L'] = {'lat':info.get('lat'), 'lon':info.get('lat')}
+			event['L'] = info.get('L')
 		
 		return event
+
+
 
 
 if __name__ == '__main__':

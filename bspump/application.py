@@ -12,8 +12,8 @@ class BSPumpApplication(asab.Application):
 	Application object for BSPump.
 	"""
 
-	def __init__(self, web_listen=None):
-		super().__init__()
+	def __init__(self, args=None, web_listen=None):
+		super().__init__(args=args)
 
 		# Banner
 		print("BitSwan BSPump version {}".format(__version__))
@@ -83,8 +83,8 @@ build: {} [{}]
 		return parser
 
 
-	def parse_arguments(self):
-		args = super().parse_arguments()
+	def parse_arguments(self, args=None):
+		args = super().parse_arguments(args=args)
 		self._web_listen = args.web
 
 

@@ -1,0 +1,2 @@
+class CacheDict(dict):
+	pass

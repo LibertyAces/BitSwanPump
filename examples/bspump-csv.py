@@ -13,20 +13,29 @@ L = logging.getLogger(__name__)
 
 ###
 
-
 class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
+		self.Sink = bspump.file.FileCSVSink(app, self, config={'path': 'out.csv'})
+
 		self.build(
 			bspump.file.FileCSVSource(
-				app, self, config={'path': 'examples/data/sample.csv', 'delimiter': ';', 'post': 'noop'}
+				app, self, config={'path': './data/sample.csv', 'delimiter': ';', 'post': 'noop'}
 			).on(bspump.trigger.RunOnceTrigger(app)),
-			bspump.common.DictToJsonParser(app, self),
-			bspump.common.JsonToDictParser(app, self),
-			bspump.common.NullSink(app, self)
+			bspump.common.PPrintProcessor(app, self),
+			self.Sink
 		)
+
+		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
+
+
+	def on_cycle_end(self, event_name, pipeline):
+		'''
+		This ensures that at the end of the file scan, the target file is closed
+		'''
+		self.Sink.rotate()
 
 
 if __name__ == '__main__':
@@ -34,12 +43,8 @@ if __name__ == '__main__':
 
 	svc = app.get_service("bspump.PumpService")
 
-	# Create and register all pipelines here
-
+	# Construct and register Pipeline
 	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
-
-	pl.insert_before("DictToJsonParser", bspump.common.PPrintProcessor(app, pl))
-	pl.insert_after("JsonToDictParser", bspump.common.PPrintProcessor(app, pl))
 
 	app.run()

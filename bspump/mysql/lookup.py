@@ -1,52 +1,89 @@
 import abc
 
-from ..abc.lookup import MappingLookup
 import aiomysql.cursors
 import pymysql.cursors
 import pymysql
 
-
+from ..abc.lookup import MappingLookup
+from ..cache import CacheDict
 
 
 class MySQLLookup(MappingLookup):
 
 	'''
-The lookup that is linked with a MySQL.
-It provides a mapping (dictionary-like) interface to pipelines.
-It feeds lookup data from MongoDB using a query.
-It also has a simple cache to reduce a number of datbase hits.
+MySQLLookup is linked with a MySQL.
+MySQLLookup provides a mapping (dictionary-like) interface to pipelines.
+MySQLLookup feeds lookup data from MySQL database using a query.
+MySQLLookup also has a simple cache to reduce a number of database hits.
 
-Example:
+First, it is needed to create MySQLLookup instance and register it inside the BSPump service:
 
-class ProjectLookup(bspump.mysql.MySQLLookup):
+	self.MySQLLookup =  MySQLLookup(self,
+		connection=mysql_connection,
+		id="MySQLLookup",
+		config={
+			'from': 'user_loc',
+			'key': 'user'
+		})
+	svc = app.get_service("bspump.PumpService")
+	svc.add_lookup(self.MySQLLookup)
 
-	async def count(self, database):
-		return await database['projects'].count_documents({})
+The configuration option "from" can include a table name ...
 
-	def find_one(self, database, key):
-		return database['projects'].find_one({'_id':key})
+	from="Orders"
+
+...or a query string including joins like:
+
+	from="Orders INNER JOIN Customers ON Orders.CustomerID=Customers.CustomerID"
+
+The MySQLLookup can be then located and used inside a custom processor:
+
+	class MyProcessor(Processor):
+
+		def __init__(self, app, pipeline, id=None, config=None):
+			super().__init__(app, pipeline, id, config)
+			svc = app.get_service("bspump.PumpService")
+			self.Lookup = svc.locate_lookup("MySQLLookup")
+
+		def process(self, context, event):
+			if 'user' not in event:
+				return None
+
+			info = self.Lookup.get(event['user'])
 
 	'''
 
 	ConfigDefaults = {
-		'table': '', # Specify a database if you want to overload the connection setting
-		'key':'' # Specify key name used for search
+		'statement': '*',  # Specify the statement what to select
+		'from': '',  # Specify the FROM object, which can be a table or a query string
+		'key': '',  # Specify key name used for search
+		'query_find_one': 'SELECT {} FROM {} WHERE {}=%s;',  # Specify query string to find one record in database using key
+		'query_count': 'SELECT COUNT({}) as \'n\' FROM {};',  # Specify query string to count number of records in the database
+		'query_iter': 'SELECT {} FROM {};',  # Specify general query string for the iterator
 	}
 
-	def __init__(self, app, lookup_id, mysql_connection, config=None):
-		super().__init__(app, lookup_id=lookup_id, config=config)
-		self.Connection = mysql_connection
+	def __init__(self, app, connection, id=None, config=None, cache=None):
+		super().__init__(app, id=id, config=config)
+		self.Connection = connection
 
-		self.Table = self.Config['table']
+		self.Statement = self.Config['statement']
+		self.From = self.Config['from']
 		self.Key = self.Config['key']
 
-		self.Count = -1
-		self.Cache = {}
+		self.QueryFindOne = self.Config['query_find_one']
+		self.QueryCount = self.Config['query_count']
+		self.QueryIter = self.Config['query_iter']
 
-		conn_sync = pymysql.connect(host=mysql_connection._host,
-					 user=mysql_connection._user,
-					 passwd=mysql_connection._password,
-					 db=mysql_connection._db)
+		self.Count = -1
+		if cache is None:
+			self.Cache = CacheDict()
+		else:
+			self.Cache = cache
+
+		conn_sync = pymysql.connect(host=connection._host,
+					 user=connection._user,
+					 passwd=connection._password,
+					 db=connection._db)
 		self.CursorSync = pymysql.cursors.DictCursor(conn_sync)
 		self.CursorAsync = None
 
@@ -55,18 +92,18 @@ class ProjectLookup(bspump.mysql.MySQLLookup):
 
 
 	def _find_one(self, key):
-		query = "SELECT * FROM {} WHERE {}='{}'".format(self.Table, self.Key, key)
-		self.CursorSync.execute(query)
+		query = self.QueryFindOne.format(self.Statement, self.From, self.Key)
+		self.CursorSync.execute(query, key)
 		result = self.CursorSync.fetchone()
 		return result
 
-	
+
 	async def _count(self):
 
-		query = """SELECT COUNT(*) as "Number_of_Rows" FROM {};""".format(self.Table)
+		query = self.QueryCount.format(self.Statement, self.From)
 		await self.CursorAsync.execute(query)
 		count = await self.CursorAsync.fetchone()
-		return count['Number_of_Rows']
+		return count['n']
 
 
 	async def load(self):
@@ -93,7 +130,7 @@ class ProjectLookup(bspump.mysql.MySQLLookup):
 
 
 	def __iter__(self):
-		query = "SELECT * FROM {}".format(self.Table)
+		query = self.QueryIter.format(self.Statement, self.From)
 		self.CursorSync.execute(query)
 		result = self.CursorSync.fetchall()
 		self.Iterator = result.__iter__()

@@ -2,8 +2,10 @@ import abc
 import requests
 import logging
 import json
+import collections
 
 from ..abc.lookup import MappingLookup
+from ..cache import CacheDict
 
 L = logging.getLogger(__name__)
 
@@ -45,16 +47,19 @@ class ElasticSearchLookup(MappingLookup):
 		'scroll_timeout': '1m',
 	}
 
-	def __init__(self, app, lookup_id, es_connection, config=None):
-		super().__init__(app, lookup_id=lookup_id, config=config)
-		self.Connection = es_connection
+	def __init__(self, app, connection, id=None, config=None, cache=None):
+		super().__init__(app, id=id, config=config)
+		self.Connection = connection
 
 		self.Index = self.Config['index']
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Key = self.Config['key']
 
 		self.Count = -1
-		self.Cache = {}
+		if cache is None:
+			self.Cache = CacheDict()
+		else:
+			self.Cache = cache
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("es.lookup", tags={}, init_values={'hit': 0, 'miss': 0})

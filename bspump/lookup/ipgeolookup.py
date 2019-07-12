@@ -29,8 +29,8 @@ Usage: specify in configuration the path to the database in csv format.
 		'ipv4mapped': 'no', # IPv4-mapped IPv6 address (enables to use IPv6 lookups for IPv4 addresses)
 	}
 
-	def __init__(self, app, lookup_id, config=None):
-		super().__init__(app, lookup_id=lookup_id, config=config)
+	def __init__(self, app, id=None, config=None):
+		super().__init__(app, id=id, config=config)
 		self.TreeRoot = None
 		self.Locations = {}
 		if self.Config['ipv4mapped'].lower() == 'yes':

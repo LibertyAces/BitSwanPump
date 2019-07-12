@@ -65,8 +65,8 @@ host=mongodb://host1,host2/?replicaSet=my-replicaset-name
 		'database': 'database',
 	}
 
-	def __init__(self, app, connection_id, config=None):
-		super().__init__(app, connection_id, config)
+	def __init__(self, app, id=None, config=None):
+		super().__init__(app, id=id, config=config)
 
 		#TODO: SSL ...
 
@@ -83,7 +83,7 @@ host=mongodb://host1,host2/?replicaSet=my-replicaset-name
 			waitQueueTimeoutMS=_get_int_or_none(self.Config, 'wait_queue_timeout'),
 			waitQueueMultiple=_get_int_or_none(self.Config, 'wait_queue_multiple'),
 			heartbeatFrequencyMS=_get_int_or_none(self.Config, 'heartbeat_frequency'),
-			appname=connection_id,
+			appname=id,
 			driver=pymongo.driver_info.DriverInfo(
 				name="bspump.MongoDBConnection", 
 				#TODO: version=...

@@ -8,7 +8,6 @@ from .bytes import BytesToStringParser
 from .jsonbytes import JsonBytesToDictParser
 from .jsonbytes import DictToJsonBytesParser
 from .flatten import FlattenDictProcessor
-from .latch import LatchProcessor
 from .null import NullSink
 from .routing import InternalSource
 from .routing import RouterSink

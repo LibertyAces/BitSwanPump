@@ -62,14 +62,22 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 	def __init__(self, app, column_names, column_formats, id=None, config=None):
 		self.Id = id if id is not None else self.__class__.__name__
 		super().__init__("matrix:{}".format(self.Id), config=config)
+
+		self.App = app
+		self.Loop = app.Loop
+
 		self.ColumnNames = column_names
 		self.ColumnFormats = column_formats
-		
+
 		self.RowMap = collections.OrderedDict()
 		self.RevRowMap = collections.OrderedDict()
 		self.Storage = {}
 		self.ClosedRows = set()
 		self.Matrix = np.zeros(0, dtype={'names':self.ColumnNames, 'formats':self.ColumnFormats})
+
+
+	def time(self):
+		return self.App.time()
 
 
 	def rebuild_rows(self, mode):

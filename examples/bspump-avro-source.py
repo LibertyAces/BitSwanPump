@@ -20,21 +20,15 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.sink = bspump.avro.AvroSink(app, self, 
-			config={'schema_file': './examples/data/avro_schema.avsc'})
-
 		self.build(
-			bspump.file.FileJSONSource(app, self, config={'path': './examples/data/sample_to_avro.json'}).on(bspump.trigger.RunOnceTrigger(app)),
-			self.sink
+			bspump.avro.AvroSource(app, self, config={'path': './data/*.avro'}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.common.PPrintSink(app, self)
 		)
-
-		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
 
 	def on_cycle_end(self, event_name, pipeline):
 		'''
 		This ensures that at the end of the file scan, the target file is closed
 		'''
-		self.sink.rotate()
 
 
 if __name__ == '__main__':
