@@ -1,6 +1,8 @@
 import abc
 
 from ..abc.lookup import MappingLookup
+from ..cache import CacheDict
+
 
 class MongoDBLookup(MappingLookup):
 
@@ -28,7 +30,7 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 		'key':'' # Specify key name used for search
 	}
 
-	def __init__(self, app, lookup_id, mongodb_connection, config=None):
+	def __init__(self, app, lookup_id, mongodb_connection, config=None, cache=None):
 		super().__init__(app, lookup_id=lookup_id, config=config)
 		self.Connection = mongodb_connection
 
@@ -40,7 +42,10 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 			self.Database = self.Connection.Database
 
 		self.Count = -1
-		self.Cache = {}
+		if cache is None:
+			self.Cache = CacheDict()
+		else:
+			self.Cache = cache
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})

@@ -1,9 +1,11 @@
 import abc
 
-from ..abc.lookup import MappingLookup
 import aiomysql.cursors
 import pymysql.cursors
 import pymysql
+
+from ..abc.lookup import MappingLookup
+from ..cache import CacheDict
 
 
 class MySQLLookup(MappingLookup):
@@ -59,7 +61,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 		'query_iter': 'SELECT {} FROM {};',  # Specify general query string for the iterator
 	}
 
-	def __init__(self, app, lookup_id, mysql_connection, config=None):
+	def __init__(self, app, lookup_id, mysql_connection, config=None, cache=None):
 		super().__init__(app, lookup_id=lookup_id, config=config)
 		self.Connection = mysql_connection
 
@@ -72,7 +74,10 @@ The MySQLLookup can be then located and used inside a custom processor:
 		self.QueryIter = self.Config['query_iter']
 
 		self.Count = -1
-		self.Cache = {}
+		if cache is None:
+			self.Cache = CacheDict()
+		else:
+			self.Cache = cache
 
 		conn_sync = pymysql.connect(host=mysql_connection._host,
 					 user=mysql_connection._user,
