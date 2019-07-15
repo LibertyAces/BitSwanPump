@@ -1,6 +1,3 @@
-import sys
-from unittest.mock import patch, call
-
 import bspump.crypto
 import bspump.unittest
 
