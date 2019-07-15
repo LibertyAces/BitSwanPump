@@ -38,10 +38,10 @@ class HashingBaseProcessor(Processor):
 			self.Algorithm = hashes.SHA1()
 		elif algorithm == "MD5":
 			self.Algorithm = hashes.MD5()
-		elif algorithm == "BLAKE2b":
+		elif algorithm == "BLAKE2B":
 			digest_size = int(self.Config['digest_size'])
 			self.Algorithm = hashes.BLAKE2b(digest_size)
-		elif algorithm == "BLAKE2s":
+		elif algorithm == "BLAKE2S":
 			digest_size = int(self.Config['digest_size'])
 			self.Algorithm = hashes.BLAKE2s(digest_size)
 		else:
