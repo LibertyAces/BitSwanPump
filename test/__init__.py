@@ -1,3 +1,4 @@
+from .analyzer import *
 from .avro import *
 from .common import *
 from .crypto import *
