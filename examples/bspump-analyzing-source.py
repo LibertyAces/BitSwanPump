@@ -41,7 +41,8 @@ class MyPipeline1(Pipeline):
 	def __init__(self, app, matrix_id,pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.analyzer.AnalyzingSource(app, self, matrix_id=matrix_id, config={'analyze_period':1}),
+			bspump.analyzer.AnalyzingSource(app, self, matrix_id=matrix_id).on(
+				bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
 			bspump.common.NullSink(app, self)
 		)
 
@@ -63,8 +64,7 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 class MyTimeWindowMatrix(bspump.analyzer.TimeWindowMatrix):
 	async def analyze(self):
 		print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Analyzing!")
-		svc = self.App.get_service("bspump.PumpService")
-		source = svc.locate("MyPipeline1.*AnalyzingSource")
+		megaevent = []
 		for i in range(0, self.Matrix.shape[0]):
 			for j in range(0, self.Matrix['time_window'].shape[1]):
 				event = {}
@@ -72,8 +72,9 @@ class MyTimeWindowMatrix(bspump.analyzer.TimeWindowMatrix):
 				# sum_events = np.sum(self.Matrix["time_window"][i, :, 0])
 				event['sum'] = self.Matrix['time_window'][i, j, 0]
 
-				await source.put_async({}, event)
-		print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Done!")
+				megaevent.append(event)
+		print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Done!")
+		return megaevent
 
 
 

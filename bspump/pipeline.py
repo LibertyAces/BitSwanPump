@@ -193,10 +193,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 	def throttle(self, who, enable=True):
 		#L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
 		if enable:
-			print("en!")
 			self._throttles.add(who)
 		else:
-			print("dis!")
 			self._throttles.remove(who)
 
 		self._evaluate_ready()
