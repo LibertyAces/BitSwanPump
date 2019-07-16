@@ -21,10 +21,8 @@ class AnalyzingSource(TriggerSource):
 	
 	async def cycle(self):
 		print("cycle!")
-		try:
-			event = await self.AnalyzeMatrix.analyze()
-			await self.process(event)
-		except BaseException as e:
-			L.exception("Error while analyzing the matrix")
+		event = await self.AnalyzeMatrix.analyze()
+		await self.process(event)
+
 
 
