@@ -7,7 +7,7 @@ import bspump.unittest
 class TestTimeDriftFilter(bspump.unittest.ProcessorTestCase):
 
 	@patch("asab.application.Application.time")
-	def test_attribute_filter(self, mocked_time):
+	def test_time_drift_filter(self, mocked_time):
 		mocked_time.return_value = 100
 		events = [
 			(None, {"@timestamp": 40}),
