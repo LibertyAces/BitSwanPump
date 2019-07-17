@@ -1,15 +1,16 @@
-from .analyzer import Analyzer
 import collections
-import mongoquery
 import logging
+
+import mongoquery
+
+from .analyzer import Analyzer
 
 ###
 
 L = logging.getLogger(__name__)
 
+
 ###
-
-
 
 class LatchAnalyzer(Analyzer):
 	"""
@@ -20,7 +21,7 @@ class LatchAnalyzer(Analyzer):
 
 		If accumulated events exceeds `latch_max_size` then first event is dropped.
 
-		`Latch` can be filled based on the `query` variable (True by default). 
+		`Latch` can be filled based on the `query` variable (True by default).
 		The query may be:
 		1. `True`, then all events will be added to `Latch`.
 		2. `False`, all events will be skipped.
@@ -35,8 +36,8 @@ class LatchAnalyzer(Analyzer):
 		'latch_max_size': 50,  # 0 means unlimited size
 	}
 
-	def __init__(self, app, pipeline, query=True, clock_driven_analyze=False, id=None, config=None):
-		super().__init__(app, pipeline, clock_driven_analyze=clock_driven_analyze, id=id, config=config)
+	def __init__(self, app, pipeline, query=True, analyze_on_clock=False, inclusive=False, id=None, config=None):
+		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		max_size = int(self.Config.get('latch_max_size'))
 		if max_size == 0:
 			self.Latch = collections.deque()
@@ -44,25 +45,27 @@ class LatchAnalyzer(Analyzer):
 			self.Latch = collections.deque(maxlen=max_size)
 
 		# Check if the query is correctly implemented
-		if (query == True) or (query == False):
+		if isinstance(query, bool):
 			self.Query = query
 		else:
 			try:
 				self.Query = mongoquery.Query(query)
 				self.Query.match({})
 			except mongoquery.QueryError:
-				L.warn("Incorrect query")
+				L.warning("Incorrect query")
 				raise
-		
+
+		self.Inclusive = inclusive
+
 
 	def process(self, context, event):
-		if self.Query == True:
+		if self.Query is True:
 			self.Latch.append(event)
-		
-		elif self.Query == False:
+
+		elif self.Query is False:
 			return event
-		
-		elif self.Query.match(event) == self.Inclusive:
+
+		elif self.Query.match(event) != self.Inclusive:
 			self.Latch.append(event)
 		return event
 
