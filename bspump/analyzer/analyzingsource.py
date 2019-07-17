@@ -10,6 +10,11 @@ L = logging.getLogger(__name__)
 #
 
 class AnalyzingSource(TriggerSource):
+	'''
+		The `AnalyzingSource` is triggered source, which expects `matrix_id` as an input.
+		Each trigger fire it calls `analyze()` function of the `Matrix` and expects
+		a complex event(array of events) as an output.
+	'''
 	
 
 	def __init__(self, app, pipeline, matrix_id, id=None, config=None):
@@ -20,7 +25,6 @@ class AnalyzingSource(TriggerSource):
 
 	
 	async def cycle(self):
-		print("cycle!")
 		event = await self.AnalyzeMatrix.analyze()
 		await self.process(event)
 

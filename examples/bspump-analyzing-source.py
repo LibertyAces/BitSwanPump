@@ -64,7 +64,7 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 class MyTimeWindowMatrix(bspump.analyzer.TimeWindowMatrix):
 	async def analyze(self):
 		print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Analyzing!")
-		megaevent = []
+		complex_event = []
 		for i in range(0, self.Matrix.shape[0]):
 			for j in range(0, self.Matrix['time_window'].shape[1]):
 				event = {}
@@ -72,9 +72,9 @@ class MyTimeWindowMatrix(bspump.analyzer.TimeWindowMatrix):
 				# sum_events = np.sum(self.Matrix["time_window"][i, :, 0])
 				event['sum'] = self.Matrix['time_window'][i, j, 0]
 
-				megaevent.append(event)
+				complex_event.append(event)
 		print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Done!")
-		return megaevent
+		return complex_event
 
 
 

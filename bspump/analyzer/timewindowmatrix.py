@@ -139,9 +139,7 @@ class TimeWindowMatrix(MatrixABC):
 			return
 
 		row = np.zeros(1, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
-		tmp = self.Matrix
-		tmp = np.append(tmp, row)
-		self.Matrix = tmp
+		self.Matrix = np.append(self.Matrix, row)
 		row_counter = len(self.RowMap)
 		self.RowMap[row_id] = row_counter
 		self.RevRowMap[row_counter] = row_id
