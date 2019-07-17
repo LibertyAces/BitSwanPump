@@ -17,4 +17,5 @@ __all__ = [
 	'GeoMatrix',
 	'TimeWindowMatrix',
 	'SessionMatrix',
+	'LatchAnalyzer',
 ]
