@@ -38,8 +38,8 @@ class InfluxDBConnection(Connection):
 		'timeout': 30,
 	}
 
-	def __init__(self, app, connection_id, config=None):
-		super().__init__(app, connection_id, config=config)
+	def __init__(self, app, id=None, config=None):
+		super().__init__(app, id=id, config=config)
 
 		self.url = self.Config["url"].strip()		
 		if self.url[-1] != '/':

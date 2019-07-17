@@ -51,8 +51,8 @@ class MyPipeline(Pipeline):
 			FileCSVSource(app, self, 
 				config={
 					"post":"noop",
-				 	"path":"test.csv"
-				 }).on(OpportunisticTrigger(app)),
+					"path":"test.csv"  # TODO add missing data file
+				}).on(OpportunisticTrigger(app)),
 			RandomProcessor(app, self), 
 			MyContentFilter(app, self, query),
 			PPrintSink(app, self),

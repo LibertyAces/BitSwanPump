@@ -7,8 +7,15 @@ class ProcessorBase(abc.ABC, asab.ConfigObject):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
+		self.App = app
+		self.Loop = app.Loop
+
 		self.Id = id if id is not None else self.__class__.__name__
 		self.Pipeline = pipeline
+
+
+	def time(self):
+		return self.App.time()
 
 
 	@classmethod

@@ -151,9 +151,16 @@ class TriggerSource(Source):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
+		self.App = app
+		self.Loop = app.Loop
+
 		self.TriggerEvent = asyncio.Event(loop=app.Loop)
 		self.TriggerEvent.clear()
 		self.Triggers = set()
+
+
+	def time(self):
+		return self.App.time()
 
 
 	def on(self, trigger):

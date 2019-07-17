@@ -54,8 +54,8 @@ class ElasticSearchConnection(Connection):
 		'allowed_bulk_response_codes': '201',
 	}
 
-	def __init__(self, app, connection_id, config=None):
-		super().__init__(app, connection_id, config=config)
+	def __init__(self, app, id=None, config=None):
+		super().__init__(app, id=id, config=config)
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue(loop=app.Loop)

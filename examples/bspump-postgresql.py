@@ -26,7 +26,7 @@ class SamplePipeline(bspump.Pipeline):
 
 		self.build(
 			bspump.file.FileCSVSource(
-				app, self, config={'path': 'examples/data/sample.csv', 'delimiter': ';', 'post': 'noop'}
+				app, self, config={'path': 'data/sample.csv', 'delimiter': ';', 'post': 'noop'}
 			).on(bspump.trigger.RunOnceTrigger(app)),
 			bspump.common.PPrintProcessor(app, self),
 			self.Sink,
