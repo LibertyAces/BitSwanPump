@@ -1,6 +1,7 @@
 import json
 import logging
 import typing
+import asyncio
 
 from ..abc.sink import Sink
 
@@ -56,6 +57,8 @@ class KafkaSink(Sink):
 	ConfigDefaults = {
 		'topic': '',
 		'encoding': 'utf-8',
+		'disabled': 0,
+		'output_queue_max_size': 100,
 	}
 
 
@@ -67,11 +70,86 @@ class KafkaSink(Sink):
 		self._key_serializer = key_serializer
 		self.Encoding = self.Config['encoding']
 
-		app.PubSub.subscribe("KafkaConnection.pause!", self._connection_throttle)
-		app.PubSub.subscribe("KafkaConnection.unpause!", self._connection_throttle)
+		self._output_queue = asyncio.Queue(loop=app.Loop)
+		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+		# TODO: remove - just testing
+		self._output_queue_max_size = 1000
+		self._conn_future = None
+
+		# Subscription
+		self.PubSub = app.PubSub
+
+		self.sink_name = f"{pipeline.Id}:{self.Id}"
+
+		self.PubSub.subscribe(f"{self.sink_name}.pause!", self._connection_throttle)
+		self.PubSub.subscribe(f"{self.sink_name}.unpause!", self._connection_throttle)
+
+		if int(self.Config['disabled']) == 0:
+			self._on_health_check('connection.open!')
+			self.PubSub.subscribe("Application.stop!", self._on_application_stop)
+			self.PubSub.subscribe("Application.tick!", self._on_health_check)
+
+
+	def _on_health_check(self, message_type):
+		print("_on_health_check", self.sink_name)
+		if self._conn_future is not None:
+			# Connection future exists
+
+			if not self._conn_future.done():
+				# Connection future didn't result yet
+				# No sanitization needed
+				return
+
+			try:
+				self._conn_future.result()
+			except:
+				# Connection future threw an error
+				L.exception("Unexpected connection future error")
+
+			# Connection future already resulted (with or without exception)
+			self._conn_future = None
+
+		assert (self._conn_future is None)
+
+		self._conn_future = asyncio.ensure_future(
+			self._connection(),
+			loop=self.Loop
+		)
+
+
+	def _on_application_stop(self, message_type, counter):
+		print("_on_application_stop", self.sink_name)
+		self._output_queue.put_nowait((None, None, None))
+
+
+	async def _connection(self):
+		print("_connection", self.sink_name)
+		producer = await self.Connection.get_producer()
+		try:
+			await producer.start()
+			await self._loader(producer=producer)
+		except BaseException as e:
+			L.exception("Unexpected Kafka Error.")
+		finally:
+			await producer.stop()
+
+
+	async def _loader(self, producer):
+		while True:
+			topic, message, kafka_key = await self._output_queue.get()
+			print("_loader while", self.sink_name, topic)
+
+			if topic is None and message is None:
+				break
+
+			if self._output_queue.qsize() == self._output_queue_max_size - 1:
+				self.PubSub.publish(f"{self.sink_name}.unpause!", self, asynchronously=True)
+
+			await producer.send_and_wait(topic, message, key=kafka_key)
 
 
 	def process(self, context, event:typing.Union[dict, str, bytes]):
+		print("process", self.sink_name)
 		if type(event) == dict:
 			event = json.dumps(event)
 			event = event.encode(self.Encoding)
@@ -82,18 +160,26 @@ class KafkaSink(Sink):
 
 		# TODO: Make KafkaConnection create separate producer for every sink
 		#  	- key/value serialization could be moved there.
+
 		if self._key_serializer is not None and kafka_key is not None:
 			kafka_key = self._key_serializer(kafka_key)
-		self.Connection.consume(kafka_topic, event, kafka_key)
+
+		self._output_queue.put_nowait((kafka_topic, event, kafka_key))
+
+		if self._output_queue.qsize() == self._output_queue_max_size:
+			self.PubSub.publish(f"{self.sink_name}.pause!", self)
 
 
 	def _connection_throttle(self, event_name, connection):
-		if connection != self.Connection:
-			return
 
-		if event_name == "KafkaConnection.pause!":
+		# if connection != self.Connection:
+		# 	return
+		print("_connection_throttle", self.sink_name, event_name)
+
+
+		if event_name == f"{self.sink_name}.pause!":
 			self.Pipeline.throttle(self, True)
-		elif event_name == "KafkaConnection.unpause!":
+		elif event_name == f"{self.sink_name}.unpause!":
 			self.Pipeline.throttle(self, False)
 		else:
 			raise RuntimeError("Unexpected event name '{}'".format(event_name))
