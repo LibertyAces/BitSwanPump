@@ -13,7 +13,7 @@ class AnalyzingSource(TriggerSource):
 	'''
 		The `AnalyzingSource` is triggered source, which expects `matrix_id` as an input.
 		Each trigger fire it calls `analyze()` function of the `Matrix` and expects
-		a complex event(array of events) as an output.
+		a complex event as an output. A complex event can be array of events, aggregation of events (average, max, min etc.)
 	'''
 	
 
