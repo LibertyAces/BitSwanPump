@@ -124,7 +124,7 @@ class KafkaSink(Sink):
 
 	async def _connection(self):
 		print("_connection", self.sink_name)
-		producer = await self.Connection.get_producer()
+		producer = await self.Connection.create_producer()
 		try:
 			await producer.start()
 			await self._loader(producer=producer)
