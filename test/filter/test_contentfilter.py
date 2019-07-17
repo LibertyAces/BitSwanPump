@@ -35,7 +35,7 @@ class TestContentFilter(bspump.unittest.ProcessorTestCase):
 			(None, {"foo": "bar"}),
 			(None, {"fizz": "buzz"}),
 		]
-		self.set_up_processor(bspump.filter.ContentFilter, processor_kwargs={'query': {"foo": "bar"}})
+		self.set_up_processor(bspump.filter.ContentFilter, query={"foo": "bar"})
 
 		output = self.execute(
 			events
@@ -51,7 +51,7 @@ class TestContentFilter(bspump.unittest.ProcessorTestCase):
 			(None, {"foo": "bar"}),
 			(None, {"fizz": "buzz"}),
 		]
-		self.set_up_processor(ContentFilterOnHitPassOnly, processor_kwargs={'query': {"foo": "bar"}})
+		self.set_up_processor(ContentFilterOnHitPassOnly, query={"foo": "bar"})
 
 		output = self.execute(
 			events
@@ -64,12 +64,8 @@ class TestContentFilter(bspump.unittest.ProcessorTestCase):
 
 	def test_content_filter_with_invalid_query(self):
 		with self.assertRaises(mongoquery.QueryError):
-			self.set_up_processor(bspump.filter.ContentFilter, processor_kwargs={
-				'query': {"$foo": 2}
-			})
+			self.set_up_processor(bspump.filter.ContentFilter, query={"$foo": 2})
 
 		with self.assertRaises(TypeError):
-			self.set_up_processor(bspump.filter.ContentFilter, processor_kwargs={
-				'query': {"foo": {"$in": None}}
-			})
+			self.set_up_processor(bspump.filter.ContentFilter, query={"foo": {"$in": None}})
 

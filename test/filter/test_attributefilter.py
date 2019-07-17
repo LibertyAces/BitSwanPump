@@ -33,7 +33,7 @@ class TestAttributeFilter(bspump.unittest.ProcessorTestCase):
 		events = [
 			(None, {"attribute": "value"}),
 		]
-		self.set_up_processor(bspump.filter.AttributeFilter, processor_kwargs={'inclusive': True})
+		self.set_up_processor(bspump.filter.AttributeFilter, inclusive=True)
 
 		output = self.execute(
 			events
@@ -63,7 +63,7 @@ class TestAttributeFilter(bspump.unittest.ProcessorTestCase):
 		events = [
 			(None, {"attribute": "value"}),
 		]
-		self.set_up_processor(AttributeFilterWithAttributeFields, processor_kwargs={'inclusive': True})
+		self.set_up_processor(AttributeFilterWithAttributeFields, inclusive=True)
 
 		output = self.execute(
 			events
@@ -93,7 +93,7 @@ class TestAttributeFilter(bspump.unittest.ProcessorTestCase):
 		events = [
 			(None, {"attribute": "value"}),
 		]
-		self.set_up_processor(UnpredictableAttributeFilter, processor_kwargs={'inclusive': True})
+		self.set_up_processor(UnpredictableAttributeFilter, inclusive=True)
 
 		output = self.execute(
 			events
