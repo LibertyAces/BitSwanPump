@@ -52,16 +52,18 @@ class ProcessorTestCase(unittest.TestCase):
 		root_logger.handlers = []
 
 
-	def set_up_processor(self, processor: type(Processor),  processor_kwargs: {} = None) -> None:
+	def set_up_processor(self, processor: type(Processor), *args, **kwargs) -> None:
 		"""
 		Construct Pipeline from processor and appends it to PumpService
 
 		:param processor: Processor you want to test
+		:param args: Optional arguments for processor
+		:param kwargs: Optional key-word arguments for processor
 		"""
 
 		svc = self.App.get_service("bspump.PumpService")
 
-		self.Pipeline = UnitTestPipeline(self.App, processor, processor_kwargs)
+		self.Pipeline = UnitTestPipeline(self.App, processor, *args, **kwargs)
 		svc.add_pipeline(self.Pipeline)
 
 

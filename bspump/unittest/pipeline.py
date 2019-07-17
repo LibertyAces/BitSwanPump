@@ -8,22 +8,20 @@ from ..application import BSPumpApplication
 
 class UnitTestPipeline(Pipeline):
 
-	def __init__(self, app: type(BSPumpApplication), processor: type(Processor), processor_kwargs: {} = None):
+	def __init__(self, app: type(BSPumpApplication), processor: type(Processor), *args, **kwargs):
 		"""
 		Build Pipeline with given app and processor
 
-		:param app:
-		:param processor:
+		:param processor: Processor to test - available as self.Processor
+		:param args: Optional arguments for processor
+		:param kwargs: Optional key-word arguments for processor
 		"""
 		super().__init__(app, "UnitTestPipeline")
-
-		if processor_kwargs is None:
-			processor_kwargs = {}
 
 		self.Source = UnitTestSource(app, self).on(
 			PubSubTrigger(app, "unittest.go!", self.PubSub)
 		)
-		self.Processor = processor(app, self, **processor_kwargs)
+		self.Processor = processor(app, self, *args, **kwargs)
 		self.Sink = UnitTestSink(app, self)
 
 		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self._on_finished)
