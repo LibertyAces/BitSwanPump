@@ -1,0 +1,11 @@
+stages:
+  - test
+
+test:
+  stage: test
+  script:
+  - source ~/.venv/bspump/bin/activate
+  - python setup.py install
+  - pip install -r requirements-dev.txt
+  - coverage run -m unittest test
+  - coverage report -m
