@@ -57,7 +57,6 @@ class KafkaSink(Sink):
 	ConfigDefaults = {
 		'topic': '',
 		'encoding': 'utf-8',
-		'disabled': 0,
 		'output_queue_max_size': 100,
 	}
 
@@ -84,10 +83,9 @@ class KafkaSink(Sink):
 		self.PubSub.subscribe(f"{self.sink_name}.pause!", self._connection_throttle)
 		self.PubSub.subscribe(f"{self.sink_name}.unpause!", self._connection_throttle)
 
-		if int(self.Config['disabled']) == 0:
-			self._on_health_check('connection.open!')
-			self.PubSub.subscribe("Application.stop!", self._on_application_stop)
-			self.PubSub.subscribe("Application.tick!", self._on_health_check)
+		self._on_health_check('connection.open!')
+		self.PubSub.subscribe("Application.stop!", self._on_application_stop)
+		self.PubSub.subscribe("Application.tick!", self._on_health_check)
 
 
 	def _on_health_check(self, message_type):
