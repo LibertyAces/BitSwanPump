@@ -80,8 +80,6 @@ class KafkaSink(Sink):
 
 		self.sink_name = f"{pipeline.Id}:{self.Id}"
 
-		self.PubSub.subscribe(f"{self.sink_name}.pause!", self._connection_throttle)
-		self.PubSub.subscribe(f"{self.sink_name}.unpause!", self._connection_throttle)
 
 		self._on_health_check('connection.open!')
 		self.PubSub.subscribe("Application.stop!", self._on_application_stop)
@@ -141,7 +139,7 @@ class KafkaSink(Sink):
 				break
 
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
-				self.PubSub.publish(f"{self.sink_name}.unpause!", self, asynchronously=True)
+				self.Pipeline.throttle(self, False)
 
 			await producer.send_and_wait(topic, message, key=kafka_key)
 
@@ -165,23 +163,4 @@ class KafkaSink(Sink):
 		self._output_queue.put_nowait((kafka_topic, event, kafka_key))
 
 		if self._output_queue.qsize() == self._output_queue_max_size:
-			self.PubSub.publish(f"{self.sink_name}.pause!", self)
-
-
-	def _connection_throttle(self, event_name, connection):
-
-		# if connection != self.Connection:
-		# 	return
-		print("_connection_throttle", self.sink_name, event_name)
-
-
-		if event_name == f"{self.sink_name}.pause!":
 			self.Pipeline.throttle(self, True)
-		elif event_name == f"{self.sink_name}.unpause!":
-			self.Pipeline.throttle(self, False)
-		else:
-			raise RuntimeError("Unexpected event name '{}'".format(event_name))
-
-
-
-
