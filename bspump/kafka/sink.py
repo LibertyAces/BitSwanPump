@@ -87,7 +87,6 @@ class KafkaSink(Sink):
 
 
 	def _on_health_check(self, message_type):
-		print("_on_health_check", self.sink_name)
 		if self._conn_future is not None:
 			# Connection future exists
 
@@ -114,12 +113,10 @@ class KafkaSink(Sink):
 
 
 	def _on_application_stop(self, message_type, counter):
-		print("_on_application_stop", self.sink_name)
 		self._output_queue.put_nowait((None, None, None))
 
 
 	async def _connection(self):
-		print("_connection", self.sink_name)
 		producer = await self.Connection.create_producer()
 		try:
 			await producer.start()
@@ -133,7 +130,6 @@ class KafkaSink(Sink):
 	async def _loader(self, producer):
 		while True:
 			topic, message, kafka_key = await self._output_queue.get()
-			print("_loader while", self.sink_name, topic)
 
 			if topic is None and message is None:
 				break
@@ -145,7 +141,6 @@ class KafkaSink(Sink):
 
 
 	def process(self, context, event:typing.Union[dict, str, bytes]):
-		print("process", self.sink_name)
 		if type(event) == dict:
 			event = json.dumps(event)
 			event = event.encode(self.Encoding)
