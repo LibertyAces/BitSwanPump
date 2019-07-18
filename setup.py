@@ -71,7 +71,7 @@ setup(
 		'aiokafka>=0.5.1,<1.0',
 		'aiomysql>=0.0.20,<0.1',
 		'aiosmtplib>=1.0.5,<2.0',
-		'asab>=18.12,<19.0',
+		'asab>=19.7,<20.0',
 		'fastavro>=0.21.24,<1.0',
 		'mongoquery>=1.3.5,<2.0',
 		'motor>=2.0.0,<3.0',
