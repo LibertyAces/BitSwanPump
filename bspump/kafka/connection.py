@@ -45,11 +45,12 @@ class KafkaConnection(Connection):
 		self.Loop = app.Loop
 
 
-	async def create_producer(self):
+	async def create_producer(self, **kwargs):
 		producer = aiokafka.AIOKafkaProducer(
 			loop=self.Loop,
 			bootstrap_servers=self.get_bootstrap_servers(),
 			compression_type=self.get_compression(),
+			**kwargs
 		)
 		return producer
 
