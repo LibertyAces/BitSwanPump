@@ -123,7 +123,7 @@ class TimeWindowAnalyzer(Analyzer):
 			React on timer's tick and advance the window. And analyze.
 		'''
 		if self.AnalyzeOnClock:
-			super().on_clock_tick()
+			await super().on_clock_tick()
 		
 		if self.ClockDriven:
 			target_ts = time.time()
