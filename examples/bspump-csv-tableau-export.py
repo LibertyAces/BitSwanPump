@@ -40,7 +40,8 @@ class PrimaryPipeline(Pipeline):
 				).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
 			bspump.random.RandomEnricher(app, self, config={'field':'@timestamp', 'lower_bound':lb, 'upper_bound': ub}, id="RE0"),
 			bspump.random.RandomEnricher(app, self, config={'field':'fraction', 'lower_bound':lb_0, 'upper_bound': ub_0}, id="RE1"),
-			MySessionAnalyzer(app, self, column_formats, column_names, analyze_on_clock=True, config={'analyze_period': 1}),
+			# MySessionAnalyzer(app, self, column_formats, column_names, analyze_on_clock=True, config={'analyze_period': 1}),
+			MyTimeWindowAnalyzer(app, self, config={"analyze_period":1}),
 			bspump.common.NullSink(app, self)
 		)
 
@@ -50,6 +51,7 @@ class SecondaryPipelineCSV(Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.common.InternalSource(app, self),
+			# bspump.common.PPrintSink(app, self)
 			bspump.file.FileCSVSink(app, self, config={'path':'abc.csv'})
 		)
 
@@ -58,6 +60,7 @@ class SecondaryPipelineTableau(Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.common.InternalSource(app, self),
+			# bspump.common.PPrintSink(app, self)
 			FileTableauSink(app, self,config={'path':'abc.tde'})
 		)
 
@@ -97,6 +100,33 @@ class MySessionAnalyzer(bspump.analyzer.SessionAnalyzer):
 	async def analyze(self):
 		print("export!")
 		await self.export_to_csv(self.CSVInternalSource)
+		await self.export_to_tableau(self.TableauInternalSource)
+
+
+class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, tw_dimensions=(10, 1), resolution=60*60*24, analyze_on_clock=True, clock_driven=False, id=id, config=config)
+		svc = app.get_service("bspump.PumpService")
+		self.CSVInternalSource = svc.locate("SecondaryPipelineCSV.*InternalSource")
+		self.TableauInternalSource = svc.locate("SecondaryPipelineTableau.*InternalSource")
+
+
+	def evaluate(self, context, event):
+		row = self.TimeWindow.get_row(event['id'])
+		if row is None:
+			row = self.TimeWindow.add_row(event['id'])
+
+		column = self.TimeWindow.get_column(int(event['@timestamp']))
+		if column is None:
+			return
+
+		self.TimeWindow.Matrix['time_window'][row, column, 0] += 1
+
+
+	async def analyze(self):
+		print("export!")
+		# await self.export_to_csv(self.CSVInternalSource)
 		await self.export_to_tableau(self.TableauInternalSource)
 
 

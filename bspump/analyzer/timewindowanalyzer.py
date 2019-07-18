@@ -1,5 +1,6 @@
 import time
 import logging
+import collections
 
 import numpy as np
 
@@ -123,14 +124,14 @@ class TimeWindowAnalyzer(Analyzer):
 			React on timer's tick and advance the window. And analyze.
 		'''
 		if self.AnalyzeOnClock:
-			super().on_clock_tick()
+			await super().on_clock_tick()
 		
 		if self.ClockDriven:
 			target_ts = time.time()
 			self.advance(target_ts)
 
 
-	async def export_to_csv(self):
+	async def export_to_csv(self, internal_source):
 		'''
 		| row_id | timestamp | dim_0 | dim_1 | ... | dim_n |
 		'''
@@ -138,37 +139,37 @@ class TimeWindowAnalyzer(Analyzer):
 			L.warn("Internal source is None, are you sure you called locate?")
 			return
 
-		for i in range(0, self.Matrix.shape[0]):
-			row_id = self.Sessions.get_row_id(i)
+		for i in range(0, self.TimeWindow.Matrix.shape[0]):
+			row_id = self.TimeWindow.get_row_id(i)
 			for j in range(0, self.TimeWindow.Dimensions[0]):
 				event = collections.OrderedDict()
 				event['id'] = row_id
 				event['timestamp'] = self.TimeWindow.Start + j * self.TimeWindow.Resolution
 				for k in range(0, self.TimeWindow.Dimensions[1]):
 					field_name = "value_{}".format(k)
-					event[field_name] = self.Matrix[i, j, k]
+					event[field_name] = self.TimeWindow.Matrix['time_window'][i, j, k]
 				
 				await internal_source.put_async({}, event)
 		
 
-	def export_to_tableau(self):
+	async def export_to_tableau(self, internal_source):
 		if internal_source is None:
 			L.warn("Internal source is None, are you sure you called locate?")
 			return
 
-		for i in range(0, self.Matrix.shape[0]):
-			row_id = self.Sessions.get_row_id(i)
-			field_type = self.Matrix.subdtype[0].kind
+		for i in range(0, self.TimeWindow.Matrix.shape[0]):
+			row_id = self.TimeWindow.get_row_id(i)
+			field_type = self.TimeWindow.Matrix.dtype['time_window'].subdtype[0].kind
 			if field_type in ['f']:
-				event[name]["type"] = "double"
+				event_type = "double"
 			elif field_type in ['i', 'u', 'b']:
-				if re.search(r'timestamp', name) is not None:
-					field_type = "datetime"
+				if re.search(r'timestamp', field_type) is not None:
+					event_type = "datetime"
 				else:
-					field_type = "integer"
+					event_type = "integer"
 				
 			elif field_type in ['U']: 
-				field_type = "unicodestring"
+				event_type = "unicodestring"
 			else:
 				L.warn("Incorrect type {}, skipping".format(field_type))
 				break
@@ -180,12 +181,8 @@ class TimeWindowAnalyzer(Analyzer):
 				event['timestamp'] = {"value":value, "type": "datetime"}
 				for k in range(0, self.TimeWindow.Dimensions[1]):
 					field_name = "value_{}".format(k)
-					field_value = self.Matrix[i, j, k]
-					event[field_name] = {"value":field_value, "type":field_type}
+					field_value = self.TimeWindow.Matrix['time_window'][i, j, k]
+					event[field_name] = {"value":field_value, "type":event_type}
 				
 				await internal_source.put_async({}, event)
-
-
-
-
 

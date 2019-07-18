@@ -89,7 +89,7 @@ class FileTableauSink(Sink):
 			elif field_type == 'datetime':
 				# field_value must be timestamp
 				t_t = datetime.datetime.fromtimestamp(event[key]['value']).timetuple()
-				frac = (field_value - int(field_value)) * 10000 #	The fraction of a second as one tenth of a millisecond (1/10000)
+				frac = int((field_value - int(field_value)) * 10000) #	The fraction of a second as one tenth of a millisecond (1/10000)
 
 				row.setDateTime(self.ColumnMapping[key], t_t[0], t_t[1], t_t[2], t_t[3], t_t[4], t_t[5], frac)
 			elif field_type == 'double':
