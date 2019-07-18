@@ -76,21 +76,22 @@ class SessionAnalyzer(Analyzer):
 			L.warn("Internal source is None, are you sure you called locate?")
 			return
 		
-		for i in range(0, self.Matrix.shape[0]):
+		for i in range(0, self.Sessions.Matrix.shape[0]):
 			event = collections.OrderedDict()
 			row_id = self.Sessions.get_row_id(i)
 			event['id'] = row_id
-			for name in self.Matrix.dtype.names:
-				if self.Matrix.dtype[name].shape == ():
-					event[name] = self.Matrix[name] 
+			for name in self.Sessions.Matrix.dtype.names:
+				if self.Sessions.Matrix.dtype[name].shape == ():
+					event[name] = self.Sessions.Matrix[name][i]
 				else:
-					for j in range(0, self.Matrix.dtype[name].shape[0]):
-						for k in range(0, self.Matrix.dtype[name].shape[1]):
+					# print(self.Matrix.dtype[name].shape)
+					for j in range(0, self.Sessions.Matrix.dtype[name].shape[0]):
+						for k in range(0, self.Sessions.Matrix.dtype[name].shape[1]):
 							field_name = "{}_{}_{}".format(name, j, k)
-							if self.Matrix.dtype[name].subdtype[0].kind in ['f', 'u', 'i', 'b']:
-								value =  "{0:.10f}".format(self.Matrix[name][j, k])
+							if self.Sessions.Matrix.dtype[name].subdtype[0].kind in ['f', 'u', 'i', 'b']:
+								value =  "{0:.10f}".format(self.Sessions.Matrix[name][i, j, k])
 							else:
-								value = self.Matrix[name][i, j, k]
+								value = self.Sessions.Matrix[name][i, j, k]
 						
 							event[field_name] = value
 			await internal_source.put_async({}, event)
@@ -101,38 +102,51 @@ class SessionAnalyzer(Analyzer):
 			L.warn("Internal source is None, are you sure you called locate?")
 			return
 			
-		for i in range(0, self.Matrix.shape[0]):
+		for i in range(0, self.Sessions.Matrix.shape[0]):
 			event = collections.OrderedDict()
 			row_id = self.Sessions.get_row_id(i)
 			event['id'] = {"value":row_id, "type": "unicodestring"}
-			for name in self.Matrix.dtype.names:
-				event[name] = {"value":None, "type": None}
-				if self.Matrix.dtype[name].shape == ():
-					event[name]["value"] = self.Matrix[name]
-					field_type = self.Matrix.dtype[name].kind
-				else:
-					field_type = self.Matrix.dtype[name].subdtype[0].kind
-					for j in range(0, self.Matrix.dtype[name].shape[0]):
-						for k in range(0, self.Matrix.dtype[name].shape[1]):
-							field_name = "{}_{}_{}".format(name, j, k)
-							value = self.Matrix[name][i, j, k]
-							event[field_name]["value"] = value
-				
-				if field_type in ['f']:
-					event[name]["type"] = "double"
-				elif field_type in ['i', 'u', 'b']:
-					if re.search(r'timestamp', name) is not None:
-						event[name]["type"] = "datetime"
+			for name in self.Sessions.Matrix.dtype.names:
+				if self.Sessions.Matrix.dtype[name].shape == ():
+					event[name] = {"value":None, "type": None}
+					event[name]["value"] = self.Sessions.Matrix[name][i]
+					field_type = self.Sessions.Matrix.dtype[name].kind
+					if field_type in ['f']:
+						event[field_name]["type"] = "double"
+					elif field_type in ['i', 'u', 'b']:
+						if re.search(r'timestamp', name) is not None:
+							event[name]["type"] = "datetime"
+						else:
+							event[name]["type"] = "integer"
+					
+					elif field_type in ['U', 'S']: 
+						event[name]["type"] = "unicodestring"
 					else:
-						event[name]["type"] = "integer"
-				
-				elif field_type in ['U']: 
-					event[name]["type"] = "unicodestring"
+						L.warn("Incorrect type {}, skipping".format(field_type))
+						continue
 				else:
-					L.warn("Incorrect type {}, skipping".format(field_type))
-					continue
+					field_type = self.Sessions.Matrix.dtype[name].subdtype[0].kind
+					for j in range(0, self.Sessions.Matrix.dtype[name].shape[0]):
+						for k in range(0, self.Sessions.Matrix.dtype[name].shape[1]):
+							field_name = "{}_{}_{}".format(name, j, k)
+							value = self.Sessions.Matrix[name][i, j, k]
+							event[field_name] = {"value":value, "type": None}
+				
+							if field_type in ['f']:
+								event[field_name]["type"] = "double"
+							elif field_type in ['i', 'u', 'b']:
+								if re.search(r'timestamp', name) is not None:
+									event[field_name]["type"] = "datetime"
+								else:
+									event[field_name]["type"] = "integer"
 							
-			await internal_source.put_async({}, event)
+							elif field_type in ['U', 'S']: 
+								event[field_name]["type"] = "unicodestring"
+							else:
+								L.warn("Incorrect type {}, skipping".format(field_type))
+								continue
+							
+				await internal_source.put_async({}, event)
 
 
 
