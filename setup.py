@@ -50,7 +50,7 @@ setup(
 	license='BSD License',
 	platforms='any',
 	classifiers=[
-		'Development Status :: 5 - Alpha',
+		'Development Status :: 3 - Alpha',
 		'Programming Language :: Python :: 3.5',
 		'Programming Language :: Python :: 3.6',
 		'Programming Language :: Python :: 3.7',
