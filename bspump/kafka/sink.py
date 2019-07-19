@@ -71,19 +71,13 @@ class KafkaSink(Sink):
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
-		# TODO: remove - just testing
-		self._output_queue_max_size = 1000
+		assert (self._output_queue_max_size >= 1)
 		self._conn_future = None
 
 		# Subscription
-		self.PubSub = app.PubSub
-
-		self.sink_name = f"{pipeline.Id}:{self.Id}"
-
-
 		self._on_health_check('connection.open!')
-		self.PubSub.subscribe("Application.stop!", self._on_application_stop)
-		self.PubSub.subscribe("Application.tick!", self._on_health_check)
+		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
+		app.PubSub.subscribe("Application.tick!", self._on_health_check)
 
 
 	def _on_health_check(self, message_type):
@@ -120,24 +114,22 @@ class KafkaSink(Sink):
 		producer = await self.Connection.create_producer()
 		try:
 			await producer.start()
-			await self._loader(producer=producer)
+			while True:
+				topic, message, kafka_key = await self._output_queue.get()
+
+				if topic is None and message is None:
+					break
+
+				if self._output_queue.qsize() == self._output_queue_max_size - 1:
+					self.Pipeline.throttle(self, False)
+
+				await producer.send_and_wait(topic, message, key=kafka_key)
+
 		except BaseException as e:
 			L.exception("Unexpected Kafka Error.")
+			raise e
 		finally:
 			await producer.stop()
-
-
-	async def _loader(self, producer):
-		while True:
-			topic, message, kafka_key = await self._output_queue.get()
-
-			if topic is None and message is None:
-				break
-
-			if self._output_queue.qsize() == self._output_queue_max_size - 1:
-				self.Pipeline.throttle(self, False)
-
-			await producer.send_and_wait(topic, message, key=kafka_key)
 
 
 	def process(self, context, event:typing.Union[dict, str, bytes]):
@@ -149,8 +141,6 @@ class KafkaSink(Sink):
 		kafka_topic = context.get("kafka_topic", self.Topic)
 		kafka_key = context.get("kafka_key")
 
-		# TODO: Make KafkaConnection create separate producer for every sink
-		#  	- key/value serialization could be moved there.
 
 		if self._key_serializer is not None and kafka_key is not None:
 			kafka_key = self._key_serializer(kafka_key)
