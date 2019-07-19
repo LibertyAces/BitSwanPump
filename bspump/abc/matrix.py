@@ -119,7 +119,6 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 		return self.App.time()
 
 
-	@abc.abstractmethod
 	async def analyze(self):
 		pass
 
