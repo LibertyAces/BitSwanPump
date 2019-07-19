@@ -46,4 +46,4 @@ class GeoAnalyzer(Analyzer):
 		else:
 			self.GeoMatrix = svc.locate_matrix(matrix_id)
 		
-		self.Matrix = self.GeoMatrix.Matrix['geo_matrix']  # alias
+		# self.Matrix = self.GeoMatrix.Matrix['geo_matrix']  # alias

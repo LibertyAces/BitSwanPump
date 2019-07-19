@@ -35,7 +35,7 @@ class RandomEnricher(Processor):
 			event[self.Field] = random.choice(self.Choice)
 		else:
 			n = random.randint(self.LowerBound, self.UpperBound)
-			event[self.Field] = "{}".format(n)
+			event[self.Field] = n
 
 
 	def process(self, context, event):

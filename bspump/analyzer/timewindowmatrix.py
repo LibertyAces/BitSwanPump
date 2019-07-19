@@ -121,7 +121,7 @@ class TimeWindowMatrix(MatrixABC):
 		time_window = np.hstack((self.Matrix["time_window"], column))
 		time_window = np.delete(time_window, 0, axis=1)
 
-		self.Matrix["time_window"] = time_window
+		self.Matrix["time_window"] = time_window #?
 		self.Matrix["warming_up_count"] -= 1
 		
 		# Overflow prevention
