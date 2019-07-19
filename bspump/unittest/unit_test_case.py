@@ -7,7 +7,19 @@ from ..application import BSPumpApplication
 from ..abc.processor import Processor
 
 
-class ProcessorTestCase(unittest.TestCase):
+class TestCase(unittest.TestCase):
+	def setUp(self) -> None:
+		self.App = BSPumpApplication(args=[])
+
+
+	def tearDown(self):
+		asab.abc.singleton.Singleton.delete(self.App.__class__)
+		self.App = None
+		root_logger = logging.getLogger()
+		root_logger.handlers = []
+
+
+class ProcessorTestCase(TestCase):
 
 	"""
 	A class whose instances are single processor test cases.
@@ -39,17 +51,6 @@ class ProcessorTestCase(unittest.TestCase):
 				)
 
 	"""
-
-
-	def setUp(self) -> None:
-		self.App = BSPumpApplication(args=[])
-
-
-	def tearDown(self):
-		asab.abc.singleton.Singleton.delete(self.App.__class__)
-		self.App = None
-		root_logger = logging.getLogger()
-		root_logger.handlers = []
 
 
 	def set_up_processor(self, processor: type(Processor), *args, **kwargs) -> None:
