@@ -11,6 +11,8 @@ from ..abc.connection import Connection
 L = logging.getLogger(__name__)
 
 
+# https://developers.google.com/identity/protocols/OAuth2ServiceAccount
+
 class GoogleDriveConnection(Connection):
 
 	ConfigDefaults = {
