@@ -74,6 +74,17 @@ class KafkaSink(Sink):
 		assert (self._output_queue_max_size >= 1)
 		self._conn_future = None
 
+		producer_param_names = [
+			"client_id", "metadata_max_age_ms", "request_timeout_ms", "api_version",
+			"acks", "key_serializer", "value_serializer", "max_batch_size", "partitioner",
+			"max_request_size", "linger_ms", "send_backoff_ms", "retry_backoff_ms",
+			"security_protocol", "ssl_context", "connections_max_idle_ms", "enable_idempotence",
+			"transactional_id", "transaction_timeout_ms", "sasl_mechanism", "sasl_plain_password",
+			"sasl_plain_username", "sasl_kerberos_service_name", "sasl_kerberos_domain_name",
+		]
+		self._producer_params = {x:y for x,y in self.Config if x in producer_param_names}
+
+
 		# Subscription
 		self._on_health_check('connection.open!')
 		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
@@ -111,7 +122,7 @@ class KafkaSink(Sink):
 
 
 	async def _connection(self):
-		producer = await self.Connection.create_producer()
+		producer = await self.Connection.create_producer(**self._producer_params)
 		try:
 			await producer.start()
 			while True:
