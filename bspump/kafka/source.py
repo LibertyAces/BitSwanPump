@@ -39,6 +39,9 @@ class KafkaSource(Source):
 		'auto_offset_reset': 'earliest',
 		'api_version': 'auto', # or e.g. 0.9.0
 		'retry': 20,
+		"session_timeout_ms":10000,
+		"consumer_timeout_ms":200,
+		"request_timeout_ms":40000,
 	}
 
 
@@ -52,7 +55,7 @@ class KafkaSource(Source):
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.App = app
-		self.Consumer = aiokafka.AIOKafkaConsumer(
+		self.Consumer = self.Connection.create_consumer(
 			*self.topics,
 			loop = self.App.Loop,
 			bootstrap_servers = self.Connection.get_bootstrap_servers(),
@@ -61,7 +64,9 @@ class KafkaSource(Source):
 			max_partition_fetch_bytes = int(self.Config['max_partition_fetch_bytes']),
 			auto_offset_reset = self.Config['auto_offset_reset'],
 			api_version = self.Config['api_version'],
-			enable_auto_commit=False
+			session_timeout_ms = self.Config['session_timeout_ms'],
+		 	consumer_timeout_ms = self.Config['consumer_timeout_ms'],
+			request_timeout_ms = self.Config['request_timeout_ms']
 		)
 		self.Partitions = None
 		self.Retry = int(self.Config['retry'])

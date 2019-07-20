@@ -54,6 +54,18 @@ class KafkaConnection(Connection):
 		)
 		return producer
 
+
+	def create_consumer(self, *topics, loop, bootstrap_servers, group_id = None, **kwargs):
+		consumer = aiokafka.AIOKafkaConsumer(
+			*topics,
+			loop = loop,
+			bootstrap_servers = bootstrap_servers,
+			group_id = group_id,
+			enable_auto_commit=False,
+			**kwargs
+		)
+		return consumer
+
 	def get_bootstrap_servers(self):
 		return self.Config['bootstrap_servers'].split(';')
 
