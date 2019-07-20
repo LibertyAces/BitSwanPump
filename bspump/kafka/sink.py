@@ -136,9 +136,6 @@ class KafkaSink(Sink):
 
 				await producer.send_and_wait(topic, message, key=kafka_key)
 
-		except BaseException as e:
-			L.exception("Unexpected Kafka Error.")
-			raise e
 		finally:
 			await producer.stop()
 
