@@ -7,7 +7,7 @@ import asab
 import collections
 import abc
 
-from ..abc.matrix import MatrixABC
+from ..abc.matrix import NamedMatrixABC
 
 
 ###
@@ -17,7 +17,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class SessionMatrix(MatrixABC):
+class SessionMatrix(NamedMatrixABC):
 	'''
 		Matrix, specific for `SessionAnalyzer`.
 		`column_formats` is an array, each element contains the letter from the table + number:
@@ -59,29 +59,25 @@ class SessionMatrix(MatrixABC):
 		super().__init__(app, column_names, column_formats, id=id, config=config)
 
 	
-	def add_row(self, row_id, start_time=None):
+	def add_row(self, row_name, start_time=None):
 		'''
 			Adds new row with `row_id` to the matrix and assigns the `@timestamp_start`
 			the `start_time`.
 		'''
 
-		row = np.zeros(1, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
-		self.Matrix = np.append(self.Matrix, row)
-		row_counter = len(self.RowMap)
-		self.RowMap[row_id] = row_counter
-		self.RevRowMap[row_counter] = row_id
+		row_id = super().add_row(row_name)
 		if start_time is not None:
 			self.Matrix[-1]["@timestamp_start"] = start_time
-		return row_counter
+		return row_id
 
 
-	def close_row(self, row_id, end_time=None):
-		'''
-			Puts the `row_id` to the ClosedRows and assigns the `@timestamp_end` the `end_time`.
-		'''
+	# def close_row(self, row_id, end_time=None):
+	# 	'''
+	# 		Puts the `row_id` to the ClosedRows and assigns the `@timestamp_end` the `end_time`.
+	# 	'''
 
-		row_counter = self.RowMap.get(row_id)
-		if row_counter is not None:
-			self.ClosedRows.add(row_counter)
-			if end_time is not None:
-				self.Matrix[row_counter]["@timestamp_end"] = end_time
+	# 	row_counter = self.RowMap.get(row_id)
+	# 	if row_counter is not None:
+	# 		self.ClosedRows.add(row_counter)
+	# 		if end_time is not None:
+	# 			self.Matrix[row_counter]["@timestamp_end"] = end_time

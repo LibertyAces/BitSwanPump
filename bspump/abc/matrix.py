@@ -127,8 +127,8 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 class NamedMatrixABC(MatrixABC):
 
 
-	def clear(self):
-		super().clear()
+	def zeros(self):
+		super().zeros()
 		self.RowN2IMap = collections.OrderedDict()
 		self.RowI2NMap = collections.OrderedDict()
 
@@ -161,6 +161,8 @@ class NamedMatrixABC(MatrixABC):
 
 		self.RowN2IMap[row_name] = row_id
 		self.RowI2NMap[row_id] = row_name
+
+		return row_id
 
 
 	def close_row(self, row_index):
