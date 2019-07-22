@@ -58,6 +58,23 @@ class KafkaSink(Sink):
 		'topic': '',
 		'encoding': 'utf-8',
 		'output_queue_max_size': 100,
+
+		"client_id":"",			# defaults are drawn from
+		"metadata_max_age_ms":"",
+		"request_timeout_ms":"",
+		"api_version":"",
+		"acks":"",
+		"key_serializer":"",
+		"value_serializer":"",
+		"max_batch_size":"",
+		"max_request_size":"",
+		"linger_ms":"",
+		"send_backoff_ms":"",
+		"retry_backoff_ms":"",
+		"connections_max_idle_ms":"",
+		"enable_idempotency":"",
+		"transactional_id":"",
+		"transaction_timeout_ms":"",
 	}
 
 
@@ -76,13 +93,11 @@ class KafkaSink(Sink):
 
 		producer_param_names = [
 			"client_id", "metadata_max_age_ms", "request_timeout_ms", "api_version",
-			"acks", "key_serializer", "value_serializer", "max_batch_size", "partitioner",
+			"acks", "key_serializer", "value_serializer", "max_batch_size",
 			"max_request_size", "linger_ms", "send_backoff_ms", "retry_backoff_ms",
-			"security_protocol", "ssl_context", "connections_max_idle_ms", "enable_idempotence",
-			"transactional_id", "transaction_timeout_ms", "sasl_mechanism", "sasl_plain_password",
-			"sasl_plain_username", "sasl_kerberos_service_name", "sasl_kerberos_domain_name",
+			"connections_max_idle_ms", "enable_idempotence", "transactional_id", "transaction_timeout_ms",
 		]
-		self._producer_params = {x:y for x,y in self.Config.items() if x in producer_param_names}
+		self._producer_params = {x:y for x,y in self.Config.items() if x in producer_param_names and y != ""}
 
 
 		# Subscription
