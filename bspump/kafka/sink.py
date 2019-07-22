@@ -59,7 +59,7 @@ class KafkaSink(Sink):
 		'encoding': 'utf-8',
 		'output_queue_max_size': 100,
 
-		"client_id":"",			# defaults are drawn from
+		"client_id":"",			# defaults set in AIOKafka
 		"metadata_max_age_ms":"",
 		"request_timeout_ms":"",
 		"api_version":"",
