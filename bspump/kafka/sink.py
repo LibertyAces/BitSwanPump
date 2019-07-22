@@ -82,7 +82,7 @@ class KafkaSink(Sink):
 			"transactional_id", "transaction_timeout_ms", "sasl_mechanism", "sasl_plain_password",
 			"sasl_plain_username", "sasl_kerberos_service_name", "sasl_kerberos_domain_name",
 		]
-		self._producer_params = {x:y for x,y in self.Config if x in producer_param_names}
+		self._producer_params = {x:y for x,y in self.Config.items() if x in producer_param_names}
 
 
 		# Subscription
