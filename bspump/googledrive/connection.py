@@ -29,9 +29,9 @@ class GoogleDriveConnection(Connection):
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 
-		scopes = self.Config['scopes']
-		service_account_file = self.Config['service_account_file']
-		account_email = self.Config['account_email']
+		self._scopes = self.Config['scopes']
+		self._service_account_file = self.Config['service_account_file']
+		self._account_email = self.Config['account_email']
 
 		self.ParentFolderID = self.Config['parent_folder_id']
 		if self.ParentFolderID == "":
@@ -46,44 +46,68 @@ class GoogleDriveConnection(Connection):
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue(loop=app.Loop, maxsize=self._output_queue_max_size+1)
-		self.LoaderTask = asyncio.ensure_future(self._loader(), loop=self.Loop)
+		# self.LoaderTask = asyncio.ensure_future(self._loader(), loop=self.Loop)
+		self._conn_future = None
+		self._credentials = None
+		self._delegated_credentials = None
 
-		self.PubSub.subscribe("Application.exit!", self._on_exit)
+		app.PubSub.subscribe("Application.stop!", self._on_exit)
+		app.PubSub.subscribe("Application.tick!", self._on_health_check)
+		self._on_health_check('connection.open!')
 
-		self.Drive_service = self._get_service(scopes, service_account_file, account_email)
 
 
-	def _get_service(self, scopes, service_account_file, account_email):
-		credentials = service_account.Credentials.from_service_account_file(
-			service_account_file, scopes=scopes)
+	def _get_service(self):
+		if self._credentials is None:
+			self._credentials = service_account.Credentials.from_service_account_file(
+				self._service_account_file, scopes=self._scopes)
 
-		delegated_credentials = credentials.with_subject(account_email)
-		svc = googleapiclient.discovery.build('drive', 'v3', credentials=delegated_credentials,cache_discovery=False)
-		print("D" * 50)
-		print(svc)
-		print("D" * 50)
+		if self._delegated_credentials is None:
+			self._delegated_credentials = self._credentials.with_subject(self._account_email)
+
+		svc = googleapiclient.discovery.build('drive', 'v3',
+											  credentials=self._delegated_credentials,
+											  cache_discovery=False)
 		return svc
 
 
 
+	def _on_health_check(self, message_type):
+		print('_on_health_check')
+		if self._conn_future is not None:
+			# Connection future exists
 
-	def consume(self, event, context):
-		print("Googledrive connection consuming event..")
-		self._output_queue.put_nowait((event, context))
-		# print("queue len:",self._output_queue)
+			if not self._conn_future.done():
+				# Connection future didn't result yet
+				# No sanitization needed
+				return
 
-		if self._output_queue.qsize() == self._output_queue_max_size:
-			self.PubSub.publish("GoogleDriveConnection.pause!", self)
+			try:
+				self._conn_future.result()
+			except:
+				# Connection future threw an error
+				L.exception("Unexpected connection future error")
+
+			# Connection future already resulted (with or without exception)
+			self._conn_future = None
+
+		assert (self._conn_future is None)
+
+		self._conn_future = asyncio.ensure_future(
+			self._connection(),
+			loop=self.Loop
+		)
+
+
+	async def _connection(self):
+		# producer = await self.Connection.create_producer(**self._producer_params)
+		self.Drive_service = self._get_service()
+		await self._loader ()
 
 
 	async def _loader(self):
-
 		while True:
 			print("_loader cycle")
-
-			if self._output_queue.empty():
-				await asyncio.sleep(5)
-				continue
 
 			event, context = await self._output_queue.get()
 			print("loader got event with context:",context)
@@ -112,30 +136,28 @@ class GoogleDriveConnection(Connection):
 				'parents': self.ParentFolderID
 			}
 			print("="*30,file_metadata)
-			# media = apiclient.http.MediaFileUpload(event, mimetype=mimetype)  # TODO: this should be filename
-			f = io.BytesIO(event)
-			media = apiclient.http.MediaIoBaseUpload(f, mimetype=mimetype)
+			file = io.BytesIO(event)
+			media = apiclient.http.MediaIoBaseUpload(file, mimetype=mimetype)
 			print("media uploaded")
-			file = self.Drive_service.files().create(
+			drive_file = self.Drive_service.files().create(
 				body=file_metadata,
 				media_body=media,
 				fields='id'
 			).execute()
-			print(f"File ID: {file.get('id')}")
-
+			print(f"File ID: {drive_file.get('id')}")
 
 			# if resp_text[:2].lower() != 'ok':
 			# 	L.error(f"Failed to send message: {resp_text}:{smtp_response}")
 
 
+	def consume(self, event, context):
+		print("Googledrive connection consuming event..")
+		self._output_queue.put_nowait((event, context))
+		# print("queue len:",self._output_queue)
 
-	async def _on_exit(self, event_name):
+		if self._output_queue.qsize() == self._output_queue_max_size:
+			self.PubSub.publish("GoogleDriveConnection.pause!", self)
+
+
+	async def _on_exit(self, event_name, counter= None):
 		self._output_queue.put_nowait((None, None))
-	# 	# Wait till the _loader() terminates
-	# 	pending = [self.LoaderTask]
-	# 	while len(pending) > 0:
-	# 		# By sending None via queue, we signalize end of life
-	# 		await self._output_queue.put(None)
-	# 		done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
-	# 		if self.Smtp != None:
-	# 			self.Smtp.close ()
