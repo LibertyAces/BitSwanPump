@@ -47,5 +47,3 @@ class GoogleDriveConnection(Connection):
 											  credentials=self._delegated_credentials,
 											  cache_discovery=False)
 		return svc
-
-
