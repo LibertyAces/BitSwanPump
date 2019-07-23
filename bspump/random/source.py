@@ -56,7 +56,5 @@ class RandomSource(TriggerSource):
 				event = {}
 				self.generate_random(event)
 				await self.process(event)
-		
-		except BaseException as e:
-			L.exception("Unexpected error generating random")
+
 
