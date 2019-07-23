@@ -130,6 +130,20 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 
 class NamedMatrixABC(MatrixABC):
 
+	def __init__(self, app, column_names, column_formats, id=None, config=None):
+		super().__init__(app, column_names, column_formats, id=id, config=config)
+		metrics_service = app.get_service('asab.MetricsService')
+		self.Gauge = metrics_service.create_gauge("RowCounter",
+			tags = {
+				'matrix': self.Id,
+			},
+			init_values = {
+				"rows.all": 0,
+				"rows.closed" : 0,
+				"rows.active" : 0,
+			}
+		)
+
 
 	def zeros(self):
 		super().zeros()
@@ -158,6 +172,10 @@ class NamedMatrixABC(MatrixABC):
 		self.N2IMap = n2imap
 		self.I2NMap = i2nmap
 		self.ClosedRows = set()
+		
+		self.Gauge.set("rows.all", self.Matrix.shape[0])
+		self.Gauge.set("rows.closed", 0)
+		self.Gauge.set("rows.active", len(self.N2IMap))
 
 
 	def add_row(self, row_name):
@@ -165,6 +183,10 @@ class NamedMatrixABC(MatrixABC):
 		assert(row_name is not None)
 		self.N2IMap[row_name] = row_index
 		self.I2NMap[row_index] = row_name
+
+		self.Gauge.set("rows.all", self.Matrix.shape[0])
+		self.Gauge.set("rows.closed", len(self.ClosedRows))
+		self.Gauge.set("rows.active", len(self.N2IMap))
 
 		return row_index
 
@@ -174,6 +196,10 @@ class NamedMatrixABC(MatrixABC):
 
 		row_name = self.I2NMap.pop(row_index)
 		del self.N2IMap[row_name]
+
+		self.Gauge.set("rows.all", self.Matrix.shape[0])
+		self.Gauge.set("rows.closed", len(self.ClosedRows))
+		self.Gauge.set("rows.active", len(self.N2IMap))
 
 
 	def get_row_index(self, row_name):
