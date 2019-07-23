@@ -127,8 +127,8 @@ class NamedMatrixABC(MatrixABC):
 
 	def zeros(self):
 		super().zeros()
-		self.RowN2IMap = collections.OrderedDict()
-		self.RowI2NMap = collections.OrderedDict()
+		self.N2IMap = collections.OrderedDict()
+		self.I2NMap = collections.OrderedDict()
 
 
 	def flush(self):
@@ -141,7 +141,7 @@ class NamedMatrixABC(MatrixABC):
 		saved_indexes = []
 
 		i = 0
-		for row_name, row_index in self.RowN2IMap.items():
+		for row_name, row_index in self.N2IMap.items():
 			if row_index not in self.ClosedRows:
 				n2imap[row_name] = i
 				i2nmap[i] = row_name
@@ -149,16 +149,16 @@ class NamedMatrixABC(MatrixABC):
 				i += 1
 
 		self.Matrix = self.Matrix[saved_indexes]
-		self.RowN2IMap = n2imap
-		self.RowI2NMap = i2nmap
+		self.N2IMap = n2imap
+		self.I2NMap = i2nmap
 		self.ClosedRows = set()
 
 
 	def add_row(self, row_name):
 		row_index = super().add_row()
 		assert(row_name is not None)
-		self.RowN2IMap[row_name] = row_index
-		self.RowI2NMap[row_index] = row_name
+		self.N2IMap[row_name] = row_index
+		self.I2NMap[row_index] = row_name
 
 		return row_index
 
@@ -166,13 +166,13 @@ class NamedMatrixABC(MatrixABC):
 	def close_row(self, row_index):
 		super().close_row(row_index)
 
-		row_name = self.RowI2NMap.pop(row_index)
-		del self.RowN2IMap[row_name]
+		row_name = self.I2NMap.pop(row_index)
+		del self.N2IMap[row_name]
 
 
 	def get_row_index(self, row_name):
-		return self.RowN2IMap.get(row_name)
+		return self.N2IMap.get(row_name)
 
 
 	def get_row_name(self, row_index):
-		return self.RowI2NMap.get(row_index)
+		return self.I2NMap.get(row_index)
