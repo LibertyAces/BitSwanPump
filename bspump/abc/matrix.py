@@ -105,7 +105,7 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 		try:
 			return self.ClosedRows.pop()
 		except KeyError:
-			self._grow_rows(max(5, int(1.10 * self.Matrix.shape[0])))
+			self._grow_rows(max(5, int(0.10 * self.Matrix.shape[0])))
 			return self.ClosedRows.pop()
 
 
