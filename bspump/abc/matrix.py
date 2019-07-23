@@ -73,20 +73,18 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 		self.zeros()
 
 
-	def zeros(self, shape=0):
+	def zeros(self, rows=0):
 		self.ClosedRows = set()
-		self.Matrix = np.zeros(shape, dtype=self.DType)
+		self.Matrix = np.zeros(rows, dtype=self.DType)
 
 
 	def flush(self):
 		'''
 		The matrix will be recreated without rows from `ClosedRows`.
 		'''
-	
-		saved_indexes = []
-		for row_index in range(self.Matrix.shape[0]):
-			if row_index not in self.ClosedRows:
-				saved_indexes.append(row_index)
+		indexes = set(range(self.Matrix.shape[0]))
+		saved_indexes = list(indexes - self.ClosedRows)
+		saved_indexes.sort()
 
 		self.Matrix = self.Matrix[saved_indexes]
 		self.ClosedRows = set()
@@ -157,12 +155,12 @@ class NamedMatrixABC(MatrixABC):
 
 
 	def add_row(self, row_name):
-		row_id = super().add_row()
+		row_index = super().add_row()
+		assert(row_name is not None)
+		self.RowN2IMap[row_name] = row_index
+		self.RowI2NMap[row_index] = row_name
 
-		self.RowN2IMap[row_name] = row_id
-		self.RowI2NMap[row_id] = row_name
-
-		return row_id
+		return row_index
 
 
 	def close_row(self, row_index):

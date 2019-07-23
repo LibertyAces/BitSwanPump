@@ -65,10 +65,10 @@ class SessionMatrix(NamedMatrixABC):
 			the `start_time`.
 		'''
 
-		row_id = super().add_row(row_name)
+		row_index = super().add_row(row_name)
 		if start_time is not None:
 			self.Matrix[-1]["@timestamp_start"] = start_time
-		return row_id
+		return row_index
 
 
 	# def close_row(self, row_id, end_time=None):
