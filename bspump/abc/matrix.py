@@ -70,6 +70,12 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 			'formats':column_formats
 		}
 
+		# The dictionary that can be used to store an additional information for items in the matrix.
+		# E.g. matrix contain the key to this dictionary (in a field of your choice).
+		# WARNING: It is very rought concept and it is YOUR responsibility to manage data in the storage.
+		# Specifically it means that YOU are responsible for removing obsolete items to prevent Storage bloating.
+		self.Storage = {}
+
 		self.zeros()
 
 
