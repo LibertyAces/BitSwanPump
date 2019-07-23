@@ -29,7 +29,7 @@ class GeoMatrix(MatrixABC):
 		super().__init__(app, column_names, column_formats, id=id, config=config)
 		self.MembersToIds = self.Storage
 		self.IdsToMembers = {}
-		self.Matrix = np.ones(self.MapHeight, dtype={'names': self.ColumnNames,'formats': self.ColumnFormats})
+		self.Matrix = np.ones(self.MapHeight, dtype=self.DType)
 		self.Matrix["geo_matrix"][:, :, :] = -1
 
 	

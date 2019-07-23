@@ -1,11 +1,11 @@
+import abc
 import time
 import logging
+import collections
 
 import numpy as np
 
 import asab
-import collections
-import abc
 
 
 ###
@@ -18,6 +18,9 @@ L = logging.getLogger(__name__)
 class MatrixABC(abc.ABC, asab.ConfigObject):
 	'''
 		General `Matrix` object.
+
+		`column_names` is an array with names of each column, with the same length as `column_formats`.
+
 		`column_formats` is an array, each element contains the letter from the table + number:
 
 			+------------+------------------+
@@ -45,15 +48,11 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 		It is possible to create a matrix with elements of specified format. The tuple with number of dimensions should 
 		stand before the letter.
 		Example: '(6, 3)i8' will create the matrix with n rows, 6 columns and 3 third dimensions with integer elements.
-		`column_names` is an array with names of each column, with the same length as `column_formats`.
+		
 		
 		Object main attributes:
 		`Matrix` is numpy matrix, where number of rows is a number of unique ids and
 		specified columns.
-		`RowMap` is a mapping from a event unique id to the matrix row index.
-		`RevRowMap` is a mapping from matrix row index to unique id.
-		`Storage` is a dictionary without specific structure, where additional 
-		information can be kept.
 		`ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.
 
 	'''
@@ -66,68 +65,120 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 		self.App = app
 		self.Loop = app.Loop
 
-		self.ColumnNames = column_names
-		self.ColumnFormats = column_formats
+		self.DType = {
+			'names':column_names,
+			'formats':column_formats
+		}
 
-		self.RowMap = collections.OrderedDict()
-		self.RevRowMap = collections.OrderedDict()
+		# The dictionary that can be used to store an additional information for items in the matrix.
+		# E.g. matrix contain the key to this dictionary (in a field of your choice).
+		# WARNING: It is very rought concept and it is YOUR responsibility to manage data in the storage.
+		# Specifically it means that YOU are responsible for removing obsolete items to prevent Storage bloating.
 		self.Storage = {}
+
+		self.zeros()
+
+
+	def zeros(self, rows=0):
 		self.ClosedRows = set()
-		self.Matrix = np.zeros(0, dtype={'names':self.ColumnNames, 'formats':self.ColumnFormats})
+		self.Matrix = np.zeros(rows, dtype=self.DType)
+
+
+	def flush(self):
+		'''
+		The matrix will be recreated without rows from `ClosedRows`.
+		'''
+		indexes = set(range(self.Matrix.shape[0]))
+		saved_indexes = list(indexes - self.ClosedRows)
+		saved_indexes.sort()
+
+		self.Matrix = self.Matrix[saved_indexes]
+		self.ClosedRows = set()
+
+
+	def close_row(self, row_index):
+		assert(row_index < self.Matrix.shape[0])
+		self.ClosedRows.add(row_index)
+
+
+	def add_row(self):
+		try:
+			return self.ClosedRows.pop()
+		except KeyError:
+			self._grow_rows(max(5, int(1.10 * self.Matrix.shape[0])))
+			return self.ClosedRows.pop()
+
+
+	def _grow_rows(self, n=1):
+		'''
+		Override this method to gain control on how a new closed rows are added to the matrix
+		'''
+		i = self.Matrix.shape[0]
+		rows = np.zeros(int(n), dtype=self.DType)
+		self.Matrix = np.append(self.Matrix, rows)
+		self.ClosedRows |= frozenset(range(i, i+n))
 
 
 	def time(self):
 		return self.App.time()
 
 
-	def rebuild_rows(self, mode):
-		'''
-			Function meant to rebuild the matrix.
-			`mode` can be `full`, which means the matrix will be recreated, 
-			or `partial`, which means the matrix will be recreated without rows
-			from `ClosedRows`.
-		'''
-	
-		if mode == "full":
-			self.RowMap = collections.OrderedDict()
-			self.RevRowMap = collections.OrderedDict()
-			self.Storage = {}
-			self.ClosedRows = set()
-			self.Matrix = np.zeros(0, dtype={'names':self.ColumnNames, 'formats':self.ColumnFormats})
-			
-		elif mode == "partial":
-			new_row_map = collections.OrderedDict()
-			new_rev_row_map = collections.OrderedDict()
-			saved_indexes = []
-			i = 0
-			for key in self.RowMap.keys():
-				value = self.RowMap[key]
-				if value not in self.ClosedRows:
-					new_row_map[key] = i
-					new_rev_row_map[i] = key
-					saved_indexes.append(value)
-					i += 1
-				else:
-					if value in self.Storage:
-						self.Storage.pop(value)
-			new_matrix = self.Matrix[saved_indexes]
-			self.Matrix = new_matrix
-			self.RowMap = new_row_map
-			self.RevRowMap = new_rev_row_map
-			self.ClosedRows = set()
-		else:
-			L.warn("Unknown mode '{}'".format(mode))
-
-	
-	def get_row(self, row_name):
-		return self.RowMap.get(row_name)
-
-
-	def get_row_id(self, row_idx):
-		return self.RevRowMap.get(row_idx)
-
-
-	#@abc.abstractmethod
 	async def analyze(self):
 		pass
 
+
+
+class NamedMatrixABC(MatrixABC):
+
+
+	def zeros(self):
+		super().zeros()
+		self.N2IMap = collections.OrderedDict()
+		self.I2NMap = collections.OrderedDict()
+
+
+	def flush(self):
+		'''
+		The matrix will be recreated without rows from `ClosedRows`.
+		'''
+	
+		n2imap = collections.OrderedDict()
+		i2nmap = collections.OrderedDict()
+		saved_indexes = []
+
+		i = 0
+		for row_name, row_index in self.N2IMap.items():
+			if row_index not in self.ClosedRows:
+				n2imap[row_name] = i
+				i2nmap[i] = row_name
+				saved_indexes.append(row_index)
+				i += 1
+
+		self.Matrix = self.Matrix[saved_indexes]
+		self.N2IMap = n2imap
+		self.I2NMap = i2nmap
+		self.ClosedRows = set()
+
+
+	def add_row(self, row_name):
+		row_index = super().add_row()
+		assert(row_name is not None)
+		self.N2IMap[row_name] = row_index
+		self.I2NMap[row_index] = row_name
+
+		return row_index
+
+
+	def close_row(self, row_index):
+		super().close_row(row_index)
+
+		row_name = self.I2NMap.pop(row_index)
+		del self.N2IMap[row_name]
+
+
+	def get_row_index(self, row_name):
+		return self.N2IMap.get(row_name)
+
+
+	def get_row_name(self, row_index):
+		return self.I2NMap.get(row_index)
