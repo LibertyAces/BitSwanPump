@@ -173,11 +173,11 @@ class TimeWindowMatrix(NamedMatrixABC):
 		return column_idx
 
 	
-	def close_row(self, row_id):
-		'''
-			Puts the `row_id` to the `ClosedRows`.
-		'''
+	# def close_row(self, row_id):
+	# 	'''
+	# 		Puts the `row_id` to the `ClosedRows`.
+	# 	'''
 
-		row_counter = self.RowMap.get(row_id)
-		if row_counter is not None:
-			self.ClosedRows.add(row_counter)
+	# 	row_counter = self.RowMap.get(row_id)
+	# 	if row_counter is not None:
+	# 		self.ClosedRows.add(row_counter)
