@@ -4,10 +4,11 @@ import bspump.random
 import bspump.common
 import bspump.analyzer
 import bspump.file
-from bspump.file.filetableausink import FileTableauSink
+import bspump.tableau
 import time
 import numpy as np
 import logging
+import random
 
 
 ##
@@ -18,10 +19,12 @@ class MyApplication(BSPumpApplication):
 	def __init__(self):
 		super().__init__()
 		svc = self.get_service("bspump.PumpService")
-		svc.add_pipeline(SecondaryPipelineCSV(self))
-		svc.add_pipeline(SecondaryPipelineTableau(self))
 		svc.add_pipeline(PrimaryPipeline(self))
-
+		# svc.add_pipeline(SecondaryPipelineCSVSession(self))
+		# svc.add_pipeline(SecondaryPipelineTableauSession(self))
+		# svc.add_pipeline(SecondaryPipelineCSVTimeWindow(self))
+		svc.add_pipeline(SecondaryPipelineTableauTimeWindow(self))
+		
 		
 
 class PrimaryPipeline(Pipeline):
@@ -37,31 +40,66 @@ class PrimaryPipeline(Pipeline):
 		self.build(
 			bspump.random.RandomSource(app, self, choice=choice,
 				config={'number': 500}
-				).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
+				).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=.1)),
 			bspump.random.RandomEnricher(app, self, config={'field':'@timestamp', 'lower_bound':lb, 'upper_bound': ub}, id="RE0"),
 			bspump.random.RandomEnricher(app, self, config={'field':'fraction', 'lower_bound':lb_0, 'upper_bound': ub_0}, id="RE1"),
-			# MySessionAnalyzer(app, self, column_formats, column_names, analyze_on_clock=True, config={'analyze_period': 1}),
-			MyTimeWindowAnalyzer(app, self, config={"analyze_period":1}),
+			MySessionAnalyzer(app, self, column_formats, column_names, analyze_on_clock=False),
+			MyTimeWindowAnalyzer(app, self, tw_dimensions=(10, 1), resolution=60*60*24, analyze_on_clock=False, clock_driven=False),
 			bspump.common.NullSink(app, self)
 		)
 
 
-class SecondaryPipelineCSV(Pipeline):
+class SecondaryPipelineCSVTimeWindow(Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.common.InternalSource(app, self),
+			bspump.common.MatrixSource(app, 
+				self, 
+				"MyTimeWindowAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
+			),
+			bspump.common.TimeWindowMatrixExportCSVGenerator(app, self),
 			# bspump.common.PPrintSink(app, self)
-			bspump.file.FileCSVSink(app, self, config={'path':'abc.csv'})
+			bspump.file.FileCSVSink(app, self, config={'path':'tw.csv'})
 		)
 
-class SecondaryPipelineTableau(Pipeline):
+class SecondaryPipelineTableauTimeWindow(Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.common.InternalSource(app, self),
+			bspump.common.MatrixSource(app, 
+				self, 
+				"MyTimeWindowAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
+			),
+			bspump.tableau.TimeWindowMatrixExportTableauGenerator(app, self),
+			bspump.tableau.FileTableauSink(app, self,config={'path':'tw.tde'}),
 			# bspump.common.PPrintSink(app, self)
-			FileTableauSink(app, self,config={'path':'abc.tde'})
+		)
+
+
+class SecondaryPipelineCSVSession(Pipeline):
+	def __init__(self, app, pipeline_id=None):
+		super().__init__(app, pipeline_id)
+		self.build(
+			bspump.common.MatrixSource(app, 
+				self, 
+				"MySessionAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
+			),
+			bspump.common.SessionMatrixExportCSVGenerator(app, self),
+			# bspump.common.PPrintSink(app, self)
+			bspump.file.FileCSVSink(app, self, config={'path':'sess.csv'})
+		)
+
+class SecondaryPipelineTableauSession(Pipeline):
+	def __init__(self, app, pipeline_id=None):
+		super().__init__(app, pipeline_id)
+		self.build(
+			bspump.common.MatrixSource(app, 
+				self, 
+				"MySessionAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
+			),
+			bspump.tableau.SessionMatrixExportTableauGenerator(app, self),
+			# bspump.common.PPrintSink(app, self)
+			bspump.tableau.FileTableauSink(app, self,config={'path':'sess.tde'})
 		)
 
 
@@ -72,15 +110,9 @@ class MySessionAnalyzer(bspump.analyzer.SessionAnalyzer):
 		'c':'cdef',
 	}
 
-	def __init__(self, app, pipeline, column_formats, column_names, analyze_on_clock, id=None, config=None):
-		super().__init__(app, pipeline, column_formats, column_names, analyze_on_clock=analyze_on_clock, id=id, config=config)
-		svc = app.get_service("bspump.PumpService")
-		self.CSVInternalSource = svc.locate("SecondaryPipelineCSV.*InternalSource")
-		self.TableauInternalSource = svc.locate("SecondaryPipelineTableau.*InternalSource")
-
 
 	def evaluate(self, context, event):
-		row = self.Sessions.get_row(event['id'])
+		row = self.Sessions.get_row_index(event['id'])
 		if row is None:
 			row = self.Sessions.add_row(event['id'], event['@timestamp'])
 
@@ -97,23 +129,11 @@ class MySessionAnalyzer(bspump.analyzer.SessionAnalyzer):
 			self.Sessions.Matrix['fractions'][row, 1, 1] += 1
 
 
-	async def analyze(self):
-		print("export!")
-		await self.export_to_csv(self.CSVInternalSource)
-		await self.export_to_tableau(self.TableauInternalSource)
-
 
 class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 
-	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, tw_dimensions=(10, 1), resolution=60*60*24, analyze_on_clock=True, clock_driven=False, id=id, config=config)
-		svc = app.get_service("bspump.PumpService")
-		self.CSVInternalSource = svc.locate("SecondaryPipelineCSV.*InternalSource")
-		self.TableauInternalSource = svc.locate("SecondaryPipelineTableau.*InternalSource")
-
-
 	def evaluate(self, context, event):
-		row = self.TimeWindow.get_row(event['id'])
+		row = self.TimeWindow.get_row_index(event['id'])
 		if row is None:
 			row = self.TimeWindow.add_row(event['id'])
 
@@ -122,13 +142,9 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 			return
 
 		self.TimeWindow.Matrix['time_window'][row, column, 0] += 1
-
-
-	async def analyze(self):
-		print("export!")
-		# await self.export_to_csv(self.CSVInternalSource)
-		await self.export_to_tableau(self.TableauInternalSource)
-
+		if random.random() >= 0.995:
+			print("Export!")
+			self.App.PubSub.publish("Export!")
 
 
 if __name__ == '__main__':
