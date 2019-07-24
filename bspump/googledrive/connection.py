@@ -12,6 +12,11 @@ L = logging.getLogger(__name__)
 # https://developers.google.com/identity/protocols/OAuth2ServiceAccount
 
 class GoogleDriveConnection(Connection):
+	"""
+	GoogleDriveConnection allows BSPump application to use Google Drive API.
+	It can be used by connectors to take care of authentication and generate
+	google drive service - using API v3.
+	"""
 
 	ConfigDefaults = {
 		"scopes": ["https://www.googleapis.com/auth/drive"],

@@ -6,7 +6,12 @@ from .abcsink import GoogleDriveABCSink
 L = logging.getLogger(__name__)
 
 class GoogleDriveBlockSink(GoogleDriveABCSink):
-
+	"""
+		GoogleDriveBlockSink is a file sink processor that can be used to upload individual
+		events as files to Google drive using GoogleDriveConnection.
+		Properties `filename` and 'mimetype' from event context are used as metadata.
+		If they are not present, default from configuration is used instead.
+		"""
 	ConfigDefaults = {
 		'parent_folder_id': "",
 		'default_filename': "untitled_file",

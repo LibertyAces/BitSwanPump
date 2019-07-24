@@ -9,7 +9,9 @@ L = logging.getLogger(__name__)
 # https://aiogoogle.readthedocs.io/en/latest/
 
 class GoogleDriveABCSink(Sink):
-
+	"""
+	GoogleDriveABCSink is abstract class ment to be used for uploading files to GoogleDrive.
+	"""
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
