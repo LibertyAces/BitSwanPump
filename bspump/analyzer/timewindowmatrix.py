@@ -5,7 +5,7 @@ import numpy as np
 
 import asab
 
-from ..abc.matrix import MatrixABC
+from ..abc.matrix import NamedMatrixABC
 
 ###
 
@@ -14,7 +14,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class TimeWindowMatrix(MatrixABC):
+class TimeWindowMatrix(NamedMatrixABC):
 	'''
 		Container, specific for `TimeWindowAnalyzer`.
 		`tw_dimensions` is matrix dimensions parameter as the tuple `(column_number, third_dimension)`.
@@ -121,30 +121,21 @@ class TimeWindowMatrix(MatrixABC):
 		time_window = np.hstack((self.Matrix["time_window"], column))
 		time_window = np.delete(time_window, 0, axis=1)
 
-		self.Matrix["time_window"] = time_window
+		self.Matrix["time_window"] = time_window #?
 		self.Matrix["warming_up_count"] -= 1
 		
 		# Overflow prevention
 		self.Matrix["warming_up_count"][self.Matrix["warming_up_count"] < 0] = 0
 
 	
-	def add_row(self, row_id):
+	def add_row(self, row_name):
 		'''
 			Adds new row with `row_id` to the matrix and sets `warming_up_count`.
 		'''
 
-		if row_id in self.RowMap:
-			return
-		if row_id is None:
-			return
-
-		row = np.zeros(1, dtype={'names': self.ColumnNames, 'formats': self.ColumnFormats})
-		self.Matrix = np.append(self.Matrix, row)
-		row_counter = len(self.RowMap)
-		self.RowMap[row_id] = row_counter
-		self.RevRowMap[row_counter] = row_id
-		self.Matrix[-1]["warming_up_count"] = self.Dimensions[0]
-		return row_counter
+		row_index = super().add_row(row_name)
+		self.Matrix[row_index]["warming_up_count"] = self.Dimensions[0]
+		return row_index
 
 	
 	def get_column(self, event_timestamp):
@@ -182,11 +173,11 @@ class TimeWindowMatrix(MatrixABC):
 		return column_idx
 
 	
-	def close_row(self, row_id):
-		'''
-			Puts the `row_id` to the `ClosedRows`.
-		'''
+	# def close_row(self, row_id):
+	# 	'''
+	# 		Puts the `row_id` to the `ClosedRows`.
+	# 	'''
 
-		row_counter = self.RowMap.get(row_id)
-		if row_counter is not None:
-			self.ClosedRows.add(row_counter)
+	# 	row_counter = self.RowMap.get(row_id)
+	# 	if row_counter is not None:
+	# 		self.ClosedRows.add(row_counter)

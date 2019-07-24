@@ -7,7 +7,19 @@ from ..application import BSPumpApplication
 from ..abc.processor import Processor
 
 
-class ProcessorTestCase(unittest.TestCase):
+class TestCase(unittest.TestCase):
+	def setUp(self) -> None:
+		self.App = BSPumpApplication(args=[])
+
+
+	def tearDown(self):
+		asab.abc.singleton.Singleton.delete(self.App.__class__)
+		self.App = None
+		root_logger = logging.getLogger()
+		root_logger.handlers = []
+
+
+class ProcessorTestCase(TestCase):
 
 	"""
 	A class whose instances are single processor test cases.
@@ -41,27 +53,18 @@ class ProcessorTestCase(unittest.TestCase):
 	"""
 
 
-	def setUp(self) -> None:
-		self.App = BSPumpApplication(args=[])
-
-
-	def tearDown(self):
-		asab.abc.singleton.Singleton.delete(self.App.__class__)
-		self.App = None
-		root_logger = logging.getLogger()
-		root_logger.handlers = []
-
-
-	def set_up_processor(self, processor: type(Processor)) -> None:
+	def set_up_processor(self, processor: type(Processor), *args, **kwargs) -> None:
 		"""
 		Construct Pipeline from processor and appends it to PumpService
 
 		:param processor: Processor you want to test
+		:param args: Optional arguments for processor
+		:param kwargs: Optional key-word arguments for processor
 		"""
 
 		svc = self.App.get_service("bspump.PumpService")
 
-		self.Pipeline = UnitTestPipeline(self.App, processor)
+		self.Pipeline = UnitTestPipeline(self.App, processor, *args, **kwargs)
 		svc.add_pipeline(self.Pipeline)
 
 
@@ -75,6 +78,9 @@ class ProcessorTestCase(unittest.TestCase):
 		"""
 
 		self.Pipeline.Source.Input = input_data
+
+		# TODO catch AttributeError: 'TestIteratorSource' object has no attribute 'Pipeline'
+		# Add help text - did you forget to `set_up_processor`?
 
 		self.Pipeline.unittest_start()
 		self.App.run()

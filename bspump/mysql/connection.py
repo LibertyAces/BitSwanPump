@@ -203,14 +203,9 @@ class MySQLConnection(Connection):
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("MySQLConnection.unpause!", self, asynchronously=True)
 
-			try:
-				async with self.acquire() as conn:
-					try:
-						async with conn.cursor() as cur:
-							await cur.executemany(query, data)
-							await conn.commit()
-					except BaseException as e:
-						L.exception("Unexpected error when processing MySQL query.")
-			except BaseBaseException as e:
-				L.exception("Couldn't acquire connection")
+			async with self.acquire() as conn:
+				async with conn.cursor() as cur:
+					await cur.executemany(query, data)
+					await conn.commit()
+
 

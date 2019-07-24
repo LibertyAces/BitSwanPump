@@ -65,7 +65,7 @@ class SessionAnalyzer(Analyzer):
 		else:
 			self.Sessions = svc.locate_matrix(matrix_id)
 
-		self.Matrix = self.Sessions.Matrix #alias
+		# self.Matrix = self.Sessions.Matrix #alias
 
 
 	async def export_to_csv(self, internal_source):
