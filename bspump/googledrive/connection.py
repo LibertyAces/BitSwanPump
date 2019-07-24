@@ -16,6 +16,8 @@ class GoogleDriveConnection(Connection):
 	GoogleDriveConnection allows BSPump application to use Google Drive API.
 	It can be used by connectors to take care of authentication and generate
 	google drive service - using API v3.
+	This connection is synchronous and therefore all connectors using it
+	are blocking.
 	"""
 
 	ConfigDefaults = {
