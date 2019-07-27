@@ -22,9 +22,9 @@ class TestMatrix(bspump.unittest.TestCase):
 
 		for i in range(100):
 			n = matrix.add_row()
-			matrix.Matrix[n][0] = 1 # Access by a field index
-			matrix.Matrix[n]['f2'] = 1 # Access by a field name
-			matrix.Matrix[n][2] = 1
+			matrix.Array[n][0] = 1 # Access by a field index
+			matrix.Array[n]['f2'] = 1 # Access by a field name
+			matrix.Array[n][2] = 1
 			self.assertEqual(n, i)
 
 		closed = set()
@@ -51,7 +51,7 @@ class TestMatrix(bspump.unittest.TestCase):
 
 		matrix.zeros()
 
-		self.assertEqual(matrix.Matrix.shape, (0,))
+		self.assertEqual(matrix.Array.shape, (0,))
 
 
 	def test_matrix_flush(self):
@@ -81,9 +81,8 @@ class TestMatrix(bspump.unittest.TestCase):
 		)
 
 		row_index = matrix.add_row()
-		row = matrix.Matrix[row_index]
+		row = matrix.Array[row_index]
 		
 		row['f1'] = "Ahoj"
 		row['f2'] = 64
 
-		print(matrix.Matrix)

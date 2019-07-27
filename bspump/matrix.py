@@ -48,7 +48,7 @@ For more details, see https://docs.scipy.org/doc/numpy/reference/arrays.dtypes.h
 
 
 Object main attributes:
-`Matrix` is numpy matrix, where number of rows is a number of unique ids and specified columns.  
+`Array` is numpy ndarray, the actual data representation of the matrix object.  
 `ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.  
 
 	'''
@@ -93,30 +93,30 @@ Object main attributes:
 
 	def zeros(self, rows=0):
 		self.ClosedRows = set()
-		self.Matrix = np.zeros(self.build_shape(rows), dtype=self.DType)
+		self.Array = np.zeros(self.build_shape(rows), dtype=self.DType)
 
 
 	def flush(self):
 		'''
 		The matrix will be recreated without rows from `ClosedRows`.
 		'''
-		indexes = set(range(self.Matrix.shape[0]))
+		indexes = set(range(self.Array.shape[0]))
 		saved_indexes = list(indexes - self.ClosedRows)
 		saved_indexes.sort()
 
-		self.Matrix = self.Matrix[saved_indexes]
+		self.Array = self.Array[saved_indexes]
 		self.ClosedRows = set()
 
 		self.Gauge.set("rows.closed", 0)
-		self.Gauge.set("rows.active", self.Matrix.shape[0])
+		self.Gauge.set("rows.active", self.Array.shape[0])
 
 
 	def close_row(self, row_index):
-		assert(row_index < self.Matrix.shape[0])
+		assert(row_index < self.Array.shape[0])
 		self.ClosedRows.add(row_index)
 
 		crc = len(self.ClosedRows)
-		self.Gauge.set("rows.active", self.Matrix.shape[0] - crc)
+		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
 		self.Gauge.set("rows.closed", crc)
 
 
@@ -124,11 +124,11 @@ Object main attributes:
 		try:
 			return self.ClosedRows.pop()
 		except KeyError:
-			self._grow_rows(max(5, int(0.10 * self.Matrix.shape[0])))
+			self._grow_rows(max(5, int(0.10 * self.Array.shape[0])))
 			return self.ClosedRows.pop()
 		finally:
 			crc = len(self.ClosedRows)
-			self.Gauge.set("rows.active", self.Matrix.shape[0] - crc)
+			self.Gauge.set("rows.active", self.Array.shape[0] - crc)
 			self.Gauge.set("rows.closed", crc)
 
 
@@ -136,9 +136,9 @@ Object main attributes:
 		'''
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
-		i = self.Matrix.shape[0]
-		self.Matrix = np.append(
-			self.Matrix,
+		i = self.Array.shape[0]
+		self.Array = np.append(
+			self.Array,
 			np.zeros(self.build_shape(rows), dtype=self.DType)
 		)
 		self.ClosedRows |= frozenset(range(i, i+rows))
@@ -182,13 +182,13 @@ class NamedMatrix(Matrix):
 				saved_indexes.append(row_index)
 				i += 1
 
-		self.Matrix = self.Matrix[saved_indexes]
+		self.Array = self.Array[saved_indexes]
 		self.N2IMap = n2imap
 		self.I2NMap = i2nmap
 		self.ClosedRows = set()
 		
 		self.Gauge.set("rows.closed", 0)
-		self.Gauge.set("rows.active", self.Matrix.shape[0])
+		self.Gauge.set("rows.active", self.Array.shape[0])
 
 
 	def add_row(self, row_name):
