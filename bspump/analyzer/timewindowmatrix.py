@@ -56,6 +56,8 @@ class TimeWindowMatrix(NamedMatrix):
 		column_names.append("warming_up_count")
 		column_formats.append("i8")
 
+		#TODO: Warmup etc. has to go into a dedicated 2nd matrix/arrays
+
 		super().__init__(app, column_names, column_formats, id=id, config=config)
 		if start_time is None:
 			start_time = time.time()
