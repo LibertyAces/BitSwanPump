@@ -19,6 +19,12 @@ class Matrix(abc.ABC, asab.ConfigObject):
 	'''
 Generic `Matrix` object.
 
+#TODO: The structure of the matrix have to be much better documented.
+Explain row, (optonal) columns, cells, the fact that cells have a unified data format across the whole matrix.
+Cell format is described by `dtype`, it can be a simple integer or float but also a complex dictionary type with names and types of the fields.
+
+The description of types that can be used for a data objects in the cell.
+
 	+------------+------------------+
 	| Name       | Definition       |
 	+============+==================+
@@ -41,8 +47,6 @@ Generic `Matrix` object.
 	+------------+------------------+
 
 Example: 'i8' stands for int64.
-It is possible to create a matrix with elements of specified format.
-The tuple with number of dimensions should stand before the letter.
 
 For more details, see https://docs.scipy.org/doc/numpy/reference/arrays.dtypes.html
 
