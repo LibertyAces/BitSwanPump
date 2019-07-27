@@ -100,7 +100,7 @@ Object main attributes:
 		saved_indexes = list(indexes - self.ClosedRows)
 		saved_indexes.sort()
 
-		self.Array = self.Array[saved_indexes]
+		self.Array = self.Array.take(saved_indexes)
 		self.ClosedRows = set()
 
 		self.Gauge.set("rows.closed", 0)
@@ -139,12 +139,9 @@ Object main attributes:
 		'''
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
-		i = self.Array.shape[0]
-		self.Array = np.append(
-			self.Array,
-			np.zeros(self._build_shape(rows), dtype=self.DType)
-		)
-		self.ClosedRows |= frozenset(range(i, i+rows))
+		current_rows = self.Array.shape[0]
+		self.Array.resize((current_rows+rows,) + self.Array.shape[1:])
+		self.ClosedRows |= frozenset(range(current_rows, current_rows+rows))
 
 
 	def time(self):
@@ -180,7 +177,7 @@ class NamedMatrix(Matrix):
 				saved_indexes.append(row_index)
 				i += 1
 
-		self.Array = self.Array[saved_indexes]
+		self.Array = self.Array.take(saved_indexes)
 		self.N2IMap = n2imap
 		self.I2NMap = i2nmap
 		self.ClosedRows = set()
