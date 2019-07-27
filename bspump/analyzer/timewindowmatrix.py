@@ -18,29 +18,6 @@ class TimeWindowMatrix(NamedMatrix):
 	'''
 		Container, specific for `TimeWindowAnalyzer`.
 		`tw_dimensions` is matrix dimensions parameter as the tuple `(column_number, third_dimension)`.
-		Example: `(5,1)` will create the matrix with n rows, 5 columns and 1 additional third dimension.
-		`tw_format` is the letter from the table + number:
-
-			+------------+------------------+
-			| Name       | Definition       |
-			+============+==================+
-			| 'b'        | Byte             |
-			+------------+------------------+
-			| 'i'        | Signed integer   |
-			+------------+------------------+
-			| 'u'        | Unsigned integer |
-			+------------+------------------+
-			| 'f'        | Floating point   |
-			+------------+------------------+
-			| 'c'        | Complex floating |
-			|            | point            |
-			+------------+------------------+
-			| 'S'        | String           |
-			+------------+------------------+
-			| 'U'        | Unicode string   |
-			+------------+------------------+
-			| 'V'        | Raw data         |
-			+------------+------------------+
 
 		Example: 'i8' stands for int64.
 		By default the `Matrix` contains 2 fields `time_window` with the main

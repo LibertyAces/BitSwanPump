@@ -68,3 +68,22 @@ class TestMatrix(bspump.unittest.TestCase):
 		matrix.flush()
 
 		self.assertEqual(len(matrix.ClosedRows), 0)
+
+
+	def test_matrix_dtypes(self):
+		matrix = bspump.Matrix(
+			app = self.App,
+			dtype = [
+				('f1', 'U20'),
+				('f2', 'i8'),
+				('f3', 'i8'),
+			]
+		)
+
+		row_index = matrix.add_row()
+		row = matrix.Matrix[row_index]
+		
+		row['f1'] = "Ahoj"
+		row['f2'] = 64
+
+		print(matrix.Matrix)

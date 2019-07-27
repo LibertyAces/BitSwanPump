@@ -155,8 +155,8 @@ Object main attributes:
 
 class NamedMatrix(Matrix):
 
-	def __init__(self, app, column_names, column_formats, id=None, config=None):
-		super().__init__(app, column_names, column_formats, id=id, config=config)
+	def __init__(self, app, dtype='float_', id=None, config=None):
+		super().__init__(app, dtype=dtype, id=id, config=config)
 
 
 	def zeros(self):
