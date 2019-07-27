@@ -14,16 +14,16 @@ class TestMatrix(bspump.unittest.TestCase):
 		matrix = bspump.Matrix(
 			app = self.App,
 			dtype = [
-				('c1', 'i8'),
-				('c2', 'i8'),
-				('c3', 'i8'),
+				('f1', 'i8'),
+				('f2', 'i8'),
+				('f3', 'i8'),
 			]
 		)
 
 		for i in range(100):
 			n = matrix.add_row()
-			matrix.Matrix[n][0] = 1
-			matrix.Matrix[n]['c2'] = 1
+			matrix.Matrix[n][0] = 1 # Access by a field index
+			matrix.Matrix[n]['f2'] = 1 # Access by a field name
 			matrix.Matrix[n][2] = 1
 			self.assertEqual(n, i)
 
