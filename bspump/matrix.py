@@ -186,25 +186,26 @@ class NamedMatrix(Matrix):
 		self.Gauge.set("rows.active", self.Array.shape[0])
 
 
-	def add_row(self, row_name):
-		row_index = super().add_row()
+	def add_row(self, row_name:str):
 		assert(row_name is not None)
+
+		row_index = super().add_row()
 		self.N2IMap[row_name] = row_index
 		self.I2NMap[row_index] = row_name
 
 		return row_index
 
 
-	def close_row(self, row_index):
+	def close_row(self, row_index:int):
 		super().close_row(row_index)
 
 		row_name = self.I2NMap.pop(row_index)
 		del self.N2IMap[row_name]
 
 
-	def get_row_index(self, row_name):
+	def get_row_index(self, row_name:str):
 		return self.N2IMap.get(row_name)
 
 
-	def get_row_name(self, row_index):
+	def get_row_name(self, row_index:int):
 		return self.I2NMap.get(row_index)
