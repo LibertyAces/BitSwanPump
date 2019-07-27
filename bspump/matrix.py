@@ -83,17 +83,9 @@ Object main attributes:
 		)
 
 
-
-	def build_shape(self, rows=0):
-		'''
-		Override this method to have a control over the shape of the matrix.
-		'''
-		return (rows,)
-
-
 	def zeros(self, rows=0):
 		self.ClosedRows = set()
-		self.Array = np.zeros(self.build_shape(rows), dtype=self.DType)
+		self.Array = np.zeros(self._build_shape(rows), dtype=self.DType)
 
 
 	def flush(self):
@@ -132,6 +124,13 @@ Object main attributes:
 			self.Gauge.set("rows.closed", crc)
 
 
+	def _build_shape(self, rows=0):
+		'''
+		Override this method to have a control over the shape of the matrix.
+		'''
+		return (rows,)
+
+
 	def _grow_rows(self, rows=1):
 		'''
 		Override this method to gain control on how a new closed rows are added to the matrix
@@ -139,18 +138,13 @@ Object main attributes:
 		i = self.Array.shape[0]
 		self.Array = np.append(
 			self.Array,
-			np.zeros(self.build_shape(rows), dtype=self.DType)
+			np.zeros(self._build_shape(rows), dtype=self.DType)
 		)
 		self.ClosedRows |= frozenset(range(i, i+rows))
 
 
 	def time(self):
 		return self.App.time()
-
-
-	async def analyze(self):
-		pass
-
 
 
 class NamedMatrix(Matrix):
