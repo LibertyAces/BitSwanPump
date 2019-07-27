@@ -4,8 +4,7 @@ import asab
 
 from .abc.connection import Connection
 from .abc.lookup import Lookup
-
-from .abc.matrix import MatrixABC
+from .matrix import Matrix
 
 #
 
@@ -114,7 +113,7 @@ class BSPumpService(asab.Service):
 			self.add_matrix(matrix)
 
 	def locate_matrix(self, matrix_id):
-		if isinstance(matrix_id, MatrixABC): return matrix_id
+		if isinstance(matrix_id, Matrix): return matrix_id
 		try:
 			return self.Matrixes[matrix_id]
 		except KeyError:

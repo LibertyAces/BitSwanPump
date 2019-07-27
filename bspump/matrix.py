@@ -15,60 +15,53 @@ L = logging.getLogger(__name__)
 ###
 
 
-class MatrixABC(abc.ABC, asab.ConfigObject):
+class Matrix(abc.ABC, asab.ConfigObject):
 	'''
-		General `Matrix` object.
+Generic `Matrix` object.
 
-		`column_names` is an array with names of each column, with the same length as `column_formats`.
+	+------------+------------------+
+	| Name       | Definition       |
+	+============+==================+
+	| 'b'        | Byte             |
+	+------------+------------------+
+	| 'i'        | Signed integer   |
+	+------------+------------------+
+	| 'u'        | Unsigned integer |
+	+------------+------------------+
+	| 'f'        | Floating point   |
+	+------------+------------------+
+	| 'c'        | Complex floating |
+	|            | point            |
+	+------------+------------------+
+	| 'S'        | String           |
+	+------------+------------------+
+	| 'U'        | Unicode string   |
+	+------------+------------------+
+	| 'V'        | Raw data         |
+	+------------+------------------+
 
-		`column_formats` is an array, each element contains the letter from the table + number:
+Example: 'i8' stands for int64.
+It is possible to create a matrix with elements of specified format.
+The tuple with number of dimensions should stand before the letter.
 
-			+------------+------------------+
-			| Name       | Definition       |
-			+============+==================+
-			| 'b'        | Byte             |
-			+------------+------------------+
-			| 'i'        | Signed integer   |
-			+------------+------------------+
-			| 'u'        | Unsigned integer |
-			+------------+------------------+
-			| 'f'        | Floating point   |
-			+------------+------------------+
-			| 'c'        | Complex floating |
-			|            | point            |
-			+------------+------------------+
-			| 'S'        | String           |
-			+------------+------------------+
-			| 'U'        | Unicode string   |
-			+------------+------------------+
-			| 'V'        | Raw data         |
-			+------------+------------------+
+For more details, see https://docs.scipy.org/doc/numpy/reference/arrays.dtypes.html
 
-		Example: 'i8' stands for int64.
-		It is possible to create a matrix with elements of specified format. The tuple with number of dimensions should 
-		stand before the letter.
-		Example: '(6, 3)i8' will create the matrix with n rows, 6 columns and 3 third dimensions with integer elements.
-		
-		
-		Object main attributes:
-		`Matrix` is numpy matrix, where number of rows is a number of unique ids and
-		specified columns.
-		`ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.
+
+Object main attributes:
+`Matrix` is numpy matrix, where number of rows is a number of unique ids and specified columns.  
+`ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.  
 
 	'''
 
 
-	def __init__(self, app, column_names, column_formats, id=None, config=None):
+	def __init__(self, app, dtype='float_', id=None, config=None):
 		self.Id = id if id is not None else self.__class__.__name__
 		super().__init__("matrix:{}".format(self.Id), config=config)
 
 		self.App = app
 		self.Loop = app.Loop
 
-		self.DType = {
-			'names':column_names,
-			'formats':column_formats
-		}
+		self.DType = dtype
 
 		# The dictionary that can be used to store an additional information for items in the matrix.
 		# E.g. matrix contain the key to this dictionary (in a field of your choice).
@@ -78,10 +71,29 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 
 		self.zeros()
 
+		metrics_service = app.get_service('asab.MetricsService')
+		self.Gauge = metrics_service.create_gauge("RowCounter",
+			tags = {
+				'matrix': self.Id,
+			},
+			init_values = {
+				"rows.closed" : 0,
+				"rows.active" : 0,
+			}
+		)
+
+
+
+	def build_shape(self, rows=0):
+		'''
+		Override this method to have a control over the shape of the matrix.
+		'''
+		return (rows,)
+
 
 	def zeros(self, rows=0):
 		self.ClosedRows = set()
-		self.Matrix = np.zeros(rows, dtype=self.DType)
+		self.Matrix = np.zeros(self.build_shape(rows), dtype=self.DType)
 
 
 	def flush(self):
@@ -95,10 +107,17 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 		self.Matrix = self.Matrix[saved_indexes]
 		self.ClosedRows = set()
 
+		self.Gauge.set("rows.closed", 0)
+		self.Gauge.set("rows.active", self.Matrix.shape[0])
+
 
 	def close_row(self, row_index):
 		assert(row_index < self.Matrix.shape[0])
 		self.ClosedRows.add(row_index)
+
+		crc = len(self.ClosedRows)
+		self.Gauge.set("rows.active", self.Matrix.shape[0] - crc)
+		self.Gauge.set("rows.closed", crc)
 
 
 	def add_row(self):
@@ -107,16 +126,22 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 		except KeyError:
 			self._grow_rows(max(5, int(0.10 * self.Matrix.shape[0])))
 			return self.ClosedRows.pop()
+		finally:
+			crc = len(self.ClosedRows)
+			self.Gauge.set("rows.active", self.Matrix.shape[0] - crc)
+			self.Gauge.set("rows.closed", crc)
 
 
-	def _grow_rows(self, n=1):
+	def _grow_rows(self, rows=1):
 		'''
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
 		i = self.Matrix.shape[0]
-		rows = np.zeros(int(n), dtype=self.DType)
-		self.Matrix = np.append(self.Matrix, rows)
-		self.ClosedRows |= frozenset(range(i, i+n))
+		self.Matrix = np.append(
+			self.Matrix,
+			np.zeros(self.build_shape(rows), dtype=self.DType)
+		)
+		self.ClosedRows |= frozenset(range(i, i+rows))
 
 
 	def time(self):
@@ -128,21 +153,10 @@ class MatrixABC(abc.ABC, asab.ConfigObject):
 
 
 
-class NamedMatrixABC(MatrixABC):
+class NamedMatrix(Matrix):
 
 	def __init__(self, app, column_names, column_formats, id=None, config=None):
 		super().__init__(app, column_names, column_formats, id=id, config=config)
-		metrics_service = app.get_service('asab.MetricsService')
-		self.Gauge = metrics_service.create_gauge("RowCounter",
-			tags = {
-				'matrix': self.Id,
-			},
-			init_values = {
-				"rows.all": 0,
-				"rows.closed" : 0,
-				"rows.active" : 0,
-			}
-		)
 
 
 	def zeros(self):
@@ -173,9 +187,8 @@ class NamedMatrixABC(MatrixABC):
 		self.I2NMap = i2nmap
 		self.ClosedRows = set()
 		
-		self.Gauge.set("rows.all", self.Matrix.shape[0])
 		self.Gauge.set("rows.closed", 0)
-		self.Gauge.set("rows.active", len(self.N2IMap))
+		self.Gauge.set("rows.active", self.Matrix.shape[0])
 
 
 	def add_row(self, row_name):
@@ -183,10 +196,6 @@ class NamedMatrixABC(MatrixABC):
 		assert(row_name is not None)
 		self.N2IMap[row_name] = row_index
 		self.I2NMap[row_index] = row_name
-
-		self.Gauge.set("rows.all", self.Matrix.shape[0])
-		self.Gauge.set("rows.closed", len(self.ClosedRows))
-		self.Gauge.set("rows.active", len(self.N2IMap))
 
 		return row_index
 
@@ -196,10 +205,6 @@ class NamedMatrixABC(MatrixABC):
 
 		row_name = self.I2NMap.pop(row_index)
 		del self.N2IMap[row_name]
-
-		self.Gauge.set("rows.all", self.Matrix.shape[0])
-		self.Gauge.set("rows.closed", len(self.ClosedRows))
-		self.Gauge.set("rows.active", len(self.N2IMap))
 
 
 	def get_row_index(self, row_name):

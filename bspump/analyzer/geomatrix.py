@@ -2,7 +2,7 @@ import logging
 import time
 
 import numpy as np
-from ..abc.matrix import MatrixABC
+from ..matrix import Matrix
 
 
 ##
@@ -11,7 +11,7 @@ L = logging.getLogger(__name__)
 
 ##
 
-class GeoMatrix(MatrixABC):
+class GeoMatrix(Matrix):
 	'''
 		Matrix, specific for `GeoAnalyzer`.
 		`bbox` is the dictionary with `max_lat`, `min_lat`, `max_lon` and `min_lon` 

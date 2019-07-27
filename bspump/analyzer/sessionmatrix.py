@@ -7,7 +7,7 @@ import asab
 import collections
 import abc
 
-from ..abc.matrix import NamedMatrixABC
+from ..matrix import NamedMatrix
 
 
 ###
@@ -17,7 +17,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class SessionMatrix(NamedMatrixABC):
+class SessionMatrix(NamedMatrix):
 	'''
 		Matrix, specific for `SessionAnalyzer`.
 		`column_formats` is an array, each element contains the letter from the table + number:

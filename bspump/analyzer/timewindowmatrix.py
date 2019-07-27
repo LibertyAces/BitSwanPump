@@ -5,7 +5,7 @@ import numpy as np
 
 import asab
 
-from ..abc.matrix import NamedMatrixABC
+from ..matrix import NamedMatrix
 
 ###
 
@@ -14,7 +14,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class TimeWindowMatrix(NamedMatrixABC):
+class TimeWindowMatrix(NamedMatrix):
 	'''
 		Container, specific for `TimeWindowAnalyzer`.
 		`tw_dimensions` is matrix dimensions parameter as the tuple `(column_number, third_dimension)`.
