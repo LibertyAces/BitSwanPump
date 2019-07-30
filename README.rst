@@ -154,7 +154,7 @@ Unit test
             )
 
             # asssert expected calls on `self.Pipeline.method` or `self.Pipeline.Processor.method`
-            my_processor.method.assert_called_with(**expected)
+            self.Pipeline.Processor.method.assert_called_with(**expected)
 
 
 
