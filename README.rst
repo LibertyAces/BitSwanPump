@@ -141,8 +141,7 @@ Unit test
             self.Pipeline.method = MagicMock()
 
             # .. or instance of processor
-            my_processor = self.Pipeline.locate_processor("MyProcessor")
-            my_processor.method = MagicMock()
+            self.Pipeline.Processor.method = MagicMock()
 
             output = self.execute(
                 [(None, {'foo': 'bar'})]  # Context, event
@@ -154,7 +153,7 @@ Unit test
                 [{'FOO': 'BAR'}]
             )
 
-            # asssert expected calls on `self.Pipeline.method` or `my_processor.method`
+            # asssert expected calls on `self.Pipeline.method` or `self.Pipeline.Processor.method`
             my_processor.method.assert_called_with(**expected)
 
 
