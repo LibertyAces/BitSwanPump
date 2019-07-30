@@ -135,7 +135,7 @@ Unit test
         def test_my_processor(self):
 
             # setup processor for test
-            self.set_up_processor(my_project.processor.MyProcessor)
+            self.set_up_processor(my_project.processor.MyProcessor, "proc-arg", proc="key_arg")
 
             # mock methods to suit your needs on pipeline ..
             self.Pipeline.method = MagicMock()
