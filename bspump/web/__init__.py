@@ -44,6 +44,17 @@ async def lookup_detail(request):
 	lookup_id = request.match_info.get('lookup_id')
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
+	try:
+		lookup = svc.locate_lookup(lookup_id)
+	except KeyError:
+		raise aiohttp.web.HTTPNotFound()
+	return asab.web.rest.json_response(request, lookup.rest_get())
+
+
+async def lookup_download(request):
+	lookup_id = request.match_info.get('lookup_id')
+	app = request.app['app']
+	svc = app.get_service("bspump.PumpService")
 	request_etag = request.headers.get('ETag')
 
 	try:
@@ -154,7 +165,8 @@ def _initialize_web(app, listen="0.0.0.0:8080"):
 	container.WebApp.router.add_get('/example/internal', example_internal)
 
 	container.WebApp.router.add_get('/lookup', lookup_list)
-	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup_detail)
+	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup_download)
+	container.WebApp.router.add_get('/lookup/{lookup_id}/meta', lookup_detail)
 
 	container.WebApp.router.add_get('/metric', metric_list)
 	container.WebApp.router.add_get('/metric/{metric_id}', metric_detail)
