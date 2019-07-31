@@ -37,7 +37,7 @@ async def example_internal(request):
 async def lookup_list(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
-	return asab.web.rest.json_response(request, svc.Lookups)
+	return asab.web.rest.json_response(request, [lookup.rest_get() for lookup in svc.Lookups.values()])
 
 
 async def lookup_detail(request):
