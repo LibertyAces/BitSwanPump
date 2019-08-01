@@ -15,13 +15,6 @@ L = logging.getLogger(__name__)
 
 
 class SamplePipeline(bspump.Pipeline):
-	"""
-	Run with site.conf
-
-		[pipeline:SamplePipeline:ElasticSearchSource]
-		index = bspump_*
-
-	"""
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
@@ -43,7 +36,9 @@ class SamplePipeline(bspump.Pipeline):
 
 		self.build(
 			bspump.elasticsearch.ElasticSearchSource(
-				app, self, "ESConnection", request_body=request_body
+				app, self, "ESConnection", request_body=request_body, config={
+					"index": "bspump_*"
+				}
 			).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
 			bspump.common.PPrintSink(app, self)
 		)

@@ -15,13 +15,6 @@ L = logging.getLogger(__name__)
 
 
 class SamplePipeline(bspump.Pipeline):
-	"""
-	Run with site.conf
-
-		[connection:ESConnection]
-		bulk_out_max_size = 100
-
-	"""
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
@@ -42,8 +35,9 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	svc.add_connection(
-		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection")
-	)
+		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection", config={
+			"bulk_out_max_size": 100,
+		}))
 
 	# Construct and register Pipeline
 	pl = SamplePipeline(app, 'SamplePipeline')
