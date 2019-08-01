@@ -22,11 +22,11 @@ class TimeWindowMatrixExportTableauGenerator(Generator):
 		assert(isinstance(event, TimeWindowMatrix))
 		
 		def generate(time_window_matrix):
-			for i in range(0, time_window_matrix.Matrix.shape[0]):
+			for i in range(0, time_window_matrix.Array.shape[0]):
 				row_id = time_window_matrix.get_row_name(i)
 				if row_id is None:
 					continue
-				field_type = time_window_matrix.Matrix.dtype['time_window'].subdtype[0].kind
+				field_type = time_window_matrix.Array.dtype['time_window'].subdtype[0].kind
 				if field_type in ['f']:
 					event_type = "double"
 				elif field_type in ['i', 'u', 'b']:
@@ -48,7 +48,7 @@ class TimeWindowMatrixExportTableauGenerator(Generator):
 					event['timestamp'] = {"value":value, "type": "datetime"}
 					for k in range(0, time_window_matrix.Dimensions[1]):
 						field_name = "value_{}".format(k)
-						field_value = time_window_matrix.Matrix['time_window'][i, j, k]
+						field_value = time_window_matrix.Array['time_window'][i, j, k]
 						event[field_name] = {"value":field_value, "type":event_type}
 				
 					yield event
@@ -63,17 +63,17 @@ class SessionMatrixExportTableauGenerator(Generator):
 		assert(isinstance(event, SessionMatrix))
 		
 		def generate(session_matrix):
-			for i in range(0, session_matrix.Matrix.shape[0]):
+			for i in range(0, session_matrix.Array.shape[0]):
 				event = collections.OrderedDict()
 				row_id = session_matrix.get_row_name(i)
 				if row_id is None:
 					continue
 				event['id'] = {"value":row_id, "type": "unicodestring"}
-				for name in session_matrix.Matrix.dtype.names:
-					if session_matrix.Matrix.dtype[name].shape == ():
+				for name in session_matrix.Array.dtype.names:
+					if session_matrix.Array.dtype[name].shape == ():
 						event[name] = {"value":None, "type": None}
-						event[name]["value"] = session_matrix.Matrix[name][i]
-						field_type = session_matrix.Matrix.dtype[name].kind
+						event[name]["value"] = session_matrix.Array[name][i]
+						field_type = session_matrix.Array.dtype[name].kind
 						if field_type in ['f']:
 							event[field_name]["type"] = "double"
 						elif field_type in ['i', 'u', 'b']:
@@ -88,11 +88,11 @@ class SessionMatrixExportTableauGenerator(Generator):
 							L.warn("Incorrect type {}, skipping".format(field_type))
 							continue
 					else:
-						field_type = session_matrix.Matrix.dtype[name].subdtype[0].kind
-						for j in range(0, session_matrix.Matrix.dtype[name].shape[0]):
-							for k in range(0, session_matrix.Matrix.dtype[name].shape[1]):
+						field_type = session_matrix.Array.dtype[name].subdtype[0].kind
+						for j in range(0, session_matrix.Array.dtype[name].shape[0]):
+							for k in range(0, session_matrix.Array.dtype[name].shape[1]):
 								field_name = "{}_{}_{}".format(name, j, k)
-								value = session_matrix.Matrix[name][i, j, k]
+								value = session_matrix.Array[name][i, j, k]
 								event[field_name] = {"value":value, "type": None}
 					
 								if field_type in ['f']:

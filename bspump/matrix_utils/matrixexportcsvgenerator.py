@@ -22,7 +22,7 @@ class TimeWindowMatrixExportCSVGenerator(Generator):
 		assert(isinstance(event, TimeWindowMatrix))
 		
 		def generate(time_window_matrix):
-			for i in range(time_window_matrix.Matrix.shape[0]):
+			for i in range(time_window_matrix.Array.shape[0]):
 				row_id = time_window_matrix.get_row_name(i)
 				if row_id is None:
 					continue
@@ -33,7 +33,7 @@ class TimeWindowMatrixExportCSVGenerator(Generator):
 					event['timestamp'] = time_window_matrix.Start + j * time_window_matrix.Resolution
 					for k in range(0, time_window_matrix.Dimensions[1]):
 						field_name = "value_{}".format(k)
-						event[field_name] = time_window_matrix.Matrix['time_window'][i, j, k]
+						event[field_name] = time_window_matrix.Array['time_window'][i, j, k]
 				
 					yield event
 
@@ -47,23 +47,23 @@ class SessionMatrixExportCSVGenerator(Generator):
 		assert(isinstance(event, SessionMatrix))
 		
 		def generate(session_matrix):
-			for i in range(0, session_matrix.Matrix.shape[0]):
+			for i in range(0, session_matrix.Array.shape[0]):
 				event = collections.OrderedDict()
 				row_id = session_matrix.get_row_name(i)
 				if row_id is None:
 					continue
 				event['id'] = row_id
-				for name in session_matrix.Matrix.dtype.names:
-					if session_matrix.Matrix.dtype[name].shape == ():
-						event[name] = session_matrix.Matrix[name][i]
+				for name in session_matrix.Array.dtype.names:
+					if session_matrix.Array.dtype[name].shape == ():
+						event[name] = session_matrix.Array[name][i]
 					else:
-						for j in range(0, session_matrix.Matrix.dtype[name].shape[0]):
-							for k in range(0, session_matrix.Matrix.dtype[name].shape[1]):
+						for j in range(0, session_matrix.Array.dtype[name].shape[0]):
+							for k in range(0, session_matrix.Array.dtype[name].shape[1]):
 								field_name = "{}_{}_{}".format(name, j, k)
-								if session_matrix.Matrix.dtype[name].subdtype[0].kind in ['f', 'u', 'i', 'b']:
-									value =  "{0:.10f}".format(session_matrix.Matrix[name][i, j, k])
+								if session_matrix.Array.dtype[name].subdtype[0].kind in ['f', 'u', 'i', 'b']:
+									value =  "{0:.10f}".format(session_matrix.Array[name][i, j, k])
 								else:
-									value = session_matrix.Matrix[name][i, j, k]
+									value = session_matrix.Array[name][i, j, k]
 						
 								event[field_name] = value
 				
