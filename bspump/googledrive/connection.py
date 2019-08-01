@@ -18,6 +18,13 @@ class GoogleDriveConnection(Connection):
 	google drive service - using API v3.
 	This connection is synchronous and therefore all connectors using it
 	are blocking.
+
+	To aquire service_account_file, you will need to go to console.developers.google.com and choose or create one.
+	It is well documented here https://developers.google.com/identity/protocols/OAuth2ServiceAccount .
+	Then it is necessary to delegate authority over client account to chosen service account. https://admin.google.com/
+	For details refere to the link above.
+	For the delegation, G Suite domain administrator is necessary.
+	Free Google accounts can't be used as target of google drive connection.
 	"""
 
 	ConfigDefaults = {
