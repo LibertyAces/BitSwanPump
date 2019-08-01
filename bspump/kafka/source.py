@@ -29,6 +29,8 @@ class KafkaSource(Source):
                 bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
             )
 
+	To ensure that after restart, pump will continue receiving messages where it left of, group_id has to
+	be provided in the configuration.
     """
 
 	ConfigDefaults = {
