@@ -5,7 +5,7 @@ import bspump.common
 import bspump.analyzer
 import bspump.file
 import bspump.tableau
-import bspump.matrix_utils
+import bspump.matrix
 import time
 import numpy as np
 import logging
@@ -58,11 +58,11 @@ class SecondaryPipelineCSVTimeWindow(Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.matrix_utils.MatrixSource(app, 
+			bspump.matrix.MatrixSource(app, 
 				self, 
 				"MyTimeWindowAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
 			),
-			bspump.matrix_utils.TimeWindowMatrixExportCSVGenerator(app, self),
+			bspump.matrix.TimeWindowMatrixExportCSVGenerator(app, self),
 			bspump.file.FileCSVSink(app, self, config={'path':'tw.csv'})
 		)
 
@@ -70,7 +70,7 @@ class SecondaryPipelineTableauTimeWindow(Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.matrix_utils.MatrixSource(app, 
+			bspump.matrix.MatrixSource(app, 
 				self, 
 				"MyTimeWindowAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
 			),
@@ -83,11 +83,11 @@ class SecondaryPipelineCSVSession(Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.matrix_utils.MatrixSource(app, 
+			bspump.matrix.MatrixSource(app, 
 				self, 
 				"MySessionAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
 			),
-			bspump.matrix_utils.SessionMatrixExportCSVGenerator(app, self),
+			bspump.matrix.SessionMatrixExportCSVGenerator(app, self),
 			# bspump.common.PPrintSink(app, self)
 			bspump.file.FileCSVSink(app, self, config={'path':'sess.csv'})
 		)
@@ -96,7 +96,7 @@ class SecondaryPipelineTableauSession(Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.matrix_utils.MatrixSource(app, 
+			bspump.matrix.MatrixSource(app, 
 				self, 
 				"MySessionAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
 			),

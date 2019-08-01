@@ -7,7 +7,7 @@ import asab
 import collections
 import abc
 
-from ..matrix import NamedMatrix
+from ..matrix.matrix import NamedMatrix
 
 
 ###
