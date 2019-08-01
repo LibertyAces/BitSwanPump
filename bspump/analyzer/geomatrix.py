@@ -20,13 +20,14 @@ class GeoMatrix(Matrix):
 		to `Storage`, where objects can be kept. 
 
 	'''
-	def __init__(self, app, bbox, resolution=5, id=None, config=None):
+	def __init__(self, app, bbox, dtype=None, resolution=5, id=None, config=None):
 		self.Bbox = bbox
 		self.Resolution = resolution
 		self.get_matrix_dimensions()
-		dtype = [
-			("geo_matrix", "({},1)i4".format(self.MapWidth))
-		]
+		if dtype is None:
+			dtype = [
+				("geo_matrix", "({},1)i4".format(self.MapWidth))
+			]
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		self.MembersToIds = self.Storage
 		self.IdsToMembers = {}
