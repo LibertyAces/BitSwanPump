@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import logging
+
 import bspump
+import bspump.common
 import bspump.elasticsearch
 import bspump.file
-import bspump.common
 import bspump.trigger
 
 ###
@@ -14,25 +15,36 @@ L = logging.getLogger(__name__)
 
 
 class SamplePipeline(bspump.Pipeline):
+	"""
+	Run with site.conf
+
+		[pipeline:SamplePipeline:ElasticSearchSource]
+		index = bspump_*
+
+	"""
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
 		request_body = {
 			"query": {
-				"bool": {
-					"must": {
-						"match_all": {}
-					}
+				"query_string": {
+					"query": "Chuck"
 				}
 			},
 			"sort": [
-				{"creation_date": {"order": "desc"}}
+				{
+					"id": {
+						"order": "desc"
+					}
+				}
 			]
 		}
 
 		self.build(
-			bspump.elasticsearch.ElasticSearchSource(app, self, "ESConnection1", request_body=request_body).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
+			bspump.elasticsearch.ElasticSearchSource(
+				app, self, "ESConnection", request_body=request_body
+			).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
 			bspump.common.PPrintSink(app, self)
 		)
 
@@ -42,7 +54,7 @@ if __name__ == '__main__':
 
 	svc = app.get_service("bspump.PumpService")
 	svc.add_connection(
-		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection1")
+		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection")
 	)
 
 	# Construct and register Pipeline
