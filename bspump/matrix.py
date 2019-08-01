@@ -107,9 +107,10 @@ Object main attributes:
 		self.Gauge.set("rows.active", self.Array.shape[0])
 
 
-	def close_row(self, row_index):
+	def close_row(self, row_index, clear=True):
 		assert(row_index < self.Array.shape[0])
-		self.Array[row_index] = np.zeros(1, dtype=self.DType)
+		if clear:
+			self.Array[row_index] = np.zeros(1, dtype=self.DType)
 		self.ClosedRows.add(row_index)
 
 		crc = len(self.ClosedRows)
