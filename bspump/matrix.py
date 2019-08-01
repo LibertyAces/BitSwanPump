@@ -109,6 +109,7 @@ Object main attributes:
 
 	def close_row(self, row_index):
 		assert(row_index < self.Array.shape[0])
+		self.Array[row_index] = np.zeros(1, dtype=self.DType)
 		self.ClosedRows.add(row_index)
 
 		crc = len(self.ClosedRows)

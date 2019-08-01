@@ -23,14 +23,15 @@ class SessionMatrix(NamedMatrix):
 	
 		There are two fields added:
 
-			- `start_at`: UNIX timestamp of the start of a session (if not 0)
-			- `end_at`: UNIX timestamp of the end of a session (if not 0)
+			- `start_timestamp`: UNIX timestamp of the start of a session (if not 0)
+			- `end_timestamp`: UNIX timestamp of the end of a session (if not 0)
 	'''
 
 	def __init__(self, app, dtype:list, id=None, config=None):
+		dtype = dtype[:]
 		dtype.extend([
-			('start_at', 'i8'),
-			('end_at', 'i8'),
+			('start_timestamp', 'i8'),
+			('end_timestamp', 'i8'),
 		])
 		super().__init__(app, dtype=dtype, id=id, config=config)
 
@@ -43,7 +44,7 @@ class SessionMatrix(NamedMatrix):
 
 		row_index = super().add_row(row_name)
 		if start_time is not None:
-			self.Matrix[-1]["start_at"] = start_time
+			self.Array[row_index]["start_timestamp"] = start_time
 		return row_index
 
 
@@ -54,7 +55,7 @@ class SessionMatrix(NamedMatrix):
 		'''
 		row_index = self.get_row_index(row_name)
 		if row_index is None: return False
-		self.Matrix[row_index] = event
+		self.Array[row_index] = event
 
 
 	# def close_row(self, row_id, end_time=None):

@@ -48,17 +48,11 @@ class TimeWindowMatrix(NamedMatrix):
 	'''
 
 	def __init__(self, app, tw_dimensions, tw_format, resolution, start_time=None, id=None, config=None):
-		column_names = []
-		column_formats = []
-		column_names.append("time_window")
-		column_formats.append(str(tw_dimensions) + tw_format)
-
-		column_names.append("warming_up_count")
-		column_formats.append("i8")
-
-		#TODO: Warmup etc. has to go into a dedicated 2nd matrix/arrays
-
-		super().__init__(app, column_names, column_formats, id=id, config=config)
+		dtype = [
+			("time_window", str(tw_dimensions) + tw_format),
+			("warming_up_count", 'i8'),
+		]
+		super().__init__(app, dtype=dtype, id=id, config=config)
 		if start_time is None:
 			start_time = time.time()
 
@@ -93,18 +87,19 @@ class TimeWindowMatrix(NamedMatrix):
 		self.Start += self.Resolution
 		self.End += self.Resolution
 
-		if self.Matrix.shape[0] == 0:
+		if self.Array.shape[0] == 0:
 			return
 
-		column = np.zeros([self.Matrix["time_window"].shape[0], 1, self.Dimensions[1]])
-		time_window = np.hstack((self.Matrix["time_window"], column))
+		column = np.zeros([self.Array["time_window"].shape[0], 1, self.Dimensions[1]])
+		time_window = np.hstack((self.Array["time_window"], column))
 		time_window = np.delete(time_window, 0, axis=1)
 
-		self.Matrix["time_window"] = time_window #?
-		self.Matrix["warming_up_count"] -= 1
+		self.Array["time_window"] = time_window
+		open_rows = list(set(range(0, self.Array["time_window"].shape[0])) - self.ClosedRows)
+		self.Array["warming_up_count"][open_rows] -= 1
 		
 		# Overflow prevention
-		self.Matrix["warming_up_count"][self.Matrix["warming_up_count"] < 0] = 0
+		self.Array["warming_up_count"][self.Array["warming_up_count"] < 0] = 0
 
 	
 	def add_row(self, row_name):
@@ -113,7 +108,7 @@ class TimeWindowMatrix(NamedMatrix):
 		'''
 
 		row_index = super().add_row(row_name)
-		self.Matrix[row_index]["warming_up_count"] = self.Dimensions[0]
+		self.Array[row_index]["warming_up_count"] = self.Dimensions[0]
 		return row_index
 
 	
