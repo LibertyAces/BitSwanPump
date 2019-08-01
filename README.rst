@@ -135,14 +135,13 @@ Unit test
         def test_my_processor(self):
 
             # setup processor for test
-            self.set_up_processor(my_project.processor.MyProcessor)
+            self.set_up_processor(my_project.processor.MyProcessor, "proc-arg", proc="key_arg")
 
             # mock methods to suit your needs on pipeline ..
             self.Pipeline.method = MagicMock()
 
             # .. or instance of processor
-            my_processor = self.Pipeline.locate_processor("MyProcessor")
-            my_processor.method = MagicMock()
+            self.Pipeline.Processor.method = MagicMock()
 
             output = self.execute(
                 [(None, {'foo': 'bar'})]  # Context, event
@@ -154,8 +153,8 @@ Unit test
                 [{'FOO': 'BAR'}]
             )
 
-            # asssert expected calls on `self.Pipeline.method` or `my_processor.method`
-            my_processor.method.assert_called_with(**expected)
+            # asssert expected calls on `self.Pipeline.method` or `self.Pipeline.Processor.method`
+            self.Pipeline.Processor.method.assert_called_with(**expected)
 
 
 

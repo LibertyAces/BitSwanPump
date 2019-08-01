@@ -2,7 +2,7 @@ import logging
 import time
 
 import numpy as np
-from ..abc.matrix import MatrixABC
+from ..matrix import Matrix
 
 
 ##
@@ -11,7 +11,7 @@ L = logging.getLogger(__name__)
 
 ##
 
-class GeoMatrix(MatrixABC):
+class GeoMatrix(Matrix):
 	'''
 		Matrix, specific for `GeoAnalyzer`.
 		`bbox` is the dictionary with `max_lat`, `min_lat`, `max_lon` and `min_lon` 
@@ -20,13 +20,15 @@ class GeoMatrix(MatrixABC):
 		to `Storage`, where objects can be kept. 
 
 	'''
-	def __init__(self, app, bbox, resolution=5, id=None, config=None):
+	def __init__(self, app, bbox, dtype=None, resolution=5, id=None, config=None):
 		self.Bbox = bbox
 		self.Resolution = resolution
 		self.get_matrix_dimensions()
-		column_formats = ["({},1)i4".format(self.MapWidth)]
-		column_names = ["geo_matrix"]
-		super().__init__(app, column_names, column_formats, id=id, config=config)
+		if dtype is None:
+			dtype = [
+				("geo_matrix", "({},1)i4".format(self.MapWidth))
+			]
+		super().__init__(app, dtype=dtype, id=id, config=config)
 		self.MembersToIds = self.Storage
 		self.IdsToMembers = {}
 		self.Matrix = np.ones(self.MapHeight, dtype=self.DType)

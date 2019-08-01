@@ -91,6 +91,14 @@ class Lookup(abc.ABC, asab.ConfigObject):
 	def deserialize(self, data):
 		raise NotImplementedError("Lookup '{}' deserialize() method not implemented".format(self.Id))
 
+	# REST
+
+	def rest_get(self):
+		return {
+			"Id": self.Id,
+			"ETag": self.ETag,
+			"MasterURL": self.MasterURL,
+		}
 
 	# Cache control
 
@@ -224,6 +232,12 @@ class DictionaryLookup(MappingLookup):
 	def deserialize(self, data):
 		self.Dictionary.update(json.loads(data.decode('utf-8')))
 
+	# REST
+
+	def rest_get(self):
+		rest = super().rest_get()
+		rest["Dictionary"] = self.Dictionary
+		return rest
 
 	def set(self, dictionary:dict):
 		if self.MasterURL is not None:

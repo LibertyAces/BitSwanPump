@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-import aiohttp.web
-import asab
+import asab.web
 import bspump
 import bspump.web
 import bspump.common
@@ -40,7 +39,7 @@ if __name__ == '__main__':
 	svc.add_pipeline(pl)
 
 	# Locate web service
-	bspump.web._initialize_web(app)
+	app.add_module(asab.web.Module)
 	websvc = app.get_service("asab.WebService")
 
 	websvc.WebApp.router.add_post('/bspump/sp', pl.webservice)

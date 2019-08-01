@@ -75,6 +75,14 @@ Usage: specify in configuration the path to the database in csv format.
 	def set(self, tree):
 		self.TreeRoot = tree
 
+	# REST
+
+	def rest_get(self):
+		rest = super().rest_get()
+		rest["TreeRoot"] = self.TreeRoot
+		rest["Locations"] = self.Locations
+		rest["IP4Mapped"] = self.IP4Mapped
+		return rest
 
 	def sorted_array_to_bst(self, arr): 
 		if not arr: 

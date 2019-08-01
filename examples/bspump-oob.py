@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+import requests
 
 import aiohttp
 
@@ -9,6 +10,8 @@ import bspump.common
 import bspump.trigger
 import bspump.oob
 
+import asab
+import asab.proactor
 
 ###
 
@@ -36,16 +39,35 @@ class SampleOOBEngine(bspump.oob.OOBEEngine):
                             +---+---+---+---+---+---+---+
 """
 
+	def __init__(self, app, destination):
+		super().__init__(app, destination)
+
+		app.add_module(asab.proactor.Module)
+		self.ProactorService = app.get_service("asab.ProactorService")
+
 	async def process(self, context, event):
-
+		# Run asynchronous heavy task
+		L.debug("Running long operation asynchronously and waiting for the result...")
 		async with aiohttp.ClientSession() as session:
-
 			async with session.get("https://reqres.in/api/{}/2".format(event.get("description", "unknown"))) as resp:
 				if resp.status != 200:
 					return event
 				color = await resp.json()
 				event["color"] = color
 
+		# Run synchronous heavy task on thread
+		L.debug("Running long operation on thread and waiting for the result...")
+		event = await self.ProactorService.execute(
+			self.process_on_thread,
+			context,
+			event
+		)
+
+		return event
+
+	def process_on_thread(self, context, event):
+		r = requests.get("https://reqres.in/api/{}/4".format(event.get("description", "unknown")))
+		event["second_color"] = r.json()
 		return event
 
 
