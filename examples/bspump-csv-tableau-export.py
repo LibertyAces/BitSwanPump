@@ -21,8 +21,8 @@ class MyApplication(BSPumpApplication):
 		super().__init__()
 		svc = self.get_service("bspump.PumpService")
 		svc.add_pipeline(PrimaryPipeline(self))
-		svc.add_pipeline(SecondaryPipelineCSVSession(self))
-		# svc.add_pipeline(SecondaryPipelineTableauSession(self))
+		# svc.add_pipeline(SecondaryPipelineCSVSession(self))
+		svc.add_pipeline(SecondaryPipelineTableauSession(self))
 		# svc.add_pipeline(SecondaryPipelineCSVTimeWindow(self))
 		# svc.add_pipeline(SecondaryPipelineTableauTimeWindow(self))
 		
@@ -74,7 +74,7 @@ class SecondaryPipelineTableauTimeWindow(Pipeline):
 				self, 
 				"MyTimeWindowAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
 			),
-			bspump.matrix_utils.TimeWindowMatrixExportTableauGenerator(app, self),
+			bspump.tableau.TimeWindowMatrixExportTableauGenerator(app, self),
 			bspump.tableau.FileTableauSink(app, self,config={'path':'tw.tde'}),
 		)
 
@@ -100,7 +100,7 @@ class SecondaryPipelineTableauSession(Pipeline):
 				self, 
 				"MySessionAnalyzerMatrix").on(bspump.trigger.PubSubTrigger(app, "Export!")
 			),
-			bspump.matrix_utils.SessionMatrixExportTableauGenerator(app, self),
+			bspump.tableau.SessionMatrixExportTableauGenerator(app, self),
 			# bspump.common.PPrintSink(app, self)
 			bspump.tableau.FileTableauSink(app, self,config={'path':'sess.tde'})
 		)

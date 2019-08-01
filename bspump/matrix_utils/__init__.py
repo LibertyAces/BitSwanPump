@@ -1,5 +1,4 @@
 from .matrixexportcsvgenerator import SessionMatrixExportCSVGenerator, TimeWindowMatrixExportCSVGenerator
-from .matrixexporttableaugenerator import SessionMatrixExportTableauGenerator, TimeWindowMatrixExportTableauGenerator
 from .source import MatrixSource
 
 

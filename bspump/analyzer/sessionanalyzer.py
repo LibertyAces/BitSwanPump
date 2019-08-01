@@ -1,8 +1,6 @@
 import time
 import logging
 import numpy as np
-import re
-import collections
 
 import asab
 
