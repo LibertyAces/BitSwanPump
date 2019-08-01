@@ -8,7 +8,7 @@ class TestSessionAnalyzer(bspump.unittest.ProcessorTestCase):
 			(None, {"lat": 70, "lon": 10}),
 			(None, {"lat": 50, "lon": 30}),
 		]
-		self.set_up_processor(bspump.analyzer.SessionAnalyzer, ['a', 'b'], ['i8', 'f8'])
+		self.set_up_processor(bspump.analyzer.SessionAnalyzer, [('a', 'i8'), ('b', 'f8')])
 
 		output = self.execute(
 			events

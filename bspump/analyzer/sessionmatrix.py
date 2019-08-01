@@ -7,7 +7,7 @@ import asab
 import collections
 import abc
 
-from ..abc.matrix import NamedMatrixABC
+from ..matrix import NamedMatrix
 
 
 ###
@@ -17,46 +17,23 @@ L = logging.getLogger(__name__)
 ###
 
 
-class SessionMatrix(NamedMatrixABC):
+class SessionMatrix(NamedMatrix):
 	'''
 		Matrix, specific for `SessionAnalyzer`.
-		`column_formats` is an array, each element contains the letter from the table + number:
+	
+		There are two fields added:
 
-			+------------+------------------+
-			| Name       | Definition       |
-			+============+==================+
-			| 'b'        | Byte             |
-			+------------+------------------+
-			| 'i'        | Signed integer   |
-			+------------+------------------+
-			| 'u'        | Unsigned integer |
-			+------------+------------------+
-			| 'f'        | Floating point   |
-			+------------+------------------+
-			| 'c'        | Complex floating |
-			|            | point            |
-			+------------+------------------+
-			| 'S'        | String           |
-			+------------+------------------+
-			| 'U'        | Unicode string   |
-			+------------+------------------+
-			| 'V'        | Raw data         |
-			+------------+------------------+
-
-		Example: 'i8' stands for int64.
-		It is possible to create a matrix with elements of specified format. The tuple with number of dimensions should 
-		stand before the letter.
-		Example: '(6, 3)i8' will create the matrix with n rows, 6 columns and 3 third dimensions with integer elements.
-		`column_names` is an array with names of each column, with the same length as `column_formats`.
-
+			- `start_timestamp`: UNIX timestamp of the start of a session (if not 0)
+			- `end_timestamp`: UNIX timestamp of the end of a session (if not 0)
 	'''
 
-	def __init__(self, app, column_formats, column_names, id=None, config=None):
-		column_formats.append("i8")
-		column_names.append("@timestamp_start")
-		column_formats.append("i8")
-		column_names.append("@timestamp_end")	
-		super().__init__(app, column_names, column_formats, id=id, config=config)
+	def __init__(self, app, dtype:list, id=None, config=None):
+		dtype = dtype[:]
+		dtype.extend([
+			('start_timestamp', 'i8'),
+			('end_timestamp', 'i8'),
+		])
+		super().__init__(app, dtype=dtype, id=id, config=config)
 
 	
 	def add_row(self, row_name, start_time=None):
@@ -67,8 +44,18 @@ class SessionMatrix(NamedMatrixABC):
 
 		row_index = super().add_row(row_name)
 		if start_time is not None:
-			self.Matrix[-1]["@timestamp_start"] = start_time
+			self.Array[row_index]["start_timestamp"] = start_time
 		return row_index
+
+
+	def store(self, row_name: str, event):
+		'''
+			Store the event in the matrix.
+			The event must prepared so that it matches a data type of the cell (dtype)
+		'''
+		row_index = self.get_row_index(row_name)
+		if row_index is None: return False
+		self.Array[row_index] = event
 
 
 	# def close_row(self, row_id, end_time=None):
