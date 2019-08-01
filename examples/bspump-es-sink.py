@@ -15,6 +15,13 @@ L = logging.getLogger(__name__)
 
 
 class SamplePipeline(bspump.Pipeline):
+	"""
+	Run with site.conf
+
+		[connection:ESConnection]
+		bulk_out_max_size = 100
+
+	"""
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
