@@ -7,12 +7,13 @@ from .abc.sink import Sink
 from .abc.processor import Processor
 from .abc.generator import Generator
 from .abc.connection import Connection
-from .matrix import Matrix, NamedMatrix
+
 from .exception import ProcessingError
 from .abc.lookup import Lookup
 from .abc.lookup import MappingLookup
 from .abc.lookup import DictionaryLookup
 from .fileloader import load_json_file
+from .matrix.matrix import Matrix, NamedMatrix
 
 from .__version__ import __version__, __build__
 

@@ -5,7 +5,7 @@ import numpy as np
 
 import asab
 
-from ..matrix import NamedMatrix
+from ..matrix.matrix import NamedMatrix
 
 ###
 

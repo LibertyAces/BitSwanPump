@@ -4,7 +4,7 @@ import asab
 
 from .abc.connection import Connection
 from .abc.lookup import Lookup
-from .matrix import Matrix
+from .matrix.matrix import Matrix
 
 #
 

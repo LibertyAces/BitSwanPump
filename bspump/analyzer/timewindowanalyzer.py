@@ -130,4 +130,3 @@ class TimeWindowAnalyzer(Analyzer):
 			self.advance(target_ts)
 
 
-
