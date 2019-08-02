@@ -58,7 +58,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 		'from': '',  # Specify the FROM object, which can be a table or a query string
 		'key': '',  # Specify key name used for search
 		'query_find_one': 'SELECT {} FROM {} WHERE {}=%s;',  # Specify query string to find one record in database using key
-		'query_count': 'SELECT COUNT({}) as \'n\' FROM {};',  # Specify query string to count number of records in the database
+		'query_count': 'SELECT COUNT(*) as \'count\' FROM {};',  # Specify query string to count number of records in the database
 		'query_iter': 'SELECT {} FROM {};',  # Specify general query string for the iterator
 	}
 
@@ -100,10 +100,10 @@ The MySQLLookup can be then located and used inside a custom processor:
 
 	async def _count(self):
 
-		query = self.QueryCount.format(self.Statement, self.From)
+		query = self.QueryCount.format(self.From)
 		await self.CursorAsync.execute(query)
-		count = await self.CursorAsync.fetchone()
-		return count['n']
+		result = await self.CursorAsync.fetchone()
+		return result['count']
 
 
 	async def load(self):
