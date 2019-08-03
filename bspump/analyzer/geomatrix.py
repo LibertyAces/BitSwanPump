@@ -4,7 +4,6 @@ import time
 import numpy as np
 from ..matrix.matrix import Matrix
 
-
 ##
 
 L = logging.getLogger(__name__)
@@ -20,24 +19,22 @@ class GeoMatrix(Matrix):
 		to `Storage`, where objects can be kept. 
 
 	'''
-	def __init__(self, app, bbox, dtype=None, resolution=5, id=None, config=None):
+	def __init__(self, app, dtype:list, bbox, resolution=5, id=None, config=None):
+		super().__init__(app, dtype=dtype, id=id, config=config)
+
 		self.Bbox = bbox
 		self.Resolution = resolution
-		self.get_matrix_dimensions()
-		if dtype is None:
-			dtype = [
-				("geo_matrix", "({},1)i4".format(self.MapWidth))
-			]
-		super().__init__(app, dtype=dtype, id=id, config=config)
+		self.update_matrix_dimensions()
+
+		#Ales: What is this?, don't 'override' the use of Storage, create own dict
+		# ... also, I still question if Storage should be part of the Matrix ABC 
 		self.MembersToIds = self.Storage
 		self.IdsToMembers = {}
-		self.Matrix = np.ones(self.MapHeight, dtype=self.DType)
-		self.Matrix["geo_matrix"][:, :, :] = -1
 
 	
 	def is_in_boundaries(self, lat, lon):
 		'''
-			Check, if coordinates are within the bbox coordinates.
+		Check, if coordinates are within the bbox coordinates.
 		'''
 		if (lat >= self.Bbox["max_lat"]) or (lat <= self.Bbox["min_lat"]):
 			return False
@@ -48,7 +45,7 @@ class GeoMatrix(Matrix):
 		return True
 
 
-	def get_matrix_dimensions(self):
+	def update_matrix_dimensions(self):
 		'''
 			Calculation of MapHeight and MapWidth.
 		'''

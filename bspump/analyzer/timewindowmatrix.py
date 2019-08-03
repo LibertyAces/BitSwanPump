@@ -17,12 +17,7 @@ L = logging.getLogger(__name__)
 class TimeWindowMatrix(NamedMatrix):
 	'''
 		Container, specific for `TimeWindowAnalyzer`.
-		`tw_dimensions` is matrix dimensions parameter as the tuple `(column_number, third_dimension)`.
 
-		Example: 'i8' stands for int64.
-		By default the `Matrix` contains 2 fields `time_window` with the main
-		time matrix and `warming_up_counter`, the integer value for each row,
-		indicating how "old" is the row.
 		The main specific attributes are:
 		`Start` is the starting timestamp of the first column of the matrix;
 		`End` is the ending timestamp of the last column;
@@ -47,19 +42,12 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, tw_dimensions, tw_format, resolution, start_time=None, id=None, config=None):
-		dtype = [
-			("time_window", str(tw_dimensions) + tw_format),
-			("warming_up_count", 'i8'),
-		]
+	def __init__(self, app, dtype:list, resolution:float, start_time=None, id=None, config=None):
 		super().__init__(app, dtype=dtype, id=id, config=config)
-		if start_time is None:
-			start_time = time.time()
+		
+		if start_time is None: start_time = time.time()
 
 		self.Resolution = resolution
-		self.Dimensions = tw_dimensions
-		self.Format = tw_format
-
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
 		self.End = self.Start - (self.Resolution * self.Dimensions[0])
 
@@ -68,7 +56,7 @@ class TimeWindowMatrix(NamedMatrix):
 			"EarlyLateEventCounter",
 			tags={
 				'matrix': self.Id,
-				'tw': "TimeWindow",
+				'tw': "TimeWindow", #Ales: What is this?
 			},
 			init_values={
 				'events.early': 0,
