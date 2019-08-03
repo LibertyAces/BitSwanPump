@@ -19,11 +19,15 @@ class Matrix(abc.ABC, asab.ConfigObject):
 	'''
 Generic `Matrix` object.
 
-#TODO: The structure of the matrix have to be much better documented.
-Explain row, (optonal) columns, cells, the fact that cells have a unified data format across the whole matrix.
-Cell format is described by `dtype`, it can be a simple integer or float but also a complex dictionary type with names and types of the fields.
+Matrix structure is organized in a following hiearchical order:
 
-The description of types that can be used for a data objects in the cell.
+Matrix -> Rows -> Columns -> Cells
+
+Cells have unified data format across the whole matrix.
+This format is specified by a `dtype`.
+It can be a simple integer or float but also a complex dictionary type with names and types of the fields.
+
+The description of types that can be used for a `dtype` of a cell:
 
 	+------------+------------------+
 	| Name       | Definition       |
