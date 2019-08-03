@@ -26,9 +26,7 @@ class GeoMatrix(Matrix):
 		self.Resolution = resolution
 		self.update_matrix_dimensions()
 
-		#Ales: What is this?, don't 'override' the use of Storage, create own dict
-		# ... also, I still question if Storage should be part of the Matrix ABC 
-		self.MembersToIds = self.Storage
+		self.MembersToIds = {}
 		self.IdsToMembers = {}
 
 	
