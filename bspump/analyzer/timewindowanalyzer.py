@@ -70,6 +70,7 @@ class TimeWindowAnalyzer(Analyzer):
 				matrix_id=None, id=None, config=None):
 
 		# Calculate optimal analyze period when a matrix is clock driven and analyze_on_clock is asked
+		# https://en.wikipedia.org/wiki/Nyquist–Shannon_sampling_theorem
 		if (clock_driven) and (analyze_on_clock) and (analyze_period is None):
 			analyze_period = resolution / 4
 		
