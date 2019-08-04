@@ -65,13 +65,12 @@ class TimeWindowAnalyzer(Analyzer):
 	}
 
 	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, 
-				start_time=None, clock_driven=True, analyze_on_clock=False, 
+				start_time=None, clock_driven=True,
+				analyze_on_clock=False, analyze_period=None,
 				matrix_id=None, id=None, config=None):
 
 		if clock_driven:
 			analyze_period = resolution / 4
-		else:
-			analyze_period = None
 		
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, analyze_period=analyze_period, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
