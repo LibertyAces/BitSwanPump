@@ -69,7 +69,8 @@ class TimeWindowAnalyzer(Analyzer):
 				analyze_on_clock=False, analyze_period=None,
 				matrix_id=None, id=None, config=None):
 
-		if clock_driven:
+		# Calculate optimal analyze period when a matrix is clock driven and analyze_on_clock is asked
+		if (clock_driven) and (analyze_on_clock) and (analyze_period is None):
 			analyze_period = resolution / 4
 		
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, analyze_period=analyze_period, id=id, config=config)
