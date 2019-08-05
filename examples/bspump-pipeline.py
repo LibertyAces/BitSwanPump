@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
+
 import bspump
-import bspump.file
 import bspump.common
+import bspump.file
 import bspump.trigger
 
 ###
 
 L = logging.getLogger(__name__)
+
 
 ###
 
@@ -20,9 +20,13 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.file.FileCSVSource(
-				app, self, config={'path': 'data/sample.csv', 'delimiter': ';', 'post': 'noop'}
-			).on(bspump.trigger.RunOnceTrigger(app)),
+
+			bspump.file.FileCSVSource(app, self, config={
+				'path': 'data/sample.csv',
+				'delimiter': ';',
+				'post': 'noop'
+			}).on(bspump.trigger.RunOnceTrigger(app)),
+
 			bspump.common.DictToJsonParser(app, self),
 			bspump.common.JsonToDictParser(app, self),
 			bspump.common.NullSink(app, self)
