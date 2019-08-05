@@ -10,7 +10,7 @@
 					"module": "bspump.file",
 					"class" : "FileCSVSource",
 					"args": {},
-					"config": {"path":"etc/test.csv", "post":"noop"},
+					"config": {"path":"./data/users.csv", "post":"noop"},
 					"trigger": {
 						"module": "bspump.trigger",
 						"class": "OpportunisticTrigger",

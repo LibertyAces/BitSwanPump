@@ -42,7 +42,7 @@ class Processor11(Processor):
 
 
 if __name__ == '__main__':
-	definition = "etc/pipeline-builder-definition-test1.json"
+	definition = "../etc/pipeline-builder-definition-test1.json"
 	
 	app = BSPumpApplication()
 	svc = app.get_service("bspump.PumpService")
