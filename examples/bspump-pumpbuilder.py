@@ -1,21 +1,19 @@
-from bspump.pumpbuilder import PumpBuilder
-from bspump.application import BSPumpApplication 
-from bspump.abc.processor import Processor
 import logging
 
+import bspump
 
 ##
 L = logging.getLogger(__name__)
 ##
 
 
-class Processor00(Processor):
+class Processor00(bspump.Processor):
 	def process(self, context, event):
 		print("!!!!!!")
 		return event
 
 
-class Processor10(Processor):
+class Processor10(bspump.Processor):
 
 	def __init__(self, app, pipeline, lookup, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
@@ -35,7 +33,7 @@ class Processor10(Processor):
 		return cls(app, pipeline, lookup, newid, config)
 
 
-class Processor11(Processor):	
+class Processor11(bspump.Processor):
 	def process(self, context, event):
 
 		return event
@@ -44,9 +42,9 @@ class Processor11(Processor):
 if __name__ == '__main__':
 	definition = "../etc/pipeline-builder-definition-test1.json"
 	
-	app = BSPumpApplication()
+	app = bspump.BSPumpApplication()
 	svc = app.get_service("bspump.PumpService")
-	pump_builder = PumpBuilder(definition)
+	pump_builder = bspump.PumpBuilder(definition)
 	pump_builder.construct_pump(app, svc)
 	
 	app.run()
