@@ -65,13 +65,14 @@ class TimeWindowAnalyzer(Analyzer):
 	}
 
 	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, 
-				start_time=None, clock_driven=True, analyze_on_clock=False, 
+				start_time=None, clock_driven=True,
+				analyze_on_clock=False, analyze_period=None,
 				matrix_id=None, id=None, config=None):
 
-		if clock_driven:
+		# Calculate optimal analyze period when a matrix is clock driven and analyze_on_clock is asked
+		# https://en.wikipedia.org/wiki/Nyquist–Shannon_sampling_theorem
+		if (clock_driven) and (analyze_on_clock) and (analyze_period is None):
 			analyze_period = resolution / 4
-		else:
-			analyze_period = None
 		
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, analyze_period=analyze_period, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
