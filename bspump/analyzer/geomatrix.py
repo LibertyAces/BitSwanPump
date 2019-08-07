@@ -16,18 +16,25 @@ class GeoMatrix(Matrix):
 		`bbox` is the dictionary with `max_lat`, `min_lat`, `max_lon` and `min_lon` 
 		for corner gps-coordinates.
 		`GeoMatrix` is 2d projection of real-world coordinates on a plane with pointers
-		to `Storage`, where objects can be kept. 
+		to `IdsToMembers`, where objects can be kept. 
 
 	'''
 	def __init__(self, app, dtype:list, bbox, resolution=5, id=None, config=None):
+		dtype = dtype[:]
+		dtype.extend([
+			('ids', 'i4'),
+		])
 		super().__init__(app, dtype=dtype, id=id, config=config)
 
 		self.Bbox = bbox
 		self.Resolution = resolution
+
 		self.update_matrix_dimensions()
 
 		self.MembersToIds = {}
 		self.IdsToMembers = {}
+		self.Array = np.zeros(self.MapHeight, dtype=self.DType)
+		self.Array["ids"][:, :, :] = -1
 
 	
 	def is_in_boundaries(self, lat, lon):
@@ -97,10 +104,10 @@ class GeoMatrix(Matrix):
 		return lat, lon
 
 
-	def close_storage(self, storage_id, label):
+	def remove_record(self, storage_id, label):
 		'''
 			Remove a record from storage.
 		'''
-		storage_member = self.Storage.get('id')
+		storage_member = self.IdsToMembers.get('id')
 		if storage_member is not None:
-			self.Storage['id'].pop(label)
+			self.IdsToMembers['id'].pop(label)

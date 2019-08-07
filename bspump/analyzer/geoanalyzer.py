@@ -20,7 +20,7 @@ class GeoAnalyzer(Analyzer):
 
         `GeoAnalyzer` operates over the `GeoMatrix` object.
         `matrix_id` is an id of `GeoMatrix` object defined alternatively.
-'''
+	'''
 
 	ConfigDefaults = {
 		"resolution": 5,  # 5 km in one cell
@@ -30,7 +30,7 @@ class GeoAnalyzer(Analyzer):
 		"max_lon": 40.6,
 	}
 
-	def __init__(self, app, pipeline, analyze_on_clock=False, matrix_id=None, id=None, config=None):
+	def __init__(self, app, pipeline, dtype=[], analyze_on_clock=False, matrix_id=None, id=None, config=None):
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
@@ -41,7 +41,7 @@ class GeoAnalyzer(Analyzer):
 				"min_lon": float(self.ConfigDefaults["min_lon"]),
 				"max_lon": float(self.ConfigDefaults["max_lon"]),
 			}
-			self.GeoMatrix = GeoMatrix(app, bbox, resolution=5, id=g_id)
+			self.GeoMatrix = GeoMatrix(app, dtype=dtype, bbox, resolution=5, id=g_id)
 			svc.add_matrix(self.GeoMatrix)
 		else:
 			self.GeoMatrix = svc.locate_matrix(matrix_id)

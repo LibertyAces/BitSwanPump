@@ -42,7 +42,12 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype:list, resolution:float, start_time=None, id=None, config=None):
+	def __init__(self, app, dtype:list, resolution=60, start_time=None, id=None, config=None):
+		dtype = dtype[:]
+		dtype.extend([
+			('warming_up_count', 'i4'),
+			('time_window', 'f8')
+		])
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		
 		if start_time is None: start_time = time.time()
@@ -56,7 +61,6 @@ class TimeWindowMatrix(NamedMatrix):
 			"EarlyLateEventCounter",
 			tags={
 				'matrix': self.Id,
-				'tw': "TimeWindow", #Ales: What is this?
 			},
 			init_values={
 				'events.early': 0,
