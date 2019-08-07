@@ -41,7 +41,7 @@ class GeoAnalyzer(Analyzer):
 				"min_lon": float(self.ConfigDefaults["min_lon"]),
 				"max_lon": float(self.ConfigDefaults["max_lon"]),
 			}
-			self.GeoMatrix = GeoMatrix(app, dtype=dtype, bbox, resolution=5, id=g_id)
+			self.GeoMatrix = GeoMatrix(app, dtype, bbox, resolution=5, id=g_id)
 			svc.add_matrix(self.GeoMatrix)
 		else:
 			self.GeoMatrix = svc.locate_matrix(matrix_id)
