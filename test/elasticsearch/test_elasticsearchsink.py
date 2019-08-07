@@ -9,8 +9,8 @@ class TestElasticSearchSink(bspump.unittest.ProcessorTestCase):
 	@aioresponses()
 	def test_elasticsearch_sink(self, mocked):
 		mocked.post(
-			"http://localhost:9200/_bulk",
-			body="Document inserted.",
+			"http://non-existing-url:9200/_bulk",
+			body='{"message": "Document inserted."}',
 			status=200
 		)
 
@@ -21,6 +21,7 @@ class TestElasticSearchSink(bspump.unittest.ProcessorTestCase):
 				"ESConnection",
 				config={
 					"bulk_out_max_size": 1,
+					"url": "http://non-existing-url:9200/",
 				}
 			)
 		)
@@ -48,7 +49,7 @@ class TestElasticSearchSink(bspump.unittest.ProcessorTestCase):
 		for request_id, request_content in mocked.requests.items():
 			request_count += 1
 			url = str(request_id[1])
-			assert url == "http://localhost:9200/_bulk"
+			assert url == "http://non-existing-url:9200/_bulk"
 			assert request_content[0].kwargs["data"] == \
 				'{{"index": {{ "_index": "not_existing_pattern_", "_type": "doc" }}\n{}\n'.format(expected_output_json)
 		assert request_count == 1
