@@ -20,17 +20,15 @@ class GeoMatrix(Matrix):
 
 	'''
 	def __init__(self, app, dtype:list, bbox, resolution=5, id=None, config=None):
+		self.update_matrix_dimensions()
 		dtype = dtype[:]
 		dtype.extend([
-			('ids', 'i4'),
+			('ids', "({},1)i4".format(self.MapWidth))
 		])
 		super().__init__(app, dtype=dtype, id=id, config=config)
 
 		self.Bbox = bbox
 		self.Resolution = resolution
-
-		self.update_matrix_dimensions()
-
 		self.MembersToIds = {}
 		self.IdsToMembers = {}
 		self.Array = np.zeros(self.MapHeight, dtype=self.DType)

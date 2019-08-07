@@ -64,7 +64,7 @@ class TimeWindowAnalyzer(Analyzer):
 		'resolution': 60, # Resolution (aka column width) in seconds
 	}
 
-	def __init__(self, app, pipeline, tw_format='f8', tw_dimensions=(15,1), resolution=60, 
+	def __init__(self, app, pipeline, dtype=[], tw_format='f8', tw_dimensions=(15,1), resolution=60, 
 				start_time=None, clock_driven=True, analyze_on_clock=False, 
 				matrix_id=None, id=None, config=None):
 
@@ -79,6 +79,7 @@ class TimeWindowAnalyzer(Analyzer):
 			matrix_id = self.Id + "Matrix"
 			self.TimeWindow = TimeWindowMatrix(
 				app,
+				dtype=dtype,
 				tw_dimensions=tw_dimensions,
 				tw_format=tw_format,
 				resolution=resolution,

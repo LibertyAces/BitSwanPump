@@ -42,11 +42,11 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype:list, resolution=60, start_time=None, id=None, config=None):
+	def __init__(self, app, dtype:list, tw_dimensions=(15, 1), tw_format='f8', resolution=60, start_time=None, id=None, config=None):
 		dtype = dtype[:]
 		dtype.extend([
 			('warming_up_count', 'i4'),
-			('time_window', 'f8')
+			('time_window', str(tw_dimensions) + tw_format),
 		])
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		
@@ -55,6 +55,8 @@ class TimeWindowMatrix(NamedMatrix):
 		self.Resolution = resolution
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
 		self.End = self.Start - (self.Resolution * self.Dimensions[0])
+		self.Dimensions = tw_dimensions
+		self.Format = tw_format
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
