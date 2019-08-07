@@ -1,11 +1,13 @@
-import abc
-
-import aiomysql.cursors
-import pymysql.cursors
-import pymysql
+import logging
 
 from ..abc.lookup import MappingLookup
 from ..cache import CacheDict
+
+##
+
+L = logging.getLogger(__name__)
+
+##
 
 
 class MySQLLookup(MappingLookup):
@@ -80,36 +82,28 @@ The MySQLLookup can be then located and used inside a custom processor:
 		else:
 			self.Cache = cache
 
-		conn_sync = pymysql.connect(host=connection._host,
-					 user=connection._user,
-					 passwd=connection._password,
-					 db=connection._db)
-		self.CursorSync = pymysql.cursors.DictCursor(conn_sync)
-		self.CursorAsync = None
-
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("mysql.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
 
 
 	def _find_one(self, key):
 		query = self.QueryFindOne.format(self.Statement, self.From, self.Key)
-		self.CursorSync.execute(query, key)
-		result = self.CursorSync.fetchone()
+		cursor_sync = self.Connection.create_sync_cursor()
+		cursor_sync.execute(query, key)
+		result = cursor_sync.fetchone()
 		return result
 
 
 	async def _count(self):
-
 		query = self.QueryCount.format(self.Statement, self.From)
-		await self.CursorAsync.execute(query)
-		count = await self.CursorAsync.fetchone()
+		async_cursor = await self.Connection.create_async_cursor()
+		await async_cursor.execute(query)
+		count = await async_cursor.fetchone()
 		return count['n']
 
 
 	async def load(self):
 		await self.Connection.ConnectionEvent.wait()
-		conn_async = await self.Connection.acquire()
-		self.CursorAsync = await conn_async.cursor(aiomysql.cursors.DictCursor)
 		self.Count = await self._count()
 
 
@@ -131,8 +125,9 @@ The MySQLLookup can be then located and used inside a custom processor:
 
 	def __iter__(self):
 		query = self.QueryIter.format(self.Statement, self.From)
-		self.CursorSync.execute(query)
-		result = self.CursorSync.fetchall()
+		cursor_sync = self.Connection.create_sync_cursor()
+		cursor_sync.execute(query)
+		result = cursor_sync.fetchall()
 		self.Iterator = result.__iter__()
 		return self
 
