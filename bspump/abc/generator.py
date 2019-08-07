@@ -1,5 +1,6 @@
 from .processor import ProcessorBase
 
+
 class Generator(ProcessorBase):
 	"""
     Example of use:

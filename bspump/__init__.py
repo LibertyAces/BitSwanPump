@@ -7,6 +7,7 @@ from .abc.sink import Sink
 from .abc.processor import Processor
 from .abc.generator import Generator
 from .abc.connection import Connection
+from .abc.oobprocessor import OOBProcessor
 
 from .exception import ProcessingError
 from .abc.lookup import Lookup
