@@ -10,7 +10,7 @@ class TestElasticSearchSink(bspump.unittest.ProcessorTestCase):
 	def test_elasticsearch_sink(self, mocked):
 		mocked.post(
 			"http://non-existing-url:9200/_bulk",
-			body='{"message": "Document inserted."}',
+			body='{"items": []}',
 			status=200
 		)
 
