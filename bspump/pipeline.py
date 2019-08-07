@@ -285,30 +285,19 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			context.update(self._context)
 
 		gevent = self._do_process(event, depth=0, context=context)
-		if gevent is not None:
+		if gevent is not None:	
 			await self._generator_process(gevent, 1, context=context)
+
 
 	async def _generator_process(self, event, depth, context):
 		for gevent in event:
 			while not self.is_ready():
 				await self.ready()
-
-			if isinstance(gevent, dict) and "oob" in gevent:
-				oob = gevent["oob"]
-				gevent = await self._oob_process(oob.get("coro"), context, oob.get("event"))
-
+			
 			ngevent = self._do_process(gevent, depth, context.copy())
 			if ngevent is not None:
 				await self._generator_process(ngevent, depth+1, context)
 
-	async def _oob_process(self, coro, context, event):
-		if coro is None:
-			raise RuntimeError("Coroutine was not specified in the OOB processor.")
-
-		if event is None:
-			return None
-
-		return await coro(context, event)
 
 	# Construction
 
