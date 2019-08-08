@@ -42,7 +42,7 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype='float_', tw_dimensions=(15, 1), resolution=60, start_time=None, id=None, config=None):
+	def __init__(self, app, dtype='float_', tw_dimensions=(15, 1), resolution=60, clock_driven=True, start_time=None, id=None, config=None):
 		dtype.extend([
 			('warming_up_count', 'i4'),
 			('time_window', str(tw_dimensions) + tw_format),
@@ -58,6 +58,14 @@ class TimeWindowMatrix(NamedMatrix):
 		self.Array = np.zeros([0, self.Dimensions[0], self.Dimensions[1]], dtype=self.DType)
 		self.WarmingUpCount = np.zeros(0, dtype='int_')
 
+		if clock_driven:
+			advance_period = resolution / 4
+			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True) 
+			self.Timer.start(advance_period)
+		else:
+			self.Timer = None
+
+			
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
 			"EarlyLateEventCounter",
@@ -147,6 +155,36 @@ class TimeWindowMatrix(NamedMatrix):
 
 		return column_idx
 
+
+	def advance(self, target_ts):
+		'''
+			Advance time window (add columns) so it covers target `timestamp` (`target_ts`)
+			Also, if `target_ts` is in top 75% of the last existing column, add a new column too.
+		
+		.. code-block:: python
+
+			------------------|-----------
+			target_ts  ^ >>>  |          
+							  ^           
+							Start         
+			------------------------------
+
+		'''
+
+		while True:
+			dt = (self.Start - target_ts) / self.Resolution
+			if dt > 0.25: break
+			self.add_column()
+	
+
+	async def on_clock_tick(self):
+		'''
+			React on timer's tick and advance the window.
+		'''
+		
+		if self.ClockDriven:
+			target_ts = time.time()
+			self.advance(target_ts)
 	
 	# def close_row(self, row_id):
 	# 	'''
