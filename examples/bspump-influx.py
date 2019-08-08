@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
+
 import bspump
-import bspump.socket
 import bspump.common
 import bspump.influxdb
+import bspump.socket
 
 ###
 
@@ -13,17 +12,22 @@ L = logging.getLogger(__name__)
 
 ###
 
+
 class SamplePipeline(bspump.Pipeline):
 
-	'''
+	"""
+	Setup influx in docker
+		$ docker run -p 8086:8086 -e INFLUXDB_DB=mydb influxdb
+
 	Test this pipeline by
-	$ echo 'metrix,tag1=value1,tag2=value2 value=1 1434055562000000000' |  nc localhost 7000
-	'''
+		$ echo 'metrix,tag1=value1,tag2=value2 value=1 1434055562000000000' |  nc localhost 7000
+	"""
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.socket.TCPStreamSource(app, self, config={'port': 7000}),
+			bspump.common.PPrintProcessor(app, self),
 			bspump.influxdb.InfluxDBSink(app, self, "InfluxConnection1")
 		)
 

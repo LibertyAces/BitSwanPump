@@ -11,7 +11,7 @@ class SamplePipeline1(bspump.Pipeline):
 
 	'''
 	To test this pipeline, use:
-	nc -v 127.0.0.1 7000
+	nc -v 127.0.0.1 8888
 	'''
 
 	def __init__(self, app, pipeline_id):
@@ -27,7 +27,7 @@ class SamplePipeline2(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.amqp.AMQPSource(app, self, "AMQPConnection1", config={'queue': 'teskalabs.q'}),
+			bspump.amqp.AMQPSource(app, self, "AMQPConnection1", config={'queue': 'task.queue'}),
 			bspump.common.NullSink(app, self)
 		)
 

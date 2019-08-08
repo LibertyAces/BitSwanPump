@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
+
 import bspump
 import bspump.avro
-import bspump.file
 import bspump.common
+import bspump.file
 import bspump.trigger
 
 ###
@@ -20,11 +19,16 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.sink = bspump.avro.AvroSink(app, self, 
-			config={'schema_file': './data/avro_schema.avsc'})
+		self.sink = bspump.avro.AvroSink(app, self, config={
+			'schema_file': './data/avro_schema.avsc',
+			'file_name_template': './data/sink{index}.avro',
+		})
 
 		self.build(
-			bspump.file.FileJSONSource(app, self, config={'path': './data/sample_to_avro.json'}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.file.FileJSONSource(app, self, config={
+				'path': './data/sample_to_avro.json',
+				'post': 'noop',
+			}).on(bspump.trigger.RunOnceTrigger(app)),
 			self.sink
 		)
 

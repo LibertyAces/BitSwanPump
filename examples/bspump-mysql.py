@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
+
 import bspump
+import bspump.common
 import bspump.mysql
 import bspump.trigger
 
@@ -42,52 +42,45 @@ class SamplePipeline(bspump.Pipeline):
 		})
 
 		self.build(
-			bspump.mysql.MySQLSource(app, self, "MySQLConnection1",
-				config={'query':'SELECT id, name, surname FROM people;'}
-			).on(
-				bspump.trigger.PubSubTrigger(app, "runmysqlpipeline!")
-			),
+
+			bspump.mysql.MySQLSource(app, self, "MySQLConnection1", config={
+				'query': 'SELECT id, name, surname FROM people;'
+			}).on(bspump.trigger.PubSubTrigger(app, "RunMySQLPipeline!")),
+
 			ReverseProcessor(app, self),
 			ToggleCaseProcessor(app, self),
+			bspump.common.PPrintProcessor(app, self),
 			self.Sink,
 		)
 
 
-
 if __name__ == '__main__':
-	""" This is a sample bspump application with pipeline that implements MySQL source and sink
+	"""
+	This is a sample bspump application with pipeline that implements MySQL source and sink
 
-		## Try it out
+	## Try it out
+
+		$ docker run --rm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password mysql
 		
-		Insert some sample data in your database
-		```
-			mysql> create database sampledb;
-			mysql> use sampledb;
-			mysql> CREATE TABLE people (id MEDIUMINT NOT NULL AUTO_INCREMENT,name CHAR(30), surname CHAR(30), PRIMARY KEY (id));
-			mysql> INSERT INTO people (name, surname) VALUES ("john", "doe"),("juan", "perez"),("wop", "wops");
-		```
+	Insert some sample data in your database
+	```
+		mysql> create database sample_db;
+		mysql> use sample_db;
+		mysql> CREATE TABLE people (id INT NOT NULL AUTO_INCREMENT, name CHAR(30), surname CHAR(30), PRIMARY KEY (id));
+		mysql> INSERT INTO people (name, surname) VALUES ("john", "doe"),("juan", "perez"),("wop", "wops");
+	```
 
-		Configure bspump in `./etc/site.conf`
-		```
-			[connection:MySQLConnection1]
-			user=username
-			password=password
-			db=sampledb
-		```
-
-		Run bspump
-		```
-		./bspump-mysql.py -c ./etc/site.conf
-		```
-
-);
 	"""
 	app = bspump.BSPumpApplication()
 	svc = app.get_service("bspump.PumpService")
 
 	# Create connection
 	svc.add_connection(
-		bspump.mysql.MySQLConnection(app, "MySQLConnection1")
+		bspump.mysql.MySQLConnection(app, "MySQLConnection1", config={
+			"user": "root",
+			"password": "root_password",
+			"db": "sample_db",
+		})
 	)
 
 	# Construct and register Pipeline
@@ -95,6 +88,6 @@ if __name__ == '__main__':
 	svc.add_pipeline(pl)
 
 	# This is how pipeline is triggered:
-	app.PubSub.publish("runmysqlpipeline!", asynchronously=True)
+	app.PubSub.publish("RunMySQLPipeline!", asynchronously=True)
 
 	app.run()

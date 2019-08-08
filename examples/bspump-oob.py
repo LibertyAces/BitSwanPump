@@ -1,43 +1,43 @@
 #!/usr/bin/env python3
 import logging
-import requests
 
 import aiohttp
-
-import bspump
-import bspump.http
-import bspump.common
-import bspump.trigger
-import bspump.oob
+import requests
 
 import asab
 import asab.proactor
+import bspump
+import bspump.common
+import bspump.http
+import bspump.oob
+import bspump.trigger
 
 ###
 
 L = logging.getLogger(__name__)
+
 
 ###
 
 
 class SampleOOBEngine(bspump.oob.OOBEEngine):
 	"""
-    OOBEngine allows you to perform long synchronous operations "out-of-band" e.g. out of the synchronous processing within the pipeline.
+	OOBEngine allows you to perform long synchronous operations "out-of-band" e.g. out of the synchronous processing within the pipeline.
 
-    The following diagram illustrates the architecture of the "out-of-band" module with OOBESink and OOBEEngine:
+	The following diagram illustrates the architecture of the "out-of-band" module with OOBESink and OOBEEngine:
 
-    PipelineA (synchronous)
-    +---+---+---+---+---+---+
-    Source	Processors	OOBESink
-    +---+---+---+---+---+---+
-                            |
-                SampleOOBEngine (asynchronous)
-                            |
-                            PipelineB (synchronous)
-                            +---+---+---+---+---+---+---+
-                            InternalSource  Processors  Sink
-                            +---+---+---+---+---+---+---+
-"""
+	PipelineA (synchronous)
+	+---+---+---+---+---+---+
+	Source	Processors	OOBESink
+	+---+---+---+---+---+---+
+							|
+				SampleOOBEngine (asynchronous)
+							|
+							PipelineB (synchronous)
+							+---+---+---+---+---+---+---+
+							InternalSource  Processors  Sink
+							+---+---+---+---+---+---+---+
+	"""
 
 	def __init__(self, app, destination):
 		super().__init__(app, destination)
@@ -80,13 +80,11 @@ class PipelineA(bspump.Pipeline):
 		engine = SampleOOBEngine(app, svc.locate("PipelineB.*InternalSource"))
 
 		self.build(
-			bspump.http.HTTPClientSource(
-				app,
-				self,
-				config={
-					'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
-				}
-			).on(bspump.trigger.PeriodicTrigger(app, 1)),
+
+			bspump.http.HTTPClientSource(app, self, config={
+				'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
+			}).on(bspump.trigger.PeriodicTrigger(app, 1)),
+
 			bspump.common.BytesToStringParser(app, self),
 			bspump.common.JsonToDictParser(app, self),
 			bspump.oob.OOBESink(app, self, engine),

@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-import asab.web
 import bspump
-import bspump.web
 import bspump.common
 import bspump.http
+import bspump.web
 
 
 class SamplePipeline(bspump.Pipeline):
@@ -28,7 +27,6 @@ class SamplePipeline(bspump.Pipeline):
 		return response
 
 
-
 if __name__ == '__main__':
 	app = bspump.BSPumpApplication()
 
@@ -39,7 +37,7 @@ if __name__ == '__main__':
 	svc.add_pipeline(pl)
 
 	# Locate web service
-	app.add_module(asab.web.Module)
+	app.add_module(bspump.web.Module)
 	websvc = app.get_service("asab.WebService")
 
 	websvc.WebApp.router.add_post('/bspump/sp', pl.webservice)

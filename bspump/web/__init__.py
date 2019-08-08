@@ -143,9 +143,11 @@ KEY2=${ENVIRONMENT_VARIABLE}
 	return asab.web.rest.json_response(request,d)
 
 
+Module = asab.web.Module
+
 
 def _initialize_web(app, listen="0.0.0.0:8080"):
-	app.add_module(asab.web.Module)
+	app.add_module(Module)
 
 	websvc = app.get_service("asab.WebService")
 
