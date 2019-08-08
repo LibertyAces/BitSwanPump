@@ -190,21 +190,20 @@ class MySQLConnection(Connection):
 			raise
 
 
-	def acquire(self):
+	async def acquire(self):
 		assert(self._conn_pool is not None)
-		return self._conn_pool.acquire()
+		return await self._conn_pool.acquire()
+
+
+	async def create_async_cursor(self):
+		async_connection = await self.acquire()
+		async_cursor = await async_connection.cursor(aiomysql.cursors.DictCursor)
+		return async_cursor
 
 
 	def create_sync_cursor(self):
 		assert(self._conn_sync is not None)
 		return pymysql.cursors.DictCursor(self._conn_sync)
-
-
-	async def create_async_cursor(self):
-		assert(self._conn_pool is not None)
-		async_connection = await self.acquire()
-		async_cursor = await async_connection.cursor(aiomysql.cursors.DictCursor)
-		return async_cursor
 
 
 	def consume(self, query, data):
