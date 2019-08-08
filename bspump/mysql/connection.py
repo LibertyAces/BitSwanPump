@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import socket
 
 import aiomysql
 import pymysql.cursors
@@ -51,7 +50,7 @@ class MySQLConnection(Connection):
 		'user': '',
 		'password': '',
 		'db': '',
-		'connect_timeout': 1,
+		'connect_timeout': None,
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
 		'max_bulk_size': 2,
@@ -161,17 +160,12 @@ class MySQLConnection(Connection):
 				user=self._user,
 				password=self._password,
 				db=self._db,
-				connect_timeout=self._connect_timeout, #Doesn't work! See socket.timeout exception below
+				connect_timeout=self._connect_timeout,
 				loop=self.Loop) as pool:
 
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
 				await self._loader()
-		except socket.timeout:
-			# Socket timeout not implemented in aiomysql as it sets a keepalive to the connection
-			# it has been placed as an issue on GitHub: https://github.com/aio-libs/aiomysql/issues/257
-			L.exception("MySQL connection timeout")
-			pass
 		except BaseException:
 			L.exception("Unexpected MySQL connection error")
 			raise
@@ -181,9 +175,11 @@ class MySQLConnection(Connection):
 		try:
 			connection = pymysql.connect(
 				host=self._host,
+				port=self._port,
 				user=self._user,
-				passwd=self._password,
-				db=self._db)
+				password=self._password,
+				database=self._db,
+				connect_timeout=self._connect_timeout)
 			self._conn_sync = connection
 		except BaseException:
 			L.exception("Unexpected MySQL connection error")
