@@ -42,8 +42,7 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype:list, tw_dimensions=(15, 1), tw_format='f8', resolution=60, start_time=None, id=None, config=None):
-		dtype = dtype[:]
+	def __init__(self, app, dtype='float_', tw_dimensions=(15, 1), resolution=60, start_time=None, id=None, config=None):
 		dtype.extend([
 			('warming_up_count', 'i4'),
 			('time_window', str(tw_dimensions) + tw_format),
@@ -56,7 +55,8 @@ class TimeWindowMatrix(NamedMatrix):
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
 		self.End = self.Start - (self.Resolution * self.Dimensions[0])
 		self.Dimensions = tw_dimensions
-		self.Format = tw_format
+		self.Array = np.zeros([0, self.Dimensions[0], self.Dimensions[1]], dtype=self.DType)
+		self.WarmingUpCount = np.zeros(0, dtype='int_')
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
@@ -84,16 +84,16 @@ class TimeWindowMatrix(NamedMatrix):
 		if self.Array.shape[0] == 0:
 			return
 
-		column = np.zeros([self.Array["time_window"].shape[0], 1, self.Dimensions[1]])
-		time_window = np.hstack((self.Array["time_window"], column))
+		column = np.zeros([self.Array.shape[0], 1, self.Dimensions[1]])
+		time_window = np.hstack((self.Array, column))
 		time_window = np.delete(time_window, 0, axis=1)
 
-		self.Array["time_window"] = time_window
+		self.Array = time_window
 		open_rows = list(set(range(0, self.Array["time_window"].shape[0])) - self.ClosedRows)
-		self.Array["warming_up_count"][open_rows] -= 1
+		self.WarmingUpCount[open_rows] -= 1
 		
 		# Overflow prevention
-		self.Array["warming_up_count"][self.Array["warming_up_count"] < 0] = 0
+		self.WarmingUpCount[self.WarmingUpCount < 0] = 0
 
 	
 	def add_row(self, row_name):
@@ -102,7 +102,14 @@ class TimeWindowMatrix(NamedMatrix):
 		'''
 
 		row_index = super().add_row(row_name)
-		self.Array[row_index]["warming_up_count"] = self.Dimensions[0]
+		if self.Array.shape[0] != self.WarmingUpCount.shape[0]:
+			start = self.WarmingUpCount.shape[0]
+			end = self.Array.shape[0]
+			self.WarmingUpCount.resize(self.Array.shape[0])
+			self.WarmingUpCount[start:end] = self.Dimensions[0]
+		else:
+			self.WarmingUpCount[row_index] = self.Dimensions[0]
+
 		return row_index
 
 	
