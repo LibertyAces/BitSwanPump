@@ -27,19 +27,21 @@ class SessionMatrix(NamedMatrix):
 			- `end_timestamp`: UNIX timestamp of the end of a session (if not 0)
 	'''
 
-	def __init__(self, app, dtype:list, id=None, config=None):
+	def __init__(self, app, dtype:list, add_timestamp=False, id=None, config=None):
 		dtype = dtype[:]
-		dtype.extend([
-			('start_timestamp', 'i8'),
-			('end_timestamp', 'i8'),
-		])
+		if add_timestamp:
+			dtype.extend([
+				('start_timestamp', 'i8'),
+				('end_timestamp', 'i8'),
+			])
+		self.AddTimestamp = add_timestamp
 		super().__init__(app, dtype=dtype, id=id, config=config)
 
 	
 	def add_row(self, row_name, start_time=None):
 		'''
-			Adds new row with `row_id` to the matrix and assigns the `@timestamp_start`
-			the `start_time`.
+			Adds new row with `row_id` to the matrix and assigns the `start_timestamp`, if
+			`add_timestamp` was assignid True.
 		'''
 
 		row_index = super().add_row(row_name)
