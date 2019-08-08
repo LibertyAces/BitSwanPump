@@ -43,6 +43,8 @@ class SessionAnalyzer(Analyzer):
 			+------------+------------------+
 
 		Example: 'i8' stands for int64.
+		Important! However it is possible to use all these letters, it is recommeded to use only 'i' for integers, 'f' for
+		floats, 'U' for strings. Anything else might cause problems in serialization. 
 		It is possible to create a matrix with elements of specified format. The tuple with number of dimensions should 
 		stand before the letter.
 		Example: '(6, 3)i8' will create the matrix with n rows, 6 columns and 3 third dimensions with integer elements.
@@ -51,17 +53,17 @@ class SessionAnalyzer(Analyzer):
 
 	'''
 
-	def __init__(self, app, pipeline, column_formats, column_names, analyze_on_clock=False, matrix_id=None, id=None, config=None):
-		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
+	def __init__(self, app, pipeline, dtype="float_", analyze_on_clock=False, analyze_period=None, matrix_id=None, id=None, config=None):
+		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, analyze_period=analyze_period, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
 			s_id = self.Id + "Matrix"
-			self.Sessions =  SessionMatrix(app, column_formats, column_names, id=s_id)
+			self.Sessions =  SessionMatrix(app, dtype, id=s_id)
 			svc.add_matrix(self.Sessions)
 		else:
 			self.Sessions = svc.locate_matrix(matrix_id)
 
-		# self.Matrix = self.Sessions.Matrix #alias
+
 
 
 

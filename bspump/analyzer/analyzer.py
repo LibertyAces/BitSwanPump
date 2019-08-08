@@ -81,5 +81,5 @@ class Analyzer(Processor):
 		'''
 			Run analyzis every tick.
 		'''
-		await self.analyze()
+		self.analyze()
 
