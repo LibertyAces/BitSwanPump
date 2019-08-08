@@ -1,12 +1,12 @@
 import asyncio
 import logging
 import socket
-import aiomysql
-import pymysql.err
-import pymysql.cursors
-from aiomysql import create_pool
-from asab import PubSub
 
+import aiomysql
+import pymysql.cursors
+import pymysql.err
+
+from asab import PubSub
 from ..abc.connection import Connection
 
 #
@@ -146,14 +146,16 @@ class MySQLConnection(Connection):
 		assert(self._conn_future is None)
 
 		self._conn_future = asyncio.ensure_future(
-			self._connection(),
+			self._async_connection(),
 			loop=self.Loop
 		)
 
+		self._sync_connection()
 
-	async def _connection(self):
+
+	async def _async_connection(self):
 		try:
-			async with create_pool(
+			async with aiomysql.create_pool(
 				host=self._host,
 				port=self._port,
 				user=self._user,
@@ -175,9 +177,33 @@ class MySQLConnection(Connection):
 			raise
 
 
-	def acquire(self):
+	def _sync_connection(self):
+		try:
+			connection = pymysql.connect(
+				host=self._host,
+				user=self._user,
+				passwd=self._password,
+				db=self._db)
+			self._conn_sync = connection
+		except BaseException:
+			L.exception("Unexpected MySQL connection error")
+			raise
+
+
+	async def acquire(self):
 		assert(self._conn_pool is not None)
-		return self._conn_pool.acquire()
+		return await self._conn_pool.acquire()
+
+
+	async def create_async_cursor(self):
+		async_connection = await self.acquire()
+		async_cursor = await async_connection.cursor(aiomysql.cursors.DictCursor)
+		return async_cursor
+
+
+	def create_sync_cursor(self):
+		assert(self._conn_sync is not None)
+		return pymysql.cursors.DictCursor(self._conn_sync)
 
 
 	def consume(self, query, data):
