@@ -30,7 +30,10 @@ class MyPipeline(Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			FileCSVSource(app, self, config={'path': "bspump/analyzer/var/users.csv", 'post':'noop'}).on(OpportunisticTrigger(app)),
+			FileCSVSource(app, self, config={
+				'path': "./data/users_duration_link.csv",
+				'post': 'noop'
+			}).on(OpportunisticTrigger(app)),
 			GraphSessionAnalyzer(app, self, column_formats=['S40', 'i8'], column_names=["user_link", "duration"]), 
 			NullSink(app, self)
 		)
