@@ -62,7 +62,7 @@ class TimeWindowMatrix(NamedMatrix):
 			self.Timer = None
 
 		self.ClockDriven = clock_driven
-		
+
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
 			"EarlyLateEventCounter",
@@ -179,9 +179,9 @@ class TimeWindowMatrix(NamedMatrix):
 			React on timer's tick and advance the window.
 		'''
 		
-		if self.ClockDriven:
-			target_ts = time.time()
-			self.advance(target_ts)
+		target_ts = time.time()
+		self.advance(target_ts)
+	
 	
 	# def close_row(self, row_id):
 	# 	'''
