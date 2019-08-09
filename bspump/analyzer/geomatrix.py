@@ -19,7 +19,24 @@ class GeoMatrix(Matrix):
 		to `IdsToMembers`, where objects can be kept. 
 
 	'''
-	def __init__(self, app, dtype:list, bbox, resolution=5, id=None, config=None):
+
+	ConfigDefaults = {
+		"max_lat": 71.26,  # Europe endpoints
+		"min_lat": 23.33,
+		"min_lon": -10.10,
+		"max_lon": 40.6,
+	}
+
+	def __init__(self, app, dtype:list, bbox=None, resolution=5, id=None, config=None):
+		if bbox is None:
+			bbox = {
+				"min_lat": float(self.ConfigDefaults["min_lat"]),
+				"max_lat": float(self.ConfigDefaults["max_lat"]),
+				"min_lon": float(self.ConfigDefaults["min_lon"]),
+				"max_lon": float(self.ConfigDefaults["max_lon"]),
+			}
+		
+		self.Bbox = bbox
 		self.update_matrix_dimensions()
 		dtype = dtype[:]
 		dtype.extend([
@@ -27,7 +44,6 @@ class GeoMatrix(Matrix):
 		])
 		super().__init__(app, dtype=dtype, id=id, config=config)
 
-		self.Bbox = bbox
 		self.Resolution = resolution
 		self.MembersToIds = {}
 		self.IdsToMembers = {}

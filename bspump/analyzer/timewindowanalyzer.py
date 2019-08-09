@@ -64,14 +64,9 @@ class TimeWindowAnalyzer(Analyzer):
 		'resolution': 60, # Resolution (aka column width) in seconds
 	}
 
-	def __init__(self, app, pipeline, dtype=[], tw_format='f8', tw_dimensions=(15,1), resolution=60, 
-				start_time=None, clock_driven=True, analyze_on_clock=False, 
-				matrix_id=None, id=None, config=None):
-
-		if clock_driven:
-			analyze_period = resolution / 4
-		else:
-			analyze_period = None
+	def __init__(self, app, pipeline, dtype='float_', matrix_id=None, analyze_on_clock=False, tw_dimensions=(15, 1), resolution=60, 
+				start_time=None, clock_driven=True, 
+				id=None, config=None):
 		
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, analyze_period=analyze_period, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
@@ -81,8 +76,8 @@ class TimeWindowAnalyzer(Analyzer):
 				app,
 				dtype=dtype,
 				tw_dimensions=tw_dimensions,
-				tw_format=tw_format,
 				resolution=resolution,
+				clock_driven=clock_driven,
 				start_time=start_time, 
 				id=matrix_id
 			)	
@@ -91,43 +86,6 @@ class TimeWindowAnalyzer(Analyzer):
 			# locate
 			self.TimeWindow = svc.locate_matrix(matrix_id)
 
-		self.ClockDriven = clock_driven
-		
-		# self.Matrix = self.TimeWindow.Matrix['time_window'] #alias
-		self.Resolution = self.TimeWindow.Resolution
-		
 
-	def advance(self, target_ts):
-		'''
-			Advance time window (add columns) so it covers target `timestamp` (`target_ts`)
-			Also, if `target_ts` is in top 75% of the last existing column, add a new column too.
-		
-		.. code-block:: python
-
-			------------------|-----------
-			target_ts  ^ >>>  |          
-							  ^           
-							Start         
-			------------------------------
-
-		'''
-
-		while True:
-			dt = (self.TimeWindow.Start - target_ts) / self.TimeWindow.Resolution
-			if dt > 0.25: break
-			self.TimeWindow.add_column()
-			
-
-
-	async def on_clock_tick(self):
-		'''
-			React on timer's tick and advance the window. And analyze.
-		'''
-		if self.AnalyzeOnClock:
-			await super().on_clock_tick()
-		
-		if self.ClockDriven:
-			target_ts = time.time()
-			self.advance(target_ts)
 
 

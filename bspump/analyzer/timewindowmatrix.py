@@ -43,10 +43,6 @@ class TimeWindowMatrix(NamedMatrix):
 	'''
 
 	def __init__(self, app, dtype='float_', tw_dimensions=(15, 1), resolution=60, clock_driven=True, start_time=None, id=None, config=None):
-		dtype.extend([
-			('warming_up_count', 'i4'),
-			('time_window', str(tw_dimensions) + tw_format),
-		])
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		
 		if start_time is None: start_time = time.time()
@@ -65,7 +61,8 @@ class TimeWindowMatrix(NamedMatrix):
 		else:
 			self.Timer = None
 
-			
+		self.ClockDriven = clock_driven
+		
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
 			"EarlyLateEventCounter",
