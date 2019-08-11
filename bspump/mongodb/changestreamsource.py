@@ -10,9 +10,13 @@ L = logging.getLogger(__name__)
 
 class MongoDBChangeStreamSource(Source):
 	'''
-		Make sure, that version of MongoDB is >= 4.0.0 and
+		`MongoDBChangeStreamSource` listens to the specified `Database`
+		and (optionally) `Collection` (if not configured, the events are aggregated
+		from all collections). The output are `update`, `insert`, `delete`,
+		`invalidate`, `dropDatabase`, `drop`, `rename`, `replace` events.
+		Examples of events you can find here: https://docs.mongodb.com/manual/reference/change-events/
+		WARNING! Make sure, that version of MongoDB is >= 4.0.0 and
 		replica set is enabled.
-		TODO: add queries to match. 
 	'''
 
 	ConfigDefaults = {
