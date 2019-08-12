@@ -142,7 +142,7 @@ Object main attributes:
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
 		current_rows = self.Array.shape[0]
-		self.Array.resize((current_rows+rows,) + self.Array.shape[1:])
+		self.Array.resize((current_rows+rows,) + self.Array.shape[1:], refcheck=False)
 		self.ClosedRows |= frozenset(range(current_rows, current_rows+rows))
 
 
