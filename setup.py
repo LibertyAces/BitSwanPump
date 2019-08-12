@@ -11,12 +11,12 @@ if (here / '.git').exists():
 	module_dir = (here / 'bspump')
 
 	version = subprocess.check_output(
-		['git', 'describe', '--abbrev=7', '--tags', '--dirty=+dirty', '--always'], cwd=module_dir)
+		['git', 'describe', '--abbrev=7', '--tags', '--dirty=+dirty', '--always'], cwd=str(module_dir))
 	version = version.decode('utf-8').strip()
 	if version[:1] == 'v':
 		version = version[1:]
 
-	build = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=module_dir)
+	build = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=str(module_dir))
 	build = build.decode('utf-8').strip()
 
 else:
@@ -33,7 +33,7 @@ class custom_build_py(build_py):
 
 		# This replace content of `__version__.py` in build folder
 		version_file_name = pathlib.Path(self.build_lib, 'bspump/__version__.py')
-		with open(version_file_name, 'w') as f:
+		with open(str(version_file_name), 'w') as f:
 			f.write("__version__ = '{}'\n".format(version))
 			f.write("__build__ = '{}'\n".format(build))
 			f.write("\n")
