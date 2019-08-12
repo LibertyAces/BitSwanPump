@@ -1,0 +1,17 @@
+language: python
+
+python:
+  - "3.6"
+  - "3.7"
+
+install:
+  - python setup.py install
+  - pip install -r requirements-dev.txt
+  - pip install codecov
+
+script:
+  - coverage run -m unittest test
+  - coverage report
+
+after_success:
+  - codecov
