@@ -111,7 +111,7 @@ class TimeWindowMatrix(NamedMatrix):
 		if self.Array.shape[0] != self.WarmingUpCount.shape[0]:
 			start = self.WarmingUpCount.shape[0]
 			end = self.Array.shape[0]
-			self.WarmingUpCount.resize(self.Array.shape[0])
+			self.WarmingUpCount.resize(self.Array.shape[0], refcheck=False)
 			self.WarmingUpCount[start:end] = self.Dimensions[0]
 		else:
 			self.WarmingUpCount[row_index] = self.Dimensions[0]
