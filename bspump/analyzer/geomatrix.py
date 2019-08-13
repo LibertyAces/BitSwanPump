@@ -37,14 +37,14 @@ class GeoMatrix(Matrix):
 			}
 		
 		self.Bbox = bbox
+		self.Resolution = resolution
 		self.update_matrix_dimensions()
 		dtype = dtype[:]
 		dtype.extend([
 			('ids', "({},1)i4".format(self.MapWidth))
 		])
 		super().__init__(app, dtype=dtype, id=id, config=config)
-
-		self.Resolution = resolution
+		
 		self.MembersToIds = {}
 		self.IdsToMembers = {}
 		self.Array = np.zeros(self.MapHeight, dtype=self.DType)

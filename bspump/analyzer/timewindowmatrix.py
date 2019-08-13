@@ -48,9 +48,10 @@ class TimeWindowMatrix(NamedMatrix):
 		if start_time is None: start_time = time.time()
 
 		self.Resolution = resolution
+		self.Dimensions = tw_dimensions
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
 		self.End = self.Start - (self.Resolution * self.Dimensions[0])
-		self.Dimensions = tw_dimensions
+		
 		self.Array = np.zeros([0, self.Dimensions[0], self.Dimensions[1]], dtype=self.DType)
 		self.WarmingUpCount = np.zeros(0, dtype='int_')
 
@@ -94,7 +95,7 @@ class TimeWindowMatrix(NamedMatrix):
 		time_window = np.delete(time_window, 0, axis=1)
 
 		self.Array = time_window
-		open_rows = list(set(range(0, self.Array["time_window"].shape[0])) - self.ClosedRows)
+		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows)
 		self.WarmingUpCount[open_rows] -= 1
 		
 		# Overflow prevention
