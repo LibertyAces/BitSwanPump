@@ -273,7 +273,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				raise
 
 
-	async def process(self, event, context=None):
+	async def process(self, event, context=None, depth=0):
 		while not self.is_ready():
 			await self.ready()
 
@@ -284,9 +284,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		else:
 			context.update(self._context)
 
-		gevent = self._do_process(event, depth=0, context=context)
+		gevent = self._do_process(event, depth=depth, context=context)
 		if gevent is not None:	
-			await self._generator_process(gevent, 1, context=context)
+			await self._generator_process(gevent, depth + 1, context=context)
 
 
 	async def _generator_process(self, event, depth, context):
