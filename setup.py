@@ -70,7 +70,6 @@ setup(
 		'aiohttp>=3.5.4,<4.0',
 		'aiokafka>=0.5.1,<1.0',
 		'aiomysql>=0.0.20,<0.1',
-		'aiopg>=0.16.0,<1.0',
 		'aiosmtplib>=1.0.5,<2.0',
 		'asab>=19.7,<20.0',
 		'fastavro>=0.21.24,<1.0',
