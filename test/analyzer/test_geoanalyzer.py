@@ -8,7 +8,7 @@ class TestGeoAnalyzer(bspump.unittest.ProcessorTestCase):
 			(None, {"lat": 70, "lon": 10}),
 			(None, {"lat": 50, "lon": 30}),
 		]
-		self.set_up_processor(bspump.analyzer.GeoAnalyzer)
+		self.set_up_processor(bspump.analyzer.GeoAnalyzer, dtype=[])
 
 		output = self.execute(
 			events

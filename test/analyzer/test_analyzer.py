@@ -22,7 +22,7 @@ class TestAnalyzer(bspump.unittest.ProcessorTestCase):
 		events = [
 			(None, {"attribute": "value"}),
 		]
-		self.set_up_processor(bspump.analyzer.Analyzer, analyze_on_clock=True, analyze_period=0)
+		self.set_up_processor(bspump.analyzer.Analyzer, analyze_on_clock=True)
 
 		output = self.execute(
 			events
