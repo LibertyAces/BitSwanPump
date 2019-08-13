@@ -225,9 +225,8 @@ class MySQLConnection(Connection):
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("MySQLConnection.unpause!", self, asynchronously=True)
 
-			async with self.acquire() as conn:
-				async with conn.cursor() as cur:
-					await cur.executemany(query, data)
-					await conn.commit()
-
+			async_connection = await self.acquire()
+			async_cursor = await async_connection.cursor(aiomysql.cursors.DictCursor)
+			await async_cursor.executemany(query, data)
+			await async_connection.commit()
 
