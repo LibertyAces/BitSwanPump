@@ -273,7 +273,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				raise
 
 
-	async def process(self, event, context=None, depth=0):
+	async def process(self, event, context=None):
 		while not self.is_ready():
 			await self.ready()
 
@@ -284,19 +284,19 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		else:
 			context.update(self._context)
 
-		gevent = self._do_process(event, depth=depth, context=context)
-		if gevent is not None:	
-			await self._generator_process(gevent, depth + 1, context=context)
+		gevent = self._do_process(event, depth=0, context=context)
+		if gevent is not None:
+			await self.inject(1, gevent, context=context)
 
 
-	async def _generator_process(self, event, depth, context):
+	async def inject(self, depth, event, context):
 		for gevent in event:
 			while not self.is_ready():
 				await self.ready()
 			
 			ngevent = self._do_process(gevent, depth, context.copy())
 			if ngevent is not None:
-				await self._generator_process(ngevent, depth+1, context)
+				await self.inject(depth+1, ngevent, context)
 
 
 	# Construction
