@@ -50,7 +50,7 @@ class MySQLConnection(Connection):
 		'user': '',
 		'password': '',
 		'db': '',
-		'connect_timeout': None,
+		'connect_timeout': 10,
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
 		'max_bulk_size': 2,
@@ -69,7 +69,7 @@ class MySQLConnection(Connection):
 		self._port = int(self.Config['port'])
 		self._user = self.Config['user']
 		self._password = self.Config['password']
-		self._connect_timeout = self.Config['connect_timeout']
+		self._connect_timeout = int(self.Config['connect_timeout'])
 		self._db = self.Config['db']
 		self._reconnect_delay = self.Config['reconnect_delay']
 		self._output_queue_max_size = self.Config['output_queue_max_size']
@@ -225,9 +225,8 @@ class MySQLConnection(Connection):
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("MySQLConnection.unpause!", self, asynchronously=True)
 
-			async with self.acquire() as conn:
-				async with conn.cursor() as cur:
-					await cur.executemany(query, data)
-					await conn.commit()
-
+			async_connection = await self.acquire()
+			async_cursor = await async_connection.cursor(aiomysql.cursors.DictCursor)
+			await async_cursor.executemany(query, data)
+			await async_connection.commit()
 
