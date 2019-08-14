@@ -293,7 +293,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		for gevent in event:
 			while not self.is_ready():
 				await self.ready()
-			
+
+			if gevent is None:
+				continue
+
 			ngevent = self._do_process(gevent, depth, context.copy())
 			if ngevent is not None:
 				await self.inject(depth+1, ngevent, context)
