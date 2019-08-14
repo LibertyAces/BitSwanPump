@@ -1,4 +1,9 @@
+import abc
+
+import asyncio
+
 from .processor import ProcessorBase
+
 
 class Generator(ProcessorBase):
 	"""
@@ -8,12 +13,21 @@ class Generator(ProcessorBase):
 
     class GeneratingProcessor(bspump.Generator):
 
-        def process(self, context, event):
+        async def generate(self, context, event, depth):
+            for item in event.items:
+                await self.Pipeline.inject(context, item, depth + 1)
 
-            def generate(items):
-                for item in items:
-                    yield item
+"""
 
-            return generate(event.items)
-    """
-	pass
+	def process(self, context, event):
+		self.Pipeline.ProcessCoros.append(
+			asyncio.ensure_future(
+				self.generate(context, event, self.Pipeline.CurrentDepth),
+				loop=self.Loop
+			)
+		)
+		return None
+
+	@abc.abstractmethod
+	async def generate(self, context, event, depth):
+		raise NotImplemented()

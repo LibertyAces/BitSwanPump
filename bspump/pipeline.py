@@ -49,6 +49,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.App = app
 		self.Loop = app.Loop
 
+		self.CurrentDepth = 0
+		self.ProcessCoros = []
+
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
 		self._source_coros = [] # List of source main() coroutines
@@ -241,7 +244,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def _do_process(self, event, depth, context):
 		for processor in self.Processors[depth]:
+
 			try:
+				self.CurrentDepth = depth
 				event = processor.process(context, event)
 			except BaseException as e:
 				if depth > 0: raise # Handle error on the top level
@@ -260,17 +265,12 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		assert(event is not None)
 
-		# If the event is generator and there is more in the processor pipeline, then enumerate generator
-		if isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
-			return event
-
-		else:
-			try:
-				raise ProcessingError("Incomplete pipeline, event '{}' is not consumed by a Sink".format(event))
-			except BaseException as e:
-				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.__class__.__name__, depth))
-				self.set_error(context, event, e)
-				raise
+		try:
+			raise ProcessingError("Incomplete pipeline, event '{}' is not consumed by a Sink".format(event))
+		except BaseException as e:
+			L.exception("Pipeline processing error in the '{}' on depth {}".format(self.__class__.__name__, depth))
+			self.set_error(context, event, e)
+			raise
 
 
 	async def process(self, event, context=None):
@@ -284,22 +284,17 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		else:
 			context.update(self._context)
 
-		gevent = self._do_process(event, depth=0, context=context)
-		if gevent is not None:
-			await self.inject(1, gevent, context=context)
+		self._do_process(event, depth=0, context=context)
 
 
-	async def inject(self, depth, event, context):
-		for gevent in event:
-			while not self.is_ready():
-				await self.ready()
+	async def inject(self, context, event, depth):
+		while not self.is_ready():
+			await self.ready()
 
-			if gevent is None:
-				continue
+		if event is None:
+			return
 
-			ngevent = self._do_process(gevent, depth, context.copy())
-			if ngevent is not None:
-				await self.inject(depth+1, ngevent, context)
+		self._do_process(event, depth, context.copy())
 
 
 	# Construction
@@ -404,6 +399,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	async def stop(self):
+		# Stop all pending coros
+		if len(self.ProcessCoros) > 0:
+			done, pending = await asyncio.wait(self.ProcessCoros, loop=self.Loop)
+
 		# Stop all started sources
 		for source in self.Sources:
 			await source.stop()
