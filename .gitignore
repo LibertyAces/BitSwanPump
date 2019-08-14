@@ -107,6 +107,9 @@ ENV/
 etc/site.conf
 etc/site.d/
 
+# ignoring example outputs
+examples/data/ignore_*
+
 doc/_build
 
 asab

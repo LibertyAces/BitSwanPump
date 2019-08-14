@@ -122,8 +122,13 @@ class BSPumpService(asab.Service):
 	#
 
 	async def initialize(self, app):
+		# Run initialization of lookups
+		lookup_update_tasks = []
+		for lookup in self.Lookups.values():
+			if not lookup.Lazy:
+				lookup_update_tasks.append(lookup.ensure_future_update(app.Loop))
+
 		# Await all lookups
-		lookup_update_tasks = [lookup.ensure_future_update(app.Loop) for lookup in self.Lookups.values()]
 		if len(lookup_update_tasks) > 0:
 			done, pending = await asyncio.wait(lookup_update_tasks, loop=app.Loop)
 

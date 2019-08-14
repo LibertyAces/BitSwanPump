@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 import asyncio
+import logging
 import random
 import string
-import logging
-import time
 
 import asab
 import asab.web.rest
-
 import bspump
 import bspump.common
 
@@ -17,13 +15,14 @@ L = logging.getLogger(__name__)
 
 #
 
+
 class RandomSource(bspump.Source):
 
 	async def main(self):
 		while True:
 			await asyncio.sleep(0.1)
 			await self.Pipeline.ready()
-			event = random.choice(['A','B','C']) + ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+			event = random.choice(['A', 'B', 'C']) + ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
 			await self.Pipeline.process(event)
 
 
@@ -56,11 +55,12 @@ class RandomSourcePipeline(bspump.Pipeline):
 class CircuitBreakerError(Exception):
 	pass
 
+
 class CircuitBreaker(bspump.Processor):
 
-	'''
+	"""
 	https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern
-	'''
+	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -140,7 +140,6 @@ async def simulate_fail(request):
 	return asab.web.rest.json_response(request, data={'OK': True}, pretty=True)
 
 
-
 if __name__ == '__main__':
 	asab.Config.read_string('''
 [asab:web]
@@ -162,6 +161,7 @@ listen=127.0.0.1 8080
 		TeePipeline(app, "TeePipeline")
 	)
 
+	app.add_module(asab.web.Module)
 	svc = app.get_service("asab.WebService")
 	svc.WebApp.router.add_get('/fail', simulate_fail)
 

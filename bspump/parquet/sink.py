@@ -91,7 +91,7 @@ class ParquetSink(Sink):
 				self.ChunksPerFile = int(self.Config['rows_per_file'] / self.ChunkSize)
 			self.Chunks = 0
 
-		if self.RolloverMechanism == 'time':
+		elif self.RolloverMechanism == 'time':
 			writing_period = self.Config['writing_period']
 
 			seconds_per_unit = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800}

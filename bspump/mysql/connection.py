@@ -1,12 +1,11 @@
 import asyncio
 import logging
-import socket
-import aiomysql
-import pymysql.err
-import pymysql.cursors
-from aiomysql import create_pool
-from asab import PubSub
 
+import aiomysql
+import pymysql.cursors
+import pymysql.err
+
+from asab import PubSub
 from ..abc.connection import Connection
 
 #
@@ -51,7 +50,7 @@ class MySQLConnection(Connection):
 		'user': '',
 		'password': '',
 		'db': '',
-		'connect_timeout': 1,
+		'connect_timeout': 10,
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
 		'max_bulk_size': 2,
@@ -70,7 +69,7 @@ class MySQLConnection(Connection):
 		self._port = int(self.Config['port'])
 		self._user = self.Config['user']
 		self._password = self.Config['password']
-		self._connect_timeout = self.Config['connect_timeout']
+		self._connect_timeout = int(self.Config['connect_timeout'])
 		self._db = self.Config['db']
 		self._reconnect_delay = self.Config['reconnect_delay']
 		self._output_queue_max_size = self.Config['output_queue_max_size']
@@ -146,38 +145,61 @@ class MySQLConnection(Connection):
 		assert(self._conn_future is None)
 
 		self._conn_future = asyncio.ensure_future(
-			self._connection(),
+			self._async_connection(),
 			loop=self.Loop
 		)
 
+		self._sync_connection()
 
-	async def _connection(self):
+
+	async def _async_connection(self):
 		try:
-			async with create_pool(
+			async with aiomysql.create_pool(
 				host=self._host,
 				port=self._port,
 				user=self._user,
 				password=self._password,
 				db=self._db,
-				connect_timeout=self._connect_timeout, #Doesn't work! See socket.timeout exception below
+				connect_timeout=self._connect_timeout,
 				loop=self.Loop) as pool:
 
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
 				await self._loader()
-		except socket.timeout:
-			# Socket timeout not implemented in aiomysql as it sets a keepalive to the connection
-			# it has been placed as an issue on GitHub: https://github.com/aio-libs/aiomysql/issues/257
-			L.exception("MySQL connection timeout")
-			pass
 		except BaseException:
 			L.exception("Unexpected MySQL connection error")
 			raise
 
 
-	def acquire(self):
+	def _sync_connection(self):
+		try:
+			connection = pymysql.connect(
+				host=self._host,
+				port=self._port,
+				user=self._user,
+				password=self._password,
+				database=self._db,
+				connect_timeout=self._connect_timeout)
+			self._conn_sync = connection
+		except BaseException:
+			L.exception("Unexpected MySQL connection error")
+			raise
+
+
+	async def acquire(self):
 		assert(self._conn_pool is not None)
-		return self._conn_pool.acquire()
+		return await self._conn_pool.acquire()
+
+
+	async def create_async_cursor(self):
+		async_connection = await self.acquire()
+		async_cursor = await async_connection.cursor(aiomysql.cursors.DictCursor)
+		return async_cursor
+
+
+	def create_sync_cursor(self):
+		assert(self._conn_sync is not None)
+		return pymysql.cursors.DictCursor(self._conn_sync)
 
 
 	def consume(self, query, data):
@@ -203,9 +225,8 @@ class MySQLConnection(Connection):
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("MySQLConnection.unpause!", self, asynchronously=True)
 
-			async with self.acquire() as conn:
-				async with conn.cursor() as cur:
-					await cur.executemany(query, data)
-					await conn.commit()
-
+			async_connection = await self.acquire()
+			async_cursor = await async_connection.cursor(aiomysql.cursors.DictCursor)
+			await async_cursor.executemany(query, data)
+			await async_connection.commit()
 

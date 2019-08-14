@@ -3,6 +3,7 @@ import bspump
 import bspump.common
 import bspump.http
 
+
 class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
@@ -13,11 +14,11 @@ class SamplePipeline(bspump.Pipeline):
 
 		self.build(
 			self.Source,
-			bspump.http.HTTPClientWebSocketSink(app, self,
-				config={
-					'url': 'https://localhost:8081/logman/ws',
-				}
-			)
+
+			bspump.http.HTTPClientWebSocketSink(app, self, config={
+				'url': 'http://localhost:8080/bspump/ws',
+			})
+
 		)
 
 		app.PubSub.subscribe("Application.tick!", self.on_tick)

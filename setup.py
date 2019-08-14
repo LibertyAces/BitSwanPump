@@ -73,6 +73,7 @@ setup(
 		'aiosmtplib>=1.0.5,<2.0',
 		'asab>=19.7,<20.0',
 		'fastavro>=0.21.24,<1.0',
+		'google-api-python-client>=1.7.10,<2',
 		'mongoquery>=1.3.5,<2.0',
 		'motor>=2.0.0,<3.0',
 		'mysql-replication>=0.19,<1.0',

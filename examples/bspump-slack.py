@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
+
 import bspump
-import bspump.file
 import bspump.common
+import bspump.file
 import bspump.slack
 import bspump.trigger
 
@@ -21,7 +20,10 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.file.FileLineSource(app, self, config={'path': 'data.json'}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.file.FileJSONSource(app, self, config={
+				'path': './data/sample.json',
+				'post': 'noop',
+			}).on(bspump.trigger.RunOnceTrigger(app)),
 			bspump.slack.SlackTextSink(app, self, 'SlackConnection')
 		)
 
@@ -32,7 +34,10 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	svc.add_connection(
-		bspump.slack.SlackConnection(app, "SlackConnection")
+		bspump.slack.SlackConnection(app, "SlackConnection", config={
+			# Grab hook_url at https://slack.com/apps/manage
+			'hook_url': 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX',
+		})
 	)
 
 	# Construct and register Pipeline

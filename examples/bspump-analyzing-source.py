@@ -1,16 +1,19 @@
-from bspump import BSPumpApplication, Pipeline
-import bspump.trigger
-import bspump.random
-import bspump.common
-import bspump.analyzer
-import time
-import numpy as np
 import logging
 
+import time
+
+import bspump.analyzer
+import bspump.common
+import bspump.random
+import bspump.trigger
+from bspump import BSPumpApplication, Pipeline
 
 ##
+
 L = logging.getLogger(__name__)
+
 ##
+
 
 class MyApplication(BSPumpApplication):
 	def __init__(self):
@@ -29,9 +32,9 @@ class MyPipeline0(Pipeline):
 		lb = ub - 10000500
 		self.build(
 			bspump.random.RandomSource(app, self,
-				config={'number': 50000, 'upper_bound':10000}
-				).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
-			bspump.random.RandomEnricher(app, self, config={'field':'@timestamp', 'lower_bound':lb, 'upper_bound': ub}), 
+				config={'number': 50000, 'upper_bound': 10000}
+			).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
+			bspump.random.RandomEnricher(app, self, config={'field': '@timestamp', 'lower_bound': lb, 'upper_bound': ub}),
 			MyTimeWindowAnalyzer(app, self, clock_driven=False, matrix_id=matrix_id),
 			bspump.common.NullSink(app, self)
 		)
@@ -49,11 +52,9 @@ class MyPipeline1(Pipeline):
 
 class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 	def evaluate(self, context, event):
-		row = self.TimeWindow.get_row(event['id'])
+		row = self.TimeWindow.get_row_index(event['id'])
 		if row is None:
-			# print("wa?", self.Matrix.shape, id(self.TimeWindow.Matrix['time_window']), id(self.Matrix))
 			row = self.TimeWindow.add_row(event['id'])
-			# print("aw?", self.Matrix.shape, row, id(self.TimeWindow.Matrix['time_window']), id(self.Matrix))
 
 		column = self.TimeWindow.get_column(event['@timestamp'])
 		if column is not None:
@@ -67,15 +68,14 @@ class MyTimeWindowMatrix(bspump.analyzer.TimeWindowMatrix):
 		complex_event = []
 		for i in range(0, self.Matrix.shape[0]):
 			for j in range(0, self.Matrix['time_window'].shape[1]):
-				event = {}
-				event['id'] = self.get_row_id(i)
+				event = dict()
+				event['id'] = self.get_row_index(i)
 				# sum_events = np.sum(self.Matrix["time_window"][i, :, 0])
 				event['sum'] = self.Matrix['time_window'][i, j, 0]
 
 				complex_event.append(event)
 		print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Done!")
 		return complex_event
-
 
 
 if __name__ == '__main__':
