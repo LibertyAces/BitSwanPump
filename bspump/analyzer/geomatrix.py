@@ -117,11 +117,3 @@ class GeoMatrix(Matrix):
 
 		return lat, lon
 
-
-	def remove_record(self, storage_id, label):
-		'''
-			Remove a record from storage.
-		'''
-		storage_member = self.IdsToMembers.get('id')
-		if storage_member is not None:
-			self.IdsToMembers['id'].pop(label)

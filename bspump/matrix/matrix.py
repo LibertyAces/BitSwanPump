@@ -17,47 +17,47 @@ L = logging.getLogger(__name__)
 
 class Matrix(abc.ABC, asab.ConfigObject):
 	'''
-Generic `Matrix` object.
+		Generic `Matrix` object.
 
-Matrix structure is organized in a following hiearchical order:
+		Matrix structure is organized in a following hiearchical order:
 
-Matrix -> Rows -> Columns -> Cells
+		Matrix -> Rows -> Columns -> Cells
 
-Cells have unified data format across the whole matrix.
-This format is specified by a `dtype`.
-It can be a simple integer or float but also a complex dictionary type with names and types of the fields.
+		Cells have unified data format across the whole matrix.
+		This format is specified by a `dtype`.
+		It can be a simple integer or float but also a complex dictionary type with names and types of the fields.
 
-The description of types that can be used for a `dtype` of a cell:
+		The description of types that can be used for a `dtype` of a cell:
 
-	+------------+------------------+
-	| Name       | Definition       |
-	+============+==================+
-	| 'b'        | Byte             |
-	+------------+------------------+
-	| 'i'        | Signed integer   |
-	+------------+------------------+
-	| 'u'        | Unsigned integer |
-	+------------+------------------+
-	| 'f'        | Floating point   |
-	+------------+------------------+
-	| 'c'        | Complex floating |
-	|            | point            |
-	+------------+------------------+
-	| 'S'        | String           |
-	+------------+------------------+
-	| 'U'        | Unicode string   |
-	+------------+------------------+
-	| 'V'        | Raw data         |
-	+------------+------------------+
+		+------------+------------------+
+		| Name       | Definition       |
+		+============+==================+
+		| 'b'        | Byte             |
+		+------------+------------------+
+		| 'i'        | Signed integer   |
+		+------------+------------------+
+		| 'u'        | Unsigned integer |
+		+------------+------------------+
+		| 'f'        | Floating point   |
+		+------------+------------------+
+		| 'c'        | Complex floating |
+		|            | point            |
+		+------------+------------------+
+		| 'S'        | String           |
+		+------------+------------------+
+		| 'U'        | Unicode string   |
+		+------------+------------------+
+		| 'V'        | Raw data         |
+		+------------+------------------+
 
-Example: 'i8' stands for int64.
+		Example: 'i8' stands for int64.
 
-For more details, see https://docs.scipy.org/doc/numpy/reference/arrays.dtypes.html
+		For more details, see https://docs.scipy.org/doc/numpy/reference/arrays.dtypes.html
 
 
-Object main attributes:
-`Array` is numpy ndarray, the actual data representation of the matrix object.  
-`ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.  
+		Object main attributes:
+		`Array` is numpy ndarray, the actual data representation of the matrix object.  
+		`ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.  
 
 	'''
 
@@ -146,6 +146,22 @@ Object main attributes:
 
 	def time(self):
 		return self.App.time()
+
+
+	async def analyze(self):
+		'''
+			The `Matrix` itself can run the `analyze()`.
+			It is not recommended to iterate through the matrix row by row (or cell by cell).
+			Instead use numpy fuctions. Examples:
+			1. You have a vector with n rows. You need only those row indeces, where the cell content is more than 10.
+			Use `np.where(vector > 10)`.
+			2. You have a matrix with n rows and m columns. You need to find out which rows
+			fully consist of zeros. use `np.where(np.all(matrix == 0, axis=1))` to get those row indexes.
+			Instead `np.all()` you can use `np.any()` to get all row indexes, where there is at least one zero.  
+			3. Use `np.mean(matrix, axis=1)` to get means for all rows.
+			4. Usefull numpy functions: `np.unique()`, `np.sum()`, `np.argmin()`, `np.argmax()`.  
+		'''
+		pass
 
 
 class NamedMatrix(Matrix):

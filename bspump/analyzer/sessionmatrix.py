@@ -21,33 +21,11 @@ class SessionMatrix(NamedMatrix):
 	'''
 		Matrix, specific for `SessionAnalyzer`.
 	
-		There are two fields added:
-
-			- `start_timestamp`: UNIX timestamp of the start of a session (if not 0)
-			- `end_timestamp`: UNIX timestamp of the end of a session (if not 0)
 	'''
 
-	def __init__(self, app, dtype:list, add_timestamp=False, id=None, config=None):
+	def __init__(self, app, dtype:list, id=None, config=None):
 		dtype = dtype[:]
-		if add_timestamp:
-			dtype.extend([
-				('start_timestamp', 'i8'),
-				('end_timestamp', 'i8'),
-			])
-		self.AddTimestamp = add_timestamp
 		super().__init__(app, dtype=dtype, id=id, config=config)
-
-	
-	def add_row(self, row_name, start_time=None):
-		'''
-			Adds new row with `row_id` to the matrix and assigns the `start_timestamp`, if
-			`add_timestamp` was assignid True.
-		'''
-
-		row_index = super().add_row(row_name)
-		if start_time is not None:
-			self.Array[row_index]["start_timestamp"] = start_time
-		return row_index
 
 
 	def store(self, row_name: str, event):
