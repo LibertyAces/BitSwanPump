@@ -1,8 +1,9 @@
-from bspump.file import FileCSVSource
+import bspump
 from bspump.trigger import OpportunisticTrigger
 from bspump.common import PPrintSink, NullSink
 from bspump import BSPumpApplication, Pipeline, Processor
 from bspump.analyzer import SessionAnalyzer, TimeWindowAnalyzer
+import bspump.random
 
 import logging
 import time
@@ -29,8 +30,13 @@ class MyPipeline(Pipeline):
 
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
+
 		self.build(
-			FileCSVSource(app, self, config={'path': "bspump/analyzer/var/users.csv", 'post':'noop'}).on(OpportunisticTrigger(app)),
+			bspump.random.RandomSource(app, self,
+				config={'number': 300, 'upper_bound': 10, 'field':'user'}
+				).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=.1)),
+			bspump.random.RandomEnricher(app, self, config={'field':'duration', 'lower_bound':1, 'upper_bound': 5}, id="RE0"),
+			bspump.random.RandomEnricher(app, self, config={'field':'user_link', 'upper_bound': 10}, id="RE1"),
 			GraphSessionAnalyzer(app, self), 
 			NullSink(app, self)
 		)
