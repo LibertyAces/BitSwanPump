@@ -33,7 +33,7 @@ class TimeWindowMatrixExportCSVGenerator(Generator):
 					event['timestamp'] = time_window_matrix.Start + j * time_window_matrix.Resolution
 					for k in range(0, time_window_matrix.Dimensions[1]):
 						field_name = "value_{}".format(k)
-						event[field_name] = time_window_matrix.Array['time_window'][i, j, k]
+						event[field_name] = time_window_matrix.Array[i, j, k]
 				
 					yield event
 
