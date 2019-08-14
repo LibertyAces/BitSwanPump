@@ -24,35 +24,23 @@ class MappingItemsProcessor(Processor):
 #
 
 class MappingKeysGenerator(Generator):
-	
-	def process(self, context, event:collections.abc.Mapping):
-		
-		def generate():
-			for item in event.keys():
-				yield item
 
-		return generate()
+	async def generate(self, context, event, depth):
+		for item in event.keys():
+			await self.Pipeline.inject(context, item, depth + 1)
 
 #
 
 class MappingValuesGenerator(Generator):
-	
-	def process(self, context, event:collections.abc.Mapping):
-		
-		def generate():
-			for item in event.values():
-				yield item
 
-		return generate()
+	async def generate(self, context, event, depth):
+		for item in event.values():
+			await self.Pipeline.inject(context, item, depth + 1)
 
 #
 
 class MappingItemsGenerator(Generator):
-	
-	def process(self, context, event:collections.abc.Mapping):
-		
-		def generate():
-			for item in event.items():
-				yield item
 
-		return generate()
+	async def generate(self, context, event, depth):
+		for item in event.items():
+			await self.Pipeline.inject(context, item, depth + 1)
