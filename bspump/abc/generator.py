@@ -11,7 +11,7 @@ class Generator(ProcessorBase):
 
 .. code:: python
 
-    class GeneratingProcessor(bspump.Generator):
+    class MyGenerator(bspump.Generator):
 
         async def generate(self, context, event, depth):
             for item in event.items:
