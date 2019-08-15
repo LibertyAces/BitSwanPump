@@ -327,7 +327,17 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		await self.inject(context, event, depth=0)
 
 
+	# Future methods
+
 	def ensure_future(self, coro):
+		"""
+		Ensures future `coro` and reacts to its result (see _future_done below).
+
+		If the number of futures exceeds the configured limit, the pipeline is throttled.
+		:param coro:
+		:return:
+		"""
+
 		future = asyncio.ensure_future(coro, loop=self.Loop)
 		future.add_done_callback(self._future_done)
 		self.AsyncFutures.append(future)
@@ -337,8 +347,23 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	def _future_done(self, future):
+		"""
+		Removes future from the future list and disables throttling, if the number of
+		futures does not exceed the configured limit.
+
+		If there is an error while processing the future, it it set to the pipeline.
+		:param future:
+		:return:
+		"""
+
 		async_futures_tuple = tuple(self.AsyncFutures)
 		self.AsyncFutures.remove(future)
+
+		exception = future.exception()
+		if exception is not None:
+			self.set_error(None, None, exception)
+			return
+
 		# Remove the throttle
 		if not self.is_ready() and len(self.AsyncFutures) < self.AsyncConcurencyLimit:
 			self.throttle(async_futures_tuple, False)
