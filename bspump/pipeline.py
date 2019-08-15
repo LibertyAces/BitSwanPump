@@ -295,9 +295,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		if context is None:
 			context = self._context.copy()
 		else:
+			context = context.copy()
 			context.update(self._context)
 
-		self._do_process(event, depth, context.copy())
+		self._do_process(event, depth, context)
 
 
 	async def process(self, event, context=None):
