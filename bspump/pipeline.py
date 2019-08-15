@@ -62,6 +62,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self.AsyncFutures = []
 		self.AsyncConcurencyLimit = int(self.Config["async_concurency_limit"])
+		assert(self.AsyncConcurencyLimit > 1)
+
 		# This object serves to identify the throttler, because list cannot be used as a throttler
 		self.AsyncFuturesThrottler = object()
 
