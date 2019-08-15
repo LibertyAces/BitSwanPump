@@ -21,4 +21,3 @@ from .mapping import MappingKeysProcessor, MappingValuesProcessor, MappingItemsP
 from .mapping import MappingKeysGenerator, MappingValuesGenerator, MappingItemsGenerator
 from .time import TimeZoneNormalizer
 from .transfr import MappingTransformator
-from .oobgenerator import OOBGenerator

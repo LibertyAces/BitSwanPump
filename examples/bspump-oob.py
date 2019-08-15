@@ -20,11 +20,13 @@ L = logging.getLogger(__name__)
 ###
 
 
-class SampleOOBGenerator(bspump.common.OOBGenerator):
+class SampleOOBGenerator(bspump.Generator):
 	"""
-	OOBGenerator processes originally synchronous events "out-of-band" e.g. out of the synchronous processing within the pipeline.
+	Generator processes originally synchronous events "out-of-band" e.g. out of the synchronous
+	processing within the pipeline.
 
-	Specific implementation of OOBGenerator should implement the generate method to process events while performing long running (asynchronous) tasks such as HTTP requests.
+	Specific implementation of Generator should implement the generate method to process events
+	while performing long running (asynchronous) tasks such as HTTP requests.
 	The long running tasks may enrich events with relevant information, such as output of external calculations.
 
 	"""
