@@ -24,11 +24,8 @@ class Generator(ProcessorBase):
 		self.PipelineDepth = 0
 
 	def process(self, context, event):
-		self.Pipeline.GeneratorFutures.append(
-			asyncio.ensure_future(
-				self.generate(context, event, self.PipelineDepth),
-				loop=self.Loop
-			)
+		self.Pipeline.ensure_generator_future(
+			self.generate(context, event, self.PipelineDepth)
 		)
 		return None
 

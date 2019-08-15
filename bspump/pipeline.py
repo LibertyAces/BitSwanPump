@@ -7,7 +7,9 @@ import logging
 import itertools
 import collections
 import datetime
+
 import asab
+
 from .abc.source import Source
 from .abc.sink import Sink
 from .abc.generator import Generator
@@ -20,7 +22,8 @@ L = logging.getLogger(__name__)
 
 #
 
-class Pipeline(abc.ABC):
+
+class Pipeline(abc.ABC, asab.ConfigObject):
 
 	'''
 
@@ -45,14 +48,25 @@ They are simply passed as an list of sources to a pipeline `build()` method.
             )
     '''
 
+	ConfigDefaults = {
+		"generator_futures_max_count": 1000,
+	}
 
-	def __init__(self, app, id=None):
-		self.Id = id if id is not None else self.__class__.__name__
+	def __init__(self, app, id=None, config=None):
+		_id = id if id is not None else self.__class__.__name__
+		super().__init__("pipeline:{}".format(_id), config=config)
+
+		self.Id = _id
 		self.App = app
 		self.Loop = app.Loop
 
-		self.CurrentDepth = 0
 		self.GeneratorFutures = []
+		self.GeneratorFuturesThrottle = None
+		self.GeneratorFuturesMaxCount = int(self.Config["generator_futures_max_count"])
+		self.GeneratorFuturesCleaner = [asyncio.ensure_future(
+			self._generator_futures_cleaner(),
+			loop=self.Loop
+		)]
 
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
@@ -248,7 +262,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		for processor in self.Processors[depth]:
 
 			try:
-				self.CurrentDepth = depth
 				event = processor.process(context, event)
 			except BaseException as e:
 				if depth > 0: raise # Handle error on the top level
@@ -298,6 +311,28 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self._do_process(event, depth, context.copy())
 
+	def ensure_generator_future(self, generate):
+		self.GeneratorFutures.append(
+			asyncio.ensure_future(
+				generate,
+				loop=self.Loop
+			)
+		)
+		# Throttle when the number of generator futures exceeds the max count
+		if self.GeneratorFuturesThrottle is None and len(self.GeneratorFutures) >= self.GeneratorFuturesMaxCount:
+			self.GeneratorFuturesThrottle = tuple(self.GeneratorFutures)
+			self.throttle(self.GeneratorFuturesThrottle, True)
+
+	async def _generator_futures_cleaner(self):
+		while True:
+			for generator_future in self.GeneratorFutures:
+				if generator_future.done():
+					self.GeneratorFutures.remove(generator_future)
+					# Remove the throttle
+					if self.GeneratorFuturesThrottle is not None and len(self.GeneratorFutures) < self.GeneratorFuturesMaxCount:
+						self.throttle(self.GeneratorFuturesThrottle, False)
+						self.GeneratorFuturesThrottle = None
+			await asyncio.sleep(0.01)
 
 	# Construction
 
@@ -402,7 +437,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	async def stop(self):
-		# Stop all pending coros
+		# Stop all generator futures
+		await asyncio.wait(self.GeneratorFuturesCleaner, loop=self.Loop)
 		if len(self.GeneratorFutures) > 0:
 			done, pending = await asyncio.wait(
 				self.GeneratorFutures,

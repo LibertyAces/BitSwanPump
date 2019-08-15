@@ -95,11 +95,8 @@ class OOBGenerator(Generator):
 
 
 	def process(self, context, event):
-		self.Pipeline.GeneratorFutures.append(
-			asyncio.ensure_future(
-				self.generate(context, event, self.PipelineDepth),
-				loop=self.Loop
-			)
+		self.Pipeline.ensure_generator_future(
+			self.generate(context, event, self.PipelineDepth)
 		)
 		self.eventStatsCounter.add("event.in", 1)
 		return None
