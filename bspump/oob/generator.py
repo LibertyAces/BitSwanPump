@@ -97,7 +97,7 @@ class OOBGenerator(Generator):
 	def process(self, context, event):
 		self.Pipeline.ProcessCoros.append(
 			asyncio.ensure_future(
-				self.generate(context, event, self.Pipeline.CurrentDepth),
+				self.generate(context, event, self.PipelineDepth),
 				loop=self.Loop
 			)
 		)
