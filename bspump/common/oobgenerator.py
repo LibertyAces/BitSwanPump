@@ -2,7 +2,7 @@ import abc
 
 import asyncio
 
-from ..abc.generator import Generator
+from bspump.abc.generator import Generator
 
 
 class OOBGenerator(Generator):

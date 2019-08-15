@@ -10,7 +10,6 @@ import asab.proactor
 import bspump
 import bspump.common
 import bspump.http
-import bspump.oob
 import bspump.trigger
 
 ###
@@ -21,7 +20,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class SampleOOBGenerator(bspump.oob.OOBGenerator):
+class SampleOOBGenerator(bspump.common.OOBGenerator):
 	"""
 	OOBGenerator processes originally synchronous events "out-of-band" e.g. out of the synchronous processing within the pipeline.
 
