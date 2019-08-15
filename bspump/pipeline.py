@@ -288,25 +288,26 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			raise
 
 
-	async def process(self, event, context=None):
+	async def inject(self, context, event, depth):
 		while not self.is_ready():
 			await self.ready()
-
-		self.MetricsCounter.add('event.in', 1)
 
 		if context is None:
 			context = self._context.copy()
 		else:
 			context.update(self._context)
 
-		self._do_process(event, depth=0, context=context)
+		self._do_process(event, depth, context.copy())
 
 
-	async def inject(self, context, event, depth):
+	async def process(self, event, context=None):
 		while not self.is_ready():
 			await self.ready()
 
-		self._do_process(event, depth, context.copy())
+		self.MetricsCounter.add('event.in', 1)
+
+		await self.inject(context, event, depth=0)
+
 
 	def ensure_generator_future(self, generate):
 		self.GeneratorFutures.append(
