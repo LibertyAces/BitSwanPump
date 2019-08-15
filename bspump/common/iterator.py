@@ -23,11 +23,7 @@ class IteratorSource(TriggerSource):
 
 
 class IteratorGenerator(Generator):
-	
-	def process(self, context, event:collections.abc.Iterator):
-		
-		def generate():
-			for item in event:
-				yield item
 
-		return generate()
+	async def generate(self, context, event, depth):
+		for item in event:
+			await self.Pipeline.inject(context, item, depth)

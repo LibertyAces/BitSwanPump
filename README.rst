@@ -114,7 +114,6 @@ Available technologies
 
   * Interface for testing Processors / Pipelines
 
-* ``bspump.oob`` Out-of-band sink and engine
 * ``bspump.web`` Pump API endpoints for pipelines, lookups etc.
 
 Google Sheet with technological compatiblity matrix:
