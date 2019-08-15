@@ -56,7 +56,7 @@ class Generator(ProcessorBase):
 
 	def process(self, context, event):
 		assert(self.PipelineDepth is not None)
-		self.Pipeline.ensure_generator_future(
+		self.Pipeline.ensure_future(
 			self.generate(context, event, self.PipelineDepth + 1)
 		)
 		return None

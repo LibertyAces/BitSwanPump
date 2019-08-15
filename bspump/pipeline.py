@@ -49,7 +49,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
     '''
 
 	ConfigDefaults = {
-		"generator_concurency_limit": 1000,
+		"async_concurency_limit": 1000,
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -60,10 +60,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.App = app
 		self.Loop = app.Loop
 
-		self.GeneratorFutures = []
-		self.GeneratorConcurencyLimit = int(self.Config["generator_concurency_limit"])
-
-		self.App.PubSub.subscribe("Application.tick!", self.on_tick)
+		self.AsyncFutures = []
+		self.AsyncConcurencyLimit = int(self.Config["async_concurency_limit"])
 
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
@@ -329,27 +327,21 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		await self.inject(context, event, depth=0)
 
 
-	def ensure_generator_future(self, generate):
-		self.GeneratorFutures.append(
-			asyncio.ensure_future(
-				generate,
-				loop=self.Loop
-			)
-		)
-		# Throttle when the number of generator futures exceeds the max count
-		if len(self.GeneratorFutures) >= self.GeneratorConcurencyLimit:
-			self.throttle(tuple(self.GeneratorFutures), True)
+	def ensure_future(self, coro):
+		future = asyncio.ensure_future(coro, loop=self.Loop)
+		future.add_done_callback(self._future_done)
+		self.AsyncFutures.append(future)
+		# Throttle when the number of futures exceeds the max count
+		if len(self.AsyncFutures) >= self.AsyncConcurencyLimit:
+			self.throttle(tuple(self.AsyncFutures), True)
 
 
-	async def on_tick(self, event_name):
-		# Clean all finished generator futures
-		generator_future_tuple = tuple(self.GeneratorFutures)
-		for generator_future in self.GeneratorFutures:
-			if generator_future.done():
-				self.GeneratorFutures.remove(generator_future)
-				# Remove the throttle
-				if not self.is_ready() and len(self.GeneratorFutures) < self.GeneratorConcurencyLimit:
-					self.throttle(generator_future_tuple, False)
+	def _future_done(self, future):
+		async_futures_tuple = tuple(self.AsyncFutures)
+		self.AsyncFutures.remove(future)
+		# Remove the throttle
+		if not self.is_ready() and len(self.AsyncFutures) < self.AsyncConcurencyLimit:
+			self.throttle(async_futures_tuple, False)
 
 
 	# Construction
@@ -456,13 +448,13 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	async def stop(self):
 		# Stop all generator futures
-		if len(self.GeneratorFutures) > 0:
+		if len(self.AsyncFutures) > 0:
 			done, pending = await asyncio.wait(
-				self.GeneratorFutures,
+				self.AsyncFutures,
 				loop=self.Loop,
 				return_when=concurrent.futures.ALL_COMPLETED
 			)
-			self.GeneratorFutures = []
+			self.AsyncFutures = []
 
 		# Stop all started sources
 		for source in self.Sources:
