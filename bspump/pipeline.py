@@ -306,9 +306,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		while not self.is_ready():
 			await self.ready()
 
-		if event is None:
-			return
-
 		self._do_process(event, depth, context.copy())
 
 	def ensure_generator_future(self, generate):
