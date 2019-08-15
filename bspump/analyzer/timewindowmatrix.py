@@ -78,7 +78,6 @@ class TimeWindowMatrix(NamedMatrix):
 		)
 		
 	def zeros(self):
-		print("usiiiing")
 		self.ClosedRows = set()
 		self.N2IMap = collections.OrderedDict()
 		self.I2NMap = collections.OrderedDict()
