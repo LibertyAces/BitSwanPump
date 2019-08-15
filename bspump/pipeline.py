@@ -49,7 +49,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
     '''
 
 	ConfigDefaults = {
-		"generator_futures_max_count": 1,
+		"generator_concurency_limit": 1000,
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -61,8 +61,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.Loop = app.Loop
 
 		self.GeneratorFutures = []
-		self.GeneratorFuturesThrottle = None
-		self.GeneratorFuturesMaxCount = int(self.Config["generator_futures_max_count"])
+		self.GeneratorConcurencyLimit = int(self.Config["generator_concurency_limit"])
 
 		self.App.PubSub.subscribe("Application.tick!", self.on_tick)
 
@@ -338,20 +337,20 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			)
 		)
 		# Throttle when the number of generator futures exceeds the max count
-		if self.GeneratorFuturesThrottle is None and len(self.GeneratorFutures) >= self.GeneratorFuturesMaxCount:
-			self.GeneratorFuturesThrottle = tuple(self.GeneratorFutures)
-			self.throttle(self.GeneratorFuturesThrottle, True)
+		if len(self.GeneratorFutures) >= self.GeneratorConcurencyLimit:
+			self.throttle(tuple(self.GeneratorFutures), True)
+
 
 	async def on_tick(self, event_name):
 		# Clean all finished generator futures
+		generator_future_tuple = tuple(self.GeneratorFutures)
 		for generator_future in self.GeneratorFutures:
 			if generator_future.done():
 				self.GeneratorFutures.remove(generator_future)
 				# Remove the throttle
-				if self.GeneratorFuturesThrottle is not None and len(
-						self.GeneratorFutures) < self.GeneratorFuturesMaxCount:
-					self.throttle(self.GeneratorFuturesThrottle, False)
-					self.GeneratorFuturesThrottle = None
+				if not self.is_ready() and len(self.GeneratorFutures) < self.GeneratorConcurencyLimit:
+					self.throttle(generator_future_tuple, False)
+
 
 	# Construction
 
