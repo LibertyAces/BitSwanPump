@@ -54,7 +54,7 @@ class TimeWindowMatrix(NamedMatrix):
 		
 		self.End = self.Start - (self.Resolution * self.Array.shape[1])
 		
-		self.WarmingUpCount = np.zeros(0, dtype='int_')
+		self.WarmingUpCount = np.zeros(self.Array.shape[0], dtype='int_')
 
 		if clock_driven:
 			advance_period = resolution / 4
