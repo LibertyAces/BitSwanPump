@@ -264,7 +264,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			try:
 				event = processor.process(context, event)
 			except BaseException as e:
-				if depth > 0: raise # Handle error on the top level
+				if depth > 0: raise # Handle error on the top depth
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))
 				self.set_error(context, event, e)
 				raise

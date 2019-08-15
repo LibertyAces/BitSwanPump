@@ -15,7 +15,7 @@ class Generator(ProcessorBase):
 
         async def generate(self, context, event, depth):
             for item in event.items:
-                await self.Pipeline.inject(context, item, depth + 1)
+                await self.Pipeline.inject(context, item, depth)
 
 """
 
@@ -25,7 +25,7 @@ class Generator(ProcessorBase):
 
 	def process(self, context, event):
 		self.Pipeline.ensure_generator_future(
-			self.generate(context, event, self.PipelineDepth)
+			self.generate(context, event, self.PipelineDepth + 1)
 		)
 		return None
 

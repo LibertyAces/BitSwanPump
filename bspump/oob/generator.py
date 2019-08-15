@@ -75,7 +75,7 @@ class OOBGenerator(Generator):
 
 			output_event = await self.process_oob(context, event)
 			if output_event is not None:
-				await self.Pipeline.inject(context, output_event, depth + 1)
+				await self.Pipeline.inject(context, output_event, depth)
 				self.eventStatsCounter.add("event.out", 1)
 			else:
 				self.eventStatsCounter.add("event.drop", 1)
@@ -96,7 +96,7 @@ class OOBGenerator(Generator):
 
 	def process(self, context, event):
 		self.Pipeline.ensure_generator_future(
-			self.generate(context, event, self.PipelineDepth)
+			self.generate(context, event, self.PipelineDepth + 1)
 		)
 		self.eventStatsCounter.add("event.in", 1)
 		return None
