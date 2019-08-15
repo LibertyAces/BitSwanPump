@@ -7,6 +7,7 @@ class Generator(ProcessorBase):
 	"""
     Generator object is used to generate one or multiple events in asynchronous way
     and pass them to following processors in the pipeline.
+    In the case of Generator, user overrides `generate` method, not `process`.
 
     1.) Generator can iterate through an event to create derived ones and pass them to following processors.
     Generator can in the same way also generate completely independent events, if necessary.
@@ -50,10 +51,11 @@ class Generator(ProcessorBase):
 		self.PipelineDepth = None
 
 	def set_depth(self, depth):
+		assert(self.PipelineDepth is None)
 		self.PipelineDepth = depth
 
 	def process(self, context, event):
-		assert self.PipelineDepth is not None
+		assert(self.PipelineDepth is not None)
 		self.Pipeline.ensure_generator_future(
 			self.generate(context, event, self.PipelineDepth + 1)
 		)

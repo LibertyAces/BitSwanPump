@@ -314,7 +314,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		The difference between process and inject method is that process always injects
 		events to the depth 0 and increments the event.in metric.
 
-		It is highly recommended to use process method instead of inject for normal operations.
+		This is recommended way of inserting events into a pipeline.
 
 		:param event:
 		:param context:
