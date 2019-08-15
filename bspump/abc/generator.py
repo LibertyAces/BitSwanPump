@@ -21,9 +21,14 @@ class Generator(ProcessorBase):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
-		self.PipelineDepth = 0
+		# The correct depth is later set by the pipeline
+		self.PipelineDepth = None
+
+	def set_depth(self, depth):
+		self.PipelineDepth = depth
 
 	def process(self, context, event):
+		assert self.PipelineDepth is not None
 		self.Pipeline.ensure_generator_future(
 			self.generate(context, event, self.PipelineDepth + 1)
 		)

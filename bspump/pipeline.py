@@ -373,7 +373,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.Processors[-1].append(processor)
 
 		if isinstance(processor, Generator):
-			processor.PipelineDepth = len(self.Processors) - 1
+			processor.set_depth(len(self.Processors) - 1)
 			self.Processors.append([])
 
 
