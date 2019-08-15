@@ -43,7 +43,7 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype='float_', columns=15, resolution=60, clock_driven=True, start_time=None, id=None, config=None):
+	def __init__(self, app, dtype='float_', start_time=None, resolution=60, columns=15, clock_driven=True,  id=None, config=None):
 		self.Columns = columns
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		
