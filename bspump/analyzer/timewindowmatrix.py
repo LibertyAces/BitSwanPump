@@ -4,6 +4,7 @@ import logging
 import numpy as np
 
 import asab
+import collections
 
 from ..matrix.matrix import NamedMatrix
 
@@ -42,13 +43,15 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype='(15,)f8', resolution=60, clock_driven=True, start_time=None, id=None, config=None):
+	def __init__(self, app, dtype='float_', shape=(15,), resolution=60, clock_driven=True, start_time=None, id=None, config=None):
+		self.Shape = shape
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		
 		if start_time is None: start_time = time.time()
 
 		self.Resolution = resolution
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
+		
 		self.End = self.Start - (self.Resolution * self.Array.shape[1])
 		
 		self.WarmingUpCount = np.zeros(0, dtype='int_')
@@ -74,6 +77,12 @@ class TimeWindowMatrix(NamedMatrix):
 			}
 		)
 		
+	def zeros(self):
+		print("usiiiing")
+		self.ClosedRows = set()
+		self.N2IMap = collections.OrderedDict()
+		self.I2NMap = collections.OrderedDict()
+		self.Array = np.zeros((0,) + self.Shape, dtype=self.DType)
 
 
 	def add_column(self):
