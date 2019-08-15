@@ -311,10 +311,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	async def process(self, event, context=None):
 		"""
-		Process method serves to inject events into the pipeline's depth 0.
-
-		The difference between process and inject method is that process always injects
-		events to the depth 0 and increments the event.in metric.
+		Process method serves to inject events into the pipeline's depth 0,
+		while incrementing the event.in metric.
 
 		This is recommended way of inserting events into a pipeline.
 
