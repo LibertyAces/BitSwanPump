@@ -21,20 +21,38 @@ class TimeWindowMatrixExportTableauGenerator(Generator):
 
 	async def generate(self, context, event, depth):
 		assert(isinstance(event, TimeWindowMatrix))
-		time_window_matrix = event
-
-		for i in range(0, time_window_matrix.Array.shape[0]):
-			row_id = time_window_matrix.get_row_name(i)
-			if row_id is None:
-				continue
-			field_type = time_window_matrix.Array.dtype['time_window'].subdtype[0].kind
-			if field_type in ['f']:
-				event_type = "double"
-			elif field_type in ['i', 'u', 'b']:
-				if re.search(r'timestamp', field_type) is not None:
-					event_type = "datetime"
+		
+		def generate(time_window_matrix):
+			for i in range(0, time_window_matrix.Array.shape[0]):
+				row_id = time_window_matrix.get_row_name(i)
+				if row_id is None:
+					continue
+				field_type = time_window_matrix.Array.dtype.subdtype[0].kind
+				if field_type in ['f']:
+					event_type = "double"
+				elif field_type in ['i', 'u', 'b']:
+					if re.search(r'timestamp', field_type) is not None:
+						event_type = "datetime"
+					else:
+						event_type = "integer"
+					
+				elif field_type in ['U']: 
+					event_type = "unicodestring"
 				else:
-					event_type = "integer"
+					L.warn("Incorrect type {}, skipping".format(field_type))
+					break
+				
+				for j in range(0, time_window_matrix.Dimensions[0]):
+					event = collections.OrderedDict()
+					event['id'] = {"value": row_id, "type": "unicodestring"}
+					value = time_window_matrix.Start + j * time_window_matrix.Resolution
+					event['timestamp'] = {"value":value, "type": "datetime"}
+					for k in range(0, time_window_matrix.Dimensions[1]):
+						field_name = "value_{}".format(k)
+						field_value = time_window_matrix.Array[i, j, k]
+						event[field_name] = {"value":field_value, "type":event_type}
+				
+					yield event
 
 			elif field_type in ['U']:
 				event_type = "unicodestring"
