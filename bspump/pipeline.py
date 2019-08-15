@@ -1,5 +1,7 @@
 import abc
 import asyncio
+import concurrent
+
 import types
 import logging
 import itertools
@@ -50,7 +52,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.Loop = app.Loop
 
 		self.CurrentDepth = 0
-		self.ProcessCoros = []
+		self.GeneratorFutures = []
 
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
@@ -401,8 +403,13 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	async def stop(self):
 		# Stop all pending coros
-		if len(self.ProcessCoros) > 0:
-			done, pending = await asyncio.wait(self.ProcessCoros, loop=self.Loop)
+		if len(self.GeneratorFutures) > 0:
+			done, pending = await asyncio.wait(
+				self.GeneratorFutures,
+				loop=self.Loop,
+				return_when=concurrent.futures.ALL_COMPLETED
+			)
+			self.GeneratorFutures = []
 
 		# Stop all started sources
 		for source in self.Sources:
