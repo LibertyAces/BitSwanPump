@@ -289,6 +289,18 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	async def inject(self, context, event, depth):
+		"""
+		Inject method serves to inject events into the pipeline's depth defined by the depth attribute.
+		Every depth is interconnected with a generator object.
+
+		For normal operations, it is higly recommended to use process method instead (see below).
+
+		:param context:
+		:param event:
+		:param depth:
+		:return:
+		"""
+
 		while not self.is_ready():
 			await self.ready()
 
@@ -302,6 +314,19 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	async def process(self, event, context=None):
+		"""
+		Process method serves to inject events into the pipeline's depth 0.
+
+		The difference between process and inject method is that process always injects
+		events to the depth 0 and increments the event.in metric.
+
+		It is highly recommended to use process method instead of inject for normal operations.
+
+		:param event:
+		:param context:
+		:return:
+		"""
+
 		while not self.is_ready():
 			await self.ready()
 
