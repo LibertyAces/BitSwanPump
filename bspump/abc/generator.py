@@ -19,10 +19,14 @@ class Generator(ProcessorBase):
 
 """
 
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id, config)
+		self.PipelineDepth = 0
+
 	def process(self, context, event):
 		self.Pipeline.ProcessCoros.append(
 			asyncio.ensure_future(
-				self.generate(context, event, self.Pipeline.CurrentDepth),
+				self.generate(context, event, self.PipelineDepth),
 				loop=self.Loop
 			)
 		)
