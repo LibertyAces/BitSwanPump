@@ -26,4 +26,4 @@ class IteratorGenerator(Generator):
 
 	async def generate(self, context, event, depth):
 		for item in event:
-			await self.Pipeline.inject(context, item, depth + 1)
+			await self.Pipeline.inject(context, item, depth)

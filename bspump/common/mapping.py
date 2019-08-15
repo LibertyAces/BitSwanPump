@@ -27,7 +27,7 @@ class MappingKeysGenerator(Generator):
 
 	async def generate(self, context, event, depth):
 		for item in event.keys():
-			await self.Pipeline.inject(context, item, depth + 1)
+			await self.Pipeline.inject(context, item, depth)
 
 #
 
@@ -35,7 +35,7 @@ class MappingValuesGenerator(Generator):
 
 	async def generate(self, context, event, depth):
 		for item in event.values():
-			await self.Pipeline.inject(context, item, depth + 1)
+			await self.Pipeline.inject(context, item, depth)
 
 #
 
@@ -43,4 +43,4 @@ class MappingItemsGenerator(Generator):
 
 	async def generate(self, context, event, depth):
 		for item in event.items():
-			await self.Pipeline.inject(context, item, depth + 1)
+			await self.Pipeline.inject(context, item, depth)

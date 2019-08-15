@@ -52,7 +52,7 @@ class TimeWindowMatrixExportTableauGenerator(Generator):
 					field_value = time_window_matrix.Array['time_window'][i, j, k]
 					event[field_name] = {"value": field_value, "type": event_type}
 
-				await self.Pipeline.inject(context, event, depth + 1)
+				await self.Pipeline.inject(context, event, depth)
 
 
 class SessionMatrixExportTableauGenerator(Generator):
@@ -106,4 +106,4 @@ class SessionMatrixExportTableauGenerator(Generator):
 							else:
 								L.warn("Incorrect type {}, skipping".format(field_type))
 								continue
-			await self.Pipeline.inject(context, event, depth + 1)
+			await self.Pipeline.inject(context, event, depth)
