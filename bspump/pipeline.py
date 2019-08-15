@@ -62,6 +62,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self.AsyncFutures = []
 		self.AsyncConcurencyLimit = int(self.Config["async_concurency_limit"])
+		# This object serves to identify the throttler, because list cannot be used as a throttler
+		self.AsyncFuturesThrottler = object()
 
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
@@ -225,7 +227,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			new_ready = len(self._throttles) == 0 
 
 		if orig_ready != new_ready:
-			if new_ready:				
+			if new_ready:
 				self._ready.set()
 				self.PubSub.publish("bspump.pipeline.ready!", pipeline=self)
 				self.MetricsDutyCycle.set('ready', True)
@@ -342,8 +344,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		future.add_done_callback(self._future_done)
 		self.AsyncFutures.append(future)
 		# Throttle when the number of futures exceeds the max count
-		if len(self.AsyncFutures) >= self.AsyncConcurencyLimit:
-			self.throttle(tuple(self.AsyncFutures), True)
+		if len(self.AsyncFutures) == self.AsyncConcurencyLimit:
+			self.throttle(self.AsyncFuturesThrottler, True)
 
 
 	def _future_done(self, future):
@@ -356,17 +358,15 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		:return:
 		"""
 
-		async_futures_tuple = tuple(self.AsyncFutures)
+		# Remove the throttle
+		if len(self.AsyncFutures) == self.AsyncConcurencyLimit:
+			self.throttle(self.AsyncFuturesThrottler, False)
+
 		self.AsyncFutures.remove(future)
 
 		exception = future.exception()
 		if exception is not None:
 			self.set_error(None, None, exception)
-			return
-
-		# Remove the throttle
-		if not self.is_ready() and len(self.AsyncFutures) < self.AsyncConcurencyLimit:
-			self.throttle(async_futures_tuple, False)
 
 
 	# Construction
@@ -472,14 +472,14 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	async def stop(self):
-		# Stop all generator futures
-		if len(self.AsyncFutures) > 0:
-			done, pending = await asyncio.wait(
+		# Stop all futures
+		while len(self.AsyncFutures) > 0:
+			# The futures are removed in _future_done
+			await asyncio.wait(
 				self.AsyncFutures,
 				loop=self.Loop,
 				return_when=concurrent.futures.ALL_COMPLETED
 			)
-			self.AsyncFutures = []
 
 		# Stop all started sources
 		for source in self.Sources:
