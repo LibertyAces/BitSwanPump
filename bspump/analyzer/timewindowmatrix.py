@@ -43,8 +43,8 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype='float_', shape=(15,), resolution=60, clock_driven=True, start_time=None, id=None, config=None):
-		self.Shape = shape
+	def __init__(self, app, dtype='float_', columns=15, resolution=60, clock_driven=True, start_time=None, id=None, config=None):
+		self.Columns = columns
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		
 		if start_time is None: start_time = time.time()
@@ -81,7 +81,7 @@ class TimeWindowMatrix(NamedMatrix):
 		self.ClosedRows = set()
 		self.N2IMap = collections.OrderedDict()
 		self.I2NMap = collections.OrderedDict()
-		self.Array = np.zeros((0,) + self.Shape, dtype=self.DType)
+		self.Array = np.zeros((0, self.Columns), dtype=self.DType)
 
 
 	def add_column(self):
