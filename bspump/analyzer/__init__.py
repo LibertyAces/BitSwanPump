@@ -7,6 +7,7 @@ from .geomatrix import GeoMatrix
 from .timewindowmatrix import TimeWindowMatrix
 from .sessionmatrix import SessionMatrix
 from .latch import LatchAnalyzer
+from .analyzingsource import AnalyzingSource
 
 __all__ = [
 	'Analyzer',
@@ -17,4 +18,5 @@ __all__ = [
 	'GeoMatrix',
 	'TimeWindowMatrix',
 	'SessionMatrix',
+	'LatchAnalyzer',
 ]

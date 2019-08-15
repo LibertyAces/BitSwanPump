@@ -34,6 +34,23 @@ async def example_internal(request):
 	return asab.web.rest.json_response(request, {'ok': 1})
 
 
+async def lookup_list(request):
+	app = request.app['app']
+	svc = app.get_service("bspump.PumpService")
+	return asab.web.rest.json_response(request, [lookup.rest_get() for lookup in svc.Lookups.values()])
+
+
+async def lookup_meta(request):
+	lookup_id = request.match_info.get('lookup_id')
+	app = request.app['app']
+	svc = app.get_service("bspump.PumpService")
+	try:
+		lookup = svc.locate_lookup(lookup_id)
+	except KeyError:
+		raise aiohttp.web.HTTPNotFound()
+	return asab.web.rest.json_response(request, lookup.rest_get())
+
+
 async def lookup(request):
 	lookup_id = request.match_info.get('lookup_id')
 	app = request.app['app']
@@ -126,9 +143,11 @@ KEY2=${ENVIRONMENT_VARIABLE}
 	return asab.web.rest.json_response(request,d)
 
 
+Module = asab.web.Module
+
 
 def _initialize_web(app, listen="0.0.0.0:8080"):
-	app.add_module(asab.web.Module)
+	app.add_module(Module)
 
 	websvc = app.get_service("asab.WebService")
 
@@ -147,7 +166,9 @@ def _initialize_web(app, listen="0.0.0.0:8080"):
 	container.WebApp.router.add_get('/example/trigger', example_trigger)
 	container.WebApp.router.add_get('/example/internal', example_internal)
 
+	container.WebApp.router.add_get('/lookup', lookup_list)
 	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup)
+	container.WebApp.router.add_get('/lookup/{lookup_id}/meta', lookup_meta)
 
 	container.WebApp.router.add_get('/metric', metric_list)
 	container.WebApp.router.add_get('/metric/{metric_id}', metric_detail)

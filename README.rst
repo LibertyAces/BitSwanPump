@@ -5,6 +5,14 @@ BSPump: A real-time stream processor for Python 3.5+
     :alt: Join the chat at https://gitter.im/TeskaLabs/bspump
     :target: https://gitter.im/TeskaLabs/bspump?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
+.. image:: https://travis-ci.com/LibertyAces/BitSwanPump.svg?branch=master
+    :alt: Build status
+    :target: https://travis-ci.com/LibertyAces/BitSwanPump
+
+.. image:: https://codecov.io/gh/LibertyAces/BitSwanPump/branch/master/graph/badge.svg?sanitize=true
+    :alt: Code coverage
+    :target: https://codecov.io/gh/LibertyAces/BitSwanPump
+
 Principles
 ----------
 
@@ -106,7 +114,6 @@ Available technologies
 
   * Interface for testing Processors / Pipelines
 
-* ``bspump.oob`` Out-of-band sink and engine
 * ``bspump.web`` Pump API endpoints for pipelines, lookups etc.
 
 Google Sheet with technological compatiblity matrix:
@@ -135,14 +142,13 @@ Unit test
         def test_my_processor(self):
 
             # setup processor for test
-            self.set_up_processor(my_project.processor.MyProcessor)
+            self.set_up_processor(my_project.processor.MyProcessor, "proc-arg", proc="key_arg")
 
             # mock methods to suit your needs on pipeline ..
             self.Pipeline.method = MagicMock()
 
             # .. or instance of processor
-            my_processor = self.Pipeline.locate_processor("MyProcessor")
-            my_processor.method = MagicMock()
+            self.Pipeline.Processor.method = MagicMock()
 
             output = self.execute(
                 [(None, {'foo': 'bar'})]  # Context, event
@@ -154,8 +160,8 @@ Unit test
                 [{'FOO': 'BAR'}]
             )
 
-            # asssert expected calls on `self.Pipeline.method` or `my_processor.method`
-            my_processor.method.assert_called_with(**expected)
+            # asssert expected calls on `self.Pipeline.method` or `self.Pipeline.Processor.method`
+            self.Pipeline.Processor.method.assert_called_with(**expected)
 
 
 

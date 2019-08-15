@@ -1,11 +1,15 @@
 import abc
 import asyncio
+import concurrent
+
 import types
 import logging
 import itertools
 import collections
 import datetime
+
 import asab
+
 from .abc.source import Source
 from .abc.sink import Sink
 from .abc.generator import Generator
@@ -18,7 +22,8 @@ L = logging.getLogger(__name__)
 
 #
 
-class Pipeline(abc.ABC):
+
+class Pipeline(abc.ABC, asab.ConfigObject):
 
 	'''
 
@@ -43,11 +48,24 @@ They are simply passed as an list of sources to a pipeline `build()` method.
             )
     '''
 
+	ConfigDefaults = {
+		"async_concurency_limit": 1000,
+	}
 
-	def __init__(self, app, id=None):
-		self.Id = id if id is not None else self.__class__.__name__
+	def __init__(self, app, id=None, config=None):
+		_id = id if id is not None else self.__class__.__name__
+		super().__init__("pipeline:{}".format(_id), config=config)
+
+		self.Id = _id
 		self.App = app
 		self.Loop = app.Loop
+
+		self.AsyncFutures = []
+		self.AsyncConcurencyLimit = int(self.Config["async_concurency_limit"])
+		assert(self.AsyncConcurencyLimit > 1)
+
+		# This object serves to identify the throttler, because list cannot be used as a throttler
+		self.AsyncFuturesThrottler = object()
 
 		self.Sources = []
 		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
@@ -211,7 +229,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			new_ready = len(self._throttles) == 0 
 
 		if orig_ready != new_ready:
-			if new_ready:				
+			if new_ready:
 				self._ready.set()
 				self.PubSub.publish("bspump.pipeline.ready!", pipeline=self)
 				self.MetricsDutyCycle.set('ready', True)
@@ -241,10 +259,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def _do_process(self, event, depth, context):
 		for processor in self.Processors[depth]:
+
 			try:
 				event = processor.process(context, event)
 			except BaseException as e:
-				if depth > 0: raise # Handle error on the top level
+				if depth > 0: raise # Handle error on the top depth
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))
 				self.set_error(context, event, e)
 				raise
@@ -260,43 +279,98 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		assert(event is not None)
 
-		# If the event is generator and there is more in the processor pipeline, then enumerate generator
-		if isinstance(event, types.GeneratorType) and len(self.Processors) > depth:
-			return event
+		try:
+			raise ProcessingError("Incomplete pipeline, event '{}' is not consumed by a Sink".format(event))
+		except BaseException as e:
+			L.exception("Pipeline processing error in the '{}' on depth {}".format(self.__class__.__name__, depth))
+			self.set_error(context, event, e)
+			raise
 
+
+	async def inject(self, context, event, depth):
+		"""
+		Inject method serves to inject events into the pipeline's depth defined by the depth attribute.
+		Every depth is interconnected with a generator object.
+
+		For normal operations, it is highly recommended to use process method instead (see below).
+
+		:param context:
+		:param event:
+		:param depth:
+		:return:
+		"""
+
+		if context is None:
+			context = self._context.copy()
 		else:
-			try:
-				raise ProcessingError("Incomplete pipeline, event '{}' is not consumed by a Sink".format(event))
-			except BaseException as e:
-				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.__class__.__name__, depth))
-				self.set_error(context, event, e)
-				raise
+			context = context.copy()
+			context.update(self._context)
+
+		self._do_process(event, depth, context)
 
 
 	async def process(self, event, context=None):
+		"""
+		Process method serves to inject events into the pipeline's depth 0,
+		while incrementing the event.in metric.
+
+		This is recommended way of inserting events into a pipeline.
+
+		:param event:
+		:param context:
+		:return:
+		"""
+
 		while not self.is_ready():
 			await self.ready()
 
 		self.MetricsCounter.add('event.in', 1)
 
-		if context is None:
-			context = self._context.copy()
-		else:
-			context.update(self._context)
-
-		gevent = self._do_process(event, depth=0, context=context)
-		if gevent is not None:	
-			await self._generator_process(gevent, 1, context=context)
+		await self.inject(context, event, depth=0)
 
 
-	async def _generator_process(self, event, depth, context):
-		for gevent in event:
-			while not self.is_ready():
-				await self.ready()
-			
-			ngevent = self._do_process(gevent, depth, context.copy())
-			if ngevent is not None:
-				await self._generator_process(ngevent, depth+1, context)
+	# Future methods
+
+	def ensure_future(self, coro):
+		"""
+		You can use this method to schedule a future task that will be executed in a context of the pipeline.
+		The pipeline also manages a whole lifecycle of the future/task, which means,
+		it will collect the future result, trash it, and mainly it will capture any possible exception,
+		which will then block the pipeline via set_error().
+
+		If the number of futures exceeds the configured limit, the pipeline is throttled.
+
+		:param coro:
+		:return:
+		"""
+
+		future = asyncio.ensure_future(coro, loop=self.Loop)
+		future.add_done_callback(self._future_done)
+		self.AsyncFutures.append(future)
+		# Throttle when the number of futures exceeds the max count
+		if len(self.AsyncFutures) == self.AsyncConcurencyLimit:
+			self.throttle(self.AsyncFuturesThrottler, True)
+
+
+	def _future_done(self, future):
+		"""
+		Removes future from the future list and disables throttling, if the number of
+		futures does not exceed the configured limit.
+
+		If there is an error while processing the future, it it set to the pipeline.
+		:param future:
+		:return:
+		"""
+
+		# Remove the throttle
+		if len(self.AsyncFutures) == self.AsyncConcurencyLimit:
+			self.throttle(self.AsyncFuturesThrottler, False)
+
+		self.AsyncFutures.remove(future)
+
+		exception = future.exception()
+		if exception is not None:
+			self.set_error(None, None, exception)
 
 
 	# Construction
@@ -314,6 +388,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.Processors[-1].append(processor)
 
 		if isinstance(processor, Generator):
+			processor.set_depth(len(self.Processors) - 1)
 			self.Processors.append([])
 
 
@@ -401,6 +476,15 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	async def stop(self):
+		# Stop all futures
+		while len(self.AsyncFutures) > 0:
+			# The futures are removed in _future_done
+			await asyncio.wait(
+				self.AsyncFutures,
+				loop=self.Loop,
+				return_when=concurrent.futures.ALL_COMPLETED
+			)
+
 		# Stop all started sources
 		for source in self.Sources:
 			await source.stop()

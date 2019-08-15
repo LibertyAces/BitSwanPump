@@ -31,11 +31,11 @@ class RandomEnricher(Processor):
 		'''
 			Override this method to generate differently
 		'''
-		if self.Choice:
+		if self.Choice is not None:
 			event[self.Field] = random.choice(self.Choice)
 		else:
 			n = random.randint(self.LowerBound, self.UpperBound)
-			event[self.Field] = "{}".format(n)
+			event[self.Field] = n
 
 
 	def process(self, context, event):

@@ -25,12 +25,9 @@ class Analyzer(Processor):
 		"analyze_period": 60, # every 60 seconds
 	}
 
-	def __init__(self, app, pipeline, analyze_on_clock=False, analyze_period=None, id=None, config=None):
+	def __init__(self, app, pipeline, analyze_on_clock=False, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		if analyze_period is None:
-			self.AnalyzePeriod = int(self.Config['analyze_period'])
-		else:
-			self.AnalyzePeriod = analyze_period
+		self.AnalyzePeriod = int(self.Config['analyze_period'])
 		self.AnalyzeOnClock = analyze_on_clock
 		
 		if analyze_on_clock:
@@ -45,6 +42,15 @@ class Analyzer(Processor):
 		'''
 			The main function, which runs through the analyzed object.
 			Specific for each analyzer.
+			If the analyzed object is `Matrix`, it is not recommended to iterate through the matrix row by row (or cell by cell).
+			Instead use numpy fuctions. Examples:
+			1. You have a vector with n rows. You need only those row indeces, where the cell content is more than 10.
+			Use `np.where(vector > 10)`.
+			2. You have a matrix with n rows and m columns. You need to find out which rows
+			fully consist of zeros. use `np.where(np.all(matrix == 0, axis=1))` to get those row indexes.
+			Instead `np.all()` you can use `np.any()` to get all row indexes, where there is at least one zero.  
+			3. Use `np.mean(matrix, axis=1)` to get means for all rows.
+			4. Usefull numpy functions: `np.unique()`, `np.sum()`, `np.argmin()`, `np.argmax()`.  
 		'''
 		pass
 
@@ -81,5 +87,5 @@ class Analyzer(Processor):
 		'''
 			Run analyzis every tick.
 		'''
-		await self.analyze()
+		self.analyze()
 

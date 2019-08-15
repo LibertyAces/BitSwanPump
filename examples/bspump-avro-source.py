@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
+
 import bspump
 import bspump.avro
-import bspump.file
 import bspump.common
+import bspump.file
 import bspump.trigger
 
 ###

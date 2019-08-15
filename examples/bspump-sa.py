@@ -1,8 +1,9 @@
-from bspump.file import FileCSVSource
+import bspump
 from bspump.trigger import OpportunisticTrigger
 from bspump.common import PPrintSink, NullSink
 from bspump import BSPumpApplication, Pipeline, Processor
 from bspump.analyzer import SessionAnalyzer, TimeWindowAnalyzer
+import bspump.random
 
 import logging
 import time
@@ -29,17 +30,22 @@ class MyPipeline(Pipeline):
 
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
+
 		self.build(
-			FileCSVSource(app, self, config={'path': "bspump/analyzer/var/users.csv", 'post':'noop'}).on(OpportunisticTrigger(app)),
-			GraphSessionAnalyzer(app, self, column_formats=['S40', 'i8'], column_names=["user_link", "duration"]), 
+			bspump.random.RandomSource(app, self,
+				config={'number': 300, 'upper_bound': 10, 'field':'user'}
+				).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=.1)),
+			bspump.random.RandomEnricher(app, self, config={'field':'duration', 'lower_bound':1, 'upper_bound': 5}, id="RE0"),
+			bspump.random.RandomEnricher(app, self, config={'field':'user_link', 'upper_bound': 10}, id="RE1"),
+			GraphSessionAnalyzer(app, self), 
 			NullSink(app, self)
 		)
 
 
 class GraphSessionAnalyzer(SessionAnalyzer):
 
-	def __init__(self, app, pipeline, column_formats, column_names, id=None, config=None):
-		super().__init__(app, pipeline, column_formats, column_names, analyze_on_clock=True, id=id, config=config)
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, dtype=[('user_link', 'U40'), ('duration','i8')], analyze_on_clock=True, id=id, config=config)
 
 	
 	
@@ -62,25 +68,25 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 		user_from = event["user"]
 		user_to = event["user_link"]
 		duration = event['duration']
-		if user_from not in self.Sessions.RowMap:
-			self.Sessions.add_row(user_from, start_time)
+		if user_from not in self.Sessions.N2IMap:
+			self.Sessions.add_row(user_from)
 			
-		self.Matrix[self.Sessions.RowMap[user_from]]["duration"] = duration
-		self.Matrix[self.Sessions.RowMap[user_from]]["user_link"] = user_to
+		self.Sessions.Array[self.Sessions.N2IMap[user_from]]["duration"] = duration
+		self.Sessions.Array[self.Sessions.N2IMap[user_from]]["user_link"] = user_to
 
-		if user_to not in self.Sessions.RowMap:
-			self.Sessions.add_row(user_to, start_time)
+		if user_to not in self.Sessions.N2IMap:
+			self.Sessions.add_row(user_to)
 
 	
 	async def analyze(self):
 		graph = {}
-		self.Sessions.close_row('user_1', time.time())
-		sessions_snapshot = self.Matrix
+		self.Sessions.close_row('user_1')
+		sessions_snapshot = self.Sessions.Array
 		for i in range(0, sessions_snapshot.shape[0]):
 			if i in self.Sessions.ClosedRows:
 				continue
 
-			user_from = self.Sessions.RevRowMap[i]
+			user_from = self.Sessions.I2NMap[i]
 			user_to = sessions_snapshot[i]['user_link']
 			link_weight = sessions_snapshot[i]['duration']
 			edge = tuple([user_to, link_weight])
@@ -96,9 +102,9 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 			else:
 				graph[user_to].append(rev_edge)
 
-			self.Sessions.close_row(user_from, time.time())
+			self.Sessions.close_row(user_from)
 
-		self.Sessions.rebuild_rows('full')
+		self.Sessions.flush()
 		L.warn("Graph is {}".format(graph))
 
 

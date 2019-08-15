@@ -1,25 +1,28 @@
-from bspump.elasticsearch import ElasticSearchLookup, ElasticSearchConnection
-
-from bspump.file import FileCSVSource
-from bspump.trigger import OpportunisticTrigger
-from bspump.common import PPrintSink
-from bspump import BSPumpApplication, Pipeline, Processor
 import logging
+
+import bspump
 import bspump.common
+import bspump.elasticsearch
+import bspump.file
+import bspump.trigger
 
 ##
+
 L = logging.getLogger(__name__)
+
 ##
 
-class MyApplication(BSPumpApplication):
+
+class MyApplication(bspump.BSPumpApplication):
 	def __init__(self):
 		super().__init__()
 
 		svc = self.get_service("bspump.PumpService")
 
-		es_connection = ElasticSearchConnection(self, "ElasticSearchConnection")
+		es_connection = bspump.elasticsearch.ElasticSearchConnection(self, "ElasticSearchConnection")
 		
-		self.ElasticSearchLookup = ElasticSearchLookup(self,
+		self.ElasticSearchLookup = bspump.elasticsearch.ElasticSearchLookup(
+			self,
 			connection=es_connection,
 			id="ElasticSearchLookup",
 			config={
@@ -30,20 +33,21 @@ class MyApplication(BSPumpApplication):
 		svc.add_pipeline(MyPipeline(self))
 		
 
-class MyPipeline(Pipeline):
+class MyPipeline(bspump.Pipeline):
 	# Enriches the event with location from ES lookup
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			FileCSVSource(app, self, 
-				config={"post":"noop", "path":"bspump/elasticsearch/var/users.csv"}
-				).on(OpportunisticTrigger(app)),
+			bspump.file.FileCSVSource(app, self, config={
+				"post": "noop",
+				"path": "./data/users.csv"
+			}).on(bspump.trigger.OpportunisticTrigger(app)),
 			MyProcessor(app, self), 
-			PPrintSink(app, self)
+			bspump.common.PPrintSink(app, self)
 		)
 
 
-class MyProcessor(Processor):
+class MyProcessor(bspump.Processor):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)

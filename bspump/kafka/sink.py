@@ -29,7 +29,7 @@ class KafkaSink(Sink):
                 bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
         )
 
-	There are to ways to use KafkaSink:
+	There are two ways to use KafkaSink:
 		 - Specify a single topic in KafkaSink config - topic, to be used for all the events in pipeline.
 		 - Specify topic separetly for each event in event context - context['kafk_topic'].
 		   Topic from configuration is than used as a default topic.

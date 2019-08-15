@@ -1,10 +1,9 @@
 import asyncio
 import logging
-import socket
-import aiopg
-from aiopg import create_pool
-from asab import PubSub
 
+import aiopg
+
+import asab
 from ..abc.connection import Connection
 
 #
@@ -22,7 +21,7 @@ class PostgreSQLConnection(Connection):
 		'user': '',
 		'password': '',
 		'db': '',
-		'connect_timeout': 1,
+		'connect_timeout': aiopg.connection.TIMEOUT,  # 60.0
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
 		'max_bulk_size': 1, # This is because execute many is not supported by aiopg
@@ -34,7 +33,7 @@ class PostgreSQLConnection(Connection):
 		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
 		self.ConnectionEvent.clear()
 
-		self.PubSub = PubSub(app)
+		self.PubSub = asab.PubSub(app)
 		self.Loop = app.Loop
 
 		self._host = self.Config['host']
@@ -46,8 +45,6 @@ class PostgreSQLConnection(Connection):
 		self._reconnect_delay = self.Config['reconnect_delay']
 		self._output_queue_max_size = self.Config['output_queue_max_size']
 		self._max_bulk_size = int(self.Config['max_bulk_size'])
-
-
 
 		self._conn_future = None
 		self._connection_request = False
@@ -150,7 +147,7 @@ class PostgreSQLConnection(Connection):
 		dsn = self.build_dsn()
 
 		try:
-			async with create_pool(
+			async with aiopg.create_pool(
 				dsn=dsn,
 				timeout=self._connect_timeout,
 				loop=self.Loop) as pool:
@@ -158,13 +155,8 @@ class PostgreSQLConnection(Connection):
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
 				await self._loader()
-		except socket.timeout:
-			# Socket timeout not implemented in aiomysql as it sets a keepalive to the connection
-			# it has been placed as an issue on GitHub: https://github.com/aio-libs/aiomysql/issues/257
-			L.exception("PostgreSQL connection timeout")
-			pass
-		except BaseException:
-			L.exception("Unexpected PostgreSQL connection error")
+		except BaseException as e:
+			L.exception("Unexpected PostgresSQL connection error. %s" % e)
 			raise
 
 

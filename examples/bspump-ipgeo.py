@@ -1,38 +1,48 @@
-from bspump.lookup import IPGeoLookup
-
-from bspump.file import FileCSVSource
-from bspump.trigger import OpportunisticTrigger
-from bspump.common import PPrintSink
-from bspump import BSPumpApplication, Pipeline, Processor
 import logging
 
+import bspump
+import bspump.common
+import bspump.file
+import bspump.lookup
+import bspump.trigger
+
+###
 
 L = logging.getLogger(__name__)
 
-class MyApplication(BSPumpApplication):
+###
+
+
+class MyApplication(bspump.BSPumpApplication):
 	def __init__(self):
 		super().__init__()
 
 		svc = self.get_service("bspump.PumpService")
-		self.IPGeoLookup = IPGeoLookup(self, "IPGeoLookup")
+		self.IPGeoLookup = bspump.lookup.IPGeoLookup(self, "IPGeoLookup", config={
+			"path": "./data/ip_address_source.csv",
+		})
 		svc.add_lookup(self.IPGeoLookup)
 
 		svc.add_pipeline(MyPipeline(self))
 		
 
-class MyPipeline(Pipeline):
+class MyPipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
-			FileCSVSource(app, self).on(OpportunisticTrigger(app)),
-			# chose ipv4 or ipv6 processor
-			#MyProcessorIPV4(app, self),
-			MyProcessorIPV6(app, self), 
-			PPrintSink(app, self)
+			bspump.file.FileCSVSource(app, self, config={
+				"path": "./data/ip_addresses.csv",
+				"post": "noop",
+			}).on(bspump.trigger.OpportunisticTrigger(app)),
+			# Chose IPv4 or IPv6 processor
+			MyProcessorIPV4(app, self),
+			# MyProcessorIPV6(app, self),
+			bspump.common.PPrintSink(app, self)
 		)
 
-class MyProcessorIPV4(Processor):
+
+class MyProcessorIPV4(bspump.Processor):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
@@ -52,7 +62,8 @@ class MyProcessorIPV4(Processor):
 		event['L'] = self.Lookup.lookup_location_ipv4(event["ip_address"])
 		return event
 
-class MyProcessorIPV6(Processor):
+
+class MyProcessorIPV6(bspump.Processor):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
@@ -70,8 +81,6 @@ class MyProcessorIPV6(Processor):
 
 		event['L'] = self.Lookup.lookup_location_ipv6(event["ip_address"])
 		return event
-
-
 
 
 if __name__ == '__main__':

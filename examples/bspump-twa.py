@@ -94,7 +94,7 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 	def __init__(self, app, pipeline, id=None, config=None):
 		start_time=datetime.datetime(year=2016, month=1, day=1, hour=0, minute=0, second=0).timestamp()
 		super().__init__(app=app, pipeline=pipeline, start_time=start_time, clock_driven=False, id=id, config=config)
-
+		
 		self.TimeWindow.add_row("P+R Zličín 1")
 		self.TimeWindow.add_row("P+R Rajská zahrada")
 
@@ -113,26 +113,26 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 
 		if self.MaxTimestamp < ts:
 			self.MaxTimestamp = ts
-			self.advance(self.MaxTimestamp)
+			self.TimeWindow.advance(self.MaxTimestamp)
 
 		# find the column in timewindow matrix to fit in
 		column = self.TimeWindow.get_column(ts)
 		if column is None:
 			return
 
-		row = self.TimeWindow.get_row(event["Parkoviste"])
+		row = self.TimeWindow.get_row_index(event["Parkoviste"])
 		if row is None:
 			return
 
-		self.TimeWindow.Matrix[row, column, 0] += 1
+		self.TimeWindow.Array[row, column, 0] += 1
 
 
 	async def analyze(self):
-		if self.TimeWindow.Matrix.shape[0] == 0:
+		if self.TimeWindow.Array.shape[0] == 0:
 			return
 
 		# selecting part of matrix specified in configuration
-		x = self.TimeWindow.Matrix[:, :, 0]
+		x = self.TimeWindow.Array[:, :, 0]
 
 		# if any of time slots is 0
 		if np.any(x == 0):

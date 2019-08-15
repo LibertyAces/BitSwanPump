@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
+
 import bspump
-import bspump.file
 import bspump.common
+import bspump.file
 import bspump.trigger
 
 ###
@@ -13,12 +12,13 @@ L = logging.getLogger(__name__)
 
 ###
 
+
 class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.Sink = bspump.file.FileCSVSink(app, self, config={'path': 'out.csv'})
+		self.Sink = bspump.file.FileCSVSink(app, self, config={'path': './data/out.csv'})
 
 		self.build(
 			bspump.file.FileCSVSource(

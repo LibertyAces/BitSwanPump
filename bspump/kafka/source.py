@@ -106,8 +106,6 @@ class KafkaSource(Source):
 						
 		except concurrent.futures._base.CancelledError:
 			pass
-		except BaseException as e:
-			L.exception("Error when processing Kafka message")
 		finally:
 			await self.Consumer.stop()
 

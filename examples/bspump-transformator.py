@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
+
 import bspump
-import bspump.file
 import bspump.common
+import bspump.file
 import bspump.trigger
 
 ###
@@ -12,6 +11,7 @@ import bspump.trigger
 L = logging.getLogger(__name__)
 
 ###
+
 
 class MyTransformator(bspump.common.MappingTransformator):
 
@@ -27,7 +27,6 @@ class MyTransformator(bspump.common.MappingTransformator):
 	def category(self, key, value):
 		return key, value.upper()
 
-#
 
 class SamplePipeline(bspump.Pipeline):
 
@@ -35,15 +34,17 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.file.FileJSONSource(app, self, config={'path': './data/sample.json', 'post': 'noop',})
-				.on(bspump.trigger.PubSubTrigger(app, "Application.tick!")),
+
+			bspump.file.FileJSONSource(app, self, config={
+				'path': './data/sample.json',
+				'post': 'noop',
+			}).on(bspump.trigger.PubSubTrigger(app, "Application.tick!")),
+
 			MyTransformator(app, self),
 			bspump.common.MappingItemsProcessor(app, self),
-#			bspump.common.IteratorGenerator(app, self),
 			bspump.common.PPrintSink(app, self),
 		)
 
-###
 
 if __name__ == '__main__':
 	app = bspump.BSPumpApplication()

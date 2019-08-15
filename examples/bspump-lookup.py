@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 import logging
-import asyncio
-import asab
+
 import bspump
-import bspump.file
 import bspump.common
+import bspump.file
 import bspump.trigger
-import pprint
 
 ###
 
 L = logging.getLogger(__name__)
 
 ###
+
 
 class SamplePipeline(bspump.Pipeline):
 
@@ -30,9 +29,8 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.file.FileCSVSource(app, self, config={
 					'path': './data/sample.csv',
 					'delimiter': ';',
-					'post': 'noop'}
-				)
-				.on(bspump.trigger.PubSubTrigger(app, "go!", self.PubSub)),
+					'post': 'noop'
+			}).on(bspump.trigger.PubSubTrigger(app, "go!", self.PubSub)),
 			LookupTransformator(app, self, self.Lookup),
 			bspump.common.PPrintSink(app, self),
 		)

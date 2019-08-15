@@ -18,6 +18,11 @@ L = logging.getLogger(__name__)
 
 
 class Lookup(abc.ABC, asab.ConfigObject):
+	"""
+	Lookups serve for fast data searching in lists of key-value type. They can subsequently be localized and used in pipeline objects (processors and the like). Each lookup requires a statically or dynamically created value list.
+
+	If the "lazy" parameter in the constructor is set to True, no load method is called and the user is expected to call it when necessary.
+	"""
 
 
 	ConfigDefaults = {
@@ -27,12 +32,13 @@ class Lookup(abc.ABC, asab.ConfigObject):
 	}
 
 
-	def __init__(self, app, id=None, config=None):
+	def __init__(self, app, id=None, config=None, lazy=False):
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__("lookup:{}".format(_id), config=config)
 
 		self.App = app
 		self.Loop = app.Loop
+		self.Lazy = lazy
 
 		self.Id = _id
 		self.PubSub = asab.PubSub(app)
@@ -91,6 +97,14 @@ class Lookup(abc.ABC, asab.ConfigObject):
 	def deserialize(self, data):
 		raise NotImplementedError("Lookup '{}' deserialize() method not implemented".format(self.Id))
 
+	# REST
+
+	def rest_get(self):
+		return {
+			"Id": self.Id,
+			"ETag": self.ETag,
+			"MasterURL": self.MasterURL,
+		}
 
 	# Cache control
 
@@ -203,9 +217,9 @@ class MappingLookup(Lookup, collections.abc.Mapping):
 
 class DictionaryLookup(MappingLookup):
 
-	def __init__(self, app, id=None, config=None):
+	def __init__(self, app, id=None, config=None, lazy=False):
 		self.Dictionary = {}
-		super().__init__(app, id, config=config)
+		super().__init__(app, id, config=config, lazy=lazy)
 
 
 	def __getitem__(self, key):
@@ -224,6 +238,12 @@ class DictionaryLookup(MappingLookup):
 	def deserialize(self, data):
 		self.Dictionary.update(json.loads(data.decode('utf-8')))
 
+	# REST
+
+	def rest_get(self):
+		rest = super().rest_get()
+		rest["Dictionary"] = self.Dictionary
+		return rest
 
 	def set(self, dictionary:dict):
 		if self.MasterURL is not None:
