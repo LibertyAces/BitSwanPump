@@ -27,7 +27,7 @@ class GeoMatrix(Matrix):
 		"max_lon": 40.6,
 	}
 
-	def __init__(self, app, dtype:list, bbox=None, resolution=5, id=None, config=None):
+	def __init__(self, app, dtype='float_', bbox=None, resolution=5, id=None, config=None):
 		if bbox is None:
 			bbox = {
 				"min_lat": float(self.ConfigDefaults["min_lat"]),
@@ -39,18 +39,19 @@ class GeoMatrix(Matrix):
 		self.Bbox = bbox
 		self.Resolution = resolution
 		self.update_matrix_dimensions()
-		dtype = dtype[:]
-		dtype.extend([
-			('ids', "({},1)i4".format(self.MapWidth))
-		])
+		
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		
 		self.MembersToIds = {}
 		self.IdsToMembers = {}
-		self.Array = np.zeros(self.MapHeight, dtype=self.DType)
-		self.Array["ids"][:, :, :] = -1
 
-	
+
+
+	def zeros(self):
+		self.Array = np.zeros([self.MapHeight, self.MapWidth], dtype=self.DType)
+
+
+
 	def is_in_boundaries(self, lat, lon):
 		'''
 		Check, if coordinates are within the bbox coordinates.

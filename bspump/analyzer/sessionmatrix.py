@@ -23,8 +23,9 @@ class SessionMatrix(NamedMatrix):
 	
 	'''
 
-	def __init__(self, app, dtype:list, id=None, config=None):
-		dtype = dtype[:]
+	def __init__(self, app, dtype='float_', id=None, config=None):
+		if not isinstance(dtype, str):
+			dtype = dtype[:]
 		super().__init__(app, dtype=dtype, id=id, config=config)
 
 

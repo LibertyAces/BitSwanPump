@@ -63,6 +63,8 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
+		if not isinstance(dtype, str):
+			dtype = dtype[:]
 		self.Id = id if id is not None else self.__class__.__name__
 		super().__init__("matrix:{}".format(self.Id), config=config)
 
@@ -87,7 +89,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 	def zeros(self, rows=0):
 		self.ClosedRows = set()
-		self.Array = np.zeros(self._build_shape(rows), dtype=self.DType)
+		self.Array = np.zeros(self.build_shape(rows), dtype=self.DType)
 
 
 	def flush(self):
@@ -128,7 +130,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 			self.Gauge.set("rows.closed", crc)
 
 
-	def _build_shape(self, rows=0):
+	def build_shape(self, rows=0):
 		'''
 		Override this method to have a control over the shape of the matrix.
 		'''

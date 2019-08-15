@@ -124,7 +124,7 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 		if row is None:
 			return
 
-		self.TimeWindow.Array[row, column, 0] += 1
+		self.TimeWindow.Array[row, column] += 1
 
 
 	async def analyze(self):
@@ -132,7 +132,7 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 			return
 
 		# selecting part of matrix specified in configuration
-		x = self.TimeWindow.Array[:, :, 0]
+		x = self.TimeWindow.Array[:, :]
 
 		# if any of time slots is 0
 		if np.any(x == 0):

@@ -4,6 +4,7 @@ import logging
 import numpy as np
 
 import asab
+import collections
 
 from ..matrix.matrix import NamedMatrix
 
@@ -42,18 +43,18 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype='float_', tw_dimensions=(15, 1), resolution=60, clock_driven=True, start_time=None, id=None, config=None):
+	def __init__(self, app, dtype='float_', start_time=None, resolution=60, columns=15, clock_driven=True,  id=None, config=None):
+		self.Columns = columns
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		
 		if start_time is None: start_time = time.time()
 
 		self.Resolution = resolution
-		self.Dimensions = tw_dimensions
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
-		self.End = self.Start - (self.Resolution * self.Dimensions[0])
 		
-		self.Array = np.zeros([0, self.Dimensions[0], self.Dimensions[1]], dtype=self.DType)
-		self.WarmingUpCount = np.zeros(0, dtype='int_')
+		self.End = self.Start - (self.Resolution * self.Array.shape[1])
+		
+		self.WarmingUpCount = np.zeros(self.Array.shape[0], dtype='int_')
 
 		if clock_driven:
 			advance_period = resolution / 4
@@ -76,6 +77,11 @@ class TimeWindowMatrix(NamedMatrix):
 			}
 		)
 		
+	def zeros(self):
+		self.ClosedRows = set()
+		self.N2IMap = collections.OrderedDict()
+		self.I2NMap = collections.OrderedDict()
+		self.Array = np.zeros((0, self.Columns), dtype=self.DType)
 
 
 	def add_column(self):
@@ -90,7 +96,7 @@ class TimeWindowMatrix(NamedMatrix):
 		if self.Array.shape[0] == 0:
 			return
 
-		column = np.zeros([self.Array.shape[0], 1, self.Dimensions[1]])
+		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:])
 		time_window = np.hstack((self.Array, column))
 		time_window = np.delete(time_window, 0, axis=1)
 
@@ -112,9 +118,9 @@ class TimeWindowMatrix(NamedMatrix):
 			start = self.WarmingUpCount.shape[0]
 			end = self.Array.shape[0]
 			self.WarmingUpCount.resize(self.Array.shape[0], refcheck=False)
-			self.WarmingUpCount[start:end] = self.Dimensions[0]
+			self.WarmingUpCount[start:end] = self.Array.shape[1]
 		else:
-			self.WarmingUpCount[row_index] = self.Dimensions[0]
+			self.WarmingUpCount[row_index] = self.Array.shape[1]
 
 		return row_index
 
@@ -138,17 +144,17 @@ class TimeWindowMatrix(NamedMatrix):
 		column_idx = int((event_timestamp - self.End) // self.Resolution)
 
 		# assert(column_idx >= 0)
-		# assert(column_idx < self.Dimensions[0])
+		# assert(column_idx < self.Array.shape[1])
 
 		# These are temporal debug lines
 		if column_idx < 0:
 			L.exception("The column index {} is less then 0, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(column_idx, 
-				event_timestamp, self.Start, self.End, self.Resolution, self.Dimensions[0]))
+				event_timestamp, self.Start, self.End, self.Resolution, self.Array.shape[1]))
 			raise
 
-		if column_idx >= self.Dimensions[0]:
+		if column_idx >= self.Array.shape[1]:
 			L.exception("The column index {} is more then columns number, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(column_idx, 
-				event_timestamp, self.Start, self.End, self.Resolution, self.Dimensions[0]))
+				event_timestamp, self.Start, self.End, self.Resolution, self.Array.shape[1]))
 			raise
 
 		return column_idx
