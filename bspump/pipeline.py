@@ -292,7 +292,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		Inject method serves to inject events into the pipeline's depth defined by the depth attribute.
 		Every depth is interconnected with a generator object.
 
-		For normal operations, it is higly recommended to use process method instead (see below).
+		For normal operations, it is highly recommended to use process method instead (see below).
 
 		:param context:
 		:param event:
@@ -333,9 +333,13 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def ensure_future(self, coro):
 		"""
-		Ensures future `coro` and reacts to its result (see _future_done below).
+		You can use this method to schedule a future task that will be executed in a context of the pipeline.
+		The pipeline also manages a whole lifecycle of the future/task, which means,
+		it will collect the future result, trash it, and mainly it will capture any possible exception,
+		which will then block the pipeline via set_error().
 
 		If the number of futures exceeds the configured limit, the pipeline is throttled.
+
 		:param coro:
 		:return:
 		"""
