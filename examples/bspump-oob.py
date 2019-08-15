@@ -24,18 +24,18 @@ class SampleOOBGenerator(bspump.common.OOBGenerator):
 	"""
 	OOBGenerator processes originally synchronous events "out-of-band" e.g. out of the synchronous processing within the pipeline.
 
-	Specific implementation of OOBGenerator should implement the process_oob method to process events while performing long running (asynchronous) tasks such as HTTP requests.
+	Specific implementation of OOBGenerator should implement the generate method to process events while performing long running (asynchronous) tasks such as HTTP requests.
 	The long running tasks may enrich events with relevant information, such as output of external calculations.
 
 	"""
 
-	def __init__(self, app, destination):
-		super().__init__(app, destination)
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
 
 		app.add_module(asab.proactor.Module)
 		self.ProactorService = app.get_service("asab.ProactorService")
 
-	async def process_oob(self, context, event):
+	async def generate(self, context, event, depth):
 		# Run asynchronous heavy task
 		L.debug("Running long operation asynchronously and waiting for the result...")
 		async with aiohttp.ClientSession() as session:
@@ -53,7 +53,7 @@ class SampleOOBGenerator(bspump.common.OOBGenerator):
 			event
 		)
 
-		return event
+		await self.Pipeline.inject(context, event, depth)
 
 	def process_on_thread(self, context, event):
 		r = requests.get("https://reqres.in/api/{}/4".format(event.get("description", "unknown")))
