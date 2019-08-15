@@ -29,40 +29,45 @@ class KafkaSource(Source):
                 bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
             )
 
+	To ensure that after restart, pump will continue receiving messages where it left of, group_id has to
+	be provided in the configuration.
     """
 
 	ConfigDefaults = {
-		'topic': '', # Multiple values are allowed, separated by , character
-		'client_id': 'BSPump-KafkaSource',
-		'group_id': '',
-		'max_partition_fetch_bytes': 1048576,
-		'auto_offset_reset': 'earliest',
-		'api_version': 'auto', # or e.g. 0.9.0
-		'retry': 20,
-	}
+		"topic": "", # Multiple values are allowed, separated by , character
+		"retry": 20,
 
+		"client_id": "BSPump-KafkaSource",
+		"auto_offset_reset": "earliest",
+		"max_partition_fetch_bytes":"",
+		"api_version": "auto",
+		"group_id": "",
+		"session_timeout_ms":"",
+		"consumer_timeout_ms":"",
+		"request_timeout_ms":"",
+	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.topics = re.split(r'\s*,\s*', self.Config['topic'])
-
-		self._group_id = self.Config['group_id']
-		if len(self._group_id) == 0: self._group_id = None
+		self._group_id = self.Config.get ("group_id")
+		consumer_param_names = [
+			"client_id", "auto_offset_reset", "max_partition_fetch_bytes",
+			"api_version", "group_id", "session_timeout_ms", "consumer_timeout_ms",
+			"request_timeout_ms",
+		]
+		self._consumer_params = {
+			x: y for x, y in self.Config.items() if x in consumer_param_names and y != ""
+		}
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.App = app
-		self.Consumer = aiokafka.AIOKafkaConsumer(
+		self.Consumer = self.Connection.create_consumer(
 			*self.topics,
-			loop = self.App.Loop,
-			bootstrap_servers = self.Connection.get_bootstrap_servers(),
-			client_id = self.Config['client_id'],
-			group_id = self._group_id,
-			max_partition_fetch_bytes = int(self.Config['max_partition_fetch_bytes']),
-			auto_offset_reset = self.Config['auto_offset_reset'],
-			api_version = self.Config['api_version'],
-			enable_auto_commit=False
+			**self._consumer_params
 		)
+
 		self.Partitions = None
 		self.Retry = int(self.Config['retry'])
 		self.Pipeline = pipeline
@@ -85,7 +90,7 @@ class KafkaSource(Source):
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.process_message(message)
 				
-				if self._group_id is not None:
+				if len (self._group_id)>0:
 					for i in range(self.Retry, 0, -1):
 						try:
 							await self.Consumer.commit()

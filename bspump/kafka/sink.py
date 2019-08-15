@@ -1,6 +1,7 @@
 import json
 import logging
 import typing
+import asyncio
 
 from ..abc.sink import Sink
 
@@ -54,8 +55,26 @@ class KafkaSink(Sink):
     """
 
 	ConfigDefaults = {
-		'topic': '',
-		'encoding': 'utf-8',
+		"topic": "",
+		"encoding": "utf-8",
+		"output_queue_max_size": 100,
+
+		"client_id":"",			# defaults set in AIOKafka
+		"metadata_max_age_ms":"",
+		"request_timeout_ms":"",
+		"api_version":"",
+		"acks":"",
+		"key_serializer":"",
+		"value_serializer":"",
+		"max_batch_size":"",
+		"max_request_size":"",
+		"linger_ms":"",
+		"send_backoff_ms":"",
+		"retry_backoff_ms":"",
+		"connections_max_idle_ms":"",
+		"enable_idempotency":"",
+		"transactional_id":"",
+		"transaction_timeout_ms":"",
 	}
 
 
@@ -67,8 +86,73 @@ class KafkaSink(Sink):
 		self._key_serializer = key_serializer
 		self.Encoding = self.Config['encoding']
 
-		app.PubSub.subscribe("KafkaConnection.pause!", self._connection_throttle)
-		app.PubSub.subscribe("KafkaConnection.unpause!", self._connection_throttle)
+		self._output_queue = asyncio.Queue(loop=app.Loop)
+		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+		assert (self._output_queue_max_size >= 1)
+		self._conn_future = None
+
+		producer_param_names = [
+			"client_id", "metadata_max_age_ms", "request_timeout_ms", "api_version",
+			"acks", "max_batch_size", "max_request_size", "linger_ms", "send_backoff_ms", 
+			"retry_backoff_ms", "connections_max_idle_ms", "enable_idempotence", 
+			"transactional_id", "transaction_timeout_ms",
+		]
+		self._producer_params = {x:y for x,y in self.Config.items() if x in producer_param_names and y != ""}
+
+
+		# Subscription
+		self._on_health_check('connection.open!')
+		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
+		app.PubSub.subscribe("Application.tick!", self._on_health_check)
+
+
+	def _on_health_check(self, message_type):
+		if self._conn_future is not None:
+			# Connection future exists
+
+			if not self._conn_future.done():
+				# Connection future didn't result yet
+				# No sanitization needed
+				return
+
+			try:
+				self._conn_future.result()
+			except:
+				# Connection future threw an error
+				L.exception("Unexpected connection future error")
+
+			# Connection future already resulted (with or without exception)
+			self._conn_future = None
+
+		assert (self._conn_future is None)
+
+		self._conn_future = asyncio.ensure_future(
+			self._connection(),
+			loop=self.Loop
+		)
+
+
+	def _on_application_stop(self, message_type, counter):
+		self._output_queue.put_nowait((None, None, None))
+
+
+	async def _connection(self):
+		producer = await self.Connection.create_producer(**self._producer_params)
+		try:
+			await producer.start()
+			while True:
+				topic, message, kafka_key = await self._output_queue.get()
+
+				if topic is None and message is None:
+					break
+
+				if self._output_queue.qsize() == self._output_queue_max_size - 1:
+					self.Pipeline.throttle(self, False)
+
+				await producer.send_and_wait(topic, message, key=kafka_key)
+
+		finally:
+			await producer.stop()
 
 
 	def process(self, context, event:typing.Union[dict, str, bytes]):
@@ -80,24 +164,11 @@ class KafkaSink(Sink):
 		kafka_topic = context.get("kafka_topic", self.Topic)
 		kafka_key = context.get("kafka_key")
 
-		# TODO: Make KafkaConnection create separate producer for every sink
-		#  	- key/value serialization could be moved there.
+
 		if self._key_serializer is not None and kafka_key is not None:
 			kafka_key = self._key_serializer(kafka_key)
-		self.Connection.consume(kafka_topic, event, kafka_key)
 
+		self._output_queue.put_nowait((kafka_topic, event, kafka_key))
 
-	def _connection_throttle(self, event_name, connection):
-		if connection != self.Connection:
-			return
-
-		if event_name == "KafkaConnection.pause!":
+		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.Pipeline.throttle(self, True)
-		elif event_name == "KafkaConnection.unpause!":
-			self.Pipeline.throttle(self, False)
-		else:
-			raise RuntimeError("Unexpected event name '{}'".format(event_name))
-
-
-
-
