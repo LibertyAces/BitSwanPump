@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import aiomysql
+import aiomysql.utils
 import pymysql.cursors
 import pymysql.err
 
@@ -75,8 +76,6 @@ class MySQLConnection(Connection):
 		self._output_queue_max_size = self.Config['output_queue_max_size']
 		self._max_bulk_size = int(self.Config['max_bulk_size'])
 
-
-
 		self._conn_future = None
 		self._connection_request = False
 		self._pause = False
@@ -110,7 +109,7 @@ class MySQLConnection(Connection):
 
 	def _flush_bulk(self, query):
 
-		# Enqueue and thorttle if needed
+		# Enqueue and throttle if needed
 		self._output_queue.put_nowait((query, self._bulks[query]))
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.PubSub.publish("MySQLConnection.pause!", self)
@@ -186,18 +185,37 @@ class MySQLConnection(Connection):
 			raise
 
 
-	async def acquire(self):
+	def acquire(self) -> aiomysql.utils._PoolAcquireContextManager:
+		"""
+		Acquire asynchronous database connection
+
+		Use with `with` statement
+
+	.. code-block:: python
+
+		async with self.Connection.acquire() as connection:
+			async with connection.cursor() as cursor:
+				await cursor.execute(query)
+
+		:return: Asynchronous Context Manager
+		"""
 		assert(self._conn_pool is not None)
-		return await self._conn_pool.acquire()
+		return self._conn_pool.acquire()
 
 
-	async def create_async_cursor(self):
-		async_connection = await self.acquire()
-		async_cursor = await async_connection.cursor(aiomysql.cursors.DictCursor)
-		return async_cursor
+	def create_sync_cursor(self) -> pymysql.cursors.DictCursor:
+		"""
+		Acquire synchronous database cursor
 
+		Use with `with` statement
 
-	def create_sync_cursor(self):
+	.. code-block:: python
+
+		with self.Connection.create_sync_cursor() as cursor:
+			await cursor.execute(query)
+
+		:return: Context Manager
+		"""
 		assert(self._conn_sync is not None)
 		return pymysql.cursors.DictCursor(self._conn_sync)
 
@@ -225,8 +243,8 @@ class MySQLConnection(Connection):
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("MySQLConnection.unpause!", self, asynchronously=True)
 
-			async_connection = await self.acquire()
-			async_cursor = await async_connection.cursor(aiomysql.cursors.DictCursor)
-			await async_cursor.executemany(query, data)
-			await async_connection.commit()
+			async with self.acquire() as connection:
+				async with connection.cursor() as cursor:
+					await cursor.executemany(query, data)
+					await connection.commit()
 
