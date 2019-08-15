@@ -1,4 +1,5 @@
 import logging
+import aiomysql
 
 from ..abc.lookup import MappingLookup
 from ..cache import CacheDict
@@ -96,10 +97,11 @@ The MySQLLookup can be then located and used inside a custom processor:
 
 	async def _count(self):
 		query = self.QueryCount.format(self.From)
-		async_cursor = await self.Connection.create_async_cursor()
-		await async_cursor.execute(query)
-		result = await async_cursor.fetchone()
-		return result['count']
+		async with self.Connection.acquire() as connection:
+			async with connection.cursor(aiomysql.cursors.DictCursor) as cursor:
+				await cursor.execute(query)
+				result = await cursor.fetchone()
+				return result['count']
 
 
 	async def load(self):
