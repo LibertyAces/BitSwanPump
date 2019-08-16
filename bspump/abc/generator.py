@@ -38,10 +38,9 @@ class Generator(ProcessorBase):
                 async with session.get("https://example.com/resolve_color/{}".format(event.get("color_id", "unknown"))) as resp:
                     if resp.status != 200:
                         return event
-                color = await resp.json()
-                event["color"] = color
+                new_event = await resp.json()
 
-            await self.Pipeline.inject(context, output_event, depth)
+            await self.Pipeline.inject(context, new_event, depth)
 """
 
 	def __init__(self, app, pipeline, id=None, config=None):
