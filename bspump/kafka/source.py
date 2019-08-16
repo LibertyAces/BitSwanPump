@@ -59,7 +59,7 @@ class KafkaSource(Source):
 		
 		self._group_id = self.Config.get ("group_id")
 		if len (self._group_id)>0:
-			consumer_params['group_id'] = v
+			consumer_params['group_id'] = self._group_id
 
 		v = self.Config.get('client_id')
 		if v != "": consumer_params['client_id'] = v
