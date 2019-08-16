@@ -36,15 +36,17 @@ class KafkaSource(Source):
 	ConfigDefaults = {
 		"topic": "", # Multiple values are allowed, separated by , character
 		"retry": 20,
-
-		"client_id": "BSPump-KafkaSource",
-		"auto_offset_reset": "earliest",
-		"max_partition_fetch_bytes":"",
-		"api_version": "auto",
 		"group_id": "",
-		"session_timeout_ms":"",
-		"consumer_timeout_ms":"",
-		"request_timeout_ms":"",
+		
+		"client_id": "BSPump-KafkaSource",
+
+		"auto_offset_reset": "earliest",
+		"max_partition_fetch_bytes": "",
+		"api_version": "auto",
+		
+		"session_timeout_ms": "",
+		"consumer_timeout_ms": "",
+		"request_timeout_ms": "",
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -52,14 +54,32 @@ class KafkaSource(Source):
 
 		self.topics = re.split(r'\s*,\s*', self.Config['topic'])
 		self._group_id = self.Config.get ("group_id")
-		consumer_param_names = [
-			"client_id", "auto_offset_reset", "max_partition_fetch_bytes",
-			"api_version", "group_id", "session_timeout_ms", "consumer_timeout_ms",
-			"request_timeout_ms",
-		]
-		self._consumer_params = {
-			x: y for x, y in self.Config.items() if x in consumer_param_names and y != ""
-		}
+
+
+		self._consumer_params = {}
+		
+		v = self.Config.get('client_id')
+		if v != "": _consumer_params['client_id'] = v
+		
+		v = self.Config.get('auto_offset_reset')
+		if v != "": _consumer_params['auto_offset_reset'] = v
+
+		v = self.Config.get('api_version')
+		if v != "": _consumer_params['api_version'] = v
+
+		
+		v = self.Config.get('max_partition_fetch_bytes')
+		if v != "": _consumer_params['max_partition_fetch_bytes'] = int(v)
+
+		v = self.Config.get('session_timeout_ms')
+		if v != "": _consumer_params['session_timeout_ms'] = int(v)
+
+		v = self.Config.get('consumer_timeout_ms')
+		if v != "": _consumer_params['consumer_timeout_ms'] = int(v)
+
+		v = self.Config.get('request_timeout_ms')
+		if v != "": _consumer_params['request_timeout_ms'] = int(v)
+
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.App = app
