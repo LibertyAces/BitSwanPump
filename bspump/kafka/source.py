@@ -56,7 +56,7 @@ class KafkaSource(Source):
 		self._group_id = self.Config.get ("group_id")
 
 
-		self._consumer_params = {}
+		_consumer_params = {}
 		
 		v = self.Config.get('client_id')
 		if v != "": _consumer_params['client_id'] = v
@@ -85,7 +85,7 @@ class KafkaSource(Source):
 		self.App = app
 		self.Consumer = self.Connection.create_consumer(
 			*self.topics,
-			**self._consumer_params
+			**_consumer_params
 		)
 
 		self.Partitions = None
