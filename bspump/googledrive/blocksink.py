@@ -50,7 +50,7 @@ class GoogleDriveBlockSink(GoogleDriveABCSink):
 				'parents': [self.ParentFolderID]
 			}
 			file = io.BytesIO(event)
-			media = apiclient.http.MediaIoBaseUpload(file, mimetype=mimetype)
+			media = apiclient.http.MediaIoBaseUpload(file, mimetype=mimetype, resumable=True)
 			drive_file = self.Drive_service.files().create(
 				body=file_metadata,
 				media_body=media,
