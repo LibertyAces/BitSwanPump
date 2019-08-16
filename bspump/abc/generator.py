@@ -32,7 +32,7 @@ class Generator(ProcessorBase):
 
 .. code:: python
 
-        async def generate(self, context, event):
+        async def generate(self, context, event, depth):
 
             async with aiohttp.ClientSession() as session:
                 async with session.get("https://example.com/resolve_color/{}".format(event.get("color_id", "unknown"))) as resp:
