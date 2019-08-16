@@ -54,7 +54,6 @@ class Generator(ProcessorBase):
 		self.PipelineDepth = depth
 
 	def process(self, context, event):
-		assert(self.PipelineDepth is not None)
 		self.Pipeline.ensure_future(
 			self.generate(context, event, self.PipelineDepth + 1)
 		)
