@@ -9,8 +9,7 @@ class Generator(ProcessorBase):
     and pass them to following processors in the pipeline.
     In the case of Generator, user overrides `generate` method, not `process`.
 
-    1.) Generator can iterate through an event to create derived ones and pass them to following processors.
-    Generator can in the same way also generate completely independent events, if necessary.
+    1.) Generator can iterate through an event to create (generate) derived ones and pass them to following processors.
 
     Example of a custom Generator class with generate method:
 
@@ -22,11 +21,11 @@ class Generator(ProcessorBase):
                 for item in event.items:
                     await self.Pipeline.inject(context, item, depth)
 
-    2.) Generator can be used for OOB-processing. In this way, the generator processes originally
-    synchronous events "out-of-band" e.g. out of the synchronous processing within the pipeline.
+    2.) Generator can in the same way also generate completely independent events, if necessary.
+    In this way, the generator processes originally synchronous events "out-of-band" e.g. out of the synchronous processing within the pipeline.
 
     Specific implementation of the generator should implement the generate method to process events while performing
-    long running (asynchronous) tasks such as HTTP requests.
+    long running (asynchronous) tasks such as HTTP requests or SQL select.
     The long running tasks may enrich events with relevant information, such as output of external calculations.
 
     Example of generate method:
