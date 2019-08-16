@@ -34,12 +34,14 @@ class Generator(ProcessorBase):
 
         async def generate(self, context, event, depth):
 
+            # Perform possibly long-running asynchronous operation
             async with aiohttp.ClientSession() as session:
                 async with session.get("https://example.com/resolve_color/{}".format(event.get("color_id", "unknown"))) as resp:
                     if resp.status != 200:
                         return
                     new_event = await resp.json()
 
+            # Inject a new event into a next depth of the pipeline
             await self.Pipeline.inject(context, new_event, depth)
 """
 
