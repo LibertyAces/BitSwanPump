@@ -37,8 +37,8 @@ class Generator(ProcessorBase):
             async with aiohttp.ClientSession() as session:
                 async with session.get("https://example.com/resolve_color/{}".format(event.get("color_id", "unknown"))) as resp:
                     if resp.status != 200:
-                        return event
-                new_event = await resp.json()
+                        return
+                    new_event = await resp.json()
 
             await self.Pipeline.inject(context, new_event, depth)
 """
