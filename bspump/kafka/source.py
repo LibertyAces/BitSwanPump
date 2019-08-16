@@ -56,36 +56,36 @@ class KafkaSource(Source):
 		self._group_id = self.Config.get ("group_id")
 
 
-		_consumer_params = {}
+		consumer_params = {}
 		
 		v = self.Config.get('client_id')
-		if v != "": _consumer_params['client_id'] = v
+		if v != "": consumer_params['client_id'] = v
 		
 		v = self.Config.get('auto_offset_reset')
-		if v != "": _consumer_params['auto_offset_reset'] = v
+		if v != "": consumer_params['auto_offset_reset'] = v
 
 		v = self.Config.get('api_version')
-		if v != "": _consumer_params['api_version'] = v
+		if v != "": consumer_params['api_version'] = v
 
 		
 		v = self.Config.get('max_partition_fetch_bytes')
-		if v != "": _consumer_params['max_partition_fetch_bytes'] = int(v)
+		if v != "": consumer_params['max_partition_fetch_bytes'] = int(v)
 
 		v = self.Config.get('session_timeout_ms')
-		if v != "": _consumer_params['session_timeout_ms'] = int(v)
+		if v != "": consumer_params['session_timeout_ms'] = int(v)
 
 		v = self.Config.get('consumer_timeout_ms')
-		if v != "": _consumer_params['consumer_timeout_ms'] = int(v)
+		if v != "": consumer_params['consumer_timeout_ms'] = int(v)
 
 		v = self.Config.get('request_timeout_ms')
-		if v != "": _consumer_params['request_timeout_ms'] = int(v)
+		if v != "": consumer_params['request_timeout_ms'] = int(v)
 
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.App = app
 		self.Consumer = self.Connection.create_consumer(
 			*self.topics,
-			**_consumer_params
+			**consumer_params
 		)
 
 		self.Partitions = None
