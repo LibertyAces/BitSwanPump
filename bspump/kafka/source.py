@@ -53,11 +53,14 @@ class KafkaSource(Source):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.topics = re.split(r'\s*,\s*', self.Config['topic'])
-		self._group_id = self.Config.get ("group_id")
 
 
 		consumer_params = {}
 		
+		self._group_id = self.Config.get ("group_id")
+		if len (self._group_id)>0:
+			consumer_params['group_id'] = v
+
 		v = self.Config.get('client_id')
 		if v != "": consumer_params['client_id'] = v
 		
@@ -66,7 +69,6 @@ class KafkaSource(Source):
 
 		v = self.Config.get('api_version')
 		if v != "": consumer_params['api_version'] = v
-
 		
 		v = self.Config.get('max_partition_fetch_bytes')
 		if v != "": consumer_params['max_partition_fetch_bytes'] = int(v)
