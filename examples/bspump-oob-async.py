@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 import logging
-
-import aiohttp
-import requests
 import time
 
-import asab
-import asab.proactor
+import aiohttp
+
 import bspump
 import bspump.common
 import bspump.http
@@ -15,7 +12,6 @@ import bspump.trigger
 ###
 
 L = logging.getLogger(__name__)
-
 
 ###
 
@@ -29,13 +25,9 @@ class SampleOOBGenerator(bspump.Generator):
 	while performing long running (asynchronous) tasks such as HTTP requests.
 	The long running tasks may enrich events with relevant information, such as output of external calculations.
 
+	The following example illustrates how to use OOB with long-running asynchronous operations.
+
 	"""
-
-	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, id=id, config=config)
-
-		app.add_module(asab.proactor.Module)
-		self.ProactorService = app.get_service("asab.ProactorService")
 
 	async def generate(self, context, event, depth):
 		# Run asynchronous heavy task
@@ -45,23 +37,10 @@ class SampleOOBGenerator(bspump.Generator):
 				if resp.status != 200:
 					return event
 				color = await resp.json()
-				event["color"] = color
-
-		# Run synchronous heavy task on thread
-		L.debug("Running long operation on thread and waiting for the result...")
-		event = await self.ProactorService.execute(
-			self.process_on_thread,
-			context,
-			event
-		)
+				event["color_obtained_in_async"] = color
+				event["time"] = time.time()
 
 		await self.Pipeline.inject(context, event, depth)
-
-	def process_on_thread(self, context, event):
-		r = requests.get("https://reqres.in/api/{}/4".format(event.get("description", "unknown")))
-		event["second_color"] = r.json()
-		event["time"] = time.time()
-		return event
 
 
 class SamplePipeline(bspump.Pipeline):
