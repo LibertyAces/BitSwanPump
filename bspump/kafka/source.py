@@ -36,36 +36,58 @@ class KafkaSource(Source):
 	ConfigDefaults = {
 		"topic": "", # Multiple values are allowed, separated by , character
 		"retry": 20,
-
-		"client_id": "BSPump-KafkaSource",
-		"auto_offset_reset": "earliest",
-		"max_partition_fetch_bytes":"",
-		"api_version": "auto",
 		"group_id": "",
-		"session_timeout_ms":"",
-		"consumer_timeout_ms":"",
-		"request_timeout_ms":"",
+		
+		"client_id": "BSPump-KafkaSource",
+
+		"auto_offset_reset": "earliest",
+		"max_partition_fetch_bytes": "",
+		"api_version": "auto",
+		
+		"session_timeout_ms": "",
+		"consumer_timeout_ms": "",
+		"request_timeout_ms": "",
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.topics = re.split(r'\s*,\s*', self.Config['topic'])
+
+
+		consumer_params = {}
+		
 		self._group_id = self.Config.get ("group_id")
-		consumer_param_names = [
-			"client_id", "auto_offset_reset", "max_partition_fetch_bytes",
-			"api_version", "group_id", "session_timeout_ms", "consumer_timeout_ms",
-			"request_timeout_ms",
-		]
-		self._consumer_params = {
-			x: y for x, y in self.Config.items() if x in consumer_param_names and y != ""
-		}
+		if len (self._group_id)>0:
+			consumer_params['group_id'] = self._group_id
+
+		v = self.Config.get('client_id')
+		if v != "": consumer_params['client_id'] = v
+		
+		v = self.Config.get('auto_offset_reset')
+		if v != "": consumer_params['auto_offset_reset'] = v
+
+		v = self.Config.get('api_version')
+		if v != "": consumer_params['api_version'] = v
+		
+		v = self.Config.get('max_partition_fetch_bytes')
+		if v != "": consumer_params['max_partition_fetch_bytes'] = int(v)
+
+		v = self.Config.get('session_timeout_ms')
+		if v != "": consumer_params['session_timeout_ms'] = int(v)
+
+		v = self.Config.get('consumer_timeout_ms')
+		if v != "": consumer_params['consumer_timeout_ms'] = int(v)
+
+		v = self.Config.get('request_timeout_ms')
+		if v != "": consumer_params['request_timeout_ms'] = int(v)
+
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.App = app
 		self.Consumer = self.Connection.create_consumer(
 			*self.topics,
-			**self._consumer_params
+			**consumer_params
 		)
 
 		self.Partitions = None
