@@ -59,10 +59,10 @@ class PostgreSQLLogicalReplicationSource(Source):
 			connection_factory=psycopg2.extras.LogicalReplicationConnection)
 		self.Cursor = conn.cursor()
 		try:
-			self.Cursor.start_replication(slot_name='pytest', decode=True)
+			self.Cursor.start_replication(slot_name=self.SlotName, decode=True)
 		except psycopg2.ProgrammingError:
 			self.Cursor.create_replication_slot(self.SlotName, output_plugin=self.OutputPlugin)
-			self.Cursor.start_replication(slot_name='pytest', decode=True)
+			self.Cursor.start_replication(slot_name=self.SlotName, decode=True)
 
 		worker = self.ProactorService.execute(self.stream_data)
 
