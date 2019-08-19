@@ -90,7 +90,7 @@ transformation. `dtype` see `SessionMatrix` section. `bbox` is a dictionary with
 
 ### SessionAnalyzer
 
-Parameters of the constructor `app`, `pipeline`, `dtype='float_'`, `matrix_id=None`, `analyze_on_clock=False`, `id=None`, `config=None`.
+Parameters of the constructor `app`, `pipeline`, `matrix_id=None`, `dtype='float_'`, `analyze_on_clock=False`, `id=None`, `config=None`.
 `dtype` is passed to `Matrix` if needed. If `matrix_id` is present, the pre-created matrix will be 'located'.
 `analyze_on_clock` enables the call of `analyze()` function by timer. There should be added `'analyze_period':time_in_seconds` to `config`.
 Default period is 1 minute.
@@ -102,7 +102,7 @@ Parameters of the constructor `app`, `pipeline`, `matrix_id=None`, `dtype='float
 Default period is 1 minute.
 
 ### GeoAnalyzer
-Parameters in constructor `app`, `pipeline`, `dtype='float'`, `matrix_id=None`, `analyze_on_clock=False`, `bbox=None`, `resolution=5`, `id=None`, `config=None`
+Parameters in constructor `app`, `pipeline`, `matrix_id=None`, `dtype='float_'`, `analyze_on_clock=False`, `bbox=None`, `resolution=5`, `id=None`, `config=None`
 (see `GeoMatrix` and `SessioAnalyzer`).
 
 ## The lifecycle of an Analyzer
@@ -128,7 +128,7 @@ def evaluate(self, context, event):
 		# do nothing
 		return
 
-	self.TimeWindow.Array[row_index, column_index, SOME_DIMENSION_YOU_NEED] = event['some_attribute']
+	self.TimeWindow.Array[row_index, column_index] = event['some_attribute']
 	# self.Sessions.Array['some_column'][row_index] = event['some_attribute']
 	...
 ```
