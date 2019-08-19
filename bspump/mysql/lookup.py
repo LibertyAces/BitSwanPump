@@ -2,7 +2,7 @@ import logging
 import aiomysql
 
 from ..abc.lookup import MappingLookup
-from ..cache import CacheDict
+from ..cache import LRUCacheDict
 
 ##
 
@@ -79,7 +79,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 
 		self.Count = -1
 		if cache is None:
-			self.Cache = CacheDict()
+			self.Cache = LRUCacheDict(app)
 		else:
 			self.Cache = cache
 

@@ -1,5 +1,6 @@
 import collections
 
+
 class LRUCacheDict(collections.OrderedDict):
 
 	def __init__(self, app, max_size=1000, max_duration=None, *args, **kwargs):
