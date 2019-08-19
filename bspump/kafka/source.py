@@ -1,6 +1,8 @@
 import re
 import logging
+
 import aiokafka
+import kafka
 import concurrent
 import asyncio
 
@@ -85,19 +87,28 @@ class KafkaSource(Source):
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.App = app
-		self.Consumer = self.Connection.create_consumer(
-			*self.topics,
-			**consumer_params
-		)
 
 		self.Partitions = None
+		self.ConsumerParams = consumer_params
+		self.Consumer = None
+		self.create_consumer()
+
 		self.Retry = int(self.Config['retry'])
 		self.Pipeline = pipeline
 
+	def create_consumer(self):
+		self.Partitions = None
+		self.Consumer = self.Connection.create_consumer(
+			*self.topics,
+			**self.ConsumerParams
+		)
 
-	async def main(self):
+	async def initialize_consumer(self):
 		await self.Consumer.start()
 		self.Partitions = self.Consumer.assignment()
+
+	async def main(self):
+		await self.initialize_consumer()
 		try:
 			while 1:
 				await self.Pipeline.ready()
@@ -111,13 +122,22 @@ class KafkaSource(Source):
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.process_message(message)
-				
+
 				if len (self._group_id)>0:
 					for i in range(self.Retry, 0, -1):
 						try:
 							await self.Consumer.commit()
 							break
+						except concurrent.futures._base.CancelledError as e:
+							raise e
+						except kafka.errors.IllegalStateError as e:
+							self.create_consumer()
+							await self.initialize_consumer()
+						except kafka.errors.CommitFailedError as e:
+							self.create_consumer()
+							await self.initialize_consumer()
 						except Exception as e:
+							# TODO: Refine exceptions to capture only retry-able ones
 							L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
 							await asyncio.sleep(5)
 							self.Consumer.subscribe(self.topics)
@@ -125,7 +145,9 @@ class KafkaSource(Source):
 							if i == 1:
 								self.Pipeline.set_error(None, None, e)
 								return
-						
+							else:
+								self.create_consumer()
+								await self.initialize_consumer()
 		except concurrent.futures._base.CancelledError:
 			pass
 		finally:
