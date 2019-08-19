@@ -1,5 +1,5 @@
 from .connection import PostgreSQLConnection
 from .sink import PostgreSQLSink
-from .walsource import PostgreSQLWriteAheadLogSource
+from .logicalreplicationsource import PostgreSQLLogicalReplicationSource
 
 
