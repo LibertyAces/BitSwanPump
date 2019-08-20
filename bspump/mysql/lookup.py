@@ -57,6 +57,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 	'''
 
 	ConfigDefaults = {
+	    'max_size': 1000,
 		'statement': '*',  # Specify the statement what to select
 		'from': '',  # Specify the FROM object, which can be a table or a query string
 		'key': '',  # Specify key name used for search
@@ -79,7 +80,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 
 		self.Count = -1
 		if cache is None:
-			self.Cache = LRUCacheDict(app)
+			self.Cache = LRUCacheDict(app, max_size=int(self.Config['max_size']))
 		else:
 			self.Cache = cache
 
