@@ -117,15 +117,14 @@ class KafkaSource(Source):
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
 					data = await self.Consumer.getmany(timeout_ms=20000)
-				
 				for tp, messages in data.items():
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.process_message(message)
-
 				if len(self._group_id) > 0:
 					for i in range(self.Retry, 0, -1):
 						try:
+							await asyncio.sleep(0.01)
 							await self.Consumer.commit()
 							break
 						except concurrent.futures._base.CancelledError as e:
@@ -143,6 +142,21 @@ class KafkaSource(Source):
 							else:
 								L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
 								await asyncio.sleep(5)
+								# TODO: Think about a more elegant way how to stop the consumer
+								# TODO: aiokafka does not handle exceptions of its components and thus it cannot be fully stopped via stop
+								# TODO: https://github.com/aio-libs/aiokafka/blob/master/aiokafka/consumer/consumer.py#L457
+								try:
+									self.Consumer._coordinator.close()
+								except Exception as e:
+									pass
+								try:
+									self.Consumer._fetcher.close()
+								except Exception as e:
+									pass
+								try:
+									self.Consumer._client.close()
+								except Exception as e:
+									pass
 								self.create_consumer()
 								await self.initialize_consumer()
 						except Exception as e:
