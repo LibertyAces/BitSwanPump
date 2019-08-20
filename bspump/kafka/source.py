@@ -123,31 +123,34 @@ class KafkaSource(Source):
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.process_message(message)
 
-				if len (self._group_id)>0:
+				if len(self._group_id) > 0:
 					for i in range(self.Retry, 0, -1):
 						try:
 							await self.Consumer.commit()
 							break
 						except concurrent.futures._base.CancelledError as e:
+							# Ctrl-C -> terminate and exit
 							raise e
-						except kafka.errors.IllegalStateError as e:
-							self.create_consumer()
-							await self.initialize_consumer()
-						except kafka.errors.CommitFailedError as e:
-							self.create_consumer()
-							await self.initialize_consumer()
-						except Exception as e:
-							# TODO: Refine exceptions to capture only retry-able ones
-							L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
-							await asyncio.sleep(5)
-							self.Consumer.subscribe(self.topics)
-							self.Partitions = self.Consumer.assignment()
+						except (
+								kafka.errors.IllegalStateError, kafka.errors.CommitFailedError,
+								kafka.errors.UnknownMemberIdError, kafka.errors.NodeNotReadyError
+							) as e:
+							# Retry-able errors
 							if i == 1:
+								L.exception("Error {} during Kafka commit".format(e))
 								self.Pipeline.set_error(None, None, e)
 								return
 							else:
+								L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
+								await asyncio.sleep(5)
 								self.create_consumer()
 								await self.initialize_consumer()
+						except Exception as e:
+							# Hard errors
+							L.exception("Error {} during Kafka commit".format(e))
+							await asyncio.sleep(5)
+							self.Pipeline.set_error(None, None, e)
+							return
 		except concurrent.futures._base.CancelledError:
 			pass
 		finally:
