@@ -57,7 +57,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 	'''
 
 	ConfigDefaults = {
-	    'max_size': 1000,
+        'max_size': 1000,
 		'statement': '*',  # Specify the statement what to select
 		'from': '',  # Specify the FROM object, which can be a table or a query string
 		'key': '',  # Specify key name used for search
