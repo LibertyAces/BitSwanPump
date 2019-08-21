@@ -49,6 +49,9 @@ class KafkaSource(Source):
 		"session_timeout_ms": "",
 		"consumer_timeout_ms": "",
 		"request_timeout_ms": "",
+
+		"events_per_event": 100,  # the number of events after which the read method enters the idle state to allow other operations to perform their tasks
+		"event_idle_time": 0.01,  # the time for which the read method enters the idle state (see above)
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -96,6 +99,10 @@ class KafkaSource(Source):
 		self.Retry = int(self.Config['retry'])
 		self.Pipeline = pipeline
 
+		self.LinesCounter = 0
+		self.EventsPerEvent = int(self.Config["events_per_event"])
+		self.EventIdleTime = float(self.Config["event_idle_time"])
+
 	def create_consumer(self):
 		self.Partitions = None
 		self.Consumer = self.Connection.create_consumer(
@@ -121,6 +128,7 @@ class KafkaSource(Source):
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.process_message(message)
+						await self.simulate_event()
 				if len(self._group_id) > 0:
 					for i in range(self.Retry, 0, -1):
 						try:
@@ -169,6 +177,20 @@ class KafkaSource(Source):
 			pass
 		finally:
 			await self.Consumer.stop()
+
+
+	async def simulate_event(self):
+		'''
+		The simulate_event method should be called in main method after a message has been processed.
+
+		It ensures that all other asynchronous events receive enough time to perform their tasks.
+		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
+		'''
+
+		self.LinesCounter += 1
+		if self.LinesCounter >= self.EventsPerEvent:
+			await asyncio.sleep(self.EventIdleTime)
+			self.LinesCounter = 0
 
 
 	async def process_message(self, message):
