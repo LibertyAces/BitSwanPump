@@ -124,15 +124,16 @@ class KafkaSource(Source):
 				if len(self._group_id) > 0:
 					for i in range(self.Retry, 0, -1):
 						try:
-							await asyncio.sleep(0.01)
 							await self.Consumer.commit()
 							break
 						except concurrent.futures._base.CancelledError as e:
 							# Ctrl-C -> terminate and exit
 							raise e
 						except (
-								kafka.errors.IllegalStateError, kafka.errors.CommitFailedError,
-								kafka.errors.UnknownMemberIdError, kafka.errors.NodeNotReadyError
+								kafka.errors.IllegalStateError,
+								kafka.errors.CommitFailedError,
+								kafka.errors.UnknownMemberIdError,
+								kafka.errors.NodeNotReadyError
 							) as e:
 							# Retry-able errors
 							if i == 1:
@@ -146,23 +147,22 @@ class KafkaSource(Source):
 								# TODO: aiokafka does not handle exceptions of its components and thus it cannot be fully stopped via stop
 								# TODO: https://github.com/aio-libs/aiokafka/blob/master/aiokafka/consumer/consumer.py#L457
 								try:
-									self.Consumer._coordinator.close()
+									await self.Consumer._coordinator.close()
 								except Exception as e:
-									pass
+									L.exception("Error {} during closing consumer's coordinator after Kafka commit".format(e))
 								try:
-									self.Consumer._fetcher.close()
+									await self.Consumer._fetcher.close()
 								except Exception as e:
-									pass
+									L.exception("Error {} during closing consumer's fetcher after Kafka commit".format(e))
 								try:
-									self.Consumer._client.close()
+									await self.Consumer._client.close()
 								except Exception as e:
-									pass
+									L.exception("Error {} during closing consumer's client after Kafka commit".format(e))
 								self.create_consumer()
 								await self.initialize_consumer()
 						except Exception as e:
 							# Hard errors
 							L.exception("Error {} during Kafka commit".format(e))
-							await asyncio.sleep(5)
 							self.Pipeline.set_error(None, None, e)
 							return
 		except concurrent.futures._base.CancelledError:
