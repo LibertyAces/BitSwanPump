@@ -61,6 +61,7 @@ class KafkaConnection(Connection):
 			loop = self.Loop,
 			bootstrap_servers = self.get_bootstrap_servers(),
 			enable_auto_commit=False,
+			max_poll_interval_ms=300000,
 			**kwargs
 		)
 		return consumer
