@@ -1,6 +1,22 @@
 import collections
 
+
 class LRUCacheDict(collections.OrderedDict):
+	"""
+	LRUCacheDict implements the "Least recently used" cache strategy.
+	LRUCacheDict removes last used elements, if the time they were lastly used exceeds the specified `max_duration` or the cache dictionary exceeds `max_size`.
+	For more information, please see: https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)
+
+	The following example illustrates how to use LRUCacheDict with MySQLLookup:
+
+		self.MySQLLookup =  MySQLLookup(self,
+			connection=mysql_connection,
+			id="MySQLLookup",
+			cache=bspump.cache.LRUCacheDict(app, max_size=1000, max_duration=1000)
+		)
+
+	"""
+
 
 	def __init__(self, app, max_size=1000, max_duration=None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
