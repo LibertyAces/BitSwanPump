@@ -119,11 +119,11 @@ class KafkaSource(Source):
 		try:
 			while 1:
 				await self.Pipeline.ready()
-				data = await self.Consumer.getmany(timeout_ms=20000)
+				data = await self.Consumer.getmany(timeout_ms=40000)
 				if len(data) == 0:
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
-					data = await self.Consumer.getmany(timeout_ms=20000)
+					data = await self.Consumer.getmany(timeout_ms=40000)
 				for tp, messages in data.items():
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
@@ -141,7 +141,8 @@ class KafkaSource(Source):
 								kafka.errors.IllegalStateError,
 								kafka.errors.CommitFailedError,
 								kafka.errors.UnknownMemberIdError,
-								kafka.errors.NodeNotReadyError
+								kafka.errors.NodeNotReadyError,
+								concurrent.futures.CancelledError
 							) as e:
 							# Retry-able errors
 							if i == 1:
