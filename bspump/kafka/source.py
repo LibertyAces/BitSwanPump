@@ -150,7 +150,8 @@ class KafkaSource(Source):
 						kafka.errors.CommitFailedError,
 						kafka.errors.UnknownMemberIdError,
 						kafka.errors.NodeNotReadyError,
-						concurrent.futures.CancelledError
+						kafka.errors.RebalanceInProgressError,
+						concurrent.futures.CancelledError,
 				) as e:
 					# Retry-able errors
 					if i == 1:
