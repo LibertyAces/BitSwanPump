@@ -2,7 +2,7 @@ import logging
 import aiomysql
 
 from ..abc.lookup import MappingLookup
-from ..cache import LRUCacheDict
+from ..cache import CacheDict
 
 ##
 
@@ -19,11 +19,16 @@ MySQLLookup provides a mapping (dictionary-like) interface to pipelines.
 MySQLLookup feeds lookup data from MySQL database using a query.
 MySQLLookup also has a simple cache to reduce a number of database hits.
 
+MySQLLookup allows to specify custom cache strategy via `cache` parameter, as shown in the example below.
+LRUCacheDict removes last used elements, if the time they were lastly used exceeds the specified `max_duration` or the cache dictionary exceeds `max_size`.
+For more information, please see: https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)
+
 First, it is needed to create MySQLLookup instance and register it inside the BSPump service:
 
 	self.MySQLLookup =  MySQLLookup(self,
 		connection=mysql_connection,
 		id="MySQLLookup",
+		cache=bspump.cache.LRUCacheDict(app, max_size=1000, max_duration=1000)
 		config={
 			'from': 'user_loc',
 			'key': 'user'
@@ -80,7 +85,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 
 		self.Count = -1
 		if cache is None:
-			self.Cache = LRUCacheDict(app, max_size=int(self.Config['max_size']))
+			self.Cache = CacheDict()
 		else:
 			self.Cache = cache
 
