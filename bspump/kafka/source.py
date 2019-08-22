@@ -51,7 +51,7 @@ class KafkaSource(Source):
 		"request_timeout_ms": "",
 		"get_timeout_ms": 20000,
 
-		"events_per_event": 100,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
+		"event_block_size": 100,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
 		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
 	}
 
@@ -101,8 +101,8 @@ class KafkaSource(Source):
 		self.Retry = int(self.Config['retry'])
 		self.Pipeline = pipeline
 
-		self.LinesCounter = 0
-		self.EventsPerEvent = int(self.Config["events_per_event"])
+		self.EventCounter = 0
+		self.EventBlockSize = int(self.Config["event_block_size"])
 		self.EventIdleTime = float(self.Config["event_idle_time"])
 
 	def create_consumer(self):
@@ -161,7 +161,6 @@ class KafkaSource(Source):
 					return
 				else:
 					L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
-					await asyncio.sleep(5)
 					# TODO: Think about a more elegant way how to stop the consumer
 					# TODO: aiokafka does not handle exceptions of its components and thus it cannot be fully stopped via stop
 					# TODO: https://github.com/aio-libs/aiokafka/blob/master/aiokafka/consumer/consumer.py#L457
@@ -177,6 +176,7 @@ class KafkaSource(Source):
 						await self.Consumer._client.close()
 					except Exception as e:
 						L.exception("Error {} during closing consumer's client after Kafka commit".format(e))
+					await asyncio.sleep(5)
 					self.create_consumer()
 					await self.initialize_consumer()
 			except Exception as e:
@@ -193,10 +193,10 @@ class KafkaSource(Source):
 		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
 		'''
 
-		self.LinesCounter += 1
-		if self.LinesCounter >= self.EventsPerEvent:
+		self.EventCounter += 1
+		if self.EventCounter % self.EventBlockSize == 0:
 			await asyncio.sleep(self.EventIdleTime)
-			self.LinesCounter = 0
+			self.EventCounter = 0
 
 
 	async def process_message(self, message):
