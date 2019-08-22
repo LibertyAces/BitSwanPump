@@ -133,7 +133,7 @@ class KafkaSource(Source):
 						context = {"kafka": message}
 						await self.process(message.value, context=context)
 						# Simulate event
-						await self.simulate_event()
+						await self._simulate_event()
 				if len(self._group_id) > 0:
 					await self._commit()
 		except concurrent.futures._base.CancelledError:
@@ -188,9 +188,9 @@ class KafkaSource(Source):
 				self.Pipeline.set_error(None, None, e)
 				return
 
-	async def simulate_event(self):
+	async def _simulate_event(self):
 		'''
-		The simulate_event method should be called in main method after a message has been processed.
+		The _simulate_event method should be called in main method after a message has been processed.
 
 		It ensures that all other asynchronous events receive enough time to perform their tasks.
 		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
