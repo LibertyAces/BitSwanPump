@@ -50,6 +50,8 @@ class KafkaSource(Source):
 		"consumer_timeout_ms": "",
 		"request_timeout_ms": "",
 
+		"messages_timeout_ms": 20000,
+
 		"time_per_event": 1,  # the time after which the main method enters the idle state to allow other operations to perform their tasks
 		"event_idle_time": 0.01,  # the time for which the read method enters the idle state (see above)
 	}
@@ -62,7 +64,7 @@ class KafkaSource(Source):
 
 		consumer_params = {}
 		
-		self._group_id = self.Config.get ("group_id")
+		self._group_id = self.Config.get("group_id")
 		if len (self._group_id) > 0:
 			consumer_params['group_id'] = self._group_id
 
@@ -87,6 +89,7 @@ class KafkaSource(Source):
 		v = self.Config.get('request_timeout_ms')
 		if v != "": consumer_params['request_timeout_ms'] = int(v)
 
+		self.MessagesTimeoutMs = int(self.Config.get("messages_timeout_ms"))
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.App = app
@@ -119,11 +122,11 @@ class KafkaSource(Source):
 		try:
 			while 1:
 				await self.Pipeline.ready()
-				data = await self.Consumer.getmany(timeout_ms=20000)
+				data = await self.Consumer.getmany(timeout_ms=self.MessagesTimeoutMs)
 				if len(data) == 0:
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
-					data = await self.Consumer.getmany(timeout_ms=20000)
+					data = await self.Consumer.getmany(timeout_ms=self.MessagesTimeoutMs)
 				for topic_partition, messages in data.items():
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
