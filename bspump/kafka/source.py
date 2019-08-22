@@ -130,7 +130,9 @@ class KafkaSource(Source):
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.simulate_event()
-						await self.process_message(message)
+						# Process message
+						context = {"kafka": message}
+						await self.process(message.value, context=context)
 				if len(self._group_id) > 0:
 					await self._commit()
 		except concurrent.futures._base.CancelledError:
@@ -197,8 +199,3 @@ class KafkaSource(Source):
 		if self.EventCounter % self.EventBlockSize == 0:
 			await asyncio.sleep(self.EventIdleTime)
 			self.EventCounter = 0
-
-
-	async def process_message(self, message):
-		context = { "kafka": message }
-		await self.process(message.value, context=context)
