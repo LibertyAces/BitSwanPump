@@ -199,4 +199,5 @@ class KafkaSource(Source):
 		self.EventCounter += 1
 		if self.EventCounter % self.EventBlockSize == 0:
 			await asyncio.sleep(self.EventIdleTime)
+			await self.Pipeline.ready()
 			self.EventCounter = 0
