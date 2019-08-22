@@ -27,7 +27,7 @@ class Analyzer(Processor):
 
 	def __init__(self, app, pipeline, analyze_on_clock=False, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		self.AnalyzePeriod = int(self.Config['analyze_period'])
+		self.AnalyzePeriod = float(self.Config['analyze_period'])
 		self.AnalyzeOnClock = analyze_on_clock
 		
 		if analyze_on_clock:
