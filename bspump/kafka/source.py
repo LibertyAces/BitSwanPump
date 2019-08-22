@@ -51,7 +51,7 @@ class KafkaSource(Source):
 		"request_timeout_ms": "",
 		"get_timeout_ms": 20000,
 
-		"event_block_size": 100,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
+		"event_block_size": 1000, # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
 		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
 	}
 
