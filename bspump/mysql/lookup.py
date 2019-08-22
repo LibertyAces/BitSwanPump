@@ -89,7 +89,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 
 	def _find_one(self, key):
 		query = self.QueryFindOne.format(self.Statement, self.From, self.Key)
-		cursor_sync = self.Connection.create_sync_cursor()
+		cursor_sync = self.Connection.acquire_sync_cursor()
 		cursor_sync.execute(query, key)
 		result = cursor_sync.fetchone()
 		return result
@@ -97,7 +97,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 
 	async def _count(self):
 		query = self.QueryCount.format(self.From)
-		async with self.Connection.acquire() as connection:
+		async with self.Connection.acquire_connection() as connection:
 			async with connection.cursor(aiomysql.cursors.DictCursor) as cursor:
 				await cursor.execute(query)
 				result = await cursor.fetchone()
@@ -127,7 +127,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 
 	def __iter__(self):
 		query = self.QueryIter.format(self.Statement, self.From)
-		cursor_sync = self.Connection.create_sync_cursor()
+		cursor_sync = self.Connection.acquire_sync_cursor()
 		cursor_sync.execute(query)
 		result = cursor_sync.fetchall()
 		self.Iterator = result.__iter__()

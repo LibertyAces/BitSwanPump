@@ -26,7 +26,7 @@ class MySQLSource(TriggerSource):
 
 	async def cycle(self):
 		await self._connection.ConnectionEvent.wait()
-		async with self._connection.acquire() as connection:
+		async with self._connection.acquire_connection() as connection:
 			async with connection.cursor(aiomysql.cursors.SSCursor) as cur:
 				await cur.execute(self._query)
 				event = {}

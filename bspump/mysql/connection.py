@@ -185,25 +185,25 @@ class MySQLConnection(Connection):
 			raise
 
 
-	def acquire(self) -> aiomysql.utils._PoolAcquireContextManager:
+	def acquire_connection(self) -> aiomysql.utils._PoolAcquireContextManager:
 		"""
 		Acquire asynchronous database connection
 
-		Use with `with` statement
+		Use with `async with` statement
 
 	.. code-block:: python
 
-		async with self.Connection.acquire() as connection:
+		async with self.Connection.acquire_connection() as connection:
 			async with connection.cursor() as cursor:
 				await cursor.execute(query)
 
 		:return: Asynchronous Context Manager
 		"""
 		assert(self._conn_pool is not None)
-		return self._conn_pool.acquire()
+		return self._conn_pool.acquire_connection()
 
 
-	def create_sync_cursor(self) -> pymysql.cursors.DictCursor:
+	def acquire_sync_cursor(self) -> pymysql.cursors.DictCursor:
 		"""
 		Acquire synchronous database cursor
 
@@ -211,7 +211,7 @@ class MySQLConnection(Connection):
 
 	.. code-block:: python
 
-		with self.Connection.create_sync_cursor() as cursor:
+		with self.Connection.acquire_sync_cursor() as cursor:
 			await cursor.execute(query)
 
 		:return: Context Manager
@@ -243,7 +243,7 @@ class MySQLConnection(Connection):
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("MySQLConnection.unpause!", self, asynchronously=True)
 
-			async with self.acquire() as connection:
+			async with self.acquire_connection() as connection:
 				async with connection.cursor() as cursor:
 					await cursor.executemany(query, data)
 					await connection.commit()
