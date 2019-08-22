@@ -200,7 +200,7 @@ class MySQLConnection(Connection):
 		:return: Asynchronous Context Manager
 		"""
 		assert(self._conn_pool is not None)
-		return self._conn_pool.acquire_connection()
+		return self._conn_pool.acquire()
 
 
 	def acquire_sync_cursor(self) -> pymysql.cursors.DictCursor:
