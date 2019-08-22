@@ -124,7 +124,7 @@ class KafkaSource(Source):
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
 					data = await self.Consumer.getmany(timeout_ms=20000)
-				for tp, messages in data.items():
+				for topic_partition, messages in data.items():
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.simulate_event()
