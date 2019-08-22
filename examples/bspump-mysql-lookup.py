@@ -42,7 +42,7 @@ class MyApplication(bspump.BSPumpApplication):
 
 		svc.add_connection(mysql_connection)
 		# mysql_connection.
-		# print(">>>>>", mysql_connection.acquire())
+		# print(">>>>>", mysql_connection.acquire_connection())
 
 		self.MySQLLookup = bspump.mysql.MySQLLookup(self, connection=mysql_connection, id="MySQLLookup", config={
 			'from': 'user_loc',
