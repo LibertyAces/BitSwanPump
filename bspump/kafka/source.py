@@ -1,6 +1,8 @@
 import re
 import logging
+
 import aiokafka
+import kafka
 import concurrent
 import asyncio
 
@@ -43,10 +45,14 @@ class KafkaSource(Source):
 		"auto_offset_reset": "earliest",
 		"max_partition_fetch_bytes": "",
 		"api_version": "auto",
-		
-		"session_timeout_ms": "",
+
+		"session_timeout_ms": 10000,  # Maximum time between two heartbeats that will not cause removal of the consumer from consumer group
 		"consumer_timeout_ms": "",
 		"request_timeout_ms": "",
+		"get_timeout_ms": 20000,
+
+		"event_block_size": 100,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
+		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -57,8 +63,8 @@ class KafkaSource(Source):
 
 		consumer_params = {}
 		
-		self._group_id = self.Config.get ("group_id")
-		if len (self._group_id)>0:
+		self._group_id = self.Config.get("group_id")
+		if len (self._group_id) > 0:
 			consumer_params['group_id'] = self._group_id
 
 		v = self.Config.get('client_id')
@@ -82,56 +88,115 @@ class KafkaSource(Source):
 		v = self.Config.get('request_timeout_ms')
 		if v != "": consumer_params['request_timeout_ms'] = int(v)
 
+		self.GetTimeoutMs = int(self.Config.get("get_timeout_ms"))
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.App = app
-		self.Consumer = self.Connection.create_consumer(
-			*self.topics,
-			**consumer_params
-		)
 
 		self.Partitions = None
+		self.ConsumerParams = consumer_params
+		self.Consumer = None
+		self.create_consumer()
+
 		self.Retry = int(self.Config['retry'])
 		self.Pipeline = pipeline
 
+		self.EventCounter = 0
+		self.EventBlockSize = int(self.Config["event_block_size"])
+		self.EventIdleTime = float(self.Config["event_idle_time"])
 
-	async def main(self):
+	def create_consumer(self):
+		self.Partitions = None
+		self.Consumer = self.Connection.create_consumer(
+			*self.topics,
+			**self.ConsumerParams
+		)
+
+	async def initialize_consumer(self):
 		await self.Consumer.start()
 		self.Partitions = self.Consumer.assignment()
+
+	async def main(self):
+		await self.initialize_consumer()
 		try:
 			while 1:
 				await self.Pipeline.ready()
-				data = await self.Consumer.getmany(timeout_ms=20000)
+				data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
 				if len(data) == 0:
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
-					data = await self.Consumer.getmany(timeout_ms=20000)
-				
-				for tp, messages in data.items():
+					data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
+				for topic_partition, messages in data.items():
 					for message in messages:
-						#TODO: If pipeline is not ready, don't commit messages ...
-						await self.process_message(message)
-				
-				if len (self._group_id)>0:
-					for i in range(self.Retry, 0, -1):
-						try:
-							await self.Consumer.commit()
-							break
-						except Exception as e:
-							L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
-							await asyncio.sleep(5)
-							self.Consumer.subscribe(self.topics)
-							self.Partitions = self.Consumer.assignment()
-							if i == 1:
-								self.Pipeline.set_error(None, None, e)
-								return
-						
+						# TODO: If pipeline is not ready, don't commit messages ...
+						# Process message
+						context = {"kafka": message}
+						await self.process(message.value, context=context)
+						# Simulate event
+						await self._simulate_event()
+				if len(self._group_id) > 0:
+					await self._commit()
 		except concurrent.futures._base.CancelledError:
 			pass
 		finally:
 			await self.Consumer.stop()
 
+	async def _commit(self):
+		for i in range(self.Retry, 0, -1):
+			try:
+				await self.Consumer.commit()
+				break
+			except concurrent.futures._base.CancelledError as e:
+				# Ctrl-C -> terminate and exit
+				raise e
+			except (
+					kafka.errors.IllegalStateError,
+					kafka.errors.CommitFailedError,
+					kafka.errors.UnknownMemberIdError,
+					kafka.errors.NodeNotReadyError,
+					kafka.errors.RebalanceInProgressError,
+					concurrent.futures.CancelledError,
+			) as e:
+				# Retry-able errors
+				if i == 1:
+					L.exception("Error {} during Kafka commit".format(e))
+					self.Pipeline.set_error(None, None, e)
+					return
+				else:
+					L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
+					# TODO: Think about a more elegant way how to stop the consumer
+					# TODO: aiokafka does not handle exceptions of its components and thus it cannot be fully stopped via stop
+					# TODO: https://github.com/aio-libs/aiokafka/blob/master/aiokafka/consumer/consumer.py#L457
+					try:
+						await self.Consumer._coordinator.close()
+					except Exception as e:
+						L.exception("Error {} during closing consumer's coordinator after Kafka commit".format(e))
+					try:
+						await self.Consumer._fetcher.close()
+					except Exception as e:
+						L.exception("Error {} during closing consumer's fetcher after Kafka commit".format(e))
+					try:
+						await self.Consumer._client.close()
+					except Exception as e:
+						L.exception("Error {} during closing consumer's client after Kafka commit".format(e))
+					await asyncio.sleep(5)
+					self.create_consumer()
+					await self.initialize_consumer()
+			except Exception as e:
+				# Hard errors
+				L.exception("Error {} during Kafka commit".format(e))
+				self.Pipeline.set_error(None, None, e)
+				return
 
-	async def process_message(self, message):
-		context = { "kafka": message }
-		await self.process(message.value, context=context)
+	async def _simulate_event(self):
+		'''
+		The _simulate_event method should be called in main method after a message has been processed.
+
+		It ensures that all other asynchronous events receive enough time to perform their tasks.
+		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
+		'''
+
+		self.EventCounter += 1
+		if self.EventCounter % self.EventBlockSize == 0:
+			await asyncio.sleep(self.EventIdleTime)
+			self.EventCounter = 0
