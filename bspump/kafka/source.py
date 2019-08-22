@@ -129,60 +129,60 @@ class KafkaSource(Source):
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.simulate_event()
 						await self.process_message(message)
-				await self._commit()
+				if len(self._group_id) > 0:
+					await self._commit()
 		except concurrent.futures._base.CancelledError:
 			pass
 		finally:
 			await self.Consumer.stop()
 
 	async def _commit(self):
-		if len(self._group_id) > 0:
-			for i in range(self.Retry, 0, -1):
-				try:
-					await self.Consumer.commit()
-					self.LastTime = 0
-					break
-				except concurrent.futures._base.CancelledError as e:
-					# Ctrl-C -> terminate and exit
-					raise e
-				except (
-						kafka.errors.IllegalStateError,
-						kafka.errors.CommitFailedError,
-						kafka.errors.UnknownMemberIdError,
-						kafka.errors.NodeNotReadyError,
-						kafka.errors.RebalanceInProgressError,
-						concurrent.futures.CancelledError,
-				) as e:
-					# Retry-able errors
-					if i == 1:
-						L.exception("Error {} during Kafka commit".format(e))
-						self.Pipeline.set_error(None, None, e)
-						return
-					else:
-						L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
-						await asyncio.sleep(5)
-						# TODO: Think about a more elegant way how to stop the consumer
-						# TODO: aiokafka does not handle exceptions of its components and thus it cannot be fully stopped via stop
-						# TODO: https://github.com/aio-libs/aiokafka/blob/master/aiokafka/consumer/consumer.py#L457
-						try:
-							await self.Consumer._coordinator.close()
-						except Exception as e:
-							L.exception("Error {} during closing consumer's coordinator after Kafka commit".format(e))
-						try:
-							await self.Consumer._fetcher.close()
-						except Exception as e:
-							L.exception("Error {} during closing consumer's fetcher after Kafka commit".format(e))
-						try:
-							await self.Consumer._client.close()
-						except Exception as e:
-							L.exception("Error {} during closing consumer's client after Kafka commit".format(e))
-						self.create_consumer()
-						await self.initialize_consumer()
-				except Exception as e:
-					# Hard errors
+		for i in range(self.Retry, 0, -1):
+			try:
+				await self.Consumer.commit()
+				self.LastTime = 0
+				break
+			except concurrent.futures._base.CancelledError as e:
+				# Ctrl-C -> terminate and exit
+				raise e
+			except (
+					kafka.errors.IllegalStateError,
+					kafka.errors.CommitFailedError,
+					kafka.errors.UnknownMemberIdError,
+					kafka.errors.NodeNotReadyError,
+					kafka.errors.RebalanceInProgressError,
+					concurrent.futures.CancelledError,
+			) as e:
+				# Retry-able errors
+				if i == 1:
 					L.exception("Error {} during Kafka commit".format(e))
 					self.Pipeline.set_error(None, None, e)
 					return
+				else:
+					L.exception("Error {} during Kafka commit - will retry in 5 seconds".format(e))
+					await asyncio.sleep(5)
+					# TODO: Think about a more elegant way how to stop the consumer
+					# TODO: aiokafka does not handle exceptions of its components and thus it cannot be fully stopped via stop
+					# TODO: https://github.com/aio-libs/aiokafka/blob/master/aiokafka/consumer/consumer.py#L457
+					try:
+						await self.Consumer._coordinator.close()
+					except Exception as e:
+						L.exception("Error {} during closing consumer's coordinator after Kafka commit".format(e))
+					try:
+						await self.Consumer._fetcher.close()
+					except Exception as e:
+						L.exception("Error {} during closing consumer's fetcher after Kafka commit".format(e))
+					try:
+						await self.Consumer._client.close()
+					except Exception as e:
+						L.exception("Error {} during closing consumer's client after Kafka commit".format(e))
+					self.create_consumer()
+					await self.initialize_consumer()
+			except Exception as e:
+				# Hard errors
+				L.exception("Error {} during Kafka commit".format(e))
+				self.Pipeline.set_error(None, None, e)
+				return
 
 	async def simulate_event(self):
 		'''
@@ -198,7 +198,8 @@ class KafkaSource(Source):
 			return
 
 		if (current_time - self.LastTime) >= self.TimePerEvent:
-			await self._commit()
+			if len(self._group_id) > 0:
+				await self._commit()
 			await asyncio.sleep(self.EventIdleTime)
 			self.LastTime = current_time + self.EventIdleTime
 
