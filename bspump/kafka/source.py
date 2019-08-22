@@ -128,11 +128,12 @@ class KafkaSource(Source):
 					data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
 				for topic_partition, messages in data.items():
 					for message in messages:
-						#TODO: If pipeline is not ready, don't commit messages ...
-						await self.simulate_event()
+						# TODO: If pipeline is not ready, don't commit messages ...
 						# Process message
 						context = {"kafka": message}
 						await self.process(message.value, context=context)
+						# Simulate event
+						await self.simulate_event()
 				if len(self._group_id) > 0:
 					await self._commit()
 		except concurrent.futures._base.CancelledError:
