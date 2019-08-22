@@ -46,13 +46,13 @@ class KafkaSource(Source):
 		"max_partition_fetch_bytes": "",
 		"api_version": "auto",
 
-		"session_timeout_ms": "",
+		"session_timeout_ms": 10000,  # Maximum time between two heartbeats that will not cause removal of the consumer from consumer group
 		"consumer_timeout_ms": "",
 		"request_timeout_ms": "",
 		"get_timeout_ms": 20000,
 
-		"events_per_event": 100,  # the number of lines after which the main method enters the idle state to allow other operations to perform their tasks
-		"event_idle_time": 0.01,  # the time for which the main method enters the idle state (see above)
+		"events_per_event": 100,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
+		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
