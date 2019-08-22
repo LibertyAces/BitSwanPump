@@ -45,15 +45,14 @@ class KafkaSource(Source):
 		"auto_offset_reset": "earliest",
 		"max_partition_fetch_bytes": "",
 		"api_version": "auto",
-		
+
 		"session_timeout_ms": "",
 		"consumer_timeout_ms": "",
 		"request_timeout_ms": "",
+		"get_timeout_ms": 20000,
 
-		"messages_timeout_ms": 20000,
-
-		"time_per_event": 1,  # the time after which the main method enters the idle state to allow other operations to perform their tasks
-		"event_idle_time": 0.01,  # the time for which the read method enters the idle state (see above)
+		"events_per_event": 100,  # the number of lines after which the main method enters the idle state to allow other operations to perform their tasks
+		"event_idle_time": 0.01,  # the time for which the main method enters the idle state (see above)
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -89,7 +88,7 @@ class KafkaSource(Source):
 		v = self.Config.get('request_timeout_ms')
 		if v != "": consumer_params['request_timeout_ms'] = int(v)
 
-		self.MessagesTimeoutMs = int(self.Config.get("messages_timeout_ms"))
+		self.GetTimeoutMs = int(self.Config.get("get_timeout_ms"))
 
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.App = app
@@ -102,8 +101,8 @@ class KafkaSource(Source):
 		self.Retry = int(self.Config['retry'])
 		self.Pipeline = pipeline
 
-		self.LastTime = 0
-		self.TimePerEvent = int(self.Config["time_per_event"])
+		self.LinesCounter = 0
+		self.EventsPerEvent = int(self.Config["events_per_event"])
 		self.EventIdleTime = float(self.Config["event_idle_time"])
 
 	def create_consumer(self):
@@ -122,17 +121,16 @@ class KafkaSource(Source):
 		try:
 			while 1:
 				await self.Pipeline.ready()
-				data = await self.Consumer.getmany(timeout_ms=self.MessagesTimeoutMs)
+				data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
 				if len(data) == 0:
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
-					data = await self.Consumer.getmany(timeout_ms=self.MessagesTimeoutMs)
+					data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
 				for topic_partition, messages in data.items():
 					for message in messages:
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.simulate_event()
 						await self.process_message(message)
-				# Commit short-processing messages that are not being committed one by one
 				if len(self._group_id) > 0:
 					await self._commit()
 		except concurrent.futures._base.CancelledError:
@@ -144,7 +142,6 @@ class KafkaSource(Source):
 		for i in range(self.Retry, 0, -1):
 			try:
 				await self.Consumer.commit()
-				self.LastTime = 0
 				break
 			except concurrent.futures._base.CancelledError as e:
 				# Ctrl-C -> terminate and exit
@@ -196,16 +193,10 @@ class KafkaSource(Source):
 		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
 		'''
 
-		current_time = self.App.time()
-		if self.LastTime == 0:
-			self.LastTime = current_time
-			return
-
-		if (current_time - self.LastTime) >= self.TimePerEvent:
-			if len(self._group_id) > 0:
-				await self._commit()
+		self.LinesCounter += 1
+		if self.LinesCounter >= self.EventsPerEvent:
 			await asyncio.sleep(self.EventIdleTime)
-			self.LastTime = current_time + self.EventIdleTime
+			self.LinesCounter = 0
 
 
 	async def process_message(self, message):
