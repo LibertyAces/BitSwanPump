@@ -132,6 +132,7 @@ class KafkaSource(Source):
 						#TODO: If pipeline is not ready, don't commit messages ...
 						await self.simulate_event()
 						await self.process_message(message)
+				# Commit short-processing messages that are not being committed one by one
 				if len(self._group_id) > 0:
 					await self._commit()
 		except concurrent.futures._base.CancelledError:
