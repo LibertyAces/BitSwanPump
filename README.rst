@@ -71,7 +71,7 @@ Build
 
 Docker build
 ^^^^^^^^^^^^
-Dockerfile and instructions are in `it's own repository <https://www.bambule.cz/spolecenska-hra-kamionem-po-evrope>`_.
+Dockerfile and instructions are in `it's own repository <https://github.com/LibertyAces/docker-bspump/>`_.
 
 
 .. # PyPI build
