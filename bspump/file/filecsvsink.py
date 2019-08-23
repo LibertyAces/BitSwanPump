@@ -13,14 +13,14 @@ class FileCSVSink(Sink):
 	ConfigDefaults = {
 		'path': '',
 		'dialect': 'excel',
-		'delimiter': None,
-		'doublequote': None,
-		'escapechar': None,
-		'lineterminator': None,
-		'quotechar': None,
-		'quoting': None,
-		'skipinitialspace': None,
-		'strict': None,
+		'delimiter': ',',
+		'doublequote': True,
+		'escapechar': "",
+		'lineterminator': '\r\n',
+		'quotechar': '"',
+		'quoting': csv.QUOTE_MINIMAL,  # 0 - 3 for [QUOTE_MINIMAL, QUOTE_ALL, QUOTE_NONNUMERIC, QUOTE_NONE]
+		'skipinitialspace': False,
+		'strict': False,
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -37,31 +37,20 @@ class FileCSVSink(Sink):
 
 
 	def writer(self, f, fieldnames):
-		kwargs = {}
+		kwargs = dict()
 
-		v = self.Config.get('delimiter')
-		if v is not None: kwargs['delimiter'] = v
+		kwargs['delimiter'] = self.Config.get('delimiter')
+		kwargs['doublequote'] = bool(self.Config.get('doublequote'))
 
-		v = self.Config.get('doublequote')
-		if v is not None: kwargs['doublequote'] = v
+		escape_char = self.Config.get('escapechar')
+		escape_char = None if escape_char == "" else escape_char
+		kwargs['escapechar'] = escape_char
 
-		v = self.Config.get('escapechar')
-		if v is not None: kwargs['escapechar'] = v
-
-		v = self.Config.get('lineterminator')
-		if v is not None: kwargs['lineterminator'] = v
-
-		v = self.Config.get('quotechar')
-		if v is not None: kwargs['quotechar'] = v
-
-		v = self.Config.get('quoting')
-		if v is not None: kwargs['quoting'] = v
-
-		v = self.Config.get('skipinitialspace')
-		if v is not None: kwargs['skipinitialspace'] = v
-
-		v = self.Config.get('strict')
-		if v is not None: kwargs['strict'] = v
+		kwargs['lineterminator'] = self.Config.get('lineterminator')
+		kwargs['quotechar'] = self.Config.get('quotechar')
+		kwargs['quoting'] = int(self.Config.get('quoting'))
+		kwargs['skipinitialspace'] = bool(self.Config.get('skipinitialspace'))
+		kwargs['strict'] = bool(self.Config.get('strict'))
 
 		return csv.DictWriter(f,
 			dialect=self.Dialect,
