@@ -17,23 +17,32 @@ L = logging.getLogger(__name__)
 
 class KafkaSource(Source):
 	"""
-    KafkaSource object consumes messages from an Apache Kafka system, which is configured in the KafkaConnection object.
-    It then passes them to other processors in the pipeline.
+	KafkaSource object consumes messages from an Apache Kafka system, which is configured in the KafkaConnection object.
+	It then passes them to other processors in the pipeline.
 
 .. code:: python
 
-    class KafkaPipeline(bspump.Pipeline):
+	class KafkaPipeline(bspump.Pipeline):
 
-        def __init__(self, app, pipeline_id):
-            super().__init__(app, pipeline_id)
-            self.build(
-                bspump.kafka.KafkaSource(app, self, "KafkaConnection", config={'topic': 'messages'}),
-                bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
-            )
+		def __init__(self, app, pipeline_id):
+			super().__init__(app, pipeline_id)
+			self.build(
+				bspump.kafka.KafkaSource(app, self, "KafkaConnection", config={'topic': 'messages'}),
+				bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
+			)
 
 	To ensure that after restart, pump will continue receiving messages where it left of, group_id has to
 	be provided in the configuration.
-    """
+
+	When the group_id is set, the consumer group is created and the Kafka server will then operate
+	in the producer-consumer mode. It means that every consumer with the same group_id will be assigned
+	unique set of partitions, hence all messages will be divided among them and thus unique.
+
+	Long-running synchronous operations should be avoided or places inside the OOBGenerator in the asynchronous
+	way or on thread using ASAB Proactor service (see bspump-oob-proactor.py example in "examples" folder).
+	Otherwise, the session_timeout_ms should be raised to prevent Kafka from disconnecting the consumer
+	from the partition, thus causing rebalance.
+	"""
 
 	ConfigDefaults = {
 		"topic": "", # Multiple values are allowed, separated by , character
