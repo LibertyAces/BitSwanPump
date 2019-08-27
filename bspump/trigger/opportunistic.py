@@ -16,7 +16,7 @@ class OpportunisticTrigger(Trigger):
 		super().__init__(app, id=id)
 		self.ChilldownPeriod = chilldown_period # Seconds
 
-		app.PubSub.subscribe("Application.tick/10!", self.on_tick)
+		app.PubSub.subscribe("Application.tick!", self.on_tick)
 
 		if run_immediately:
 			self.Loop.call_soon(self.on_tick)
