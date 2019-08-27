@@ -146,10 +146,14 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
+			# Download the CSV file "TSK_data_2016_2018.csv" from
+			# http://opendata.praha.eu/dataset/parkovani_pr/resource/601ca22a-2c53-49e7-b396-26cc64cedc3d
+			# and put it to the "examples" folder
 			bspump.file.FileCSVSource(app, self, config={
 					'path': './TSK_data_2016_2018.csv',
 					'post': 'noop',
 					'delimiter': ';',
+					'encoding': 'utf-8',
 				}).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
 			ProgressBarProcessor(app,self),
 			MyTransformator(app, self),

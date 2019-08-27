@@ -164,7 +164,9 @@ class TimeWindowMatrix(NamedMatrix):
 		'''
 			Advance time window (add columns) so it covers target `timestamp` (`target_ts`)
 			Also, if `target_ts` is in top 75% of the last existing column, add a new column too.
-		
+
+			"target_ts" must always be in seconds
+
 		.. code-block:: python
 
 			------------------|-----------
