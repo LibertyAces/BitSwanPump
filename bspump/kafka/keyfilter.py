@@ -8,8 +8,9 @@ class KafkaKeyFilter(bspump.Processor):
 	key provided in each event.
 
 	Every Kafka message has a key, KafkaKeyFilter selects only those events where
-	the event key matches one of provided 'keys', other events will be discarded. You may set filtering `keys`
-	as a processor parameter (bytes).
+	the event key matches one of provided 'keys', other events will be discarded.
+
+	Set filtering `keys` as a parameter (in bytes) in the KafkaKeyFilter constructor.
 
 	KafkaKeyFilter is meant to be inserted after KafkaSource in a Pipeline.
 	"""
