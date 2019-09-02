@@ -1,15 +1,18 @@
 import unittest
 import logging
-
+import collections
+import time
+import numpy as np
+import random
 import asab.abc.singleton
 
 import bspump
+import bspump.analyzer
+import bspump.matrix
 import bspump.unittest
 
 
 class TestMatrix(bspump.unittest.TestCase):
-
-
 	def test_matrix(self):
 		matrix = bspump.Matrix(
 			app = self.App,
@@ -85,4 +88,3 @@ class TestMatrix(bspump.unittest.TestCase):
 		
 		row['f1'] = "Ahoj"
 		row['f2'] = 64
-
