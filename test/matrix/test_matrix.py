@@ -1,13 +1,7 @@
 import unittest
-import logging
-import collections
 import time
-import numpy as np
-import random
-import asab.abc.singleton
 
 import bspump
-import bspump.analyzer
 import bspump.matrix
 import bspump.unittest
 

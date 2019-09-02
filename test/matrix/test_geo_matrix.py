@@ -1,13 +1,9 @@
 import unittest
-import logging
-import collections
 import time
 import numpy as np
-import asab.abc.singleton
 
 import bspump
 import bspump.analyzer
-import bspump.matrix
 import bspump.unittest
 
 
@@ -24,7 +20,6 @@ class TestGeoMatrix(bspump.unittest.TestCase):
 	def test_matrix_is_in_boundaries(self):
 		bbox = {"min_lon": 14.259097, "max_lon": 14.589601, "min_lat": 49.974702, "max_lat": 50.160150} 
 		matrix = bspump.analyzer.GeoMatrix(app=self.App, bbox=bbox, resolution=5)
-		print("???????????", matrix.Bbox)
 		coordinates = [(0, 0), (0, 50), (14.3, 51), (14.3, 50), (13, 50)]
 		ground_truths = [False, False, False, True, False]
 
@@ -50,6 +45,3 @@ class TestGeoMatrix(bspump.unittest.TestCase):
 			row_, column_ =  matrix.project_equirectangular(lat, lon)
 			self.assertEqual(row_, row)
 			self.assertEqual(column_, column)
-
-			
-			
