@@ -74,8 +74,12 @@ Docker build
 Dockerfile and instructions are in `it's own repository <https://github.com/LibertyAces/docker-bspump/>`_.
 
 
-.. # PyPI build
-.. ^^^^^^^^^^
+PyPI release
+^^^^^^^^^^^^
+Releases are happening from a git tag (format: ``vYY.MM``)
+``git tag -a v19.07``
+
+Following the `PyPI packaging <https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives>`_, generate `distribution package <https://packaging.python.org/glossary/#term-distribution-package>`_ and `upload it <https://packaging.python.org/tutorials/packaging-projects/#uploading-the-distribution-archives>`_ using following command ``python -m twine upload dist/*``
 
 
 Blank application setup
