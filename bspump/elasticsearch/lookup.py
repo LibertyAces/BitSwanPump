@@ -1,8 +1,7 @@
-import abc
-import requests
-import logging
 import json
-import collections
+import logging
+
+import requests
 
 from ..abc.lookup import MappingLookup
 from ..cache import CacheDict
@@ -68,11 +67,7 @@ class ElasticSearchLookup(MappingLookup):
 		prefix = '_search'
 		request = {
 			"size": 1,
-			"query": {
-				'match': {
-					self.Key:key
-				}
-			}
+			"query": self.get_find_one_query(key)
 		}
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 		response = requests.post(url, json=request)
@@ -84,7 +79,19 @@ class ElasticSearchLookup(MappingLookup):
 
 		return hit["_source"]
 
-	
+
+	def get_find_one_query(self, key) -> dict:
+		"""
+		Hook for modifying lookup query
+		:return: Default single-key query
+		"""
+		return {
+			'match': {
+				self.Key: key
+			}
+		}
+
+
 	async def _count(self):
 		prefix = "_count"
 		request = {
