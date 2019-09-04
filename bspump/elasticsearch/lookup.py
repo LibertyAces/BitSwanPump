@@ -67,7 +67,7 @@ class ElasticSearchLookup(MappingLookup):
 		prefix = '_search'
 		request = {
 			"size": 1,
-			"query": self.get_find_one_query(key)
+			"query": self.build_find_one_query(key)
 		}
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 		response = requests.post(url, json=request)
@@ -80,7 +80,7 @@ class ElasticSearchLookup(MappingLookup):
 		return hit["_source"]
 
 
-	def get_find_one_query(self, key) -> dict:
+	def build_find_one_query(self, key) -> dict:
 		"""
 		Hook for modifying lookup query
 		:return: Default single-key query
