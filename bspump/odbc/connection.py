@@ -41,9 +41,7 @@ class ODBCConnection(Connection):
 		self._user = self.Config['user']
 		self._password = self.Config['password']
 		self._connect_timeout = self.Config['connect_timeout']
-		self._driver = self.Config['driver']
-		self._db = self.Config['db']
-		self._dsn = "Driver={};Database={}".format(self._driver, self._db)
+		self._dsn = "Driver={};Database={}".format(self.Config['driver'], self.Config['db'])
 		self._reconnect_delay = self.Config['reconnect_delay']
 		self._output_queue_max_size = self.Config['output_queue_max_size']
 		self._max_bulk_size = int(self.Config['max_bulk_size'])
@@ -84,7 +82,7 @@ class ODBCConnection(Connection):
 		# Enqueue and thorttle if needed
 		self._output_queue.put_nowait((query, self._bulks[query]))
 		if self._output_queue.qsize() == self._output_queue_max_size:
-			self.PubSub.publish("MySQLConnection.pause!", self)
+			self.PubSub.publish("ODBCConnection.pause!", self)
 
 		# Reset bulk
 		self._bulks[query] = []
@@ -129,15 +127,11 @@ class ODBCConnection(Connection):
 				user=self._user,
 				password=self._password,
 				dsn=self._dsn,
-				db=self._db,
-				connect_timeout=self._connect_timeout, #TODO: Doesn't work! See socket.timeout exception below
+				connect_timeout=self._connect_timeout, 
 				loop=self.Loop) as pool:
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
 				await self._loader()
-		except socket.timeout:
-			L.exception("ODBC connection timeout")
-			pass
 		except BaseException:
 			L.exception("Unexpected ODBC connection error")
 			raise
