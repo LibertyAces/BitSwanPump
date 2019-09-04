@@ -38,7 +38,7 @@ class GeoMatrix(Matrix):
 		
 		self.Bbox = bbox
 		self.Resolution = resolution
-		self.update_matrix_dimensions()
+		self._update_matrix_dimensions()
 		
 		super().__init__(app, dtype=dtype, id=id, config=config)
 		
@@ -59,13 +59,13 @@ class GeoMatrix(Matrix):
 		if (lat >= self.Bbox["max_lat"]) or (lat <= self.Bbox["min_lat"]):
 			return False
 
-		if (lon >= self.Bbox["max_lon"]) or (lat <= self.Bbox["min_lon"]):
+		if (lon >= self.Bbox["max_lon"]) or (lon <= self.Bbox["min_lon"]):
 			return False
 
 		return True
 
 
-	def update_matrix_dimensions(self):
+	def _update_matrix_dimensions(self):
 		'''
 			Calculation of MapHeight and MapWidth.
 		'''

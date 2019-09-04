@@ -176,11 +176,14 @@ class TimeWindowMatrix(NamedMatrix):
 			------------------------------
 
 		'''
-
+		added = 0
 		while True:
 			dt = (self.Start - target_ts) / self.Resolution
 			if dt > 0.25: break
 			self.add_column()
+			added += 1
+
+		return added
 	
 
 	async def on_clock_tick(self):
