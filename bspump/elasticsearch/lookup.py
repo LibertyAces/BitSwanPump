@@ -82,7 +82,7 @@ class ElasticSearchLookup(MappingLookup):
 
 	def build_find_one_query(self, key) -> dict:
 		"""
-		Hook for modifying lookup query
+		Override this method to build your own lookup query
 		:return: Default single-key query
 		"""
 		return {
