@@ -65,7 +65,7 @@ class TimeWindowAnalyzer(Analyzer):
 	}
 
 	def __init__(self, app, pipeline, matrix_id=None, dtype='float_', columns=15, analyze_on_clock=False, resolution=60, 
-				start_time=None, clock_driven=True, 
+				start_time=None, clock_driven=False, 
 				id=None, config=None):
 		
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
