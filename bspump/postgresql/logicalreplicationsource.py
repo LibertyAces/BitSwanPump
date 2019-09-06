@@ -37,6 +37,7 @@ class PostgreSQLLogicalReplicationSource(Source):
 
 	
 	def decode(self, message):
+		# here come bytes to dict
 		return message
 
 
@@ -59,10 +60,10 @@ class PostgreSQLLogicalReplicationSource(Source):
 			connection_factory=psycopg2.extras.LogicalReplicationConnection)
 		self.Cursor = conn.cursor()
 		try:
-			self.Cursor.start_replication(slot_name=self.SlotName, decode=True)
+			self.Cursor.start_replication(slot_name=self.SlotName, decode=False)
 		except psycopg2.ProgrammingError:
 			self.Cursor.create_replication_slot(self.SlotName, output_plugin=self.OutputPlugin)
-			self.Cursor.start_replication(slot_name=self.SlotName, decode=True)
+			self.Cursor.start_replication(slot_name=self.SlotName, decode=False)
 
 		worker = self.ProactorService.execute(self.stream_data)
 
@@ -79,7 +80,7 @@ class PostgreSQLLogicalReplicationSource(Source):
 
 		finally:
 			self.Running = False
-			worker.result()
+			
 
 
 
