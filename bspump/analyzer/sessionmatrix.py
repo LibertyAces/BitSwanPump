@@ -18,6 +18,10 @@ L = logging.getLogger(__name__)
 
 
 class SessionMatrix(NamedMatrix):
+	ConfigDefaults = {
+		'primary_name': 'id'
+	}
+
 	'''
 		Matrix, specific for `SessionAnalyzer`.
 	
@@ -27,6 +31,7 @@ class SessionMatrix(NamedMatrix):
 		if not isinstance(dtype, str):
 			dtype = dtype[:]
 		super().__init__(app, dtype=dtype, id=id, config=config)
+		self.PrimaryName = self.Config['primary_name']
 
 
 	def store(self, row_name: str, event):
@@ -39,13 +44,33 @@ class SessionMatrix(NamedMatrix):
 		self.Array[row_index] = event
 
 
-	# def close_row(self, row_id, end_time=None):
-	# 	'''
-	# 		Puts the `row_id` to the ClosedRows and assigns the `@timestamp_end` the `end_time`.
-	# 	'''
 
-	# 	row_counter = self.RowMap.get(row_id)
-	# 	if row_counter is not None:
-	# 		self.ClosedRows.add(row_counter)
-	# 		if end_time is not None:
-	# 			self.Matrix[row_counter]["@timestamp_end"] = end_time
+	def store_event(self, row_index:int, event, keys=None):
+		if keys is None:
+			keys = event.keys()
+
+		names = self.Array.dtype.names
+		if names is None:
+			L.warn("The matrix does not have correct column-like dtype")
+			raise
+
+		for key in keys:
+			if key in names:
+				self.Array[row_index][key] = event[key]
+
+
+	
+	def decode_row(self, row_index:int, keys=None):
+
+		if keys is None:
+			keys = list(self.Array.dtype.names)
+		
+		if keys is None:
+			L.warn("The matrix does not have correct column-like dtype")
+			raise
+
+		event = dict(zip(keys, self.Array[row_index][keys]))
+		event[self.PrimaryName] = self.get_row_name(row_index)
+
+		return event
+
