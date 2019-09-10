@@ -61,7 +61,6 @@ if __name__ == '__main__':
 			password=password
 			db=sampledb
 			driver=MySQL ODBC 8.0 Unicode Driver
-			db=sampledb
 		```
 
 		Run bspump
