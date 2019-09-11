@@ -37,7 +37,8 @@ class SamplePipeline(bspump.Pipeline):
 			),
 			bspump.common.PPrintProcessor(app, self),
 			SideSwitchProcessor(app, self),
-			bspump.common.PPrintSink(app, self),
+			bspump.common.PPrintProcessor(app, self),
+			bspump.odbc.ODBCSink(app, self, "ODBCConnection1", config={'query': 'INSERT INTO converted_characters (first_name, last_name, side) VALUES (?, ?, ?);', 'data': 'first_name,last_name,side'})
 		)
 
 
@@ -51,6 +52,7 @@ if __name__ == '__main__':
 			mysql> create database sampledb;
 			mysql> use sampledb;
 			mysql> CREATE TABLE characters (id MEDIUMINT NOT NULL AUTO_INCREMENT,first_name VARCHAR(30), last_name VARCHAR(30), side VARCHAR(30), PRIMARY KEY (id));
+			mysql> CREATE TABLE converted_characters (id MEDIUMINT NOT NULL AUTO_INCREMENT,first_name VARCHAR(30), last_name VARCHAR(30), side VARCHAR(30), PRIMARY KEY (id));
 			mysql> INSERT INTO characters (first_name, last_name, side) VALUES ("obi-wan", "kenobi", "LIGHT"),("luke", "skywalker", "LIGHT"),("darth", "vader", "DARK"),("darth", "sidious", "DARK");
 		```
 
