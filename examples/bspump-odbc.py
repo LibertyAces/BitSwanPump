@@ -55,6 +55,8 @@ if __name__ == '__main__':
 		```
 
 		Configure bspump in `./etc/site.conf`
+		Caution: Providing incorrect connection configuration terminates the program with 'Abort trap 6'
+
 		```
 			[connection:ODBCConnection1]
 			user=username
