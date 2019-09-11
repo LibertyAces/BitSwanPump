@@ -14,7 +14,7 @@ L = logging.getLogger(__name__)
 
 
 class ODBCConnection(Connection):
-
+	# Caution: Providing incorrect connection configuration terminates the program with 'Abort trap 6'
 	ConfigDefaults = {
 		'host': 'localhost',
 		'port': 3306,
