@@ -8,8 +8,8 @@ class ODBCSink(Sink):
 
 
 	ConfigDefaults = {
-		'query': '',
-		'data': '',
+		'query': '', # e.g.: 'INSERT INTO table_name (first_name, last_name) VALUES (?, ?);'
+		'data': '',  # e.g.: 'first_name,last_name'
 	}
 
 
