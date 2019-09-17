@@ -44,7 +44,7 @@ setup(
 	version=version,
 	description='BSPump is a real-time stream processor for Python 3.5+',
 	long_description=open('README.rst').read(),
-	url='https://github.com/TeskaLabs/bspump',
+	url='https://github.com/LibertyAces/BitSwanPump',
 	author='TeskaLabs Ltd',
 	author_email='info@teskalabs.com',
 	license='BSD License',
@@ -64,7 +64,7 @@ setup(
 		]
 	},
 	project_urls={
-		'Source': 'https://github.com/TeskaLabs/bspump'
+		'Source': 'https://github.com/LibertyAces/BitSwanPump'
 	},
 	install_requires=[
 		'aiohttp>=3.5.4,<4.0',
