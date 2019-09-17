@@ -17,7 +17,7 @@ class KafkaKeyFilter(bspump.Processor):
 
 	def __init__(self, app, pipeline, keys, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
-		if not isinstance(keys, collections.abc.Iterable):
+		if not isinstance(keys, collections.abc.Iterable) or isinstance(keys, bytes):
 			self.Keys = frozenset([keys])
 		else:
 			self.Keys = frozenset(keys)
