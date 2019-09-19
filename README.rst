@@ -71,7 +71,7 @@ Build
 
 Docker build
 ^^^^^^^^^^^^
-Dockerfile and instructions are in `it's own repository <https://github.com/LibertyAces/docker-bspump/>`_.
+Dockerfile and instructions are in `separate repository <https://github.com/LibertyAces/docker-bspump/>`_.
 
 
 PyPI release
@@ -85,7 +85,7 @@ Following the `PyPI packaging <https://packaging.python.org/tutorials/packaging-
 Blank application setup
 -----------------------
 
-You can clone blank application from `it's own repository <https://github.com/LibertyAces/BitSwanTelco-BlankApp>`_.
+You can clone blank application from it's `own repository <https://github.com/LibertyAces/BitSwanTelco-BlankApp>`_.
 
 
 Available technologies
