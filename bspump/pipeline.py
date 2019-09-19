@@ -1,6 +1,7 @@
 import abc
 import asyncio
 import concurrent
+import time
 
 import types
 import logging
@@ -99,6 +100,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			init_values={
 				'ready': False,
 			}
+		)
+		self.ProfilerCounter = self.MetricsService.create_profiling_counter(
+			"bspump.pipeline.profile",
+			tags={'pipeline': self.Id}
 		)
 		app.PubSub.subscribe(
 			"Application.Metrics.Flush!",
@@ -260,6 +265,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 	def _do_process(self, event, depth, context):
 		for processor in self.Processors[depth]:
 
+			t0 = time.perf_counter()
 			try:
 				event = processor.process(context, event)
 			except BaseException as e:
@@ -267,6 +273,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))
 				self.set_error(context, event, e)
 				raise
+			finally:
+				self.ProfilerCounter.add_measured_time(processor, value=time.perf_counter() - t0)
 
 			if event is None: # Event has been consumed on the way
 				if len(self.Processors) == (depth + 1):
