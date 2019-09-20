@@ -32,12 +32,6 @@ class SleepProcessor(bspump.Processor):
 		return event
 
 
-class CutTheEventProcessor(bspump.Processor):
-	def process(self, context, event):
-		event = {"event": {"BTC_to_EUR": event["bpi"]["EUR"]["rate"], "BTC_to_USD": event["bpi"]["USD"]["rate"]}}
-		return event
-
-
 class ProfilingPipeline(bspump.Pipeline):
 	# Enriches the event with location from ES lookup
 	def __init__(self, app, pipeline_id=None):
@@ -53,8 +47,7 @@ class ProfilingPipeline(bspump.Pipeline):
 			bspump.common.JsonBytesToDictParser(app, self),
 			HTTPDelayProcessor(app, self),
 			SleepProcessor(app, self),
-			CutTheEventProcessor(app, self),
-			bspump.common.PPrintSink(app, self)
+			bspump.common.NullSink(app, self)
 		)
 
 	async def on_tick(self):
