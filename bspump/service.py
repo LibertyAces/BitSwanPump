@@ -83,7 +83,7 @@ class BSPumpService(asab.Service):
 
 	def add_lookup(self, lookup):
 		if lookup.Id in self.Lookups:
-			raise RuntimeError("Lookup '{}' already created".format(lookup_id))		
+			raise RuntimeError("Lookup '{}' already created".format(lookup.Id))
 		self.Lookups[lookup.Id] = lookup
 		return lookup
 
