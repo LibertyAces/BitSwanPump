@@ -75,7 +75,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
 		self.MetricsService = app.get_service('asab.MetricsService')
-		self.ProfilingService = app.get_service('bspump.ProfilingService')
+		self.ProfilerService = app.get_service('bspump.ProfilerService')
 		self.MetricsCounter = self.MetricsService.create_counter(
 			"bspump.pipeline",
 			tags={'pipeline':self.Id},
@@ -102,8 +102,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				'ready': False,
 			}
 		)
-		self.ProfilerCounter = self.ProfilingService.create_profiling_counter(
-			"bspump.pipeline.profile",
+		self.ProfilerCounter = self.ProfilerService.create_profiling_counter(
+			"bspump.pipeline.profiler",
 			tags={'pipeline': self.Id}
 		)
 		app.PubSub.subscribe(
