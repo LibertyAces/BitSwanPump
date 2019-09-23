@@ -1,8 +1,8 @@
 import asab.metrics
-from .profiler import ProfilingCounter
+from .profiler import ProfilerCounter
 
 
-class ProfilingService(asab.metrics.MetricsService):
+class ProfilerService(asab.metrics.MetricsService):
 	def create_profiling_counter(self, metric_name, tags):
 		dimension = asab.metrics.service.metric_dimension(metric_name, tags)
 
@@ -15,6 +15,6 @@ class ProfilingService(asab.metrics.MetricsService):
 		else:
 			t = self.Tags
 
-		m = ProfilingCounter(metric_name, tags=t)
+		m = ProfilerCounter(metric_name, tags=t)
 		self._add_metric(dimension, m)
 		return m

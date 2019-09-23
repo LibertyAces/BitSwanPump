@@ -21,7 +21,7 @@ class BSPumpApplication(asab.Application):
 		from asab.metrics import Module
 		self.add_module(Module)
 
-		from .profiling import Module
+		from .profiler import Module
 		self.add_module(Module)
 
 		#TODO: Make sure that we don't occupy unnecessary high amount of threads

@@ -3,7 +3,7 @@ from collections import namedtuple
 import asab.metrics.metrics
 
 
-class ProfilingCounter(asab.metrics.metrics.Metric):
+class ProfilerCounter(asab.metrics.metrics.Metric):
 	"""
 	Counter used for profiling application
 	"""
