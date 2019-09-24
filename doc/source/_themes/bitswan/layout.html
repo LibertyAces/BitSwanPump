@@ -270,6 +270,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 {%- block relbar1 %}{{ relbar() }}{% endblock %}
 
 {%- block content %}
+  <div class="container">
   {%- block sidebar1 %} {# possible location for sidebar #} {% endblock %}
 
     <div class="document">
@@ -290,6 +291,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   {%- block sidebar2 %}{{ sidebar() }}{% endblock %}
       <div class="clearer"></div>
     </div>
+  </div>
 {%- endblock %}
 
 {%- block relbar2 %}{{ relbar() }}{% endblock %}
