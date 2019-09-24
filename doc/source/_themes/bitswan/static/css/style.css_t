@@ -3,6 +3,7 @@ body {
     font-size: 18px;
     color: #899196;
     font-weight: 300;
+    background-color: red !important;
 }
 
 h1,

@@ -7,6 +7,7 @@ html {
 
 body {
     font-family: 'Roboto', 'sans-serif';
+    margin: 0;
 }
 
 #topmenu {
@@ -54,6 +55,10 @@ span {
 
 .content {
 	margin: 180px 2em 2em 2em;
+}
+
+main {
+    padding-top: 150px;
 }
 
 .main-intro {
@@ -505,3 +510,243 @@ footer a {
 button .icon-bar {
     background-color: #fff;
 }
+
+@import 'style.css';
+@import 'syntax.css';
+
+footer {
+    margin-top: 0;
+}
+
+img {
+    height: auto;
+    max-width: 100%;
+}
+
+p,
+ul {
+    color: #4D5D68;
+    font-family: 'Roboto', serif;
+    font-size: 17px;
+    font-weight: 300;
+}
+
+section {
+    padding-bottom: 100px;
+    padding-top: 80px;
+}
+
+ul {
+    list-style-type: none;
+    margin-bottom: 30px;
+    padding-left: 0;
+}
+
+ul>li {
+    margin-bottom: 8px;
+}
+
+.arrow .button-products {
+    bottom: -9px;
+    display: unset;
+    height: auto;
+    line-height: 60px;
+    padding: 0 25px;
+    position: absolute;
+    text-transform: uppercase;
+}
+
+.bit-swan {
+    color: #FFF;
+    font-size: 55px;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.bs-button {
+    text-transform: uppercase
+}
+
+.bs-desc {
+    color: #fff;
+    font-family: 'Roboto Slab';
+    font-size: 20px;
+    font-weight: 300;
+    margin-bottom: 40px;
+}
+
+.button-products-send {
+    background-color: transparent;
+    border: none;
+    font-family: 'Roboto Mono', monospace;
+    text-transform: uppercase;
+    border-radius: 0;
+}
+
+.for-telco {
+    color: #7a909e;
+    font-size: 55px;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.form-input {
+    background-color: transparent;
+    background-image: none;
+    border: 0;
+    border-bottom: 1px solid #FFF;
+    color: #fff;
+    display: inline-block;
+    font-family: 'Roboto Slab';
+    font-size: 24px;
+    font-weight: 300;
+    padding: 16px 0;
+}
+
+.gray {
+    color: #7A909E
+}
+
+.trusted-by {
+        background-image: url('media/images/bcg-light-gray.svg');
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+
+.gla {padding-right: 60px ;
+padding-left: 60px ;}
+
+.homepage {
+    background-attachment: inherit;
+    background-color: #030a27;
+    background-position: center bottom;
+}
+
+.perex {
+    font-size: 23px
+}
+
+.pilot-program {
+    background-color: #1A4DF9;
+    color: #fff;
+    padding-bottom: 150px;
+}
+
+.pilot-program p,
+.form-input::placeholder {
+    color: #fff;
+}
+
+.quote {
+    background-attachment: fixed;
+    background-color: #030a27;
+    background-image: url('media/images/o2.png');
+    background-size: cover;
+}
+
+.quote img {
+    max-width: 100%;
+}
+
+.quote-author {
+    margin-bottom: 40px;
+    margin-top: 80px;
+}
+
+.quote-name {
+    color: #fff;
+    font-family: 'Roboto Slab';
+    font-size: 21px;
+}
+
+.quote-position {
+    color: #7a909e;
+    font-family: 'Roboto Slab';
+    font-size: 21px;
+}
+
+.quote-text {
+    color: #fff;
+    font-family: 'Roboto Slab';
+    font-size: 40px;
+    font-weight: 300;
+    line-height: 48px;
+    margin-top: 40px;
+}
+
+.shadow-box {
+    background-color: #fff;
+    -webkit-box-shadow: 0px 0px 30px 0px rgba(0, 0, 255, 0.1);
+    -moz-box-shadow: 0px 0px 30px 0px rgba(0, 0, 255, 0.1);
+    box-shadow: 0px 0px 30px 0px rgba(0, 0, 255, 0.1);
+    padding: 40px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+
+.solutions {
+    background-color: #f9f9fd;
+}
+
+img.solutions-img {position: absolute;
+    top: -40px;
+    right: 60px;}
+
+.spacer-100 {
+    margin-top: 100px;
+}
+
+.spacer-50 {
+    margin-top: 50px;
+}
+
+/*==========  B3 Media queries  ==========*/
+
+/* Large Devices, Wide Screens */
+@media only screen and (max-width : 1200px) {
+    .for-telco,
+    .bit-swan {
+        font-size: 45px;
+    }
+
+    section.main-intro {
+        padding-top: 30px;
+    }
+
+    .perex {
+        font-size: 21px;
+    }
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (max-width : 992px) {}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width : 768px) {
+
+
+    .perex {
+        font-size: 20px;
+    }
+
+    section {
+        padding-top: 40px;
+        padding-bottom: 50px;
+    }
+
+    .quote-text {
+        font-size: 25px;
+        line-height: 38px;
+    }
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (max-width : 480px) {
+    .perex {
+        font-size: 18px;
+    }
+}
+
+/* Custom, iPhone Retina */
+@media only screen and (max-width : 320px) {}
