@@ -51,7 +51,8 @@ class ProfilingPipeline(bspump.Pipeline):
 		)
 
 	async def on_tick(self):
-		print(self.ProfilerCounter.rest_get())
+		for key, value in self.ProfilerCounter.items():
+			print(value.rest_get())
 
 
 if __name__ == '__main__':
