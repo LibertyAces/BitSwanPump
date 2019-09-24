@@ -30,4 +30,5 @@ class TestTimeDriftFilter(bspump.unittest.ProcessorTestCase):
 			self.Pipeline.Processor.TimeDriftFilterCounter.rest_get()["Values"],
 			{'event.in': 3, 'event.out': 1, 'event.drop': 1, 'timestamp.error': 1}
 		)
-		self.assertEqual(mocked_flush.call_count, 2)
+		# TimeDriftFilter + UnitTestSink + profiler for both
+		self.assertEqual(mocked_flush.call_count, 4)
