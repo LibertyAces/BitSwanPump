@@ -75,7 +75,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
 		self.MetricsService = app.get_service('asab.MetricsService')
-		self.ProfilerService = app.get_service('bspump.ProfilerService')
 		self.MetricsCounter = self.MetricsService.create_counter(
 			"bspump.pipeline",
 			tags={'pipeline':self.Id},
@@ -102,10 +101,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				'ready': False,
 			}
 		)
-		self.ProfilerCounter = self.ProfilerService.create_profiling_counter(
-			"bspump.pipeline.profiler",
-			tags={'pipeline': self.Id}
-		)
+		self.ProfilerCounter = {}
+
 		app.PubSub.subscribe(
 			"Application.Metrics.Flush!",
 			self._on_metrics_flush
@@ -275,7 +272,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				self.set_error(context, event, e)
 				raise
 			finally:
-				self.ProfilerCounter.add_measured_time(processor, value=time.perf_counter() - t0)
+				self.ProfilerCounter[processor.Id].add('time', time.perf_counter() - t0)
+				self.ProfilerCounter[processor.Id].add('run', 1)
 
 			if event is None: # Event has been consumed on the way
 				if len(self.Processors) == (depth + 1):
@@ -433,6 +431,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.set_source(source)
 		for processor in processors:
 			self.append_processor(processor)
+			self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
+				processor.Id,
+				init_values={'time': 0, 'run': 0}
+			)
 
 
 	def iter_processors(self):
