@@ -2,6 +2,7 @@ import signal
 import sys
 
 import asab
+from .profiler import ProfilerService
 
 from .service import BSPumpService
 from .__version__ import __version__, __build__
@@ -20,6 +21,8 @@ class BSPumpApplication(asab.Application):
 
 		from asab.metrics import Module
 		self.add_module(Module)
+
+		self.ProfilerService = ProfilerService(self, "bspump.ProfilerService")
 
 		#TODO: Make sure that we don't occupy unnecessary high amount of threads
 		from asab.proactor import Module
