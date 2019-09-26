@@ -8,11 +8,17 @@ html {
 body {
     font-family: 'Roboto', 'sans-serif';
     margin: 0;
+    padding-top: 135px;
 }
 
 #topmenu {
     background-color: #030a27;
     box-sizing: border-box;
+}
+
+#searchbox input {
+    max-width: 100%;
+    margin-bottom: 5px;
 }
 
 .menu-container {
@@ -30,6 +36,10 @@ body {
     min-height: 130px;
     background-color: #fdfeff;
 
+}
+
+.relbar {
+    padding-top: 20px;
 }
 
 #container {
@@ -454,6 +464,10 @@ footer a {
 
 /* Small Devices, Tablets */
 @media only screen and (max-width : 768px) {
+    body {
+        padding-top: 90px;
+    }
+
     .nav>li>a {
         height: 40px;
         line-height: 40px;
