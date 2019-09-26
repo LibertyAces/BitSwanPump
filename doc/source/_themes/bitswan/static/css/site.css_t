@@ -60,12 +60,9 @@ body {
 }
 
 span {
-  color: black; 
+  color: black !important; 
 }
 
-span.p {
-    color: black;
-}
 .viewcode-link {
     color: #252d93;
 }
