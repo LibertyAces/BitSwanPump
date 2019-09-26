@@ -63,6 +63,9 @@ span {
   color: black; 
 }
 
+span.p {
+    color: black;
+}
 .viewcode-link {
     color: #252d93;
 }
