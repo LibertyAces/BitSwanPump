@@ -1,0 +1,778 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,600,700');
+@import url('https://fonts.googleapis.com/css?family=Roboto+Slab:300,400');
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Roboto', 'sans-serif';
+    margin: 0;
+    padding-top: 135px;
+    color: black !important;
+}
+
+.bodywrapper {
+    color:black;
+}
+
+#topmenu {
+    background-color: #030a27;
+    box-sizing: border-box;
+}
+
+#searchbox input {
+    max-width: 100%;
+    margin-bottom: 5px;
+}
+
+.menu-container {
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+}
+
+.menu-item {
+    width: 100%;
+    margin: 10px auto;
+}
+
+.menu-item .card {
+    min-height: 130px;
+    background-color: #fdfeff;
+
+}
+
+.relbar {
+    padding-top: 20px;
+}
+
+#container {
+  align-items: center;
+  justify-content: center;
+  
+  min-height: 200px;
+  background: #444;
+}
+
+.item {
+  margin: 0 2%;
+}
+
+span {
+  color: black; 
+}
+
+span.p, span.n {
+    color: black;
+}
+.viewcode-link {
+    color: #252d93;
+}
+
+
+.card {
+    height: auto !important;
+}
+
+.content {
+	margin: 180px 2em 2em 2em;
+}
+
+main {
+    padding-top: 150px;
+}
+
+.main-intro {
+    background-color: #030a27;
+    background-image: url('../images/dark-pattern.png');
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.navbar-brand {
+    padding: 31px 15px;
+}
+
+.nav>li>a {
+    color: white;
+    height: 120px;
+    padding: 0;
+    font-family: 'Roboto Slab', 'Roboto';
+    font-size: 18px;
+    padding-left: 20px;
+    padding-right: 20px;
+    line-height: 120px;
+    transition: 0.2s;
+    letter-spacing: 0.05em;
+}
+
+
+.nav>li>a:hover {
+    background-color: black;
+}
+
+.our-vision {
+    color: #7a909e;
+    font-weight: 500;
+    font-family: 'Roboto', 'sans-serif';
+    font-size: 53px;
+    margin-top: 90px;
+    line-height: 1.1;
+}
+
+.sw-products {
+    margin-top: 24px;
+    color: white;
+    font-weight: 500;
+    font-family: 'Roboto', 'sans-serif';
+    font-size: 53px;
+    line-height: 1.1;
+}
+
+.button-products {
+    margin-top: 70px;
+    display: block;
+    background-color: #0050ff;
+    color: white;
+    display: block;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    height: 75px;
+    line-height: 75px;
+    /*width: 258px;*/
+    box-sizing: border-box;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.button-products:hover {
+    background-color: white;
+    color: black;
+    text-decoration: none;
+}
+
+.posts div {
+    padding-top: 10px;
+    height: 220px;
+    background-size: contain;
+    background-position: center 60px;
+    background-repeat: no-repeat;
+    margin-top: 100px;
+    color: white;
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin-bottom: 100px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.posts div:hover {
+    background-color: black;
+}
+
+.post1 {
+    background-image: url('../images/post-01.jpg');
+}
+
+.post2 {
+    background-image: url('../images/post-02.jpg');
+}
+
+.our-products {
+    position: relative;
+}
+
+.figure-row {
+    position: relative;
+}
+
+.figure-container img {
+    width: 100%;
+    margin-top: 31%;
+    z-index: 1;
+}
+
+.bs-figure {
+    background-image: url('../images/bitswan-figure-bg.png');
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center 100px;
+}
+
+.figure-bg {
+    background-color: rgb(3, 11, 38);
+    height: 350px;
+    position: absolute;
+    top: 80px;
+    width: 35%;
+    background-color: #030a27;
+    background-image: url('../images/dark-pattern.png');
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.bs-right h2 {
+    margin-top: 120px;
+    font-size: 67px;
+    color: rgb(3, 11, 38);
+}
+
+.bs-right p {
+    font-family: 'Roboto Slab', 'Roboto';
+    color: rgb(3, 11, 38);
+    font-size: 21px;
+    font-weight: 300;
+}
+
+.our-products {
+    background-image: url('../images/pattern.png');
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+
+.bs-button {
+    margin-top: 70px;
+    display: block;
+    background-color: #0050ff;
+    color: white;
+    display: block;
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    height: 75px;
+    line-height: 75px;
+    width: 258px;
+    box-sizing: border-box;
+    text-align: center;
+    transition: 0.2s;
+
+}
+
+.bs-button:hover {
+    background-color: black;
+    color: white;
+    text-decoration: none;
+}
+
+.team {
+    background-image: url('../images/pattern.png');
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.team h2 {
+    margin-top: 250px;
+    font-size: 30px;
+    color: rgb(3, 11, 38);
+    font-weight: 500;
+}
+
+.team p {
+    margin-top: 60px;
+    color: rgb(122, 144, 158);
+    font-size: 30px;
+    font-weight: 300;
+}
+
+.team-link {
+    margin-top: 70px;
+    display: block;
+    background-color: rgb(122, 144, 158);
+    color: white;
+    display: block;
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    height: 75px;
+    line-height: 75px;
+    width: 258px;
+    box-sizing: border-box;
+    text-align: center;
+    transition: 0.2s;
+    text-decoration: none;
+
+}
+
+.team-link:hover {
+    background-color: black;
+    color: white;
+    text-decoration: none;
+}
+
+.team-persons {
+    margin-top: 90px;
+
+}
+
+.team-photo {
+    width: 100%;
+}
+
+.team-name,
+.team-description {
+    font-size: 21px;
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.team-name {
+    font-weight: 500;
+    margin-top: 90px;
+}
+
+.team-description {
+    font-style: italic;
+}
+
+.community-link {
+    height: 530px;
+    overflow: hidden;
+    padding: 0;
+    cursor: pointer;
+}
+
+.communities {
+    background-color: white;
+    background-image: url('../images/pattern.png');
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.community-link:hover .community-bg {
+    background-color: rgba(3, 10, 39, 0.9);
+}
+
+.community-bg {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    background-color: rgba(3, 10, 39, 0.7);
+    z-index: 1;
+    transition: 0.2s;
+}
+
+.community-link img {
+    position: absolute;
+    overflow: hidden;
+    height: 100%;
+}
+
+.communities h2 {
+    margin-top: 160px;
+    font-size: 53px;
+    color: rgb(3, 11, 38);
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.social-text {
+
+    font-family: 'Roboto Slab', 'Roboto';
+    position: absolute;
+    color: white;
+    z-index: 2;
+    font-size: 40px;
+    font-weight: 300;
+    text-align: center;
+    width: 100%;
+    top: 60px;
+}
+
+.contact-us {
+    background-color: white;
+    background-image: url('../images/pattern.png');
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+
+.contact-button {
+    margin-top: 70px;
+    display: block;
+    background-color: #030a27;
+    color: white;
+    display: block;
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    height: 75px;
+    line-height: 75px;
+    width: 258px;
+    box-sizing: border-box;
+    text-align: center;
+    transition: 0.2s;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.contact-button:hover {
+    background-color: #0050ff;
+    color: white;
+    text-decoration: none;
+}
+
+.contact-left {
+    margin-top: 70px;
+    font-size: 47px;
+    font-weight: 500;
+    color: black;
+    text-align: center;
+}
+
+.contact-left span {
+    color: #7a909e;
+
+}
+
+.footer-right h3 {
+    color: #7a909e;
+    font-family: 'Roboto Slab', 'Roboto';
+    font-weight: 500;
+}
+
+.footer-terms {
+    color: #7a909e;
+    font-family: 'Roboto Slab', 'Roboto';
+    font-weight: 300;
+    font-size: 14px;
+    margin-top: 150px;
+    margin-bottom: 30px;
+}
+
+
+footer {
+    min-height: 600px;
+    background-color: #030a27;
+    background-image: url('../images/dark-pattern.png');
+    background-attachment: fixed;
+    background-size: cover;
+    margin-top: 120px;
+}
+
+footer h3 {
+    font-weight: 600;
+    font-size: 17px;
+    color: white;
+    margin-top: 140px;
+}
+
+footer p {
+    color: #7a909e;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 25px;
+}
+
+footer a {
+    color: white;
+    font-family: 'Roboto Slab', 'Roboto';
+    display: block;
+    line-height: 3;
+}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width : 768px) {
+    body {
+        padding-top: 90px;
+    }
+
+    .nav>li>a {
+        height: 40px;
+        line-height: 40px;
+    }
+
+    .navbar-brand {
+        min-height: 84px;
+        padding: 15px 15px;
+    }
+
+    .navbar-brand img {
+        max-height: 100%
+    }
+
+    button.navbar-toggle {
+        padding: 15px 15px;
+        margin-top: 18px;
+        margin-right: 18px;
+        margin-bottom: 18px;
+    }
+    .content {margin-top:80px}
+
+    .navbar-collapse {
+        background-color: #030a27;
+    }
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (max-width : 480px) {
+    .nav>li>a {
+        height: 40px;
+        line-height: 40px;
+    }
+
+    .navbar-brand {
+        min-height: 84px;
+        padding: 15px 15px;
+    }
+
+    .navbar-brand img {
+        max-height: 100%
+    }
+
+    button.navbar-toggle {
+        padding: 15px 15px;
+        margin-top: 18px;
+        margin-right: 18px;
+        margin-bottom: 18px;
+    }
+    .content {margin-top:80px}
+
+}
+
+button .icon-bar {
+    background-color: #fff;
+}
+
+@import 'style.css';
+@import 'syntax.css';
+
+footer {
+    margin-top: 0;
+}
+
+img {
+    height: auto;
+    max-width: 100%;
+}
+
+p,
+ul {
+    color: #4D5D68;
+    font-family: 'Roboto', serif;
+    font-size: 17px;
+    font-weight: 300;
+}
+
+section {
+    padding-bottom: 100px;
+    padding-top: 80px;
+}
+
+ul {
+    list-style-type: none;
+    margin-bottom: 30px;
+    padding-left: 0;
+}
+
+ul>li {
+    margin-bottom: 8px;
+}
+
+.arrow .button-products {
+    bottom: -9px;
+    display: unset;
+    height: auto;
+    line-height: 60px;
+    padding: 0 25px;
+    position: absolute;
+    text-transform: uppercase;
+}
+
+.bit-swan {
+    color: #FFF;
+    font-size: 55px;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.bs-button {
+    text-transform: uppercase
+}
+
+.bs-desc {
+    color: #fff;
+    font-family: 'Roboto Slab';
+    font-size: 20px;
+    font-weight: 300;
+    margin-bottom: 40px;
+}
+
+.button-products-send {
+    background-color: transparent;
+    border: none;
+    font-family: 'Roboto Mono', monospace;
+    text-transform: uppercase;
+    border-radius: 0;
+}
+
+.for-telco {
+    color: #7a909e;
+    font-size: 55px;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.form-input {
+    background-color: transparent;
+    background-image: none;
+    border: 0;
+    border-bottom: 1px solid #FFF;
+    color: #fff;
+    display: inline-block;
+    font-family: 'Roboto Slab';
+    font-size: 24px;
+    font-weight: 300;
+    padding: 16px 0;
+}
+
+.gray {
+    color: #7A909E
+}
+
+.trusted-by {
+        background-image: url('media/images/bcg-light-gray.svg');
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+
+.gla {padding-right: 60px ;
+padding-left: 60px ;}
+
+.homepage {
+    background-attachment: inherit;
+    background-color: #030a27;
+    background-position: center bottom;
+}
+
+.perex {
+    font-size: 23px
+}
+
+.pilot-program {
+    background-color: #1A4DF9;
+    color: #fff;
+    padding-bottom: 150px;
+}
+
+.pilot-program p,
+.form-input::placeholder {
+    color: #fff;
+}
+
+.quote {
+    background-attachment: fixed;
+    background-color: #030a27;
+    background-image: url('media/images/o2.png');
+    background-size: cover;
+}
+
+.quote img {
+    max-width: 100%;
+}
+
+.quote-author {
+    margin-bottom: 40px;
+    margin-top: 80px;
+}
+
+.quote-name {
+    color: #fff;
+    font-family: 'Roboto Slab';
+    font-size: 21px;
+}
+
+.quote-position {
+    color: #7a909e;
+    font-family: 'Roboto Slab';
+    font-size: 21px;
+}
+
+.quote-text {
+    color: #fff;
+    font-family: 'Roboto Slab';
+    font-size: 40px;
+    font-weight: 300;
+    line-height: 48px;
+    margin-top: 40px;
+}
+
+.shadow-box {
+    background-color: #fff;
+    -webkit-box-shadow: 0px 0px 30px 0px rgba(0, 0, 255, 0.1);
+    -moz-box-shadow: 0px 0px 30px 0px rgba(0, 0, 255, 0.1);
+    box-shadow: 0px 0px 30px 0px rgba(0, 0, 255, 0.1);
+    padding: 40px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+
+.solutions {
+    background-color: #f9f9fd;
+}
+
+img.solutions-img {position: absolute;
+    top: -40px;
+    right: 60px;}
+
+.spacer-100 {
+    margin-top: 100px;
+}
+
+.spacer-50 {
+    margin-top: 50px;
+}
+
+/*==========  B3 Media queries  ==========*/
+
+/* Large Devices, Wide Screens */
+@media only screen and (max-width : 1200px) {
+    .for-telco,
+    .bit-swan {
+        font-size: 45px;
+    }
+
+    section.main-intro {
+        padding-top: 30px;
+    }
+
+    .perex {
+        font-size: 21px;
+    }
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (max-width : 992px) {}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width : 768px) {
+
+
+    .perex {
+        font-size: 20px;
+    }
+
+    section {
+        padding-top: 40px;
+        padding-bottom: 50px;
+    }
+
+    .quote-text {
+        font-size: 25px;
+        line-height: 38px;
+    }
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (max-width : 480px) {
+    .perex {
+        font-size: 18px;
+    }
+}
+
+/* Custom, iPhone Retina */
+@media only screen and (max-width : 320px) {}

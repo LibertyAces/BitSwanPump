@@ -1,0 +1,68 @@
+body {
+    font-family: 'Roboto Slab', serif;
+    font-size: 18px;
+    color: #899196;
+    font-weight: 300;
+    background-color: red !important;
+}
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5 {
+    font-family: 'Roboto', sans-serif;
+    color: #030A27;
+    margin-top: 2.5rem;
+    font-weight: 700;
+}
+
+h1,
+.h1 {
+    font-size: 3.5rem;
+}
+
+h2,
+.h2 {
+    font-size: 2.5rem;
+}
+
+h3,
+.h3 {
+    font-size: 2rem;
+}
+
+h4,
+.h4 {
+    font-size: 1.6rem;
+}
+
+h6,
+.h6 {
+    margin-top: 2.5rem;
+    font-weight: 700;
+}
+
+b,
+strong {
+    font-weight: 700;
+}
+
+ul,
+ol {
+    padding-left: 20px;
+}
+
+li {
+    margin-top: 10px;
+}
+
+hr {
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+}
