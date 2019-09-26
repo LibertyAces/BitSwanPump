@@ -59,6 +59,10 @@ span {
   color: black; 
 }
 
+.viewcode-link {
+    color: #252d93;
+}
+
 
 .card {
     height: auto !important;
