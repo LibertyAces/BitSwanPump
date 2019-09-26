@@ -12,6 +12,10 @@ body {
     color: black;
 }
 
+.bodywrapper {
+    color:black;
+}
+
 #topmenu {
     background-color: #030a27;
     box-sizing: border-box;
