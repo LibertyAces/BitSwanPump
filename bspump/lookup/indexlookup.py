@@ -36,7 +36,9 @@ class IndexLookup(Lookup):
 		# (json.dumps(serialized['Matrix']['I2NMap'])).encode('utf-8')
 		# print('succcccces!!!!!')
 
-		serialized['Indexes'] = self.Indexes
+		serialized['Indexes'] = {}
+		for index in self.Indexes:
+			serialized['Indexes'] = self.Indexes
 
 		return (json.dumps(serialized)).encode('utf-8')
 
@@ -163,10 +165,6 @@ class TreeOverlappingRangeIndex(Index):
 
 
 
-
-
-
-
 def BitMapIndex(Index):
 	def __init__(self, matrix, column):
 		'''
@@ -174,13 +172,12 @@ def BitMapIndex(Index):
 			Also the procedure is relatively slow.
 		'''
 		self.N2IMap = {}
-		self.Matrix = matrix
 		self.Column = column
 
-		self.UniqueValues = np.unique(self.Matrix.Array[self.Column])
+		self.UniqueValues = np.unique(matrix.Array[self.Column])
 	
 		for u in self.UniqueValues:
-			x = np.where(self.Matrix.Array[self.Column] == u)   
+			x = np.where(matrix.Array[self.Column] == u)   
 			self.N2IMap[u] = x[0].tolist()
 
 	
@@ -193,4 +190,7 @@ def BitMapIndex(Index):
 
 	def serialize(self):
 		return self.N2IMap
+
+	def deserialize(self, data):
+		pass
 

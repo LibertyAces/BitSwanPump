@@ -36,7 +36,7 @@ class MyIndexLookup(bspump.lookup.IndexLookup):
 			self.Matrix.I2NMap[i] = value
 			self.Matrix.N2IMap[value] = i
 
-		# add index?
+		self.add_bitmap_index('channelid')
 		return True
 
 
