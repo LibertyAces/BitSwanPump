@@ -4,63 +4,29 @@ import numpy as np
 """ Those methods extends pymysql convertor for numpy datatypes """
 
 
-def escape_numpy_int8(value, mapping=None):
+def convert_numpy_int(value, mapping=None):
     return str(value)
 
 
-def escape_numpy_int16(value, mapping=None):
-    return str(value)
+def convert_numpy_float(value, mapping=None):
+    s = repr(value)
+    if s in ('inf', 'nan'):
+        raise ValueError("%s can not be used with MySQL" % s)
+    if 'e' not in s:
+        s += 'e0'
+    return s
 
 
-def escape_numpy_int32(value, mapping=None):
-    return str(value)
+convertors[np.int8] = convert_numpy_int
+convertors[np.int16] = convert_numpy_int
+convertors[np.int32] = convert_numpy_int
+convertors[np.int64] = convert_numpy_int
 
+convertors[np.uint8] = convert_numpy_int
+convertors[np.uint16] = convert_numpy_int
+convertors[np.uint32] = convert_numpy_int
+convertors[np.uint64] = convert_numpy_int
 
-def escape_numpy_int64(value, mapping=None):
-    return str(value)
-
-
-def escape_numpy_uint8(value, mapping=None):
-    return str(value)
-
-
-def escape_numpy_uint16(value, mapping=None):
-    return str(value)
-
-
-def escape_numpy_uint32(value, mapping=None):
-    return str(value)
-
-
-def escape_numpy_uint64(value, mapping=None):
-    return str(value)
-
-
-def escape_numpy_float16(value, mapping=None):
-    return str(value)
-
-
-def escape_numpy_float32(value, mapping=None):
-    return str(value)
-
-
-def escape_numpy_float64(value, mapping=None):
-    return str(value)
-
-
-convertors[np.int8] = escape_numpy_int8
-convertors[np.int16] = escape_numpy_int16
-convertors[np.int32] = escape_numpy_int32
-convertors[np.int64] = escape_numpy_int64
-
-convertors[np.uint8] = escape_numpy_uint8
-convertors[np.uint16] = escape_numpy_uint16
-convertors[np.uint32] = escape_numpy_uint32
-convertors[np.uint64] = escape_numpy_uint64
-
-convertors[np.float16] = escape_numpy_float16
-convertors[np.float32] = escape_numpy_float32
-convertors[np.float64] = escape_numpy_float64
-
-
-
+convertors[np.float16] = convert_numpy_float
+convertors[np.float32] = convert_numpy_float
+convertors[np.float64] = convert_numpy_float
