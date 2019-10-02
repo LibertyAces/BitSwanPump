@@ -8,6 +8,7 @@ import pymysql.err
 
 from asab import PubSub
 from ..abc.connection import Connection
+from .convertors import convertors
 
 #
 
@@ -159,6 +160,7 @@ class MySQLConnection(Connection):
 				user=self._user,
 				password=self._password,
 				db=self._db,
+				conv=convertors,
 				connect_timeout=self._connect_timeout,
 				loop=self.Loop) as pool:
 
@@ -178,6 +180,7 @@ class MySQLConnection(Connection):
 				user=self._user,
 				password=self._password,
 				database=self._db,
+				conv=convertors,
 				connect_timeout=self._connect_timeout)
 			self._conn_sync = connection
 		except BaseException:
