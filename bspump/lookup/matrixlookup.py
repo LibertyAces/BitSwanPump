@@ -32,10 +32,11 @@ class MatrixLookup(Lookup):
 
 	def search(self, condition, target_column):
 		'''
-			Default search, override if optimaized
+			Default search, override if optimized with indexes
 		'''
 		x = np.where(condition)
 		if len(x[0]) == 0:
+
 			return None
 		
 		return np.asscalar(self.Matrix.Array[x[0]][target_column])

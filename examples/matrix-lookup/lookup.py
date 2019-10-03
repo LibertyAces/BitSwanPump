@@ -11,32 +11,9 @@ L = logging.getLogger(__name__)
 ##
 
 class MyMatrixLookup(bspump.lookup.MatrixLookup):
-	ConfigDefaults = {
-		'delimiter' : ',',
-		'path': '',
-	}
 
 	async def load(self):
-		print('loading!')
-		path = self.Config['path']
-		if path == '':
-			L.warn('Path is empty!')
-			raise 
-
-		df = pd.read_csv(path, delimiter=self.Config['delimiter'])
-		df['startdate'] = pd.to_datetime(df['startdate'])
-		df['enddate'] = pd.to_datetime(df['enddate'])
-		df['ts_start'] =  df.startdate.values.astype(np.int64) // 10 ** 9
-		df['ts_end'] =  df.enddate.values.astype(np.int64) // 10 ** 9
-		df.drop(['startdate', 'enddate', 'epizodename'], axis=1, inplace=True)
-		self.Matrix.Array = np.array(df.to_records())
-		self.Matrix.DType = self.Matrix.Array.dtype.descr
-		for i in range(self.Matrix.Array.shape[0]):
-			value = int(self.Matrix.Array[i]['epgid'])
-			self.Matrix.I2NMap[i] = value
-			self.Matrix.N2IMap[value] = i
-
-		# self.add_bitmap_index('channelid')
+		
 		return True
 
 

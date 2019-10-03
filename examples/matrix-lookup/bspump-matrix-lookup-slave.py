@@ -5,6 +5,8 @@ import time
 import bspump.common
 import bspump.random
 import bspump.trigger
+import bspump.analyzer
+
 from lookup import MyMatrixLookup
 
 
@@ -20,11 +22,21 @@ class SlaveApplication(bspump.BSPumpApplication):
 		super().__init__()
 
 		svc = self.get_service("bspump.PumpService")
+		matrix = bspump.analyzer.SessionMatrix(self, dtype=[
+			('ts_start', 'i8'), 
+			('ts_end', 'i8'), 
+			('channelid', 'i8'), 
+			('programname', 'U30'),
+			('epgid', 'i8'), 
+			], id='MySessionMatrix')
+		svc.add_matrix(matrix)
 		
-		self.Lookup = MyMatrixLookup(self, id='MyLookup', config={'master_url':'http://localhost:8080', 'master_lookup_id':"MyLookup"})
+		self.Lookup = MyMatrixLookup(self, matrix_id='MySessionMatrix', id='MyLookup', config={'master_url':'http://localhost:8080', 'master_lookup_id':"MyLookup"})
 
 		svc.add_lookup(self.Lookup)
 		svc.add_pipeline(SlavePipeline(self))
+
+		# TODO:!!! loading periodically
 		
 
 class SlavePipeline(bspump.Pipeline):
@@ -53,6 +65,8 @@ class Enricher(bspump.Processor):
 
 	
 	def process(self, context, event):
+		print(self.Lookup.Matrix.Array)
+		print(">>>>", self.Lookup.Matrix.DType)
 		timestamp = event['@timestamp']
 		channel = event['channel']
 		st = time.time()
