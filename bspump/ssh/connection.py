@@ -88,6 +88,11 @@ class SshConnection(Connection):
 			loop=self.Loop
 		)
 
+		try:
+			asyncio.get_event_loop().run_until_complete(self._conn_future)#self._async_connection())
+		except (OSError, asyncssh.Error) as exc:
+			sys.exit('SSH connection failed: ' + str(exc))
+
 
 
 
@@ -100,11 +105,22 @@ class SshConnection(Connection):
 					loop=self.Loop,
 					username=self._user,
 					password=self._password,
-					known_hosts = None) as connection: #client_keys=self._cli_keys,
+					known_hosts = None) as connection:
 					self._connection = connection #TODO deal with the output of connection
-					# result = await self._connection.run('pwd', check=True)
-					# print(result.stdout, end='')
-					await self._loader()
+					result = await self._connection.run('echo "Hello, connection established!"', check=True)
+					print(result.stdout, end='')
+					# await self._loader()
+
+					#example of piping one remote process to another
+					# async def run_client():
+					# 	async with asyncssh.connect('localhost') as conn:
+					# 		proc1 = await conn.create_process(r'echo "1\n2\n3"')
+					# 		proc2_result = await conn.run('tail -r', stdin=proc1.stdout)
+					# 		print(proc2_result.stdout, end='')
+
+
+
+
 			else:
 				async with asyncssh.connect(
 					host=self._host,
@@ -112,11 +128,14 @@ class SshConnection(Connection):
 					loop=self.Loop,
 					username=self._user,
 					password=self._password,
-					known_hosts = (self._known_hosts)) as connection: #client_keys=self._cli_keys,
+					known_hosts = (self._known_hosts)) as connection:
 					self._connection = connection
+					result = await self._connection.run('echo "Hello, connection established!"', check=True)
+					print(result.stdout, end='')
 					# result = await self._connection.run('pwd', check=True)
 					# print(result.stdout, end='')
-					await self._loader()
+
+					# await self._loader()
 
 
 

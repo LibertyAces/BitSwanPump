@@ -1,9 +1,27 @@
-
-
-
 from ..abc.sink  import Sink
 
-...
+class FtpSink(Sink): #TODO establish sink module
+
+	def __init__(self, app, pipeline, connection, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+
+		self._connection = pipeline.locate_connection(app, connection)
+
+		app.PubSub.subscribe("FTPConnection.pause!", self._connection_throttle)
+		app.PubSub.subscribe("FTPConnection.unpause!", self._connection_throttle)
+
+
+	def _connection_throttle(self, event_name, connection):
+		if connection != self._connection:
+			return
+
+		if event_name == "FTPConnection.pause!":
+			self.Pipeline.throttle(self, True)
+		elif event_name == "FTPConnection.unpause!":
+			self.Pipeline.throttle(self, False)
+		else:
+			raise RuntimeError("Unexpected event name '{}'".format(event_name))
+
 
 # import asyncio, asyncssh, sys
 #
