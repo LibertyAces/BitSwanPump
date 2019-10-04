@@ -7,7 +7,7 @@ import bspump.common
 import bspump.file
 import bspump.random
 import bspump.trigger
-import bspump.ssh
+import bspump.ftp
 
 
 
@@ -31,10 +31,11 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-            bspump.random.RandomSource(app, self, choice=['a', 'b', 'c'], config={
-                'number': 5
-            }).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=5)),
+            # bspump.random.RandomSource(app, self, choice=['a', 'b', 'c'], config={
+            #     'number': 5
+            # }).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=5)),
 			# bspump.common.BytesToStringParser(app, self),
+			bspump.ftp.FtpSource(app, self, "FtpConnection", config={'folder_name': '/pub/example/readme.txt'}),
 			bspump.common.PPrintSink(app, self),
 			# bspump.mail.SmtpSink(app, self, 'SmtpConnection')
 		)
@@ -46,7 +47,7 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	svc.add_connection(
-		bspump.ssh.SshConnection(app, "SshConnection")
+		bspump.ftp.FtpConnection(app, "FtpConnection")
 	)
 
 	# Construct and register Pipeline
