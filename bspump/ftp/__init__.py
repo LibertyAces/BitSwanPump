@@ -1,3 +1,3 @@
-from .sink import FtpSink
-from .source import FtpSource
-from .connection import FtpConnection
+from .sink import FTPSink
+from .source import FTPSource
+from .connection import FTPConnection

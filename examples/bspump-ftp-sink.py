@@ -35,7 +35,7 @@ class SamplePipeline(bspump.Pipeline):
             #     'number': 5
             # }).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=5)),
 			# bspump.common.BytesToStringParser(app, self),
-			bspump.ftp.FtpSource(app, self, "FtpConnection", config={'folder_name': '/pub/example/readme.txt'}),
+			bspump.ftp.FTPSource(app, self, "FTPConnection", config={'folder_name': '/pub/example/readme.txt'}),
 			bspump.common.PPrintSink(app, self),
 			# bspump.mail.SmtpSink(app, self, 'SmtpConnection')
 		)
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	svc.add_connection(
-		bspump.ftp.FtpConnection(app, "FtpConnection")
+		bspump.ftp.FTPConnection(app, "FTPConnection")
 	)
 
 	# Construct and register Pipeline

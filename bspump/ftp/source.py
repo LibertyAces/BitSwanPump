@@ -1,6 +1,8 @@
 import asab
 import asyncio
 import logging
+import asyncssh
+
 # import aiomysql.cursors
 from ..abc.source import Source
 
@@ -12,79 +14,73 @@ L = logging.getLogger(__name__)
 
 ConfigDefaults = {
 
-	'folder_name': '',#'/pub/example/readme.txt',  # '', # can be also file name when preserve = False and recurse = False
+	'folder_name': '',
+	# '/pub/example/readme.txt',  # '', # can be also file name when preserve = False and recurse = False
 
 }
 
-# ConfigDefaults = {
-# 	'host': 'test.rebex.net',  # 'localhost', #'itcsubmit.wustl.edu',#'localhost',
-# 	'port': 22,  # 80,#22,  # good to use dynamic ports in range 49152-62535
-# 	'user': 'demo',
-# 	'password': 'password',
-# 	'client_keys': [],
-# 	'output_queue_max_size': 10,
-# 	'known_hosts_path': [''],
-# 	# 'folder_name': '/pub/example/readme.txt'#'', # can be also file name when preserve = False and recurse = False
-#
-# 	# 'process': '',
-# 	# 'known_hosts': None, # None not recommended - use 'my_known_hosts' instead
-# }
+class FTPSource(Source):
 
-class FtpSource(Source):
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self._connection = pipeline.locate_connection(app, connection)
+		self.Loop = app.Loop
 		self.App = app
-		 ##self.Loop = app.Loop
-		# self._channel = None
-		# self._channel_ready = asyncio.Event(loop=app.Loop)
-		# self._channel_ready.clear()
-		# self._queue = asyncio.Queue(loop=app.Loop)
-		# # self._query = self.Config['query']
-		#
-		# self.Pipeline = pipeline
-		# # self.Task = self.main()
-		#
-		# self._fldr_name = self.Config['folder_name']
-		# #  self.Config['preserve']
-		# # self.Config['recurse']
-		# # self._options = self.Options
-		# self._preserve = False, #True,
-		# self._recurse = False, #True,
-		#
-		# self._connection.PubSub.subscribe("AMQPConnection.open!", self._on_connection_open)
+		self.Pipeline = pipeline
+
+		# self._connection.PubSub.subscribe("FTPConnection.open!", self._async_connection)
+		self.start(self.Loop)
+
+		self._fldr_name = self.Config['folder_name']
+		self._preserve = False, #True,
+		self._recurse = False, #True,
 
 
-	# def start(self, loop):
-	# 	if self.Task is not None: return
-	#
-	# 	async def _main():
-	# 		# This is to properly handle a lifecycle of the main method
-	# 		try:
-	# 			await self.main()
-	# 		except concurrent.futures.CancelledError:
-	# 			pass
-	# 		except Exception as e:
-	# 			self.Pipeline.set_error(None, None, e)
-	# 			L.exception("Exception in the source '{}'".format(self.Id))
-	#
-	# 	self.Task = asyncio.ensure_future(_main(), loop=loop)
-	#
-	#
-	#
-	#
 	async def main(self):
-
-		if self._connection._connection_check.is_set() and self._channel is None:
-			self._on_connection_open(".local!")
-
+		await self._connection.ConnectionEvent.wait()
+		# async with self._connection as connection:#._connection_check as connection:
+		# async with self._connection.start_sftp_client() as sftp:
+		# 	while True:
+		# 		await self.Pipeline.ready()
+		# 		await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
 		try:
-			while 1:
-				await self._channel_ready.wait()
+			while True:
 				await self.Pipeline.ready()
-				async with _connection.start_sftp_client() as sftp:
+				connection = self._connection._connection
+				async with connection.start_sftp_client() as sftp:
 					await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
+					print('tisk')
+
+
+
+
+		except BaseException:
+			L.exception("Unexpected ssh connection error")
+			raise
+
+		# try:
+		# 	while True:
+		# 		# await self._channel_ready.wait()
+		# 		print('predpipe')
+		# 		print(self.Pipeline)
+		# 		if self.Pipeline == True:
+		# 			print('pp True')
+		# 		else:
+		# 			print('pp False')
+		# 		await self.Pipeline.ready()
+		# 		print('pipeline ready')
+		# 		print(self._connection)
+		# 		# async with self._connection:
+		# 		async with self._connection.start_sftp_client() as sftp:
+		# 			await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
+		# 			print('vytisknuto')
+		#
+		#
+		# except BaseException:
+		# 	L.exception("Unexpected ssh connection error")
+		# 	raise
+
 
 		# print('fsojfsdjfpsdj')
 		# await self.Pipeline.ready()
@@ -106,9 +102,7 @@ class FtpSource(Source):
 
 		# asyncssh.SSHClient.validate_password(username, password)[source]
 
-		except BaseException:
-			L.exception("Unexpected ssh connection error")
-			raise
+
 
 
 	def _on_connection_open(self, event_name):
@@ -119,6 +113,7 @@ class FtpSource(Source):
 	def _on_connection_close(self, event_name):
 		self._channel = None
 		self._channel_ready.clear()
+
 
 
 # import asab
