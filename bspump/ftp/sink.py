@@ -1,6 +1,6 @@
 from ..abc.sink  import Sink
 
-class FtpSink(Sink): #TODO establish sink module
+class FTPSink(Sink): #TODO establish sink module
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
