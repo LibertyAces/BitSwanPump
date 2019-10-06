@@ -19,7 +19,7 @@ class FTPConnection(Connection):
 		'client_keys': [],
 		'output_queue_max_size': 10,
 		'known_hosts_path': [''],
-		# 'folder_name': '/pub/example/readme.txt'#'', # can be also file name when preserve = False and recurse = False
+		'folder_name': '/pub/example/readme.txt'#'', # can be also file name when preserve = False and recurse = False
 
 
 		# 'process': '',
@@ -80,9 +80,9 @@ class FTPConnection(Connection):
 			loop=self.Loop
 		)
 
-
 		try:
-			asyncio.get_event_loop().run_until_complete(self._conn_future)  #return?
+			asyncio.get_event_loop().run_until_complete(self._async_connection())#_conn_future)  #return?
+			self.ConnectionEvent.set()
 		except (OSError, asyncssh.Error) as exc:
 			sys.exit('SFTP operation failed: ' + str(exc))
 
@@ -97,12 +97,13 @@ class FTPConnection(Connection):
 						password=self._password,
 						known_hosts=None) as connection:
 					self._connection = connection  # TODO deal with the output of connection
-					self.ConnectionEvent.set()
-					return self._connection # ? TODO
+					# self.ConnectionEvent.set()
 
+					# return self._connection # ? TODO
 
 					# async with self._connection.start_sftp_client() as sftp:
-					# 	await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
+					# 	self.result = await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
+					# 	return self.result
 
 					# result = await self.run('echo "Hello, connection established!"', check=True)
 					# return result
