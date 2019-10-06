@@ -44,20 +44,47 @@ class FTPSource(Source):
 		# 	while True:
 		# 		await self.Pipeline.ready()
 		# 		await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
+
+		# connection = self._connection #.result
+		# async with connection.start_sftp_client() as sftp:
+		# 	await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
+		#
+		# 	print(connection, 'tisk')
+
 		try:
 			while True:
-				await self.Pipeline.ready()
-				connection = self._connection._connection
-				async with connection.start_sftp_client() as sftp:
-					await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
-					print('tisk')
-
-
-
+				# await self.Pipeline.ready()
+				async with asyncssh.connect(
+						host=self._connection._host,
+						port=self._connection._port,
+						loop=self.Loop,
+						username=self._connection._user,
+						password=self._connection._password,
+						known_hosts=None) as connection:
+					async with connection.start_sftp_client() as sftp:
+						await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
+						await self.Pipeline.ready()
+						print('cekacka na pipeline')
 
 		except BaseException:
 			L.exception("Unexpected ssh connection error")
 			raise
+		# try:
+		# 	while True:
+		# 		await self.Pipeline.ready()
+		# 		print('jsem tady')
+		# 		# connection = self._connection.result #_connection
+		# 		# print(connection,'tisk')
+		# 		# async with connection.start_sftp_client() as sftp:
+		# 		# 	await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
+		# 		# 	print('tisk')
+		#
+		#
+		#
+		#
+		# except BaseException:
+		# 	L.exception("Unexpected ssh connection error")
+		# 	raise
 
 		# try:
 		# 	while True:
