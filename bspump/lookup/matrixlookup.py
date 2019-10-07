@@ -1,6 +1,8 @@
 import abc
+import asab
 import json
 import logging
+import importlib
 import numpy as np
 from ..abc.lookup import Lookup
 from ..analyzer.sessionmatrix import SessionMatrix
@@ -45,12 +47,23 @@ class MatrixLookup(Lookup):
 	def serialize(self):
 		serialized = {}
 		serialized['Matrix'] = self.Matrix.serialize()
+		serialized['Indexes'] = {}
+		for index in self.Indexes:
+			serialized["Indexes"][index] = self.Indexes[index].serialize()
+		
 		return (json.dumps(serialized)).encode('utf-8')
 
 
 	def deserialize(self, data_json):
 		data = json.loads(data_json.decode('utf-8'))
 		self.Matrix.deserialize(data['Matrix'])
+		self.Indexes = {}
+		indexes = data.get("Indexes", {})
+		for index in indexes:
+			module = importlib.import_module(indexes[index]["module"])
+			index_class = getattr(module, indexes[index]["class"])
+			ind = index_class.construct(indexes[index])
+			self.Indexes[index] = ind
 
 
 	def rest_get(self):
@@ -59,12 +72,13 @@ class MatrixLookup(Lookup):
 		return rest
 
 
-	# def add_bitmap_index(self, column):
-	# 	'''
-	# 		Make sure, that column values are discreet.
-	# 		Also the procedure is relatively slow.
-	# 	'''
-	# 	self.Indexes[column] = BitMapIndex(self.Matrix, column)
+	def add_bitmap_index(self, column, id=None, config=None):
+		'''
+			Make sure, that column values are discreet.
+			Also the procedure is relatively slow.
+		'''
+		index = BitMapIndex(column, matrix=self.Matrix, id=id, config=config)
+		self.Indexes[index.Id] = index
 
 
 	# def add_range_tree_index(self, column_start, column_end):
@@ -93,11 +107,23 @@ class MatrixLookup(Lookup):
 
 
 
-# class Index(abc.ABC):
+class Index(abc.ABC, asab.ConfigObject):
+	def __init__(self, id=None, config=None):
+		super().__init__("{}".format(id if id is not None else self.__class__.__name__), config=config)
 
-# 	@abc.abstractmethod
-# 	def search(self, *args) -> set:
-# 		pass
+
+	def serialize(self):
+		return {
+			'id': self.Id,
+			'class': self.__class__.__name__,
+			'module': self.__class__.__module__,
+			'config': self.Config,
+		}
+
+
+	@abc.abstractmethod
+	def search(self, *args) -> set:
+		pass
 
 
 # class TreeRangeIndex(Index):
@@ -172,33 +198,69 @@ class MatrixLookup(Lookup):
 
 
 
-# def BitMapIndex(Index):
-# 	def __init__(self, matrix, column):
-# 		'''
-# 			Make sure, that column values are discreet.
-# 			Also the procedure is relatively slow.
-# 		'''
-# 		self.N2IMap = {}
-# 		self.Column = column
+def BitMapIndex(Index):
+	def __init__(self, column, matrix=None, bitmap=None, id=None, config=None):
+		'''
+			Make sure, that column values are discreet.
+			Also the creation procedure is relatively slow.
+		'''
+		super().__init__(id=id, config=config)
+		self.Column = column
+		if matrix is None:
+			assert(bitmap is None)
+			
+			self.BitMap = bitmap
+			self.UniqueValues = list(self.BitMap.keys())
+		else:
+			self.BitMap = {}
+			self.UniqueValues = list(np.unique(matrix.Array[self.Column]))
 
-# 		self.UniqueValues = np.unique(matrix.Array[self.Column])
+			for u in self.UniqueValues:
+				x = np.where(matrix.Array[self.Column] == u)   
+				self.BitMap[u] = set(x[0].tolist())
+
 	
-# 		for u in self.UniqueValues:
-# 			x = np.where(matrix.Array[self.Column] == u)   
-# 			self.N2IMap[u] = set(x[0].tolist())
+	def search(self, value):
+		'''
+			Returns set of matrix indexes.
+		'''
 
-	
-# 	def search(self, value):
-# 		'''
-# 			Returns set of matrix indexes.
-# 		'''
-
-# 		return set(self.N2IMap.get(value, []))
+		return set(self.BitMap.get(value, []))
 
 
-# 	def serialize(self):
-# 		return self.N2IMap
 
-# 	def deserialize(self, data):
-# 		pass
+	def update(self, matrix):
+		unique_values = set(np.unique(matrix.Array[self.Column]))
+		set_difference_left = set(self.UniqueValues) - unique_values # there are some deleted vals
+		set_difference_right = unique_values - set(self.UniqueValues) # there are some added vals
+		
+		if len(set_difference_left) != 0:
+			for set_member in set_difference_left:
+				self.BitMapIndex.pop(set_member)
+
+		if len(set_difference_right) != 0:
+			for set_member in set_difference_right:
+				x = np.where(matrix.Array[self.Column] == set_member)
+				self.BitMapIndex[set_member] = set(x[0].tolist())
+
+		self.UniqueValues = list(unique_values)
+
+
+	def serialize(self):
+		serialized = super().serialize()
+		serialized.update({
+			'bitmap': self.BitMap,
+			'column': self.Column,
+			})
+
+		return serialized
+
+
+	@classmethod
+	def construct(cls, definition:dict):
+		id_ = definition.get('id')
+		config = definition.get('config')
+		bitmap = definition.get('bitmap')
+		column = definition.get('column')
+		return cls(column, bitmap=bitmap, id=id_, config=config)
 
