@@ -19,7 +19,8 @@ class FTPConnection(Connection):
 		'client_keys': [],
 		'output_queue_max_size': 10,
 		'known_hosts_path': [''],
-		'folder_name': '/pub/example/readme.txt'#'', # can be also file name when preserve = False and recurse = False
+		'host_key': '', # 'skey.pub'
+		# 'remote_path': '/pub/example/readme.txt'#'', # can be also file name when preserve = False and recurse = False
 
 
 		# 'process': '',
@@ -42,13 +43,12 @@ class FTPConnection(Connection):
 		self._cli_keys = self.Config['client_keys']
 		self._output_queue_max_size = self.Config['output_queue_max_size']
 		self._known_hosts = self.Config['known_hosts_path']
-		# self._fldr_name = self.Config['folder_name']
+		self._host_key = self.Config['host_key']
+		# self._rem_path = self.Config['remote_path']
 		# self._preserve = False, #True,
 		# self._recurse = False, #True,
 
 		self._conn_future = None
-
-
 
 		# Subscription
 		self._connection_check('connection.open!')
@@ -80,29 +80,66 @@ class FTPConnection(Connection):
 			loop=self.Loop
 		)
 
-		try:
-			asyncio.get_event_loop().run_until_complete(self._async_connection())#_conn_future)  #return?
-			self.ConnectionEvent.set()
-		except (OSError, asyncssh.Error) as exc:
-			sys.exit('SFTP operation failed: ' + str(exc))
 
 	async def _async_connection(self):
 		try:
 			if self._known_hosts == ['']:
-				async with asyncssh.connect(
-						host=self._host,
-						port=self._port,
-						loop=self.Loop,
-						username=self._user,
-						password=self._password,
-						known_hosts=None) as connection:
-					self._connection = connection  # TODO deal with the output of connection
-					# self.ConnectionEvent.set()
+				self._known_hosts = None
+			async with asyncssh.connect(
+					host=self._host,
+					port=self._port,
+					loop=self.Loop,
+					username=self._user,
+					password=self._password,
+					known_hosts=self._known_hosts) as connection:
+				self._connection = connection  # TODO deal with the output of connection
+				self.ConnectionEvent.set()
+				# await self._loader()
 
-					# return self._connection # ? TODO
+		except BaseException:
+			L.exception("Unexpected ftp connection error")
+			raise
+
+
+	def acquire_connection(self):
+		"""
+		Acquire asynchronous database connection
+
+		Use with `async with` statement
+
+	.. code-block:: python
+
+		async with self.Connection.acquire_connection() as connection:
+			async with connection.start_sftp_client() as sftp:
+				await sftp.get(self._rem_path, localpath=self._loc_path, preserve=self._preserve, recurse=self._recurse)
+
+		:return: Asynchronous Context Manager
+		"""
+		return asyncssh.connect(
+					host=self._host,
+					port=self._port,
+					loop=self.Loop,
+					username=self._user,
+					password=self._password,
+					known_hosts=self._known_hosts)
+		# assert(self._connection is not None)
+		# return self._connection
+
+
+
+	# async def _loader(self):
+	# 	while True:
+	# 		rem_path, loc_path, _pres, _recur = await self._output_queue.get()
+	# 		async with self.acquire_connection() as connection:
+	# 			async with connection.start_sftp_client() as sftp:
+	# 				await sftp.get(_rem_path, localpath=_loc_path, preserve=_pres, recurse=_recur)
+
+
+
+		# return self._connection # ? TODO
 
 					# async with self._connection.start_sftp_client() as sftp:
-					# 	self.result = await sftp.get(self._fldr_name, preserve=self._preserve, recurse=self._recurse)
+					# 	self.result = await sftp.get(self._rem_path, preserve=self._preserve, recurse=self._recurse)
 					# 	return self.result
 
 					# result = await self.run('echo "Hello, connection established!"', check=True)
@@ -120,17 +157,17 @@ class FTPConnection(Connection):
 
 
 
-			else:
-				async with asyncssh.connect(
-						host=self._host,
-						port=self._port,
-						loop=self.Loop,
-						username=self._user,
-						password=self._password,
-						known_hosts=(self._known_hosts)) as connection:
-					self._connection = connection
-					self._connection = connection  # TODO deal with the output of connection
-					self.ConnectionEvent.set()
+			# else:
+			# 	async with asyncssh.connect(
+			# 			host=self._host,
+			# 			port=self._port,
+			# 			loop=self.Loop,
+			# 			username=self._user,
+			# 			password=self._password,
+			# 			known_hosts=(self._known_hosts)) as connection:
+			# 		self._connection = connection  # TODO deal with the output of connection
+					# self.ConnectionEvent.set()
+
 					# result = await self._connection.run('echo "Hello, connection established!"', check=True)
 					# return result
 					# print(result.stdout, end='')
@@ -139,7 +176,7 @@ class FTPConnection(Connection):
 
 			# await self._loader()
 
-		except BaseException:
-			L.exception("Unexpected ftp connection error")
-			raise
+		# except BaseException:
+		# 	L.exception("Unexpected ftp connection error")
+		# 	raise
 

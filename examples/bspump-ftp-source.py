@@ -20,9 +20,6 @@ L = logging.getLogger(__name__)
 
 class SamplePipeline(bspump.Pipeline):
 	"""
-
-	## Try it out
-
 		xxxxxxxxxxxxxxxxxxxxxxx
 
 	"""
@@ -31,11 +28,8 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-            # bspump.random.RandomSource(app, self, choice=['a', 'b', 'c'], config={
-            #     'number': 5
-            # }).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=5)),
-			# bspump.common.BytesToStringParser(app, self),
-			bspump.ftp.FTPSource(app, self, "FTPConnection", config={'folder_name': '/pub/example/readme.txt'}),
+			bspump.ftp.FTPSource(app, self, "FTPConnection", config={'remote_path': '/pub/example/readme.txt',
+																	 'local_path': None}),
 			bspump.common.PPrintSink(app, self),
 			# bspump.mail.SmtpSink(app, self, 'SmtpConnection')
 		)
