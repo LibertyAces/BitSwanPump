@@ -28,7 +28,7 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.ftp.FTPSource(app, self, "FTPConnection", config={'remote_path': '/pub/example/readme.txt',
+			bspump.ftp.FTPSource(app, self, "FTPConnection", config={'remote_path': '/home/bandit0/readme',
 																	 'local_path': None}),
 			bspump.common.PPrintSink(app, self),
 			# bspump.mail.SmtpSink(app, self, 'SmtpConnection')
