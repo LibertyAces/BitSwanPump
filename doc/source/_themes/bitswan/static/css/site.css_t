@@ -59,13 +59,6 @@ body {
   margin: 0 2%;
 }
 
-span {
-  color: black; 
-}
-
-span.p, span.n {
-    color: black;
-}
 .viewcode-link {
     color: #252d93;
 }
