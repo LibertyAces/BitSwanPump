@@ -12,10 +12,10 @@ L = logging.getLogger(__name__)
 
 class FTPConnection(Connection):
 	ConfigDefaults = {
-		'host': 'test.rebex.net',  # 'localhost', #'itcsubmit.wustl.edu',#'localhost',
-		'port': 22,  # 80,#22,  # good to use dynamic ports in range 49152-62535
-		'user': 'demo',
-		'password': 'password',
+		'host': 'bandit.labs.overthewire.org',# 'test.rebex.net',  # 'localhost', #'itcsubmit.wustl.edu',#'localhost',
+		'port': 2220,  # 80,#22,  # good to use dynamic ports in range 49152-62535
+		'user': 'bandit0',
+		'password': 'bandit0',
 		'client_keys': [],
 		'output_queue_max_size': 10,
 		'known_hosts_path': [''],
@@ -81,10 +81,12 @@ class FTPConnection(Connection):
 		)
 
 
+
 	async def _async_connection(self):
 		try:
 			if self._known_hosts == ['']:
 				self._known_hosts = None
+
 			async with asyncssh.connect(
 					host=self._host,
 					port=self._port,
@@ -122,6 +124,7 @@ class FTPConnection(Connection):
 					username=self._user,
 					password=self._password,
 					known_hosts=self._known_hosts)
+
 		# assert(self._connection is not None)
 		# return self._connection
 

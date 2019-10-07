@@ -42,6 +42,9 @@ class FTPSource(Source):
 		async with self._connection.acquire_connection() as connection:#._connection_check as connection:
 			async with connection.start_sftp_client() as sftp:
 				await sftp.get(self._rem_path, localpath=self._loc_path, preserve=self._preserve, recurse=self._recurse)
+				print('tisk')
+
+
 				# try:
 				# 	while True:
 				# 		await self.Pipeline.ready()
@@ -144,16 +147,6 @@ class FTPSource(Source):
 		# asyncssh.SSHClient.validate_password(username, password)[source]
 
 
-
-
-	# def _on_connection_open(self, event_name):
-	# 	assert self._channel is None
-	# 	self._channel = self._connection.Connection.channel(on_open_callback=self._on_channel_open)
-	# 	self._channel_ready.set()
-	#
-	# def _on_connection_close(self, event_name):
-	# 	self._channel = None
-	# 	self._channel_ready.clear()
 
 
 
