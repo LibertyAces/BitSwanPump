@@ -1,6 +1,7 @@
 import abc
 import time
 import logging
+import json
 import collections
 
 import numpy as np
@@ -227,3 +228,28 @@ class NamedMatrix(Matrix):
 
 	def get_row_name(self, row_index:int):
 		return self.I2NMap.get(row_index)
+
+
+	def serialize(self):
+		serialized = {}
+		serialized['N2IMap'] = self.N2IMap
+		serialized['I2NMap'] = self.I2NMap
+		serialized['ClosedRows'] = list(self.ClosedRows)
+		serialized['DType'] = self.DType
+		serialized['Array'] = self.Array.tolist()
+		return serialized
+
+
+	def deserialize(self, data):
+		self.N2IMap = data['N2IMap']
+		self.I2NMap = data['I2NMap']
+		self.ClosedRows = set(data['ClosedRows'])
+		self.DType = []
+		l = []
+		for member in data['DType']:
+			self.DType.append(tuple(member))
+
+		for member in data['Array']:
+			l.append(tuple(member))
+
+		self.Array = np.array(l, dtype=self.DType)
