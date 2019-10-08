@@ -12,19 +12,11 @@ L = logging.getLogger(__name__)
 
 class FTPConnection(Connection):
 	ConfigDefaults = {
-		'host': 'bandit.labs.overthewire.org',# 'test.rebex.net',  # 'localhost', #'itcsubmit.wustl.edu',#'localhost',
-		'port': 2220,  # 80,#22,  # good to use dynamic ports in range 49152-62535
-		'user': 'bandit0',
-		'password': 'bandit0',
-		'client_keys': [],
-		'output_queue_max_size': 10,
-		'known_hosts_path': [''],
-		'host_key': '', # 'skey.pub'
-		# 'remote_path': '/pub/example/readme.txt'#'', # can be also file name when preserve = False and recurse = False
-
-
-		# 'process': '',
-		# 'known_hosts': None, # None not recommended - use 'my_known_hosts' instead
+		'host': 'localhost',
+		'port': 22,
+		'user': '',
+		'password': '',
+		'known_hosts_path': [],
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -34,25 +26,20 @@ class FTPConnection(Connection):
 		self.ConnectionEvent.clear()
 
 		self.Loop = app.Loop
-		self.PubSub = app.PubSub
 
 		self._host = self.Config['host']
-		self._port = self.Config['port']
+		self._port = int(self.Config['port'])
 		self._user = self.Config['user']
 		self._password = self.Config['password']
-		self._cli_keys = self.Config['client_keys']
-		self._output_queue_max_size = self.Config['output_queue_max_size']
-		self._known_hosts = self.Config['known_hosts_path']
-		self._host_key = self.Config['host_key']
-		# self._rem_path = self.Config['remote_path']
-		# self._preserve = False, #True,
-		# self._recurse = False, #True,
+		try:
+			self._known_hosts = list(self.Config['known_hosts_path'].split(','))
+		except AttributeError:
+			self._known_hosts = None
 
 		self._conn_future = None
 
 		# Subscription
 		self._connection_check('connection.open!')
-		# self._output_queue = asyncio.Queue(loop=app.Loop)
 
 
 	def _connection_check(self, message_type):
@@ -84,7 +71,7 @@ class FTPConnection(Connection):
 
 	async def _async_connection(self):
 		try:
-			if self._known_hosts == ['']:
+			if not self._known_hosts or self._known_hosts == [''] or self._known_hosts == None:
 				self._known_hosts = None
 
 			async with asyncssh.connect(
@@ -125,10 +112,6 @@ class FTPConnection(Connection):
 					password=self._password,
 					known_hosts=self._known_hosts)
 
-		# assert(self._connection is not None)
-		# return self._connection
-
-
 
 	# async def _loader(self):
 	# 	while True:
@@ -139,47 +122,4 @@ class FTPConnection(Connection):
 
 
 
-		# return self._connection # ? TODO
-
-					# async with self._connection.start_sftp_client() as sftp:
-					# 	self.result = await sftp.get(self._rem_path, preserve=self._preserve, recurse=self._recurse)
-					# 	return self.result
-
-					# result = await self.run('echo "Hello, connection established!"', check=True)
-					# return result
-					# print(result.stdout, end='')
-			# await self._loader()
-
-			# example of piping one remote process to another
-			# async def run_client():
-			# 	async with asyncssh.connect('localhost') as conn:
-			# 		proc1 = await conn.create_process(r'echo "1\n2\n3"')
-			# 		proc2_result = await conn.run('tail -r', stdin=proc1.stdout)
-			# 		print(proc2_result.stdout, end='')
-
-
-
-
-			# else:
-			# 	async with asyncssh.connect(
-			# 			host=self._host,
-			# 			port=self._port,
-			# 			loop=self.Loop,
-			# 			username=self._user,
-			# 			password=self._password,
-			# 			known_hosts=(self._known_hosts)) as connection:
-			# 		self._connection = connection  # TODO deal with the output of connection
-					# self.ConnectionEvent.set()
-
-					# result = await self._connection.run('echo "Hello, connection established!"', check=True)
-					# return result
-					# print(result.stdout, end='')
-			# result = await self._connection.run('pwd', check=True)
-			# print(result.stdout, end='')
-
-			# await self._loader()
-
-		# except BaseException:
-		# 	L.exception("Unexpected ftp connection error")
-		# 	raise
 

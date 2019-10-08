@@ -20,7 +20,23 @@ L = logging.getLogger(__name__)
 
 class SamplePipeline(bspump.Pipeline):
 	"""
-		xxxxxxxxxxxxxxxxxxxxxxx
+		Config file for FTP connection should look like this:
+		# FTP Connection
+
+		[connection:FTPConnection]
+		host=bandit.labs.overthewire.org
+		port=2220
+		user=bandit0
+		password=bandit0
+		known_hosts_path=path1,path2
+
+		#################################
+
+		If do not know the known_hosts_path, leave it empty or do not append it to a Config file.
+
+		conf file in ../etc/
+
+
 
 	"""
 
@@ -28,10 +44,17 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.ftp.FTPSource(app, self, "FTPConnection", config={'remote_path': '/home/bandit0/readme',
-																	 'local_path': None}),
+			bspump.ftp.FTPSource(app, self, "FTPConnection1", config={'remote_path': '/home/bandit0/readme',
+																	 'local_path': '/home/user/projects/',
+																	 'preserve': False,
+																	 'recurse': False,}),
+			bspump.common.PPrintProcessor(app, self),
+
 			bspump.common.PPrintSink(app, self),
-			# bspump.mail.SmtpSink(app, self, 'SmtpConnection')
+			# bspump.ftp.FTPSink(app, self, "FTPConnection2", config={'remote_path': '/test/',
+			# 														'local_path': '/home/doma/projects/readme',
+			# 														'preserve': False,
+			# 														'recurse': False,}), #FTPSink not established and fully fucntionable yet
 		)
 
 
@@ -40,8 +63,9 @@ if __name__ == '__main__':
 
 	svc = app.get_service("bspump.PumpService")
 
-	svc.add_connection(
-		bspump.ftp.FTPConnection(app, "FTPConnection")
+	svc.add_connections(
+		bspump.ftp.FTPConnection(app, "FTPConnection1"),
+		# bspump.ftp.FTPConnection(app, "FTPConnection2"),
 	)
 
 	# Construct and register Pipeline

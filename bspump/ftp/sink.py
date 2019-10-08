@@ -1,11 +1,25 @@
 from ..abc.sink  import Sink
 
-class FTPSink(Sink): #TODO establish sink module
+ConfigDefaults = {
+
+		'remote_path': '',
+		'local_path': '',
+		'preserve': 'False',
+		'recurse': 'False',
+
+}
+
+class FTPSink(Sink): #TODO establish FTP sink
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self._connection = pipeline.locate_connection(app, connection)
+
+		self._rem_path = self.Config['remote_path']
+		self._loc_path = self.Config['local_path']
+		self._preserve = bool(self.Config['preserve'])
+		self._recurse = bool(self.Config['recurse'])
 
 		app.PubSub.subscribe("FTPConnection.pause!", self._connection_throttle)
 		app.PubSub.subscribe("FTPConnection.unpause!", self._connection_throttle)
@@ -22,18 +36,18 @@ class FTPSink(Sink): #TODO establish sink module
 		else:
 			raise RuntimeError("Unexpected event name '{}'".format(event_name))
 
+	def process(self, context, event):
+		event = self.main_sink() # not sure, if this is allright...
+		self._connection.consume(event)
 
-# import asyncio, asyncssh, sys
-#
-# async def run_client():
-#     async with asyncssh.connect('localhost') as conn:
-#         async with conn.create_process('bc') as process:
-#             for op in ['2+2', '1*2*3*4', '2^32']:
-#                 process.stdin.write(op + '\n')
-#                 result = await process.stdout.readline()
-#                 print(op, '=', result, end='')
-#
-# try:
-#     asyncio.get_event_loop().run_until_complete(run_client())
-# except (OSError, asyncssh.Error) as exc:
-#     sys.exit('SSH connection failed: ' + str(exc))
+	async def main_sink(self):
+		async with self._connection.acquire_connection() as connection:
+			async with connection.start_sftp_client() as sftp:
+				try:
+					await sftp.mkdir(self._rem_path)
+				except asyncssh.SFTPError:
+					pass
+				await sftp.put(self._loc_path, remotepath=self._rem_path, preserve=self._preserve, recurse=self._recurse)
+
+
+
