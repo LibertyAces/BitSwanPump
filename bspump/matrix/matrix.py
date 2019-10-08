@@ -171,7 +171,7 @@ class NamedMatrix(Matrix):
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
 		super().__init__(app, dtype=dtype, id=id, config=config)
-
+		self.PubSub = asab.PubSub(app) 
 
 	def zeros(self):
 		super().zeros()
@@ -203,6 +203,7 @@ class NamedMatrix(Matrix):
 		
 		self.Gauge.set("rows.closed", 0)
 		self.Gauge.set("rows.active", self.Array.shape[0])
+		self.PubSub.publish("Matrix changed!")
 
 
 	def add_row(self, row_name:str):
@@ -211,6 +212,7 @@ class NamedMatrix(Matrix):
 		row_index = super().add_row()
 		self.N2IMap[row_name] = row_index
 		self.I2NMap[row_index] = row_name
+		self.PubSub.publish("Matrix changed!")
 
 		return row_index
 
@@ -220,6 +222,7 @@ class NamedMatrix(Matrix):
 
 		row_name = self.I2NMap.pop(row_index)
 		del self.N2IMap[row_name]
+		self.PubSub.publish("Matrix changed!")
 
 
 	def get_row_index(self, row_name:str):

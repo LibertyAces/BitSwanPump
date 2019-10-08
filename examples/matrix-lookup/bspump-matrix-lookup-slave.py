@@ -65,8 +65,7 @@ class Enricher(bspump.Processor):
 
 	
 	def process(self, context, event):
-		print(self.Lookup.Matrix.Array)
-		print(">>>>", self.Lookup.Matrix.DType)
+
 		timestamp = event['@timestamp']
 		channel = event['channel']
 		st = time.time()
