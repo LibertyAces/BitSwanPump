@@ -48,29 +48,17 @@ class FTPSource(Source):
 		self._recurse = bool(self.Config['recurse'])
 
 
-	async def main(self):
+	async def main(self): # TODO Do periodical downloading
 		await self.Pipeline.ready()
-		await self._connection.ConnectionEvent.wait()
 		async with self._connection.acquire_connection() as connection:
 			async with connection.start_sftp_client() as sftp:
 				await sftp.get(self._rem_path, localpath=self._loc_path, preserve=self._preserve, recurse=self._recurse)
+				print('tisk')
 				# event = self.reader(self._loc_path)
 				# await self.Pipeline.process(event)
 
-	# def reader(self, event): #TODO Do some Process reader of sourced files?
-	# 	# fils = [f for f in os.listdir(event) if isfile(os.join(event, f))]
-	# 	# for fil in fils:
-	# 	fil = event
-	# 	with open(fil) as myfile:
-	# 		data = myfile.read()
-	# 		return data
 
 
-	# def complete(self):
-	# 	try:
-	# 		asyncio.get_event_loop().run_until_complete(self.main())
-	# 	except (OSError, asyncssh.Error) as exc:
-	# 		sys.exit('SSH connection failed: ' + str(exc))
 
 
 
