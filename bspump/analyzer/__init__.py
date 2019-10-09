@@ -8,6 +8,7 @@ from .timewindowmatrix import TimeWindowMatrix
 from .sessionmatrix import SessionMatrix
 from .latch import LatchAnalyzer
 from .analyzingsource import AnalyzingSource
+from .threshold import ThresholdAnalyzer
 
 __all__ = [
 	'Analyzer',
@@ -19,4 +20,5 @@ __all__ = [
 	'TimeWindowMatrix',
 	'SessionMatrix',
 	'LatchAnalyzer',
+	'ThresholdAnalyzer',
 ]
