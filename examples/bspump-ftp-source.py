@@ -44,17 +44,20 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.ftp.FTPSource(app, self, "FTPConnection1", config={'remote_path': '/home/bandit0/readme',
-																	 'local_path': '/home/user/projects/',
-																	 'preserve': False,
-																	 'recurse': False,}),
-			bspump.common.PPrintProcessor(app, self),
-
-			bspump.common.PPrintSink(app, self),
-			# bspump.ftp.FTPSink(app, self, "FTPConnection2", config={'remote_path': '/test/',
-			# 														'local_path': '/home/doma/projects/readme',
-			# 														'preserve': False,
-			# 														'recurse': False,}), #FTPSink not established and fully fucntionable yet
+			# bspump.ftp.FTPSource(app, self, "FTPConnection1", config={'remote_path': '/home/bandit0/readme',
+			# 														 'local_path': '/home/doma/projects/',
+			# 														 'preserve': False,
+			# 														 'recurse': False,}),
+			# bspump.common.PPrintProcessor(app, self),
+			#
+			# bspump.common.PPrintSink(app, self),
+			bspump.random.RandomSource(app, self, choice=['a', 'b', 'c'], config={
+				'number': 5
+			}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
+			bspump.ftp.FTPSink(app, self, "FTPConnection2", config={'remote_path': '/upload/',
+																	'local_path': '/home/doma/projects/readme_test.txt',
+																	'preserve': False,
+																	'recurse': False,}), #FTPSink not established and fully fucntionable yet
 		)
 
 
@@ -63,9 +66,9 @@ if __name__ == '__main__':
 
 	svc = app.get_service("bspump.PumpService")
 
-	svc.add_connections(
-		bspump.ftp.FTPConnection(app, "FTPConnection1"),
-		# bspump.ftp.FTPConnection(app, "FTPConnection2"),
+	svc.add_connection(
+		# bspump.ftp.FTPConnection(app, "FTPConnection1"),
+		bspump.ftp.FTPConnection(app, "FTPConnection2")
 	)
 
 	# Construct and register Pipeline
