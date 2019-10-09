@@ -33,17 +33,16 @@ class FTPSink(Sink): #TODO establish FTP sink
 		self._recurse = bool(self.Config['recurse'])
 		self.Pipeline = pipeline
 
-
-
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._output_queue_max_size = 100 #int(self.Config['output_queue_max_size'])
 		self._conn_future = None
-		# Subscription
 
+		# Subscription
 		self._on_health_check('connection.open!')
 
 		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
 		app.PubSub.subscribe("Application.tick!", self._on_health_check)
+		app.PubSub.subscribe("Application.exit!", self._on_exit)
 
 
 
@@ -76,28 +75,39 @@ class FTPSink(Sink): #TODO establish FTP sink
 		self._output_queue.put_nowait((None, None, None))
 
 
+	def _on_exit(self):
+		while len(self._conn_future) > 0:
+			asyncio.wait(
+				self._conn_future,
+				loop=self.Loop)
+
+	# async def _on_exit(self):
+	# 	while len(self._conn_future) > 0:
+	# 		await asyncio.wait(
+	# 			self._conn_future,
+	# 			loop=self.Loop)
+	# 	await self.flush()
+
+
 	async def flush(self):
 		async with self._connection.acquire_connection() as connection:
 			async with connection.start_sftp_client() as sftp:
-				remote_path, local_path, recurse, preserve = await self._output_queue.get()
+				remote_path, local_path = await self._output_queue.get()
 				if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.Pipeline.throttle(self, False)
 				try:
 					await sftp.mkdir(remote_path)
 				except asyncssh.SFTPError:
 					pass
-				await sftp.put(local_path, remotepath=remote_path, preserve=preserve, recurse=recurse)
+				await sftp.put(local_path, remotepath=remote_path, preserve=self._preserve, recurse=self._recurse)
 
 
 
 	def process(self, context, event):
-
-		remote_path = context.get("remote_path", self._rem_path)
+		remote_path = event.get("remote_path", self._rem_path)
 		local_path = context.get("local_path", self._loc_path)
-		recurse = context.get("recurse", self._recurse)
-		preserve = context.get("preserve", self._preserve)
 
-		self._output_queue.put_nowait((remote_path, local_path, recurse, preserve))
+		self._output_queue.put_nowait((remote_path, local_path,))
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.Pipeline.throttle(self, True)
 
