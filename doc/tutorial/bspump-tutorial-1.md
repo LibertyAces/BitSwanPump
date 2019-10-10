@@ -8,7 +8,7 @@ This tutorial shows how to create a simple pipeline that consumes data from TCP 
 2. pip for 3.7
 3. `pip3 install -U asab`
 4. `pip3 install -U aiohttp`
-5. `pip3 install -U git+https://github.com/TeskaLabs/bspump.git`
+5. `pip3 install -U git+https://github.com/LibertyAces/BitSwanPump.git`
 
 
 ## Part 1 - BSPump micro-service app. skeleton

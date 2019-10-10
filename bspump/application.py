@@ -62,7 +62,7 @@ class BSPumpApplication(asab.Application):
 
 		description = '''
 BSPump is a stream processor. It is a part of BitSwan.
-For more information, visit: https://github.com/TeskaLabs/bspump
+For more information, visit: https://github.com/LibertyAces/BitSwanPump
 
 version: {}
 build: {} [{}]
