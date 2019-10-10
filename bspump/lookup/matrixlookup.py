@@ -37,6 +37,8 @@ class MatrixLookup(Lookup):
 		self.MatrixPubSub = None
 		self.Timer = None
 
+		self.Target = None
+
 		if self.is_master():
 			if on_clock_update:
 				self.UpdatePeriod = float(self.Config['update_period'])
@@ -71,7 +73,7 @@ class MatrixLookup(Lookup):
 
 			return None
 		
-		return np.asscalar(self.Matrix.Array[x[0]][target_column])
+		return np.asscalar(self.Matrix.Array[x[0][0]][target_column])
 
 
 	def serialize(self):
@@ -87,6 +89,7 @@ class MatrixLookup(Lookup):
 	def deserialize(self, data_json):
 		data = json.loads(data_json.decode('utf-8'))
 		self.Matrix.deserialize(data['Matrix'])
+		self.Target = self.Matrix.Array['programname'].tolist()
 		indexes = data.get("Indexes", {})
 		for index in indexes:
 			self.Indexes[index].deserialize(indexes[index])
