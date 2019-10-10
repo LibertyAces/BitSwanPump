@@ -20,7 +20,15 @@ ConfigDefaults = {
 
 }
 
-class FTPSink(Sink): #TODO establish FTP sink
+"""
+
+If preserve is True, the access and modification times and permissions of the original file are set on the uploaded file.
+
+If recurse is True and the remote path points at a directory, the entire subtree under that directory is uploaded.
+
+"""
+
+class FTPSink(Sink):
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -71,26 +79,18 @@ class FTPSink(Sink): #TODO establish FTP sink
 			loop=self.Loop
 		)
 
+
 	def _on_application_stop(self, message_type, counter):
 		self._output_queue.put_nowait((None, None, None))
 
 
-	def _on_exit(self):
-		while len(self._conn_future) > 0:
-			asyncio.wait(
-				self._conn_future,
-				loop=self.Loop)
-
-	# async def _on_exit(self):
-	# 	while len(self._conn_future) > 0:
-	# 		await asyncio.wait(
-	# 			self._conn_future,
-	# 			loop=self.Loop)
-	# 	await self.flush()
+	async def _on_exit(self, message_type):
+		if self._conn_future is not None:
+			await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED, loop=self.Loop)
 
 
 	async def flush(self):
-		async with self._connection.acquire_connection() as connection:
+		async with self._connection.acquire_connection() as connection: #TODO Deal with pending Task coroutine in connection
 			async with connection.start_sftp_client() as sftp:
 				remote_path, local_path = await self._output_queue.get()
 				if self._output_queue.qsize() == self._output_queue_max_size - 1:
@@ -102,13 +102,10 @@ class FTPSink(Sink): #TODO establish FTP sink
 				await sftp.put(local_path, remotepath=remote_path, preserve=self._preserve, recurse=self._recurse)
 
 
-
 	def process(self, context, event):
-		remote_path = event.get("remote_path", self._rem_path)
-		local_path = context.get("local_path", self._loc_path)
+		remote_path = context.get("remote_path", self._rem_path)
+		local_path = event.get("local_path", self._loc_path)
 
 		self._output_queue.put_nowait((remote_path, local_path,))
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.Pipeline.throttle(self, True)
-
-
