@@ -48,28 +48,8 @@ class FTPSource(Source):
 		self._recurse = bool(self.Config['recurse'])
 
 
-	async def main(self): # TODO Do periodical downloading
+	async def main(self): # TODO Refactor to periodical downloading
 		await self.Pipeline.ready()
 		async with self._connection.acquire_connection() as connection:
 			async with connection.start_sftp_client() as sftp:
 				await sftp.get(self._rem_path, localpath=self._loc_path, preserve=self._preserve, recurse=self._recurse)
-				print('tisk')
-				# event = self.reader(self._loc_path)
-				# await self.Pipeline.process(event)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
