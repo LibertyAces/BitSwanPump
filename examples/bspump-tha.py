@@ -18,9 +18,10 @@ class CustomAPMPipeline(bspump.Pipeline):
         self.build(
             bspump.amqp.AMQPSource(app, self, "AMQPConnection"),
             bspump.common.BytesToStringParser(app, self),
-            bspump.common.JsonToDictParser(app, self),
-            MyThresholdAnalyzer(app,self),
-            bspump.common.PPrintSink(app, self),
+            # bspump.common.JsonToDictParser(app, self),
+            MyThresholdAnalyzer(app,self,config={'event_name':'host', 'threshold':1000, }),
+            # bspump.common.PPrintSink(app, self),
+            bspump.common.NullSink(app, self),
             # bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection"),
         )
 
@@ -28,6 +29,8 @@ class CustomAPMPipeline(bspump.Pipeline):
 class MyThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):
     def __init__(self, app, pipeline, id=None, config=None):
         super().__init__(app, pipeline, id=id, config=config)
+
+
 
 
 
