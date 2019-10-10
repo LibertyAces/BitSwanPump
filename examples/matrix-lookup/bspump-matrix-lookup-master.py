@@ -60,7 +60,6 @@ class MySessionAnalyzer(bspump.analyzer.SessionAnalyzer):
 		event['ts_start'] = int(datetime.datetime.strptime(event['startdate']+":00", "%Y-%m-%d %H:%M:%S%z").timestamp())
 		event['ts_end'] = int(datetime.datetime.strptime(event['enddate']+":00", "%Y-%m-%d %H:%M:%S%z").timestamp())
 		self.Sessions.store_event(idx, event, keys=['ts_start', 'ts_end', 'epgid', 'channelid', 'programname'])
-		# print(self.Sessions.Array)
 
 
 
