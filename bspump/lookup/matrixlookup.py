@@ -89,7 +89,6 @@ class MatrixLookup(Lookup):
 	def deserialize(self, data_json):
 		data = json.loads(data_json.decode('utf-8'))
 		self.Matrix.deserialize(data['Matrix'])
-		self.Target = self.Matrix.Array['programname'].tolist()
 		indexes = data.get("Indexes", {})
 		for index in indexes:
 			self.Indexes[index].deserialize(indexes[index])
