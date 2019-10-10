@@ -25,6 +25,8 @@ class SlaveApplication(bspump.BSPumpApplication):
 		matrix = bspump.analyzer.SessionMatrix(self, dtype=[
 			('ts_start', 'i8'), 
 			('ts_end', 'i8'), 
+			('time_start', 'i8'), 
+			('time_end', 'i8'), 
 			('channelid', 'i8'), 
 			('programname', 'U30'),
 			('epgid', 'i8'), 
@@ -69,17 +71,13 @@ class Enricher(bspump.Processor):
 		timestamp = event['@timestamp']
 		channel = event['channel']
 		st = time.time()
-		condition = (self.Lookup.Matrix.Array['channelid'] == channel) & (self.Lookup.Matrix.Array['ts_start'] <= timestamp) & (self.Lookup.Matrix.Array['ts_end'] > timestamp) 
+		# condition = (self.Lookup.Matrix.Array['channelid'] == channel) & (self.Lookup.Matrix.Array['time_start'] <= timestamp) & (self.Lookup.Matrix.Array['time_end'] > timestamp) 
 		
-		program_id = self.Lookup.search(condition, 'epgid')
-		if program_id is None:
-			print('noup :(')
-			return event
-		
-		event['program_id'] = program_id
+		# program_name = self.Lookup.search(condition, 'programname')
+		program_name = self.Lookup.search(event)
 		end = time.time()
-
-		L.warn("{}".format(end-st))
+		event['program_name'] = program_name
+		event['D'] = end-st
 		return event
 
 
