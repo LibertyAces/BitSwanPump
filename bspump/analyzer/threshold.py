@@ -16,6 +16,7 @@ ConfigDefaults = {
 	'resolution': 60,  # Resolution (aka column width) in seconds
 	'event_name': '',
 	'threshold': 1000, # Max number of events before exceeding
+	'level':'above',
 }
 
 class ThresholdAnalyzer(TimeWindowAnalyzer):
@@ -26,7 +27,8 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		self._resolution = int(self.Config['resolution'])
 		self._event_name = self.Config['event_name']
 		self._threshold = int(self.Config['threshold'])
-
+		self.Level = self.Config['level'] # alarm level
+		self.AlarmDict = {} #alarm dictionary - use it in 
 		self.TimeWindow.zeros() #initializing timewindow with zeros
 
 
@@ -42,9 +44,19 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def analyze(self): #TODO set analyzing method
-
+		# if value is in AlarmDict - hold/dont start the alarm, else: start the alarm
 		...
-		#threshold_limiter = len(line v matrixu (row))
+		#threshold_limiter = len(line v matrixu (row))f
+
+		# as a len_threshold analyzer use np. function!!
+
+		if self.Level == self.alarm(len_threshold_limiter, len_threshold):
+			#some alarm
+			...
+		else:
+			#not alarm
+			...
+
 		while len(threshold_limiter) > self._threshold:
 			self.alarm(len(threshold_limiter), self._threshold) #call alarm method
 
@@ -64,15 +76,25 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 			return
 
 		# load
-		self.TimeWindow.Array[row, column] += event[] #TODO set load event
+		self.TimeWindow.Array[row, column] = event[] #TODO set load event
 
 
 	def alarm(self, len_threshold_limiter, len_threshold): #TODO set alarm
+		self.level_val = ''
 		if not int(len_threshold_limiter):
 			raise ValueError
 
 		if not int(len_threshold):
 			raise ValueError
 
+
+
 		alarm_val = str('Threshold has been exceeded by {} %'.format(abs(len_threshold_limiter-len_threshold) / len_threshold) * 100)
 		print(alarm_val)
+
+		if len_threshold_limiter > len_threshold:
+			self.level_val = 'above'
+		else:
+			self.level_val = 'below'
+
+		return self.lev_val
