@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import logging
 
 import bspump
@@ -8,6 +7,7 @@ import bspump.file
 import bspump.random
 import bspump.trigger
 import bspump.ssh
+import time
 
 
 
@@ -20,23 +20,41 @@ L = logging.getLogger(__name__)
 
 class SamplePipeline(bspump.Pipeline):
 	"""
+		Config file for FTP connection should look like this:
+		# FTP Connection
 
-	## Try it out
+		[connection:SSHConnection]
+		host=bandit.labs.overthewire.org
+		port=2220
+		user=bandit0
+		password=bandit0
+		known_hosts_path=path1,path2
 
-		xxxxxxxxxxxxxxxxxxxxxxx
+		#################################
+
+		If do not know the known_hosts_path, leave it empty or do not append it to a Config file.
+
+		conf file in ../etc/
+
+
 
 	"""
 
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
+		upper_bound = int(time.time())
+		lower_bound = upper_bound - 100500
 
 		self.build(
-            bspump.random.RandomSource(app, self, choice=['a', 'b', 'c'], config={
-                'number': 5
-            }).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=5)),
-			# bspump.common.BytesToStringParser(app, self),
-			bspump.common.PPrintSink(app, self),
-			# bspump.mail.SmtpSink(app, self, 'SmtpConnection')
+			bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd'], config={'number': 5}).on(bspump.trigger.RunOnceTrigger(app)),
+			# bspump.common.PPrintProcessor(app, self),
+			bspump.common.DictToJsonBytesParser(app,self),
+			# bspump.common.StringToBytesParser(app, self),
+			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/upload/',
+																	'host': 'speedtest.tele2.net',
+																	 'rand_int': 1000,
+																	 'encoding': 'utf-8',
+																	 'mode': 'w',}), #FTPSink not established and fully fucntionable yet
 		)
 
 
@@ -46,7 +64,8 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	svc.add_connection(
-		bspump.ssh.SshConnection(app, "SshConnection")
+		# bspump.ftp.FTPConnection(app, "SSHConnection1"),
+		bspump.ssh.SSHConnection(app, "SSHConnection2")
 	)
 
 	# Construct and register Pipeline

@@ -1,2 +1,3 @@
-# from .sink import
-from .connection import SshConnection
+from .connection import SSHConnection
+from .sink import SFTPSink
+# from .source import SFTPSource
