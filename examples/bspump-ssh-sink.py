@@ -46,15 +46,16 @@ class SamplePipeline(bspump.Pipeline):
 		lower_bound = upper_bound - 100500
 
 		self.build(
-			bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd'], config={'number': 5}).on(bspump.trigger.RunOnceTrigger(app)),
+			bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd', 'de', 'ef'], config={'number': 5}).on(bspump.trigger.RunOnceTrigger(app)),
 			# bspump.common.PPrintProcessor(app, self),
 			bspump.common.DictToJsonBytesParser(app,self),
 			# bspump.common.StringToBytesParser(app, self),
-			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/upload/',
-																	'host': 'speedtest.tele2.net',
+			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '',#'/upload/',
+																	'host': 'demo.wftpserver.com',
 																	 'rand_int': 1000,
 																	 'encoding': 'utf-8',
-																	 'mode': 'w',}), #FTPSink not established and fully fucntionable yet
+																	 'mode': 'a',
+																	 'out_type': 'bytes',})
 		)
 
 
@@ -64,7 +65,6 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	svc.add_connection(
-		# bspump.ftp.FTPConnection(app, "SSHConnection1"),
 		bspump.ssh.SSHConnection(app, "SSHConnection2")
 	)
 
@@ -73,3 +73,5 @@ if __name__ == '__main__':
 	svc.add_pipeline(pl)
 
 	app.run()
+
+	
