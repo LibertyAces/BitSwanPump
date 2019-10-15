@@ -23,17 +23,11 @@ ConfigDefaults = {
 		'host': 'localhost',
 		'rand_int': 1000,
 		'encoding': 'utf-8',
-		'mode': 'w', # w = write, r = read
+		'mode': 'w', # w = write, r = read, a = append
+		'out_type': 'bytes'
 
 }
 
-"""
-
-If preserve is True, the access and modification times and permissions of the original file are set on the uploaded file.
-
-If recurse is True and the remote path points at a directory, the entire subtree under that directory is uploaded.
-
-"""
 
 class SFTPSink(Sink):
 
@@ -43,14 +37,13 @@ class SFTPSink(Sink):
 		self._connection = pipeline.locate_connection(app, connection)
 
 		self._rem_path = self.Config['remote_path']
-		# self._loc_path = self.Config['local_path']
-		# self._preserve = bool(self.Config['preserve'])
-		# self._recurse = bool(self.Config['recurse'])
 		self._host = self.Config['host']
 		self.RandIntLen = int(self.Config['rand_int'])
 		self.Encoding = self.Config['encoding']
 		self.Mode = self.Config['mode']
+		self.OutputType = self.Config['out_type']
 		self.Pipeline = pipeline
+		self.NameDict = {}
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._output_queue_max_size = 100 #int(self.Config['output_queue_max_size'])
@@ -92,36 +85,54 @@ class SFTPSink(Sink):
 
 	def _on_application_stop(self, message_type, counter):
 		self._output_queue.put_nowait((None, None))
+		self.NameDict.clear()
 
 
 	async def _on_exit(self, message_type):
 		if self._conn_future is not None:
 			await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED, loop=self.Loop)
+			self.NameDict.clear()
 
 
-	async def outbound(self):
-		async with self._connection.run_connection() as connection: #TODO Deal with pending Task coroutine in connection
+	async def outbound(self): #TODO Need to find/create a decent sftp server to properly test the upload
+		async with self._connection.run_connection() as connection:
 			async with connection.start_sftp_client() as sftp:
 				while True:
 					event, ssh_remote = await self._output_queue.get()
 
 					if event is None and ssh_remote is None:
+						self.NameDict.clear()
 						break
 
 					if self._output_queue.qsize() == self._output_queue_max_size - 1:
 						self.Pipeline.throttle(self, False)
 
-					async with sftp.open(ssh_remote, mode=self.Mode, encoding=self.Encoding) as sftpfile:
+					try:
+						await sftp.mkdir(self._rem_path)
+					except asyncssh.SFTPError:
+						pass
+
+					async with sftp.open(ssh_remote, self.Mode, encoding=self.Encoding) as sftpfile:
 						await sftpfile.write(event)
 
 
+
 	def process(self, context, event:typing.Union[dict, str, bytes]):
-		if type(event) == bytes:
-			event = event #.encode(self.Encoding)
+		if self.OutputType == 'string':
+			if type(event) == str:
+				event = event
+			elif type(event) == bytes:
+				event = event.decode(self.Encoding)
+		elif self.OutputType == 'bytes':
+			if type(event) == str:
+				event = event.encode(self.Encoding)
+			elif type(event) == bytes:
+				event = event
+
 		ssh_remote = context.get("ssh_remote", self._rem_path)
 
 		if not os.path.isfile(ssh_remote):
-			ssh_remote += str(self.file_name_generator()) # /upload/name_from_generator
+			ssh_remote += str(self.file_name_generator()) # /_rem_path/name_from_generator
 
 		self._output_queue.put_nowait((event, ssh_remote))
 
@@ -134,4 +145,12 @@ class SFTPSink(Sink):
 		timestamp = str(int(datetime.datetime.timestamp(datetime.datetime.now())))
 		random_num = str(random.randint(1, self.RandIntLen))
 		filename = str(timestamp+hostname+random_num)
+
+		if filename not in self.NameDict:
+			self.NameDict[filename] = 'id' + ' ' + random_num
+		else:
+			filename = filename+str(random.choice('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+			self.NameDict[filename] = 'id' + ' ' + random_num
+
 		return filename
+
