@@ -19,7 +19,7 @@ class CustomAPMPipeline(bspump.Pipeline):
             bspump.amqp.AMQPSource(app, self, "AMQPConnection"),
             bspump.common.BytesToStringParser(app, self),
             # bspump.common.JsonToDictParser(app, self),
-            MyThresholdAnalyzer(app,self,config={'event_name':'host', 'threshold':1000, }),
+            MyThresholdAnalyzer(app,self,config={'event_name':'host', 'threshold':1000, 'level':'above','load':''}),
             # bspump.common.PPrintSink(app, self),
             bspump.common.NullSink(app, self),
             # bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection"),

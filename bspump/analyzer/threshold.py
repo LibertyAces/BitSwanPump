@@ -17,6 +17,7 @@ ConfigDefaults = {
 	'event_name': '',
 	'threshold': 1000, # Max number of events before exceeding
 	'level':'above',
+	'load': 'something', # User defined load to matrix
 }
 
 class ThresholdAnalyzer(TimeWindowAnalyzer):
@@ -28,6 +29,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		self._event_name = self.Config['event_name']
 		self._threshold = int(self.Config['threshold'])
 		self.Level = self.Config['level'] # alarm level
+		self.Load = self.Config['load']
 		self.AlarmDict = {} #alarm dictionary - use it in 
 		self.TimeWindow.zeros() #initializing timewindow with zeros
 
@@ -76,7 +78,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 			return
 
 		# load
-		self.TimeWindow.Array[row, column] = event[] #TODO set load event
+		self.TimeWindow.Array[row, column] = event[self.Load] #TODO set load event
 
 
 	def alarm(self, len_threshold_limiter, len_threshold): #TODO set alarm
