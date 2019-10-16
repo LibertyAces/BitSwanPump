@@ -22,9 +22,10 @@ ConfigDefaults = {
 
 		'host': 'localhost',
 		'rand_int': 1000,
+		'output_queue_max_size': 1000,
 		'encoding': 'utf-8',
 		'mode': 'w', # w = write, r = read, a = append
-		'out_type': 'bytes'
+		'out_type': 'string'
 
 }
 
@@ -46,7 +47,7 @@ class SFTPSink(Sink):
 		self.NameDict = {}
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
-		self._output_queue_max_size = 100 #int(self.Config['output_queue_max_size'])
+		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._conn_future = None
 
 		# Subscription
@@ -94,7 +95,7 @@ class SFTPSink(Sink):
 			self.NameDict.clear()
 
 
-	async def outbound(self): #TODO Need to find/create a decent sftp server to properly test the upload
+	async def outbound(self):
 		async with self._connection.run_connection() as connection:
 			async with connection.start_sftp_client() as sftp:
 				while True:
@@ -108,13 +109,12 @@ class SFTPSink(Sink):
 						self.Pipeline.throttle(self, False)
 
 					try:
-						await sftp.mkdir(self._rem_path)
+						await sftp.mkdir(self._rem_path) #TODO fix exiting when pending tasks
 					except asyncssh.SFTPError:
 						pass
 
-					async with sftp.open(ssh_remote, self.Mode, encoding=self.Encoding) as sftpfile:
+					async with sftp.open(ssh_remote, self.Mode, encoding=self.Encoding) as sftpfile: #TODO fix exiting when pending tasks
 						await sftpfile.write(event)
-
 
 
 	def process(self, context, event:typing.Union[dict, str, bytes]):
