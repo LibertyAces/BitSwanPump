@@ -16,13 +16,13 @@ class MongoSink(Sink):
         self._output_queue_max_size = int(10)
         self._conn_future = None
 
-        self._on_health_check('connection.open!')
+        self._on_health_check()
 
         app.PubSub.subscribe("Application.stop!", self._on_application_stop)
         app.PubSub.subscribe("Application.tick!", self._on_health_check)
         app.PubSub.subscribe("Application.exit!", self._on_exit)
 
-    def _on_health_check(self, message_type):
+    def _on_health_check(self):
         if self._conn_future is not None:
 
             if not self._conn_future.done():
@@ -40,7 +40,7 @@ class MongoSink(Sink):
         )
 
     def _on_application_stop(self):
-        self._output_queue.put_nowait((None, None))
+        self._output_queue.put_nowait(None)
 
     async def _on_exit(self):
         if self._conn_future is not None:
