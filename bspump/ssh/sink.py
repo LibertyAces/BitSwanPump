@@ -100,7 +100,6 @@ class SFTPSink(Sink):
 			async with connection.start_sftp_client() as sftp:
 				while True:
 					event, ssh_remote = await self._output_queue.get()
-
 					if event is None and ssh_remote is None:
 						self.NameDict.clear()
 						break
@@ -109,11 +108,11 @@ class SFTPSink(Sink):
 						self.Pipeline.throttle(self, False)
 
 					try:
-						await sftp.mkdir(self._rem_path) #TODO fix exiting when pending tasks
+						await sftp.mkdir(self._rem_path) #TODO fix RuntimeError: coroutine ignored GeneratorExit when emptying queue on kill
 					except asyncssh.SFTPError:
 						pass
 
-					async with sftp.open(ssh_remote, self.Mode, encoding=self.Encoding) as sftpfile: #TODO fix exiting when pending tasks
+					async with sftp.open(ssh_remote, self.Mode, encoding=self.Encoding) as sftpfile: #TODO fix RuntimeError when emptying queue on kill
 						await sftpfile.write(event)
 
 
@@ -132,7 +131,8 @@ class SFTPSink(Sink):
 		ssh_remote = context.get("ssh_remote", self._rem_path)
 
 		if not os.path.isfile(ssh_remote):
-			ssh_remote += str(self.file_name_generator()) # /_rem_path/name_from_generator
+			# It will create the path of a file: /_rem_path/name_from_generator
+			ssh_remote += str(self.file_name_generator())
 
 		self._output_queue.put_nowait((event, ssh_remote))
 

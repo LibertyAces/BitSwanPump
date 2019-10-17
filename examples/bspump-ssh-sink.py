@@ -2,13 +2,10 @@ import logging
 
 import bspump
 import bspump.common
-import bspump.common
-import bspump.file
 import bspump.random
 import bspump.trigger
 import bspump.ssh
 import time
-
 
 
 ###
@@ -42,17 +39,23 @@ class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
-
+		upper_bound = int(time.time())
+		lower_bound = upper_bound - 100500
 		self.build(
-			bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd', 'de', 'ef', 'fg'], config={'number': 50}).on(bspump.trigger.RunOnceTrigger(app)),
-			# bspump.common.PPrintProcessor(app, self),
+			bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd', 'de', 'ef', 'fg'], config={'number': 450}
+									   ).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=60)),
+			bspump.random.RandomEnricher(app, self, config={
+				'field': '@timestamp',
+				'lower_bound': lower_bound,
+				'upper_bound': upper_bound
+			}),
 			bspump.common.DictToJsonBytesParser(app,self),
 			# bspump.common.StringToBytesParser(app, self),
-			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test_folder_nr50_010/',#'/upload/',
+			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test_folder/',
 																	'host': '10.17.106.232',#'demo.wftpserver.com',
 																	 'rand_int': 1000,
 																	 'encoding': 'utf-8',
-																	 'mode': 'w',
+																	 'mode': 'a',
 																	 'out_type': 'string',
 																	 'output_queue_max_size': 1000,})
 		)
@@ -73,4 +76,3 @@ if __name__ == '__main__':
 
 	app.run()
 
-	
