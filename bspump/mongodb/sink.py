@@ -8,12 +8,17 @@ L = logging.getLogger(__name__)
 
 class MongoSink(Sink):
 
+    ConfigDefaults = {
+        "output_queue_max_size": 100,
+    }
+
     def __init__(self, app, pipeline, connection, id=None, config=None):
         super().__init__(app, pipeline, id, config)
 
         self.Connection = pipeline.locate_connection(app, connection)
         self._output_queue = asyncio.Queue()
-        self._output_queue_max_size = int(10)
+        self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+        assert (self._output_queue_max_size >= 1), "Output queue max size invalid"
         self._conn_future = None
 
         self._on_health_check()
