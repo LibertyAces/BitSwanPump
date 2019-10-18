@@ -65,7 +65,10 @@ class MongoSink(Sink):
         while True:
 
             what_for = await self._output_queue.get()
-            if what_for is None:
+            if self._output_queue.qsize() == self._output_queue_max_size - 1:
+                self.Pipeline.throttle(self, False)
+
+            elif what_for is None:
                 break
             elif type(what_for) == dict:
                 await db.test_collection.insert_one(what_for)
