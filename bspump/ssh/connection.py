@@ -1,8 +1,7 @@
 import logging
-import sys
 import asyncio
 import asyncssh
-import sys
+
 
 from ..abc.connection import Connection
 
