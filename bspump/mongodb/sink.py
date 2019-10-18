@@ -67,5 +67,11 @@ class MongoSink(Sink):
             what_for = await self._output_queue.get()
             if what_for is None:
                 break
-            await db.test_collection.insert_one(what_for)
-            self._output_queue.task_done()
+            elif type(what_for) == dict:
+                await db.test_collection.insert_one(what_for)
+                self._output_queue.task_done()
+            elif type(what_for) == list and len(what_for) > 0:
+                await db.test_collection.insert_many(what_for)
+                self._output_queue.task_done()
+            else:
+                raise TypeError
