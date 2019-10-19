@@ -4,11 +4,13 @@ import asab
 import logging
 import datetime
 import random
+import string
 import typing
 import os
 import re
 
 from ..abc.sink  import Sink
+
 
 #
 
@@ -16,15 +18,15 @@ L = logging.getLogger(__name__)
 
 #
 
+
 ConfigDefaults = {
 
 		'remote_path': '',
-
-		'host': 'localhost',
+		'filename': 'localhost',
 		'rand_int': 1000,
 		'output_queue_max_size': 1000,
 		'encoding': 'utf-8',
-		'mode': 'w', # w = write, r = read, a = append
+		'mode': 'w', # w = write, a = append
 		'out_type': 'string'
 
 }
@@ -37,8 +39,8 @@ class SFTPSink(Sink):
 
 		self._connection = pipeline.locate_connection(app, connection)
 
-		self._rem_path = self.Config['remote_path']
-		self._host = self.Config['host']
+		self.RemotePath = self.Config['remote_path']
+		self.fil_name = self.Config['filename']
 		self.RandIntLen = int(self.Config['rand_int'])
 		self.Encoding = self.Config['encoding']
 		self.Mode = self.Config['mode']
@@ -108,10 +110,14 @@ class SFTPSink(Sink):
 						self.Pipeline.throttle(self, False)
 
 					try:
-						await sftp.mkdir(self._rem_path) #TODO fix RuntimeError: coroutine ignored GeneratorExit when emptying queue on kill
-					except asyncssh.SFTPError:
+						await sftp.mkdir(self.RemotePath) #TODO fix RuntimeError: coroutine ignored GeneratorExit when emptying queue on kill
+					except asyncssh.SFTPError: #TODO explain exception https://github.com/ronf/asyncssh/issues/142
 						pass
 
+					# try:
+					# 	await sftp.mkdir(self.RemotePath) #TODO fix RuntimeError: coroutine ignored GeneratorExit when emptying queue on kill
+					# finally:
+					# 	pass
 					async with sftp.open(ssh_remote, self.Mode, encoding=self.Encoding) as sftpfile: #TODO fix RuntimeError when emptying queue on kill
 						await sftpfile.write(event)
 
@@ -128,11 +134,11 @@ class SFTPSink(Sink):
 			elif type(event) == bytes:
 				event = event
 
-		ssh_remote = context.get("ssh_remote", self._rem_path)
+		ssh_remote = context.get("ssh_remote", self.RemotePath)
 
 		if not os.path.isfile(ssh_remote):
-			# It will create the path of a file: /_rem_path/name_from_generator
-			ssh_remote += str(self.file_name_generator())
+			# It will create the path of a file: /RemotePath/name_from_builder
+			ssh_remote += str(self.build_remote_file_name())
 
 		self._output_queue.put_nowait((event, ssh_remote))
 
@@ -140,8 +146,8 @@ class SFTPSink(Sink):
 			self.Pipeline.throttle(self, True)
 
 
-	def file_name_generator(self):
-		hostname = re.sub("[/,.,:, ]", "", str(self._host))
+	def build_remote_file_name(self):
+		hostname = re.sub("[/,.,:, ]", "", str(self.fil_name))
 		timestamp = str(int(datetime.datetime.timestamp(datetime.datetime.now())))
 		random_num = str(random.randint(1, self.RandIntLen))
 		filename = str(timestamp+hostname+random_num)
@@ -149,7 +155,7 @@ class SFTPSink(Sink):
 		if filename not in self.NameDict:
 			self.NameDict[filename] = 'id' + ' ' + random_num
 		else:
-			filename = filename+str(random.choice('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+			filename = filename + str(random.choice(string.ascii_letters))
 			self.NameDict[filename] = 'id' + ' ' + random_num
 
 		return filename

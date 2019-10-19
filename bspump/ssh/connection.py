@@ -5,11 +5,13 @@ import asyncssh
 
 from ..abc.connection import Connection
 
+
 #
 
 L = logging.getLogger(__name__)
 
 #
+
 
 class SSHConnection(Connection):
 	ConfigDefaults = {
@@ -30,37 +32,37 @@ class SSHConnection(Connection):
 
 		self.Loop = app.Loop
 
-		self._host = self.Config['host']
-		self._port = int(self.Config['port'])
-		self._user = self.Config['user']
-		self._password = self.Config['password']
+		self.Host = self.Config['host']
+		self.Port = int(self.Config['port'])
+		self.User = self.Config['user']
+		self.Password = self.Config['password']
 		try:
-			self._known_hosts = list(self.Config['known_hosts_path'].split(','))
+			self.Known_hosts = list(self.Config['known_hosts_path'].split(','))
 		except AttributeError:
-			self._known_hosts = None
-		self._cli_keysign = self.Config['client_host_keysign'] # if True, an attempt will be made to find ssh-keysign in its typical locations. If set to a string, that will be used as the ssh-keysign path.
+			self.Known_hosts = None
+		self.Cli_keysign = self.Config['client_host_keysign'] # if True, an attempt will be made to find ssh-keysign in its typical locations. If set to a string, that will be used as the ssh-keysign path.
 		try:
-			self._cli_keys = list(self.Config['client_host_keys'].split(',')) # setting the list of private / public keys when client_host_keysign = True
+			self.Cli_keys = list(self.Config['client_host_keys'].split(',')) # setting the list of private / public keys when client_host_keysign = True
 		except AttributeError:
-			self._cli_keys = None
+			self.Cli_keys = None
 
 
 	def run_connection(self):
 
-		if not self._known_hosts or self._known_hosts == [''] or self._known_hosts == None:
-			self._known_hosts = None
-		if not self._cli_keys or self._cli_keys == [''] or self._cli_keys == None:
-			self._cli_keys = None
+		if not self.Known_hosts or self.Known_hosts == [''] or self.Known_hosts == None:
+			self.Known_hosts = None
+		if not self.Cli_keys or self.Cli_keys == [''] or self.Cli_keys == None:
+			self.Cli_keys = None
 
 		conn = asyncssh.connect(
-				host=self._host,
-				port=self._port,
+				host=self.Host,
+				port=self.Port,
 				loop=self.Loop,
-				username=self._user,
-				password=self._password,
-				known_hosts=self._known_hosts,
-				client_host_keysign=self._cli_keysign,
-				client_host_keys=self._cli_keys)
+				username=self.User,
+				password=self.Password,
+				known_hosts=self.Known_hosts,
+				client_host_keysign=self.Cli_keysign,
+				client_host_keys=self.Cli_keys)
 
 		return conn
 

@@ -52,7 +52,7 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.common.DictToJsonBytesParser(app,self),
 			# bspump.common.StringToBytesParser(app, self),
 			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test_folder/',
-																	'host': '10.17.106.232',#'demo.wftpserver.com',
+																	'filename': '10.17.106.232',#'demo.wftpserver.com',
 																	 'rand_int': 1000,
 																	 'encoding': 'utf-8',
 																	 'mode': 'a',
