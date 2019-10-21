@@ -1,13 +1,16 @@
 import logging
+
+import time
+
 import asab
 from ..abc.processor import Processor
-
 
 ###
 
 L = logging.getLogger(__name__)
 
 ###
+
 
 class Analyzer(Processor):
 	'''
@@ -36,8 +39,8 @@ class Analyzer(Processor):
 		else:
 			self.Timer = None
 
+	# Implementation interface
 
-	## Implementation interface
 	def analyze(self):
 		'''
 			The main function, which runs through the analyzed object.
@@ -87,5 +90,8 @@ class Analyzer(Processor):
 		'''
 			Run analyzis every tick.
 		'''
+		t0 = time.perf_counter()
 		self.analyze()
+		self.Pipeline.ProfilerCounter['analyzer_' + self.Id].add('time', time.perf_counter() - t0)
+		self.Pipeline.ProfilerCounter['analyzer_' + self.Id].add('run', 1)
 

@@ -1,20 +1,18 @@
 import abc
 import asyncio
+import collections
 import concurrent
+import datetime
+import logging
+
 import time
 
-import types
-import logging
-import itertools
-import collections
-import datetime
-
 import asab
-
-from .abc.source import Source
-from .abc.sink import Sink
-from .abc.generator import Generator
 from .abc.connection import Connection
+from .abc.generator import Generator
+from .abc.sink import Sink
+from .abc.source import Source
+from .analyzer import Analyzer
 from .exception import ProcessingError
 
 #
@@ -26,7 +24,7 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 
-	'''
+	"""
 
 Multiple sources
 
@@ -35,22 +33,23 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 .. code:: python
 
-    class MyPipeline(bspump.Pipeline):
+	class MyPipeline(bspump.Pipeline):
 
-        def __init__(self, app, pipeline_id):
-            super().__init__(app, pipeline_id)
-            self.build(
-                [
-                    MySource1(app, self),
-                    MySource2(app, self),
-                    MySource3(app, self),
-                ]
-                bspump.common.NullSink(app, self),
-            )
-    '''
+		def __init__(self, app, pipeline_id):
+			super().__init__(app, pipeline_id)
+			self.build(
+				[
+					MySource1(app, self),
+					MySource2(app, self),
+					MySource3(app, self),
+				]
+				bspump.common.NullSink(app, self),
+			)
+	"""
 
 	ConfigDefaults = {
-		"async_concurency_limit": 1000,
+		"async_concurency_limit": 1000,  # TODO concurrency
+		"reset_profiler": True,
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -63,6 +62,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self.AsyncFutures = []
 		self.AsyncConcurencyLimit = int(self.Config["async_concurency_limit"])
+		self.ResetProfiler = self.Config.getboolean("reset_profiler")
 		assert(self.AsyncConcurencyLimit > 1)
 
 		# This object serves to identify the throttler, because list cannot be used as a throttler
@@ -432,9 +432,18 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		for processor in processors:
 			self.append_processor(processor)
 			self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
-				processor.Id,
-				init_values={'time': 0, 'run': 0}
+				'bspump.pipeline.profiler',
+				tags={'processor': processor.Id},
+				init_values={'time': 0, 'run': 0},
+				reset=self.ResetProfiler,
 			)
+			if isinstance(processor, Analyzer):
+				self.ProfilerCounter['analyzer_' + processor.Id] = self.MetricsService.create_counter(
+					'bspump.pipeline.profiler',
+					tags={'analyzer': processor.Id},
+					init_values={'time': 0, 'run': 0},
+					reset=self.ResetProfiler,
+				)
 
 
 	def iter_processors(self):
