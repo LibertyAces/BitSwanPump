@@ -41,7 +41,7 @@ class MongoSink(Sink):
         assert (self._conn_future is None)
 
         self._conn_future = asyncio.ensure_future(
-            self.insert_item(),
+            self._ingestion(),
             loop=self.Loop
         )
 
@@ -58,9 +58,9 @@ class MongoSink(Sink):
 
         self._output_queue.put_nowait(event)
 
-    async def insert_item(self):
+    async def _ingestion(self):
 
-        db = self.Connection.Client["test_test"]
+        db = self.Connection.Client[self.Connection.Database][self.Connection.Collection]
 
         while True:
 
@@ -71,10 +71,10 @@ class MongoSink(Sink):
             elif what_for is None:
                 break
             elif type(what_for) == dict:
-                await db.test_collection.insert_one(what_for)
+                await db.insert_one(what_for)
                 self._output_queue.task_done()
             elif type(what_for) == list and len(what_for) > 0:
-                await db.test_collection.insert_many(what_for)
+                await db.insert_many(what_for)
                 self._output_queue.task_done()
             else:
                 raise TypeError

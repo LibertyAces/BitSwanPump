@@ -63,6 +63,7 @@ host=mongodb://host1,host2/?replicaSet=my-replicaset-name
 		'wait_queue_multiple': '',
 		'heartbeat_frequency': 10*1000, # 10 seconds
 		'database': 'database',
+		'collection': 'collection'
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -93,3 +94,4 @@ host=mongodb://host1,host2/?replicaSet=my-replicaset-name
 		)
 
 		self.Database = self.Config['database']
+		self.Collection = self.Config['collection']
