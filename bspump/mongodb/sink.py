@@ -47,10 +47,10 @@ class MongoDBSink(Sink):
             loop=self.Loop
         )
 
-    def _on_application_stop(self):
+    def _on_application_stop(self, message_type):
         self._output_queue.put_nowait(None)
 
-    async def _on_exit(self):
+    async def _on_exit(self, message_type):
         if self._conn_future is not None:
             await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED, loop=self.Loop)
 
