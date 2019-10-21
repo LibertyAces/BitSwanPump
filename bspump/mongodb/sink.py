@@ -79,4 +79,4 @@ class MongoDBSink(Sink):
                 await db.insert_many(what_for)
                 self._output_queue.task_done()
             else:
-                raise TypeError
+                raise TypeError(f"Only dict or list of dicts allowed, {type(what_for)} supplied")
