@@ -6,10 +6,11 @@ import logging
 L = logging.getLogger(__name__)
 
 
-class MongoSink(Sink):
+class MongoDBSink(Sink):
 
     ConfigDefaults = {
         "output_queue_max_size": 100,
+        'collection': 'collection',
     }
 
     def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -19,6 +20,7 @@ class MongoSink(Sink):
         self.Pipeline = pipeline
         self._output_queue = asyncio.Queue()
         self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+        self.Collection = self.Config['collection']
         assert (self._output_queue_max_size >= 1), "Output queue max size invalid"
         self._conn_future = None
 
@@ -60,7 +62,7 @@ class MongoSink(Sink):
 
     async def _ingestion(self):
 
-        db = self.Connection.Client[self.Connection.Database][self.Connection.Collection]
+        db = self.Connection.Client[self.Connection.Database][self.Collection]
 
         while True:
 
