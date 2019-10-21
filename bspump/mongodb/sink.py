@@ -66,17 +66,17 @@ class MongoDBSink(Sink):
 
         while True:
 
-            what_for = await self._output_queue.get()
+            item = await self._output_queue.get()
             if self._output_queue.qsize() == self._output_queue_max_size - 1:
                 self.Pipeline.throttle(self, False)
 
-            elif what_for is None:
+            elif item is None:
                 break
-            elif type(what_for) == dict:
-                await db.insert_one(what_for)
+            elif type(item) == dict:
+                await db.insert_one(item)
                 self._output_queue.task_done()
-            elif type(what_for) == list and len(what_for) > 0:
-                await db.insert_many(what_for)
+            elif type(item) == list and len(item) > 0:
+                await db.insert_many(item)
                 self._output_queue.task_done()
             else:
-                raise TypeError(f"Only dict or list of dicts allowed, {type(what_for)} supplied")
+                raise TypeError(f"Only dict or list of dicts allowed, {type(item)} supplied")
