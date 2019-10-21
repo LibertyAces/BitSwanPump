@@ -69,8 +69,7 @@ class MongoDBSink(Sink):
             item = await self._output_queue.get()
             if self._output_queue.qsize() == self._output_queue_max_size - 1:
                 self.Pipeline.throttle(self, False)
-
-            elif item is None:
+            if item is None:
                 break
             elif type(item) == dict:
                 await db.insert_one(item)
