@@ -1,5 +1,4 @@
 import logging
-
 import bspump
 import bspump.common
 import bspump.random
@@ -25,16 +24,13 @@ class SamplePipeline(bspump.Pipeline):
 		port=2220
 		user=bandit0
 		password=bandit0
-		known_hosts_path=path1,path2
+		known_hosts=.ssh/known_hosts
 
 		#################################
 
-		If do not know the known_hosts_path, leave it empty or do not append it to a Config file.
+		If do not know the known_hosts, leave it empty or do not append it to a Config file.
 
 		conf file in ../etc/
-
-
-
 	"""
 
 	def __init__(self, app, pipeline_id=None):
@@ -42,7 +38,7 @@ class SamplePipeline(bspump.Pipeline):
 		upper_bound = int(time.time())
 		lower_bound = upper_bound - 100500
 		self.build(
-			bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd', 'de', 'ef', 'fg'], config={'number': 450}
+			bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd', 'de', 'ef', 'fg'], config={'number': 50}
 									   ).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=60)),
 			bspump.random.RandomEnricher(app, self, config={
 				'field': '@timestamp',
@@ -51,13 +47,10 @@ class SamplePipeline(bspump.Pipeline):
 			}),
 			bspump.common.DictToJsonBytesParser(app,self),
 			# bspump.common.StringToBytesParser(app, self),
-			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test_folder/',
+			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test_byte_test_012/',#'/test_folder/',
 																	'filename': '10.17.106.232',#'demo.wftpserver.com',
-																	 'rand_int': 1000,
-																	 'encoding': 'utf-8',
 																	 'mode': 'a',
-																	 'out_type': 'string',
-																	 'output_queue_max_size': 1000,})
+																	 })
 		)
 
 
