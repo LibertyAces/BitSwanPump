@@ -61,7 +61,7 @@ class MongoDBSink(Sink):
         assert (self._conn_future is None)
 
         self._conn_future = asyncio.ensure_future(
-            self._outfluxing(),
+            self._insert(),
             loop=self.Loop
         )
 
@@ -83,7 +83,7 @@ class MongoDBSink(Sink):
         # and insert it into the queue to be available to the _outflux method.
         self._output_queue.put_nowait(event)
 
-    async def _outfluxing(self):
+    async def _insert(self):
 
         db = self.Connection.Client[self.Connection.Database][self.Collection]
 
