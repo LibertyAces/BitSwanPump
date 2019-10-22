@@ -8,6 +8,18 @@ L = logging.getLogger(__name__)
 
 class MongoDBSink(Sink):
 
+    """
+    MongoDBSink is a sink processor that forwards the event to a MongoDB specified by a MongoDBConnection object.
+
+    MongoDBSink expects either a dictionary or a list of dictionaries as an input.
+
+    Example code can be found in the examples section under bspump-mongo-sink.py
+
+    While the connection defines MongoDB database used, you need to specify particular collection inside of this
+    database in the sink itself by modifying the ConfigDefaults while instantiating the class.
+
+    """
+
     ConfigDefaults = {
         "output_queue_max_size": 100,
         'collection': 'collection',
@@ -60,7 +72,7 @@ class MongoDBSink(Sink):
 
         self._output_queue.put_nowait(event)
 
-    async def _ingestion(self):
+    async def _outflux(self):
 
         db = self.Connection.Client[self.Connection.Database][self.Collection]
 
