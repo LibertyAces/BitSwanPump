@@ -13,12 +13,9 @@ L = logging.getLogger(__name__)
 ###
 
 ConfigDefaults = {
-	# 'resolution': 60,  # Resolution (aka column width) in seconds
-	'event_name': '', # User defined, e.g. server name
-	# 'threshold': [0,1000], # Range of threshold. First value is valid only when level=range, second value states for max/min number of events / occurences before exceeding
-	# 'level':'above', # above, below, range
+	#TODO 'resolution': 60,  # Resolution (aka column width) in seconds
+	'event_name': '', # User defined value, e.g. server name
 	'load': '', # User defined load to matrix, if not specified (left empty), load will be the count of occurences (histogram)
-	# 'split_by': ',', # Split incoming string
 	'lower_bound': 0, # if lower bound > upper bound: alarm is set when value is below lower bound, if lower bound != 0 and upper bound > lower_bound: alarm is set when value is out of bounds
 	'upper_bound': 1000,
 }
@@ -29,21 +26,17 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 						 resolution=60, start_time=None, clock_driven=False, id=id, config=config)
 
 		# self._resolution = int(self.Config['resolution'])
-		self._event_name = self.Config['event_name']
-		self._threshold = self.Config['threshold']
-		self.Level = self.Config['level'] # alarm level
+		self.Event_name = self.Config['event_name']
 		self.Load = self.Config['load']
 		self.Lower = self.Config['lower_bound']
 		self.Upper = self.Config['upper_bound']
-		# self.Split = self.Config['split_by']
-		# self.AlarmDict = {} #alarm dictionary - use it in
 
 		self.TimeWindow.zeros() #initializing timewindow with zeros
 
 
 	# check if event contains related fields
 	def predicate(self, context, event):
-		if self._event_name not in event:
+		if self.Event_name not in event:
 			return False
 
 		if "@timestamp" not in event:
@@ -53,7 +46,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def evaluate(self, context, event):
-		value = event[self._event_name]  # server name e.g.
+		value = str(event[self.Event_name])  # server name e.g.
 		time_stamp = event["@timestamp"] # time stamp of the event
 
 		row = self.TimeWindow.get_row_index(value)
@@ -73,36 +66,26 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def analyze(self): #TODO set analyzing method
+		print(self.TimeWindow.Array.shape[0])
 		if self.TimeWindow.Array.shape[0] == 0: # checking an empty array
 			return
 
 		#TODO Check if this below is not a better solution
-		# if len(self.Timewindow.Array[0]) > self._threshold[1]:
+		# use np function to analyze threshold
 		# 	...
 
-		if not self.Lower <= 0 and self.Lower < self.Upper: # range
-			if self.TimeWindow.Array.shape[0] < self.Lower or self.TimeWindow.Array.shape[0] > self.Upper:
-				self.alarm()  # call alarm method
-		elif self.Lower > self.Upper: # below the limit
-			if self.TimeWindow.Array.shape[0] < self.Lower:
-				self.alarm()  # call alarm method
-		elif self.Lower == 0 and self.Upper > self.Lower: # above the limit
-			if self.TimeWindow.Array.shape[0] > self.Upper:
-				self.alarm() # call alarm method
-		else:
-			raise ValueError
-
-		# if self.Level == 'above':
-		# 	if self.TimeWindow.Array.shape[0] > self._threshold[1]:
-		# 		self.alarm(self.TimeWindow.Array.shape[0], self._threshold[1], self.Level) # call alarm method
-		# elif self.Level == 'below':
-		# 	if self.TimeWindow.Array.shape[0] < self._threshold[1]:
-		# 		self.alarm(self.TimeWindow.Array.shape[0], self._threshold[1], self.Level) # call alarm method
-		# elif self.Level == 'range':
-		# 	if self.TimeWindow.Array.shape[0] < self._threshold[0] or self.TimeWindow.Array.shape[0] > self._threshold[1]:
-		# 		self.alarm(self.TimeWindow.Array.shape[0], self._threshold, self.Level)  # call alarm method
+		# if not self.Lower <= 0 and self.Lower < self.Upper: # range
+		# 	if self.TimeWindow.Array.shape[0] < self.Lower or self.TimeWindow.Array.shape[0] > self.Upper:
+		# 		self.alarm()  # call alarm method
+		# elif self.Lower > self.Upper: # below the limit
+		# 	if self.TimeWindow.Array.shape[0] < self.Lower:
+		# 		self.alarm()  # call alarm method
+		# elif self.Lower == 0 and self.Upper > self.Lower: # above the limit
+		# 	if self.TimeWindow.Array.shape[0] > self.Upper:
+		# 		self.alarm() # call alarm method
 		# else:
-		# 	raise TypeError
+		# 	raise ValueError
+
 		#TODO
 		# if value is in AlarmDict - hold/dont start the alarm, else: start the alarm
 		# threshold_limiter = len(line v matrixu (row))f

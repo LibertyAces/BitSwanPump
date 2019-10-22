@@ -3,24 +3,31 @@ import bspump.common
 import bspump.elasticsearch
 import bspump.pipeline
 import bspump.amqp
-# import bspump.kafka
+import bspump.random
+import bspump.trigger
 import bspump.analyzer
 
 import datetime
-import random
+
 
 
 class CustomAPMPipeline(bspump.Pipeline):
     def __init__(self, app, pipeline_id):
         super().__init__(app, pipeline_id)
         self.build(
-            bspump.amqp.AMQPSource(app, self, "AMQPConnection"),
-            bspump.common.BytesToStringParser(app, self),
-            # bspump.common.JsonToDictParser(app, self),
-            MyThresholdAnalyzer(app,self,config={'event_name':'host', 'threshold':[0,1000], 'level':'above','load':'',}),
+            # bspump.amqp.AMQPSource(app, self, "AMQPConnection"),
+            # bspump.common.BytesToStringParser(app,self),
+            bspump.random.RandomSource(app, self,
+                                       config={'number': 1000, 'upper_bound': 5, 'field': 'server'}
+                                       ).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=.1)),
+            bspump.random.RandomEnricher(app, self, config={'field': 'duration', 'lower_bound': 1, 'upper_bound': 1500},
+                                         id="RE0"),
+            bspump.random.RandomEnricher(app, self, config={'field': '@timestamp',
+                                                            'lower_bound': int(datetime.datetime.timestamp(datetime.datetime.now())-5),
+                                                            'upper_bound': int(datetime.datetime.timestamp(datetime.datetime.now()))}, id="RE1"),
+            MyThresholdAnalyzer(app,self,config={'event_name':'server', 'lower_bound':0,'upper_bound':1000, 'load':'duration',}),
             # bspump.common.PPrintSink(app, self),
             bspump.common.NullSink(app, self),
-            # bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection"),
         )
 
 
@@ -48,16 +55,13 @@ if __name__=='__main__':
 
     svc = app.get_service("bspump.PumpService")
 
-    # Create kafka, amqp and es conn
-    svc.add_connections(
-        # bspump.kafka.KafkaConnection(app, "KafkaConnection"),
-        bspump.amqp.AMQPConnection(app, "AMQPConnection"),
-        # bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection"),# config={"bulk_out_max_size": 100,}),
-    )
+    # Create amqp conn
+    # svc.add_connection(
+    #     bspump.amqp.AMQPConnection(app, "AMQPConnection"),
+    # )
 
-    # Constr & register pipelines
-    svc.add_pipelines(
-        # CustomKafkaMQPipeline(app, "CustomKafkaMQPipeline"),
+    # Constr & register pipeline
+    svc.add_pipeline(
         CustomAPMPipeline(app, "CustomAPMPipeline"),
     )
 
