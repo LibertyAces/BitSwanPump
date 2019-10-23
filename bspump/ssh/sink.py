@@ -18,16 +18,38 @@ L = logging.getLogger(__name__)
 #
 
 
-ConfigDefaults = {
-
-		'remote_path': '',
-		'filename': 'localhost',
-		'mode': 'w', # w = write, a = append
-
-}
-
-
 class SFTPSink(Sink):
+
+	"""
+
+	SFTPSink is a sink processor that forwards events to a remote files created on SSH server.
+
+	SFTPSink expects bytes as an input. If the input is string, it is automatically transformed to bytes.
+
+.. code:: python
+
+	class SamplePipeline(bspump.Pipeline):
+		def __init__(self, app, pipeline_id=None):
+			super().__init__(app, pipeline_id)
+			self.build(
+				bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd', 'de', 'ef', 'fg'], config={'number': 50}
+										).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=60)),
+				bspump.common.DictToJsonBytesParser(app,self),
+				bspump.ssh.SFTPSink(app, self, "SSHConnection", config={'remote_path': '/test_folder/',
+																		'filename': 'myFileToUpload',
+																		'mode': 'a',
+																		})
+			)
+
+	"""
+
+	ConfigDefaults = {
+
+		'remote_path': '/upload/',
+		'filename': 'localhost',
+		'mode': 'w',  # w = write, a = append
+
+	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -107,7 +129,10 @@ class SFTPSink(Sink):
 					try:
 						while True:
 							if await sftp.exists(ssh_remote):
-								ssh_remote = ssh_remote + "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+								# If file on remote folder exists, adds random string of lenght 5 consisting of
+								# uppercase letters and numbers
+								ssh_remote = ssh_remote + "".join(random.choices(string.ascii_uppercase +
+																				 string.digits, k=5))
 							else:
 								ssh_remote = ssh_remote
 								break
@@ -119,6 +144,7 @@ class SFTPSink(Sink):
 
 
 	def process(self, context, event:typing.Union[dict, str, bytes]):
+		# Checks bytes in the event
 		if type(event) == str:
 			event = event.encode('utf-8')
 		elif type(event) == bytes:
@@ -135,6 +161,7 @@ class SFTPSink(Sink):
 
 
 	def build_remote_file_name(self):
+		# Create random string around the user defined name core
 		hostname = re.sub("[/,.,:, ]", "", str(self.File_name))
 		timestamp = str(int(datetime.datetime.timestamp(datetime.datetime.now())))
 		random_num = str(random.randint(1, self.RandIntLen))

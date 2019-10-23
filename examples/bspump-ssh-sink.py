@@ -15,22 +15,30 @@ L = logging.getLogger(__name__)
 
 
 class SamplePipeline(bspump.Pipeline):
+
 	"""
-		Config file for FTP connection should look like this:
-		# FTP Connection
 
-		[connection:SSHConnection]
-		host=bandit.labs.overthewire.org
-		port=2220
-		user=bandit0
-		password=bandit0
-		known_hosts=.ssh/known_hosts
+	Config file for SSH connection should look like this:
+	# SSH Connection
 
-		#################################
+	[connection:SSHConnection]
+	host=remotehost
+	port=22
+	user=remoteuser
+	password=p455w0rd
+	known_hosts=.ssh/known_hosts
+	client_host_keysign=/path/to/dir/with/keys
+	client_host_keys=skey
 
-		If do not know the known_hosts, leave it empty or do not append it to a Config file.
 
-		conf file in ../etc/
+..
+
+	If do not know the known_hosts or client_host_keys, leave it empty or do not append it to a Config file.
+	If do not know the path to the directory with keys of client_host_keysign, do not append it to a Config file or
+	set it to 0 (zero).
+
+	Add conf file to ../etc/
+
 	"""
 
 	def __init__(self, app, pipeline_id=None):
@@ -38,7 +46,7 @@ class SamplePipeline(bspump.Pipeline):
 		upper_bound = int(time.time())
 		lower_bound = upper_bound - 100500
 		self.build(
-			bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd', 'de', 'ef', 'fg'], config={'number': 50}
+			bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd', 'de', 'ef', 'fg'], config={'number': 150}
 									   ).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=60)),
 			bspump.random.RandomEnricher(app, self, config={
 				'field': '@timestamp',
@@ -47,10 +55,10 @@ class SamplePipeline(bspump.Pipeline):
 			}),
 			bspump.common.DictToJsonBytesParser(app,self),
 			# bspump.common.StringToBytesParser(app, self),
-			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test_byte_test_012/',#'/test_folder/',
-																	'filename': '10.17.106.232',#'demo.wftpserver.com',
-																	 'mode': 'a',
-																	 })
+			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test_byte_test_020/',
+																	'filename': '10.17.106.232',
+																	'mode': 'a',
+																	})
 		)
 
 
