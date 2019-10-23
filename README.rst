@@ -1,9 +1,9 @@
 BSPump: A real-time stream processor for Python 3.5+
 ====================================================
 
-.. image:: https://badges.gitter.im/TeskaLabs/bspump.svg
-    :alt: Join the chat at https://gitter.im/TeskaLabs/bspump
-    :target: https://gitter.im/TeskaLabs/bspump?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+.. image:: https://readthedocs.org/projects/bspump/badge/?version=latest
+    :target: https://docs.libertyaces.com/?badge=latest
+    :alt: Documentation Status
 
 .. image:: https://travis-ci.com/LibertyAces/BitSwanPump.svg?branch=master
     :alt: Build status
@@ -12,6 +12,10 @@ BSPump: A real-time stream processor for Python 3.5+
 .. image:: https://codecov.io/gh/LibertyAces/BitSwanPump/branch/master/graph/badge.svg?sanitize=true
     :alt: Code coverage
     :target: https://codecov.io/gh/LibertyAces/BitSwanPump
+
+.. image:: https://badges.gitter.im/TeskaLabs/bspump.svg
+    :alt: Join the chat at https://gitter.im/TeskaLabs/bspump
+    :target: https://gitter.im/TeskaLabs/bspump?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 Principles
 ----------
