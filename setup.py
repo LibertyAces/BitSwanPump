@@ -86,7 +86,8 @@ setup(
 		'requests>=2.21.0,<3.0',
 	],
 	scripts=[
-		'utils/bselastic'
+		'utils/bselastic',
+		'utils/bskibana',
 	],
 	cmdclass={
 		'build_py': custom_build_py,
