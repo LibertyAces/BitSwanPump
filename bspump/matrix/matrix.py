@@ -110,6 +110,9 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 	def close_row(self, row_index, clear=True):
 		assert(row_index < self.Array.shape[0])
+		if row_index in self.ClosedRows:
+			return 
+		
 		if clear:
 			self.Array[row_index] = np.zeros(1, dtype=self.DType)
 		self.ClosedRows.add(row_index)
