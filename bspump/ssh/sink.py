@@ -46,8 +46,8 @@ class SFTPSink(Sink):
 	ConfigDefaults = {
 
 		'remote_path': '/upload/',
-		'filename': 'localhost',
-		'mode': 'w',  # w = write, a = append
+		'filename': 'hostname',
+		'mode': 'a',  # w = write, a = append
 
 	}
 
@@ -57,7 +57,7 @@ class SFTPSink(Sink):
 		self.Connection = pipeline.locate_connection(app, connection)
 
 		self.RemotePath = self.Config['remote_path']
-		self.File_name = self.Config['filename']
+		self.FileName = self.Config['filename']
 		self.RandIntLen = 1000
 		self.Mode = self.Config['mode']
 		self.Pipeline = pipeline
@@ -101,7 +101,7 @@ class SFTPSink(Sink):
 
 
 	def _on_application_stop(self, message_type, counter):
-		self._output_queue.put_nowait((None, None))
+		self._output_queue.put_nowait((None, None, None))
 
 
 	async def _on_exit(self, message_type):
@@ -111,36 +111,40 @@ class SFTPSink(Sink):
 
 	async def outbound(self):
 		async with self.Connection.run() as connection:
-			async with connection.start_sftp_client() as sftp:
-				while True:
-					event, ssh_remote = await self._output_queue.get()
+			while True:
+				async with connection.start_sftp_client() as sftp:
+					event, remote, filename = await self._output_queue.get()
 
-					if event is None and ssh_remote is None:
+					if event is None and remote is None and filename is None:
 						break
 
 					if self._output_queue.qsize() == self._output_queue_max_size - 1:
 						self.Pipeline.throttle(self, False)
 					# Create folder on remote path if does not exist yet
 					try:
-						await sftp.mkdir(self.RemotePath) #TODO fix RuntimeError: coroutine ignored GeneratorExit when emptying queue on kill
+						await sftp.mkdir(remote) #TODO fix RuntimeError: coroutine ignored GeneratorExit when emptying queue on kill
 					except asyncssh.SFTPError:
 						pass
-					# Checks if the file of given name already exists on remote folder
-					try:
-						while True:
-							if await sftp.exists(ssh_remote):
-								# If file on remote folder exists, adds random string of lenght 5 consisting of
-								# uppercase letters and numbers
-								ssh_remote = ssh_remote + "".join(random.choices(string.ascii_uppercase +
-																				 string.digits, k=5))
-							else:
-								ssh_remote = ssh_remote
-								break
-					except asyncssh.SFTPError:
-						pass
+					# Checks if the file of given name already exists on remote folder, and if so, it creates a new file
+					# It should ensure the overwriting of the file
+					# Available only with 'Mode'= w
+					if self.Mode == 'w':
+						try:
+							while True:
+								if await sftp.exists(remote+filename):
+									# If file on remote folder exists, adds random string of lenght 5 consisting of
+									# uppercase letters and numbers
+									filename = filename + "".join(random.choices(string.ascii_uppercase +
+																					 string.digits, k=5))
+								else:
+									filename = filename
+									break
+						except asyncssh.SFTPError:
+							pass
 					# Writes event into a remote file
-					async with sftp.open(ssh_remote, self.Mode, encoding=None) as sftpfile: #TODO fix RuntimeError when emptying queue on kill
+					async with sftp.open(remote+filename, self.Mode, encoding=None) as sftpfile: #TODO fix RuntimeError when emptying queue on kill
 						await sftpfile.write(event)
+
 
 
 	def process(self, context, event:typing.Union[dict, str, bytes]):
@@ -150,11 +154,14 @@ class SFTPSink(Sink):
 		elif type(event) == bytes:
 			event = event
 
-		ssh_remote = context.get("ssh_remote", self.RemotePath)
-		# It will create the path of a file: /RemotePath/name_from_builder
-		ssh_remote += str(self.build_remote_file_name())
+		# Gets the defined remote path and filename from context
+		remote = context.get("ssh.remote", self.RemotePath)
+		filename = context.get("ssh.filename", self.FileName)
 
-		self._output_queue.put_nowait((event, ssh_remote))
+		if filename is None or filename is '':
+			filename = self.build_remote_file_name()
+
+		self._output_queue.put_nowait((event, remote, filename))
 
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.Pipeline.throttle(self, True)
@@ -162,10 +169,10 @@ class SFTPSink(Sink):
 
 	def build_remote_file_name(self):
 		# Create random string around the user defined name core
-		hostname = re.sub("[/,.,:, ]", "", str(self.File_name))
+		name = re.sub("[/,.,:, ]", "", str(self.FileName))
 		timestamp = str(int(datetime.datetime.timestamp(datetime.datetime.now())))
 		random_num = str(random.randint(1, self.RandIntLen))
-		filename = str(timestamp+hostname+random_num)
+		filename = str(timestamp+name+random_num)
 
 		return filename
 

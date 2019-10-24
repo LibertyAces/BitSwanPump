@@ -55,8 +55,8 @@ class SamplePipeline(bspump.Pipeline):
 			}),
 			bspump.common.DictToJsonBytesParser(app,self),
 			# bspump.common.StringToBytesParser(app, self),
-			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test_byte_test_020/',
-																	'filename': '10.17.106.232',
+			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test3/',
+																	'filename': 'testname',
 																	'mode': 'a',
 																	})
 		)
