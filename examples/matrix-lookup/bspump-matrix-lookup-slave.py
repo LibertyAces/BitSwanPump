@@ -1,5 +1,4 @@
 import logging
-
 import bspump
 import time
 import bspump.common

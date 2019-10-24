@@ -238,23 +238,78 @@ class TreeRangeIndex(Index):
 		self.ColumnStart = data['column_start']
 		self.ColumnEnd = data['column_end']
 
-# class TreeValueIndex(Index):
-# 	def __init__(self, matrix, column):
-# 		self.UniqueValues = np.unique(matrix.Array[self.Column])
-# 		self.MaxValue = np.max(self.UniqueValues)
-# 		self.MinValue = np.min(self.UniqueValues)
+
+class SliceIndex(Index):
+
+	def __init__(self, column_start, column_end, matrix, resolution=None, id=None):
+		super().__init__(id=id)
+		self.ColumnStart = column_start
+		self.ColumnEnd = column_end
+		self.Resolution = resolution
+		self.MinValue = None
+		self.MaxValue = None
+		self.SliceMap = None
+		self._create_slices(matrix)
 
 
-
-# class TreeOverlappingRangeIndex(Index):
-# 	def _init__(self, matrix, column_start, column_end):
-# 		pass
-
-# 	def search(self, value):
-# 		# search_start
-# 		# search_end
-# 		# intersect
-# 		pass
+	def search(self, value):
+		index = int((value - self.MinValue) // self.Resolution)
+		key = self.MinValue + index * self.Resolution
+		result = set(self.SliceMap.get(key, []))
+		return result
 
 
+	def update(self, matrix):
+		print(">>>wawa")
+		self._create_slices(matrix)
+		print(len(self.SliceMap), self.MinValue, self.MaxValue, self.Resolution)
 
+
+	def _create_slices(self, matrix):
+		if matrix.Array.shape[0] == 0:
+			return
+
+		self.SliceMap = {}
+		open_rows = list(matrix.I2NMap.keys())
+		self.MinValue = float(np.min(matrix.Array[self.ColumnStart][open_rows]))
+		self.MaxValue = float(np.max(matrix.Array[self.ColumnEnd][open_rows]))
+		
+		if self.Resolution is None:
+			diffs = matrix.Array[self.ColumnEnd][open_rows] - matrix.Array[self.ColumnStart][open_rows]
+			self.Resolution = float(np.min(diffs))
+		
+		start_value = self.MinValue
+		
+		while start_value < self.MaxValue:
+			end_value = start_value + self.Resolution
+			condition = (matrix.Array[self.ColumnEnd] >= end_value) & (matrix.Array[self.ColumnStart] <= start_value)
+			indexes = np.where(condition)
+			self.SliceMap[start_value] = indexes[0].tolist()
+			start_value = end_value
+
+
+	def serialize(self):
+		serialized = super().serialize()
+		serialized.update({
+			'slice_map': self.SliceMap,
+			'min_value': self.MinValue,
+			'max_value': self.MaxValue,
+			'resolution': self.Resolution,
+			'column_start': self.ColumnStart,
+			'column_end': self.ColumnEnd
+		})
+		return serialized
+
+
+	def deserialize(self, data):
+		# check how json works with float keys
+		self.MinValue = data['min_value']
+		self.MaxValue = data['max_value']
+		self.Resolution = data['resolution']
+		self.SliceMap = {}
+		for key in data['slice_map']:
+			self.SliceMap[float(key)] = data['slice_map'][key]
+
+		self.Tree = data['tree']
+		self.ColumnStart = data['column_start']
+		self.ColumnEnd = data['column_end']
