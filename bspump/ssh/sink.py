@@ -46,7 +46,9 @@ class SFTPSink(Sink):
 	ConfigDefaults = {
 
 		'remote_path': '/upload/',
+		'prefix': 'prefix',
 		'filename': 'hostname',
+		'suffix': 'suffix',
 		'mode': 'a',  # w = write, a = append
 
 	}
@@ -57,7 +59,9 @@ class SFTPSink(Sink):
 		self.Connection = pipeline.locate_connection(app, connection)
 
 		self.RemotePath = self.Config['remote_path']
+		self.Prefix = self.Config['prefix']
 		self.FileName = self.Config['filename']
+		self.Suffix = self.Config['suffix']
 		self.RandIntLen = 1000
 		self.Mode = self.Config['mode']
 		self.Pipeline = pipeline
@@ -120,27 +124,12 @@ class SFTPSink(Sink):
 
 					if self._output_queue.qsize() == self._output_queue_max_size - 1:
 						self.Pipeline.throttle(self, False)
-					# Create folder on remote path if does not exist yet
-					try:
-						await sftp.mkdir(remote) #TODO fix RuntimeError: coroutine ignored GeneratorExit when emptying queue on kill
-					except asyncssh.SFTPError:
-						pass
-					# Checks if the file of given name already exists on remote folder, and if so, it creates a new file
-					# It should ensure the overwriting of the file
-					# Available only with 'Mode'= w
-					if self.Mode == 'w':
-						try:
-							while True:
-								if await sftp.exists(remote+filename):
-									# If file on remote folder exists, adds random string of lenght 5 consisting of
-									# uppercase letters and numbers
-									filename = filename + "".join(random.choices(string.ascii_uppercase +
-																					 string.digits, k=5))
-								else:
-									filename = filename
-									break
-						except asyncssh.SFTPError:
-							pass
+
+					# Checks if the file of given name already exists on remote folder, and if so, prints the message
+					# to a log file
+					if await sftp.exists(remote + filename) and self.Mode == 'w':
+						logging.warning('File {} has been overwritten'.format(str(filename)))
+
 					# Writes event into a remote file
 					async with sftp.open(remote+filename, self.Mode, encoding=None) as sftpfile: #TODO fix RuntimeError when emptying queue on kill
 						await sftpfile.write(event)
@@ -172,7 +161,7 @@ class SFTPSink(Sink):
 		name = re.sub("[/,.,:, ]", "", str(self.FileName))
 		timestamp = str(int(datetime.datetime.timestamp(datetime.datetime.now())))
 		random_num = str(random.randint(1, self.RandIntLen))
-		filename = str(timestamp+name+random_num)
+		filename = str(self.Prefix+name+timestamp+random_num+self.Suffix)
 
 		return filename
 
