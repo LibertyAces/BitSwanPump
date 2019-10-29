@@ -41,10 +41,10 @@ class SSHConnection(Connection):
 	explicitly set to '' or None, server host key validation will be disabled.
 
 	'client_host_keysign'
-	Whether or not to use ssh-keysign to sign host-based authentication requests. If set to True, an attempt will be made to
-	find ssh-keysign in its typical locations. If set to a string, that will be used as the ssh-keysign path. When set,
-	client_host_keys should be a list of public keys. Otherwise, client_host_keys should be a list of private keys with
-	optional paired certificates
+	Whether or not to use ssh-keysign to sign host-based authentication requests. If set to 'true', an attempt will be
+	made to find ssh-keysign in its typical locations. If set to a string, that will be used as the ssh-keysign path.
+	When set, client_host_keys should be a list of public keys. Otherwise, client_host_keys should be a list of private
+	keys with optional paired certificates
 
 	'client_host_keys'
 	A list of keys to use to authenticate this client via host-based authentication. If client_host_keysign is set and no
@@ -61,8 +61,8 @@ class SSHConnection(Connection):
 		'user': '',
 		'password': '',
 		'known_hosts': '', # separate paths / files with comma
-		'client_host_keysign': '0', # True = '1', False = '0', str() = path to the directory with keys
-		'client_host_keys': '', # separate keynames with comma
+		'client_host_keysign': '', # '' -> False; 'true' -> True; 'anything_else' -> path to the directory with keys
+		'client_host_keys': '', # '' -> default. If set, separate keynames with comma
 
 	}
 
@@ -90,9 +90,11 @@ class SSHConnection(Connection):
 			self.Known_hosts = None
 		if not self.Client_keys or self.Client_keys == [''] or self.Client_keys == None:
 			self.Client_keys = None
-		# Sets client host keysign to boolean value, if not added the path to the directory with keys
-		if str(self.Client_keysign).isdigit():
-			self.Client_keysign = bool(int(self.Client_keysign))
+		# Sets client host keysign to boolean value. If set to path, it will try to find keysign in given path
+		if self.Client_keysign != '' and self.Client_keysign != 'true':
+			self.Client_keysign = str(self.Client_keysign)
+		else:
+			self.Client_keysign = bool(self.Client_keysign)
 
 		conn = asyncssh.connect(
 				host=self.Host,

@@ -4,7 +4,6 @@ import asab
 import logging
 import datetime
 import random
-import string
 import typing
 import re
 
@@ -135,7 +134,6 @@ class SFTPSink(Sink):
 						await sftpfile.write(event)
 
 
-
 	def process(self, context, event:typing.Union[dict, str, bytes]):
 		# Checks bytes in the event
 		if type(event) == str:
@@ -143,12 +141,12 @@ class SFTPSink(Sink):
 		elif type(event) == bytes:
 			event = event
 
+		if self.FileName is None or self.FileName is '':
+			self.FileName = self.build_remote_file_name()
+
 		# Gets the defined remote path and filename from context
 		remote = context.get("ssh.remote", self.RemotePath)
 		filename = context.get("ssh.filename", self.FileName)
-
-		if filename is None or filename is '':
-			filename = self.build_remote_file_name()
 
 		self._output_queue.put_nowait((event, remote, filename))
 
@@ -158,10 +156,10 @@ class SFTPSink(Sink):
 
 	def build_remote_file_name(self):
 		# Create random string around the user defined name core
-		name = re.sub("[/,.,:, ]", "", str(self.FileName))
+		basename = re.sub("[/,.,:, ]", "", str(self.FileName))
 		timestamp = str(int(datetime.datetime.timestamp(datetime.datetime.now())))
 		random_num = str(random.randint(1, self.RandIntLen))
-		filename = str(self.Prefix+name+timestamp+random_num+self.Suffix)
+		filename = str(self.Prefix+basename+timestamp+random_num+self.Suffix)
 
 		return filename
 

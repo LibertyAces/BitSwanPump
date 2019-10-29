@@ -27,7 +27,7 @@ class SamplePipeline(bspump.Pipeline):
 	user=remoteuser
 	password=p455w0rd
 	known_hosts=.ssh/known_hosts
-	client_host_keysign=/path/to/dir/with/keys
+	client_host_keysign=/path/to/dir/with/ssh-keysign
 	client_host_keys=skey
 
 
@@ -54,10 +54,9 @@ class SamplePipeline(bspump.Pipeline):
 				'upper_bound': upper_bound
 			}),
 			bspump.common.DictToJsonBytesParser(app,self),
-			# bspump.common.StringToBytesParser(app, self),
-			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test3/',
+			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test/',
 																	'prefix': 're',
-																	'filename': 'test',
+																	'filename': 'testfile',
 																	'suffix':'ify',
 																	'mode': 'a',
 																	})
