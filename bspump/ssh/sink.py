@@ -127,7 +127,7 @@ class SFTPSink(Sink):
 					# Checks if the file of given name already exists on remote folder, and if so, prints the message
 					# to a log file
 					if await sftp.exists(remote + filename) and self.Mode == 'w':
-						logging.warning('File {} has been overwritten'.format(str(filename)))
+						L.warning('File {} has been overwritten'.format(str(filename)))
 
 					# Writes event into a remote file
 					async with sftp.open(remote+filename, self.Mode, encoding=None) as sftpfile: #TODO fix RuntimeError when emptying queue on kill
