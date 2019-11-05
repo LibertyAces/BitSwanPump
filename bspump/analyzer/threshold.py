@@ -14,12 +14,35 @@ L = logging.getLogger(__name__)
 
 class ThresholdAnalyzer(TimeWindowAnalyzer):
 
+	'''
+
+	Threshold Analyzer is based on TimeWindowAnalyzer and detects, if any
+	monitored value exceeded or subceeded the preconfigured bounds.
+	This analyzer can be used only through configuration.
+
+	predicate method - check whether event contains related attributes
+
+	evaluate method - take event attributes and sorts them into the matrix
+
+	analyze method - check whether any value in the matrix is over the preconfigured bounds and if so, calls the alarm
+
+	alarm method - return string with alarm sentence
+
+	Threshold settings:
+		exceedance >>> if 'lower_bound' is set to '-inf', then alarm is called when any value in matrix exceed
+						upper_bound
+
+		subceedance >>> if lower_bound is not set to '-inf' and upper_bound is set to 'inf', then alarm is called when
+						any value in matrix subceed lower_bound
+
+		range >>> if lower_bound is not set to '-inf' and upper_bound is not set to 'inf', then alarm is called when
+					any value in matrix is out of preconfigured range
+	'''
+
 	ConfigDefaults = {
 
 		'event_attribute': '',  # User defined value, e.g. server name
 		'load_event': '', # User defined load to matrix TODO reconsider, if it has to be set by user - e.g. maybe only event_attribute is ok as a load
-		# if lower bound != -inf and upper bound == inf: alarm is set when value is below lower bound,
-		# if lower bound != -inf and upper bound > lower_bound: alarm is set when value is out of bounds
 		'lower_bound': '-inf',
 		'upper_bound': 'inf',
 		'analyze_period': 300,
@@ -53,6 +76,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		value = event[self.EventAttribute]
 		time_stamp = event["@timestamp"]
 
+		# Getting the row indices
 		self.row = self.TimeWindow.get_row_index(value)
 		if self.row is None:
 			self.row = self.TimeWindow.add_row(value)
@@ -63,7 +87,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		if column is None:
 			column = self.TimeWindow.get_column(time_stamp)
 
-		# Load
+		# Load #TODO reconsider what to 'load' - It has to describe what needs to be stored in the event.
 		self.TimeWindow.Array[self.row, column] = event[self.Load]
 
 
@@ -78,19 +102,16 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 		data = self.TimeWindow.Array[:, :]
 
-		if self.Lower == float('-inf') and np.any(np.where((data >= self.Upper) & warming_up)): # exceedance
+		# TODO reslove last 3-4 zero arrays, which messing up np.any and np.where methods, aka how to deal with the zeros
+		# checking the exceedance condition
+		if self.Lower == float('-inf') and np.any((data >= self.Upper) & warming_up):
 			L.warning(str(self.alarm()))
-		elif self.Lower != float('-inf') and self.Upper == float('inf') and np.any(np.where((data <= self.Lower)
-																							& warming_up)): # subceedance
+		# checking the subceedance condition
+		elif self.Lower != float('-inf') and self.Upper == float('inf') and np.any((data <= self.Lower) & warming_up):
 			L.warning(str(self.alarm()))
-
-		#TODO create range condition
-		# # elif np.any(np.where(((data < self.Lower) | (data > self.Upper)) & warming_up)): # range
-		# elif np.any(np.where((data <= self.Lower) & warming_up)) or np.any(np.where((data >= self.Upper) & warming_up)):
-		# 	L.warning(str(self.alarm()))
-		# 	print(self.Lower, np.any(np.where((data <= self.Lower) & warming_up)), np.ndarray.min((data)), 'lower')
-		# 	print(self.Upper, np.any(np.where((data >= self.Lower) & warming_up)), np.ndarray.max((data)),'upper')
-		# 	print('range')
+		# checking the range condition
+		elif np.any((data <= self.Lower) & warming_up) or np.any((data >= self.Upper) & warming_up):
+			L.warning(str(self.alarm()))
 
 
 	def alarm(self):

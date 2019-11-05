@@ -19,14 +19,14 @@ class CustomPipeline(bspump.Pipeline):
             # bspump.amqp.AMQPSource(app, self, "AMQPConnection"),
             # bspump.common.BytesToStringParser(app,self),
             bspump.random.RandomSource(app, self,
-                                       config={'number': 25, 'upper_bound': 5, 'field': 'server'}
+                                       config={'number': 250, 'upper_bound': 75, 'field': 'server'}
                                        ).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=.1)),
             bspump.random.RandomEnricher(app, self, config={'field': 'duration', 'lower_bound': 1, 'upper_bound': 1500},
                                          id="RE0"),
             bspump.random.RandomEnricher(app, self, config={'field': '@timestamp',
                                                             'lower_bound': int(datetime.datetime.timestamp(datetime.datetime.now())-150),
                                                             'upper_bound': int(datetime.datetime.timestamp(datetime.datetime.now()))}, id="RE1"),
-            MyThresholdAnalyzer(app,self,config={'event_attribute':'server', 'lower_bound':'-inf','upper_bound':145, 'load_event':'duration',}), # 'load':'duration'
+            MyThresholdAnalyzer(app,self,config={'event_attribute':'server', 'lower_bound': '-inf','upper_bound':20, 'load_event':'duration',}), # 'load':'duration'
             # bspump.common.PPrintSink(app, self),
             bspump.common.NullSink(app, self),
         )
@@ -38,7 +38,6 @@ class MyThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):#TODO configure tes
 
         'event_attribute': '',  # User defined value, e.g. server name
         'load_event': '',
-        # if lower bound > upper bound: alarm is set when value is below lower bound, if lower bound != 0 and upper bound > lower_bound: alarm is set when value is out of bounds
         'lower_bound': 0,
         'upper_bound': 1000,
         'analyze_period': 5,
@@ -92,19 +91,15 @@ class MyThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):#TODO configure tes
         warming_up = self.TimeWindow.WarmingUpCount[self.row] <= self.WarmingUpLimit
 
         data = self.TimeWindow.Array[:, :]
-        print(data)
-        if self.Lower == 0 and np.any((data > self.Upper) & warming_up):
-            print(self.alarm())
-        elif self.Lower != 0 and self.Lower > self.Upper and np.any((data < self.Lower) & warming_up):  # subceedance
-            print(self.alarm())
-        elif self.Lower != 0 and self.Lower < self.Upper and (np.any((data < self.Lower) & warming_up) or
-                                                                      np.any((data > self.Upper) & warming_up)):  # range (out of bounds)
-            print(self.alarm())
+
+        x, y = np.where((data > self.Upper) & warming_up)
+        if np.any(x):
+            appearance = np.column_stack((x,y))
+            print(self.alarm(appearance))
 
 
-    def alarm(self):
-        alarm_result = str('Threshold has been subceeded / exceeded at {}'.format(str(datetime.datetime.now()
-                                                                                      )[:-7].replace(" ", "T")))
+    def alarm(self, appear):
+        alarm_result = str('Exceedance appeared in {}'.format(str(appear)))
         return alarm_result
 
 
