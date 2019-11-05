@@ -66,7 +66,7 @@ class SFTPSink(Sink):
 		self.Pipeline = pipeline
 
 		metrics_service = app.get_service('asab.MetricsService')
-		self.RewriteCounter = metrics_service.create_counter("sink.overwritefile", tags={}, init_values={'times': 0})
+		self.RewriteCounter = metrics_service.create_counter("sink.rewritefile", tags={}, init_values={'times': 0})
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._output_queue_max_size = 1000
