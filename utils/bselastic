@@ -265,7 +265,7 @@ def COMMAND_cleanup(URL, args_min_date, args_max_date, exclude_prefix):
 
 				print("Closing index: {}\n\tMax: {}\n\tMin: {}\n\tCount: {}\n".format(
 					name,
-					max_date, min_date,
+					max_datetime, min_datetime,
 					index['docs.count']
 				))
 
