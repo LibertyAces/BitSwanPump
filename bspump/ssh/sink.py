@@ -65,6 +65,10 @@ class SFTPSink(Sink):
 		self.Mode = self.Config['mode']
 		self.Pipeline = pipeline
 
+		metrics_service = app.get_service('asab.MetricsService')
+		self.RewriteCounter = metrics_service.create_counter("OverwrittenFile", tags={},
+													  init_values={'times': 0})
+
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._output_queue_max_size = 1000
 		self._conn_future = None
@@ -127,7 +131,9 @@ class SFTPSink(Sink):
 					# Checks if the file of given name already exists on remote folder, and if so, prints the message
 					# to a log file
 					if await sftp.exists(remote + filename) and self.Mode == 'w':
+						self.RewriteCounter.add('times', 1)
 						L.warning('File {} has been overwritten'.format(str(filename)))
+
 
 					# Writes event into a remote file
 					async with sftp.open(remote+filename, self.Mode, encoding=None) as sftpfile: #TODO fix RuntimeError when emptying queue on kill
