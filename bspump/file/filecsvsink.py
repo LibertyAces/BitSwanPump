@@ -1,5 +1,7 @@
 import csv
 import logging
+import os
+
 from ..abc.sink import Sink
 
 #
@@ -16,7 +18,7 @@ class FileCSVSink(Sink):
 		'delimiter': ',',
 		'doublequote': True,
 		'escapechar': "",
-		'lineterminator': '\r\n',
+		'lineterminator': os.linesep,
 		'quotechar': '"',
 		'quoting': csv.QUOTE_MINIMAL,  # 0 - 3 for [QUOTE_MINIMAL, QUOTE_ALL, QUOTE_NONNUMERIC, QUOTE_NONE]
 		'skipinitialspace': False,
