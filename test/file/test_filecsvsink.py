@@ -23,11 +23,11 @@ class TestFileCSVSink(bspump.unittest.ProcessorTestCase):
 				events
 			)
 			self.assertIn(
-				call().write('key\r\n'),
+				call().write('key\n'),
 				mock_file.mock_calls
 			)
 			self.assertIn(
-				call().write('value\r\n'),
+				call().write('value\n'),
 				mock_file.mock_calls
 			)
 			self.assertEqual(mock_file.call_args, call("/path/doesn't/exists.csv", "w", newline=""))
