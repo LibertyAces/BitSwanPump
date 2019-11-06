@@ -20,13 +20,15 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 	monitored value exceeded or subceeded the preconfigured bounds.
 	This analyzer can be used only through configuration.
 
-	predicate method - check whether event contains related attributes
+	predicate method - Check whether event contains related attributes
 
-	evaluate method - take event attributes and sorts them into the matrix
+	evaluate method - Take event attributes and sorts them into the matrix
 
-	analyze method - check whether any value in the matrix is over the preconfigured bounds and if so, calls the alarm
+	analyze method - Check whether any value in the matrix is over the preconfigured bounds and if so, calls the alarm
 
-	alarm method - return string with alarm sentence
+	alarm method - Return string with alarm sentence; allows additional arguments
+
+...
 
 	Threshold settings:
 		exceedance >>> if 'lower_bound' is set to '-inf', then alarm is called when any value in matrix exceed
@@ -37,12 +39,13 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 		range >>> if lower_bound is not set to '-inf' and upper_bound is not set to 'inf', then alarm is called when
 					any value in matrix is out of preconfigured range
+
 	'''
 
 	ConfigDefaults = {
 
 		'event_attribute': '',  # User defined value, e.g. server name
-		'load_event': '', # User defined load to matrix TODO reconsider, if it has to be set by user - e.g. maybe only event_attribute is ok as a load
+		'event_value': '', # User defined load to matrix TODO reconsider, if it has to be set by user - e.g. maybe only event_attribute is ok as a load
 		'lower_bound': '-inf',
 		'upper_bound': 'inf',
 		'analyze_period': 300,
@@ -51,17 +54,17 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 
-		super().__init__(app, pipeline, matrix_id=None, dtype='float_', columns=10, analyze_on_clock=True,
-						 resolution=20, start_time=None, clock_driven=True, id=id, config=config)
+		super().__init__(app, pipeline, matrix_id=None, dtype='float_', columns=15, analyze_on_clock=True,
+						 resolution=60, start_time=None, clock_driven=True, id=id, config=config)
 
 		self.EventAttribute = self.Config['event_attribute']
-		self.Load = self.Config['load_event']
+		self.EventValue = self.Config['event_value']
 		self.Lower = float(self.Config['lower_bound'])
 		self.Upper = float(self.Config['upper_bound'])
 		self.WarmingUpLimit = int()
 
 
-	# check if event contains related fields
+	# Check if event contains related fields
 	def predicate(self, context, event):
 		if self.EventAttribute not in event:
 			return False
@@ -73,48 +76,47 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def evaluate(self, context, event):
-		value = event[self.EventAttribute]
+		attribute = event[self.EventAttribute]
 		time_stamp = event["@timestamp"]
 
 		# Getting the row indices
-		self.row = self.TimeWindow.get_row_index(value)
-		if self.row is None:
-			self.row = self.TimeWindow.add_row(value)
-
+		row = self.TimeWindow.get_row_index(attribute)
+		if row is None:
+			row = self.TimeWindow.add_row(attribute)
 
 		# Find the column in timewindow matrix to fit in
 		column = self.TimeWindow.get_column(time_stamp)
 		if column is None:
 			column = self.TimeWindow.get_column(time_stamp)
 
-		# Load #TODO reconsider what to 'load' - It has to describe what needs to be stored in the event.
-		self.TimeWindow.Array[self.row, column] = event[self.Load]
+		# Load the value of the event
+		self.TimeWindow.Array[row, column] = event[self.EventValue]
 
 
-	def analyze(self): #TODO set analyzing method
-		# checking an empty array
+	def analyze(self):
+		# Checking an empty array
 		if self.TimeWindow.Array.shape[0] == 0:
 			return
 
-		# warming up the matrix
+		data = self.TimeWindow.Array
+		# Warming up the matrix to avoid procedures on not fully filled matrix and resizing warming_up dimension
+		# to avoid ValueError when checking the conditions of exceedance/subceedance/range.
 		self.WarmingUpLimit = self.TimeWindow.Columns - 1
-		warming_up = self.TimeWindow.WarmingUpCount[self.row] <= self.WarmingUpLimit
+		warming_up = np.resize(self.TimeWindow.WarmingUpCount <= self.WarmingUpLimit, data.shape)
 
-		data = self.TimeWindow.Array[:, :]
-
-		# TODO reslove last 3-4 zero arrays, which messing up np.any and np.where methods, aka how to deal with the zeros
-		# checking the exceedance condition
-		if self.Lower == float('-inf') and np.any((data >= self.Upper) & warming_up):
+		# Exceedance
+		if (self.Lower == float('-inf') and self.Upper != float('inf')) and np.any((data >= self.Upper) & warming_up):
 			L.warning(str(self.alarm()))
-		# checking the subceedance condition
-		elif self.Lower != float('-inf') and self.Upper == float('inf') and np.any((data <= self.Lower) & warming_up):
+		# Subceedance
+		elif (self.Lower != float('-inf') and self.Upper == float('inf')) and np.any((data <= self.Lower) & warming_up):
 			L.warning(str(self.alarm()))
-		# checking the range condition
-		elif np.any((data <= self.Lower) & warming_up) or np.any((data >= self.Upper) & warming_up):
+		# Range
+		elif (self.Lower != float('-inf') and self.Upper != float('inf')) and np.any(((data <= self.Lower) |
+																					  (data >= self.Upper)) & warming_up):
 			L.warning(str(self.alarm()))
 
 
-	def alarm(self):
-		alarm_result = str('Threshold has been out of bounds')
+	def alarm(self, *args):
+		alarm_result = str('Threshold is out of bounds!')
 		return alarm_result
 

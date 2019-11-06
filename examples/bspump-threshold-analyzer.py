@@ -19,14 +19,14 @@ class CustomPipeline(bspump.Pipeline):
             # bspump.amqp.AMQPSource(app, self, "AMQPConnection"),
             # bspump.common.BytesToStringParser(app,self),
             bspump.random.RandomSource(app, self,
-                                       config={'number': 250, 'upper_bound': 75, 'field': 'server'}
+                                       config={'number': 250, 'lower_bound': 1,'upper_bound': 5, 'field': 'server'}
                                        ).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=.1)),
             bspump.random.RandomEnricher(app, self, config={'field': 'duration', 'lower_bound': 1, 'upper_bound': 1500},
                                          id="RE0"),
             bspump.random.RandomEnricher(app, self, config={'field': '@timestamp',
-                                                            'lower_bound': int(datetime.datetime.timestamp(datetime.datetime.now())-150),
+                                                            'lower_bound': int(datetime.datetime.timestamp(datetime.datetime.now())-250),
                                                             'upper_bound': int(datetime.datetime.timestamp(datetime.datetime.now()))}, id="RE1"),
-            MyThresholdAnalyzer(app,self,config={'event_attribute':'server', 'lower_bound': '-inf','upper_bound':20, 'load_event':'duration',}), # 'load':'duration'
+            MyThresholdAnalyzer(app,self,config={'event_attribute':'server', 'lower_bound': 100, 'upper_bound':1450, 'event_value':'duration',}), # 'load':'duration'
             # bspump.common.PPrintSink(app, self),
             bspump.common.NullSink(app, self),
         )
@@ -37,10 +37,10 @@ class MyThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):#TODO configure tes
     ConfigDefaults = {
 
         'event_attribute': '',  # User defined value, e.g. server name
-        'load_event': '',
-        'lower_bound': 0,
-        'upper_bound': 1000,
-        'analyze_period': 5,
+        'event_value': '',
+        'lower_bound': '-inf',
+        'upper_bound': 'inf',
+        'analyze_period': 20,
 
     }
 
@@ -48,7 +48,7 @@ class MyThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):#TODO configure tes
         super().__init__(app, pipeline,id=id, config=config)
 
         self.EventAttribute = self.Config['event_attribute']
-        self.Load = self.Config['load_event']
+        self.EventValue = self.Config['event_value']
         self.Lower = float(self.Config['lower_bound'])
         self.Upper = float(self.Config['upper_bound'])
         self.WarmingUpLimit = int()
@@ -65,13 +65,13 @@ class MyThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):#TODO configure tes
 
 
     def evaluate(self, context, event):
-        value = event[self.EventAttribute]  # server name e.g.
+        attribute = event[self.EventAttribute]  # server name e.g.
         time_stamp = event["@timestamp"]  # time stamp of the event
 
-        self.row = self.TimeWindow.get_row_index(value)
+        self.row = self.TimeWindow.get_row_index(attribute)
 
         if self.row is None:
-            self.row = self.TimeWindow.add_row(value)
+            self.row = self.TimeWindow.add_row(attribute)
 
         # find the column in timewindow matrix to fit in
         self.column = self.TimeWindow.get_column(time_stamp)
@@ -79,7 +79,7 @@ class MyThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):#TODO configure tes
             self.column = self.TimeWindow.get_column(time_stamp)
         # print(row, column, time_stamp, self.TimeWindow.Start, self.TimeWindow.End)
 
-        # Load, creates histogram of occurences
+        # Create histogram of occurences
         self.TimeWindow.Array[self.row, self.column] +=1
 
 
@@ -87,19 +87,33 @@ class MyThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):#TODO configure tes
         if self.TimeWindow.Array.shape[0] == 0:
             return
 
+        data = self.TimeWindow.Array
         self.WarmingUpLimit = self.TimeWindow.Columns - 1
-        warming_up = self.TimeWindow.WarmingUpCount[self.row] <= self.WarmingUpLimit
+        warming_up = np.resize(self.TimeWindow.WarmingUpCount <= self.WarmingUpLimit, data.shape)
 
-        data = self.TimeWindow.Array[:, :]
+        if (self.Lower == float('-inf') and self.Upper != float('inf')) and np.any((data >= self.Upper) & warming_up):
+            x, y = np.where(data >= self.Upper)
+            occurance = np.column_stack((x, y))
+            value = data[x, y]
+            print(self.alarm(occurance, value))
 
-        x, y = np.where((data > self.Upper) & warming_up)
-        if np.any(x):
-            appearance = np.column_stack((x,y))
-            print(self.alarm(appearance))
+        elif (self.Lower != float('-inf') and self.Upper == float('inf')) and np.any((data <= self.Lower) & warming_up):
+            x, y = np.where(data <= self.Lower)
+            occurance = np.column_stack((x, y))
+            value = data[x, y]
+            print(self.alarm(occurance, value))
+
+        elif (self.Lower != float('-inf') and self.Upper != float('inf')) and np.any(((data <= self.Lower) |
+                                                                                      (data >= self.Upper)) & warming_up):
+            x, y = np.where((data <= self.Lower) | (data >= self.Upper))
+            occurance = np.column_stack((x, y))
+            value = data[x, y]
+            print(self.alarm(occurance, value))
 
 
-    def alarm(self, appear):
-        alarm_result = str('Exceedance appeared in {}'.format(str(appear)))
+    def alarm(self, occurance, value):
+        alarm_result = str('Exceedance value is {} and'.format(str(value))+' it has appeared in {}'
+                           .format(str(occurance)))
         return alarm_result
 
 
