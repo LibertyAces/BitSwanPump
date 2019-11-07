@@ -43,6 +43,7 @@ setup(
 	name='bspump-utils',
 	version=version,
 	description='BSPump utils for ElasticSearch and Kibana. Tiny subset of BSPump',
+	long_description=open('README.rst').read(),
 	url='https://github.com/LibertyAces/BitSwanPump',
 	author='Liberty Aces Ltd',
 	author_email='info@libertyaces.com',
