@@ -49,7 +49,7 @@ setup(
 	license='BSD-3-Clause',
 	platforms='any',
 	classifiers=[
-		'Development Status :: 3 - Alpha'
+		'Development Status :: 3 - Alpha',
 		'Programming Language :: Python :: 3.6',
 		'Programming Language :: Python :: 3.7',
 	],
