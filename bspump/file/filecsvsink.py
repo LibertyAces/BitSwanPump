@@ -4,15 +4,14 @@ from ..abc.sink import Sink
 import asyncio
 from datetime import datetime
 from asab.timer import Timer
-
 #
 
 L = logging.getLogger(__file__)
 
-
 #
 
 class FileCSVSink(Sink):
+
 	ConfigDefaults = {
 		'path': '',
 		'dialect': 'excel',
@@ -35,7 +34,7 @@ class FileCSVSink(Sink):
 		assert (self._output_queue_max_size >= 1), "Output queue max size invalid"
 		self._conn_future = None
 		self._output_queue = asyncio.Queue()
-		#		app.PubSub.subscribe("Application.tick!", self.write_to_file)
+#		app.PubSub.subscribe("Application.tick!", self.write_to_file)
 		self.num = 0
 		self.FlushPeriod = int(4)
 		self.AnalyzeTimer = Timer(app, self.write_to_file, autorestart=True)
@@ -46,6 +45,7 @@ class FileCSVSink(Sink):
 		Override this method to gain control over output file name.
 		'''
 		return self.Config['path']
+
 
 	def writer(self, f, fieldnames):
 		kwargs = dict()
@@ -64,10 +64,10 @@ class FileCSVSink(Sink):
 		kwargs['strict'] = bool(self.Config.get('strict'))
 
 		return csv.DictWriter(f,
-		                      dialect=self.Dialect,
-		                      fieldnames=fieldnames,
-		                      **kwargs
-		                      )
+			dialect=self.Dialect,
+			fieldnames=fieldnames,
+			**kwargs
+		)
 
 	async def write_to_file(self):
 
@@ -87,13 +87,16 @@ class FileCSVSink(Sink):
 
 			if self._output_queue.qsize() == 0:
 				self.rotate()
+				print("break.")
 				break
+
 
 	def process(self, context, event: [dict, list]):
 		if self._output_queue.qsize() >= self._output_queue_max_size:
 			self.Pipeline.throttle(self, True)
 
 		self._output_queue.put_nowait([context, event])
+
 
 	def rotate(self):
 		'''
