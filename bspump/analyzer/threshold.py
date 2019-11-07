@@ -1,6 +1,4 @@
-import datetime
 import numpy as np
-
 import logging
 
 from .timewindowanalyzer import TimeWindowAnalyzer
@@ -18,7 +16,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 	Threshold Analyzer is based on TimeWindowAnalyzer and detects, if any
 	monitored value exceeded or subceeded the preconfigured bounds.
-	This analyzer can be used only through configuration.
+	This analyzer can be used also only through configuration.
 
 	predicate method - Check whether event contains related attributes
 
@@ -44,11 +42,12 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 	ConfigDefaults = {
 
-		'event_attribute': '',  # User defined value, e.g. server name
-		'event_value': '', # User defined load to matrix TODO reconsider, if it has to be set by user - e.g. maybe only event_attribute is ok as a load
-		'lower_bound': '-inf',
-		'upper_bound': 'inf',
-		'analyze_period': 300,
+		'event_attribute': '', # Name of the attribute, e.g. server name
+		'event_value': '', # Name of the attribute values to load into the matrix and to be used for
+						   # analyzing, e.g. server overload values
+		'lower_bound': '-inf', # Lower bound of the threshold
+		'upper_bound': 'inf', # Upper bound of the threshold
+		'analyze_period': 300, # Launch period of analyze method
 
 	}
 
@@ -61,10 +60,10 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		self.EventValue = self.Config['event_value']
 		self.Lower = float(self.Config['lower_bound'])
 		self.Upper = float(self.Config['upper_bound'])
+
 		self.WarmingUpLimit = int()
 
 
-	# Check if event contains related fields
 	def predicate(self, context, event):
 		if self.EventAttribute not in event:
 			return False
@@ -89,7 +88,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		if column is None:
 			column = self.TimeWindow.get_column(time_stamp)
 
-		# Load the value of the event
+		# Fill matrix with the values
 		self.TimeWindow.Array[row, column] = event[self.EventValue]
 
 
@@ -105,14 +104,14 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		warming_up = np.resize(self.TimeWindow.WarmingUpCount <= self.WarmingUpLimit, data.shape)
 
 		# Exceedance
-		if (self.Lower == float('-inf') and self.Upper != float('inf')) and np.any((data >= self.Upper) & warming_up):
+		if np.any((data > self.Upper) & warming_up & (self.Lower == float('-inf') and self.Upper != float('inf'))):
 			L.warning(str(self.alarm()))
 		# Subceedance
-		elif (self.Lower != float('-inf') and self.Upper == float('inf')) and np.any((data <= self.Lower) & warming_up):
+		elif np.any((data < self.Lower) & warming_up & (self.Lower != float('-inf') and self.Upper == float('inf'))):
 			L.warning(str(self.alarm()))
 		# Range
-		elif (self.Lower != float('-inf') and self.Upper != float('inf')) and np.any(((data <= self.Lower) |
-																					  (data >= self.Upper)) & warming_up):
+		elif np.any(((data < self.Lower) | (data > self.Upper)) & warming_up & (self.Lower != float('-inf')
+																				   and self.Upper != float('inf'))):
 			L.warning(str(self.alarm()))
 
 
