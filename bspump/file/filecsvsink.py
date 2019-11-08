@@ -35,7 +35,6 @@ class FileCSVSink(Sink):
 		assert (self._output_queue_max_size >= 1), "Output queue max size invalid"
 		self._conn_future = None
 		self._output_queue = asyncio.Queue()
-#		app.PubSub.subscribe("Application.tick!", self.write_to_file)
 		self.num = 0
 		self.FlushPeriod = int(self.Config.get("timer"))
 		self.AnalyzeTimer = Timer(app, self.write_to_file, autorestart=True)
@@ -83,16 +82,14 @@ class FileCSVSink(Sink):
 				fo = open(fname, 'w', newline='')
 				self._csv_writer = self.writer(fo, fieldnames)
 				self._csv_writer.writeheader()
-				print("saving..")
 			# Now we have headers and _csv_writer, we take each item comming out of the asyncio
 			# queue (which represents a row of data) and write it inside of the new .csv
 			self._csv_writer.writerow(item)
 			self._output_queue.task_done()
 			# Once we empty the asyncio queue, we call the rotate method, that deletes
-			# our writer and breaks the loop
+			# our writer. Then, we break the loop
 			if self._output_queue.qsize() == 0:
 				self.rotate()
-				print("break.")
 				break
 
 
