@@ -12,7 +12,7 @@ L = logging.getLogger(__name__)
 
 class ThresholdAnalyzer(TimeWindowAnalyzer):
 
-	'''
+	"""
 
 	Threshold Analyzer is based on TimeWindowAnalyzer and detects, if any
 	monitored value exceeded or subceeded the preconfigured bounds.
@@ -22,15 +22,18 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 	evaluate method - Take event attributes and sorts them into the matrix
 
-	analyze method - Check whether any value in the matrix is over the preconfigured bounds and if so, calls the alarm
+	analyze method - Check whether any value in the matrix is over the preconfigured bounds and if so, call the alarm.
+				To analyze, whether the values are out of bounds, the 'np.where()' method is used. It pass the
+				position of values out of bounds within the matrix to the alarm method.
+				x = row position, y = column position
 
-	alarm method - Return string with alarm sentence; allows additional arguments
+	alarm method - Return arguments
 
 ...
 
 	Threshold settings:
-		exceedance >>> if 'lower_bound' is set to '-inf', then alarm is called when any value in matrix exceed
-						upper_bound
+		exceedance >>> if 'lower_bound' is set to '-inf' and upper_bound is not set to 'inf', then alarm is called when
+						any value in matrix exceed upper_bound
 
 		subceedance >>> if lower_bound is not set to '-inf' and upper_bound is set to 'inf', then alarm is called when
 						any value in matrix subceed lower_bound
@@ -38,7 +41,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		range >>> if lower_bound is not set to '-inf' and upper_bound is not set to 'inf', then alarm is called when
 					any value in matrix is out of preconfigured range
 
-	'''
+	"""
 
 	ConfigDefaults = {
 
@@ -104,18 +107,21 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		warming_up = np.resize(self.TimeWindow.WarmingUpCount <= self.WarmingUpLimit, data.shape)
 
 		# Exceedance
-		if np.any((data > self.Upper) & warming_up & (self.Lower == float('-inf') and self.Upper != float('inf'))):
-			L.warning(str(self.alarm()))
+		if self.Lower == float('-inf') and self.Upper != float('inf'):
+			x, y = np.where((data > self.Upper) & warming_up)
+			self.alarm(x, y)
+
 		# Subceedance
-		elif np.any((data < self.Lower) & warming_up & (self.Lower != float('-inf') and self.Upper == float('inf'))):
-			L.warning(str(self.alarm()))
+		elif self.Lower != float('-inf') and self.Upper == float('inf'):
+			x, y = np.where((data < self.Lower) & warming_up)
+			self.alarm(x, y)
+
 		# Range
-		elif np.any(((data < self.Lower) | (data > self.Upper)) & warming_up & (self.Lower != float('-inf')
-																				   and self.Upper != float('inf'))):
-			L.warning(str(self.alarm()))
+		elif self.Lower != float('-inf') and self.Upper != float('inf'):
+			x, y = np.where(((data < self.Lower) | (data > self.Upper)) & warming_up)
+			self.alarm(x, y)
 
 
 	def alarm(self, *args):
-		alarm_result = str('Threshold is out of bounds!')
-		return alarm_result
+		pass
 
