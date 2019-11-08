@@ -71,27 +71,33 @@ class FileCSVSink(Sink):
 		)
 
 	async def write_to_file(self):
-
+		# Looping through asyncio queue
 		while True:
+			# Each time we get context and item out
 			context, item = await self._output_queue.get()
-
+			# As long as we have no writer yet, we make one and write header rows
 			if self._csv_writer is None:
-				# Open CSV file if needed
+				# Open CSV file if needed, name the file using current time (maybe slow)
 				fieldnames = item.keys()
 				fname = str(datetime.now().time()).replace(":", "_").replace(".", "_") + ".csv"
 				fo = open(fname, 'w', newline='')
 				self._csv_writer = self.writer(fo, fieldnames)
 				self._csv_writer.writeheader()
 				print("saving..")
+			# Now we have headers and _csv_writer, we take each item comming out of the asyncio
+			# queue (which represents a row of data) and write it inside of the new .csv
 			self._csv_writer.writerow(item)
 			self._output_queue.task_done()
-
+			# Once we empty the asyncio queue, we call the rotate method, that deletes
+			# our writer and breaks the loop
 			if self._output_queue.qsize() == 0:
 				self.rotate()
 				print("break.")
 				break
 
 
+	# Inside of the process we fill up the asyncio queue and monitor its max size to apply
+	# trottling if needed
 	def process(self, context, event: [dict, list]):
 		if self._output_queue.qsize() >= self._output_queue_max_size:
 			self.Pipeline.throttle(self, True)
