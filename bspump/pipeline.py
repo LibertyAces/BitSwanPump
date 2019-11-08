@@ -437,7 +437,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 					'processor': processor.Id,
 					'pipeline': self.Id,
 				},
-				init_values={'time': 0, 'run': 0},
+				init_values={'time': 0.0, 'run': 0},
 				reset=self.ResetProfiler,
 			)
 			if isinstance(processor, Analyzer):
@@ -447,7 +447,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 						'analyzer': processor.Id,
 						'pipeline': self.Id,
 					},
-					init_values={'time': 0, 'run': 0},
+					init_values={'time': 0.0, 'run': 0},
 					reset=self.ResetProfiler,
 				)
 
