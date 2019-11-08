@@ -24,19 +24,20 @@ class FileCSVSink(Sink):
 		'skipinitialspace': False,
 		'strict': False,
 		'output_queue_max_size': 500,
+		'timer': 4,
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Dialect = csv.get_dialect(self.Config['dialect'])
 		self._csv_writer = None
-		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+		self._output_queue_max_size = int(self.Config.get('output_queue_max_size'))
 		assert (self._output_queue_max_size >= 1), "Output queue max size invalid"
 		self._conn_future = None
 		self._output_queue = asyncio.Queue()
 #		app.PubSub.subscribe("Application.tick!", self.write_to_file)
 		self.num = 0
-		self.FlushPeriod = int(4)
+		self.FlushPeriod = int(self.Config.get("timer"))
 		self.AnalyzeTimer = Timer(app, self.write_to_file, autorestart=True)
 		self.AnalyzeTimer.start(self.FlushPeriod)
 
