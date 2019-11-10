@@ -90,7 +90,7 @@ class TimeDriftAnalyzer(Analyzer):
 			self.History.pop(0)
 
 
-	async def analyze(self):
+	def analyze(self):
 		# in seconds
 		if len(self.History) > 0:
 			avg = np.mean(self.History)/1000

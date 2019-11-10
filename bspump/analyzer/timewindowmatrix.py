@@ -184,6 +184,11 @@ class TimeWindowMatrix(NamedMatrix):
 			added += 1
 
 		return added
+
+
+	def close_row(self, row_index, clear=True):
+		super().close_row(row_index, clear=clear)
+		self.WarmingUpCount[row_index] = self.Array.shape[1]
 	
 
 	async def on_clock_tick(self):

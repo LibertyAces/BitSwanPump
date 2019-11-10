@@ -433,15 +433,21 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			self.append_processor(processor)
 			self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
 				'bspump.pipeline.profiler',
-				tags={'processor': processor.Id},
-				init_values={'time': 0, 'run': 0},
+				tags={
+					'processor': processor.Id,
+					'pipeline': self.Id,
+				},
+				init_values={'time': 0.0, 'run': 0},
 				reset=self.ResetProfiler,
 			)
 			if isinstance(processor, Analyzer):
 				self.ProfilerCounter['analyzer_' + processor.Id] = self.MetricsService.create_counter(
 					'bspump.pipeline.profiler',
-					tags={'analyzer': processor.Id},
-					init_values={'time': 0, 'run': 0},
+					tags={
+						'analyzer': processor.Id,
+						'pipeline': self.Id,
+					},
+					init_values={'time': 0.0, 'run': 0},
 					reset=self.ResetProfiler,
 				)
 
