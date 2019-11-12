@@ -2,5 +2,5 @@ coverage==4.5.3
 aioresponses==0.6.0
 aioodbc==0.3.3
 aiopg>=0.16.0,<1.0  # TODO PLUM-550
-asyncssh==1.18.0
+asyncssh==2.0.1
 
