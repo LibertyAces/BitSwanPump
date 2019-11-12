@@ -54,12 +54,13 @@ class SamplePipeline(bspump.Pipeline):
 				'upper_bound': upper_bound
 			}),
 			bspump.common.DictToJsonBytesParser(app,self),
-			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={'remote_path': '/test/',
-																	'prefix': 're',
-																	'filename': 'testfile',
-																	'suffix':'ify',
-																	'mode': 'a',
-																	})
+			bspump.common.PPrintProcessor(app,self),
+
+			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={
+				'remote_path': '/tmp/bspump_ssh/',
+				'filename': 'testfile',
+				'mode': 'a',
+			})
 		)
 
 
@@ -69,7 +70,12 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	svc.add_connection(
-		bspump.ssh.SSHConnection(app, "SSHConnection2")
+		bspump.ssh.SSHConnection(app, "SSHConnection2", config={
+			"host": "bandit.labs.overthewire.org",
+			"user": "bandit0",
+			"password": "bandit0",
+			"port": 2220,
+		})
 	)
 
 	# Construct and register Pipeline
