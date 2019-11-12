@@ -272,7 +272,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				self.set_error(context, event, e)
 				raise
 			finally:
-				self.ProfilerCounter[processor.Id].add('time', time.perf_counter() - t0)
+				self.ProfilerCounter[processor.Id].add('duration', time.perf_counter() - t0)
 				self.ProfilerCounter[processor.Id].add('run', 1)
 
 			if event is None: # Event has been consumed on the way
@@ -437,7 +437,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 					'processor': processor.Id,
 					'pipeline': self.Id,
 				},
-				init_values={'time': 0.0, 'run': 0},
+				init_values={'duration': 0.0, 'run': 0},
 				reset=self.ResetProfiler,
 			)
 			if isinstance(processor, Analyzer):
@@ -447,7 +447,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 						'analyzer': processor.Id,
 						'pipeline': self.Id,
 					},
-					init_values={'time': 0.0, 'run': 0},
+					init_values={'duration': 0.0, 'run': 0},
 					reset=self.ResetProfiler,
 				)
 
