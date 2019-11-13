@@ -29,8 +29,11 @@ class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
-		# We do not provide the sink with 'path', triggering the desired behavior
-		self.Sink = bspump.file.FileCSVSink(app, self)
+		# By way of not providing the sink with 'filename.csv',
+		# the desired behavior is triggered. We may still provide path to store our files
+		self.Sink = bspump.file.FileCSVSink(app, self, config={
+				'path': "./data/"
+			})
 
 		self.build(
 			bspump.http.HTTPClientSource(app, self, config={

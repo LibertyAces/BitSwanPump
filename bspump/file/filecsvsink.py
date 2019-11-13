@@ -37,9 +37,9 @@ class FileCSVSink(Sink):
 		# remains default or only directory is specified, filename is
 		# set every time the pump runs as a time.time()
 		if self.Config['path'][-4:] == ".csv":
-			return self.Config['path'] + str(time()).replace(".", "_") + ".csv"
-		else:
 			return self.Config['path']
+		else:
+			return self.Config['path'] + str(time()).replace(".", "_") + ".csv"
 
 	def writer(self, f, fieldnames):
 		kwargs = dict()
