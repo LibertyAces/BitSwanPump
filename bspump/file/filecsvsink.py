@@ -1,7 +1,6 @@
 import csv
 import logging
 from ..abc.sink import Sink
-from time import time
 
 #
 
@@ -33,13 +32,12 @@ class FileCSVSink(Sink):
 		'''
 		Override this method to gain control over output file name.
 		'''
-		# If the filename is specified, behavior remains the same, if it
-		# remains default or only directory is specified, filename is
-		# set every time the pump runs as a time.time()
-		if self.Config['path'][-4:] == ".csv":
-			return self.Config['path']
+		# Here we are able to modify the sink behavior from outside using context.
+		# If provided, the filename (and path) is taken from the context instead of the config
+		if bool(context) == True:
+			return context['path']
 		else:
-			return self.Config['path'] + str(time()).replace(".", "_") + ".csv"
+			return self.Config['path']
 
 	def writer(self, f, fieldnames):
 		kwargs = dict()

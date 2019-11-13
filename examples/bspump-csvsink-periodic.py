@@ -21,9 +21,9 @@ class TimingProcessor(bspump.Processor):
 		super().__init__(app, pipeline, id, config)
 
 	def process(self, context, event):
-		time.sleep(15)
-		return event  # Pass context to the following processor
-
+		time.sleep(1)
+		context["path"] = str(self.time()).replace(".", "_") + ".csv"
+		return event
 
 class SamplePipeline(bspump.Pipeline):
 
@@ -31,9 +31,7 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		# By way of not providing the sink with 'filename.csv',
 		# the desired behavior is triggered. We may still provide path to store our files
-		self.Sink = bspump.file.FileCSVSink(app, self, config={
-				'path': "./data/"
-			})
+		self.Sink = bspump.file.FileCSVSink(app, self)
 
 		self.build(
 			bspump.http.HTTPClientSource(app, self, config={
