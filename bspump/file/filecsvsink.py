@@ -33,8 +33,9 @@ class FileCSVSink(Sink):
 		'''
 		Override this method to gain control over output file name.
 		'''
-		# If the filename is specified, behavior remains the same, if it remains default, it is
-		# set every time as a time.time()
+		# If the filename is specified, behavior remains the same, if it
+		# remains default or only directory is specified, filename is
+		# set every time the pump runs as a time.time()
 		if self.Config['path'][-4:] == ".csv":
 			return self.Config['path'] + str(time()).replace(".", "_") + ".csv"
 		else:
