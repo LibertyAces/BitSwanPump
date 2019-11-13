@@ -35,8 +35,8 @@ class FileCSVSink(Sink):
 		'''
 		# If the filename is specified, behavior remains the same, if it remains default, it is
 		# set every time as a time.time()
-		if len(self.Config['path']) == 0:
-			return str(time()).replace(".", "_") + ".csv"
+		if self.Config['path'][-4:] == ".csv":
+			return self.Config['path'] + str(time()).replace(".", "_") + ".csv"
 		else:
 			return self.Config['path']
 
