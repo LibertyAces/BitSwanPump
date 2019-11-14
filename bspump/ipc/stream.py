@@ -1,21 +1,21 @@
-import logging
 import asyncio
+import logging
+
 from ..abc.source import Source
 
 #
 
 L = logging.getLogger(__name__)
 
+
 #
 
-class TCPSource(Source):
 
-
+class StreamSource(Source):
 	ConfigDefaults = {
 		'host': '127.0.0.1',
 		'port': 8888,
 	}
-
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -23,11 +23,10 @@ class TCPSource(Source):
 		self.Loop = app.Loop
 		self.Writers = set()
 
-
 	async def handler(self, reader, writer):
-		'''
-		This method could be overriden to implement various application protocols.
-		'''
+		"""
+		This method could be overridden to implement various application protocols.
+		"""
 		while True:
 			await self.Pipeline.ready()
 			data = await reader.readline()
@@ -38,7 +37,6 @@ class TCPSource(Source):
 				'peer': writer.transport.get_extra_info('peername'),
 			})
 
-
 	async def _handler_wrapper(self, reader, writer):
 		self.Writers.add(writer)
 
@@ -48,7 +46,6 @@ class TCPSource(Source):
 		finally:
 			writer.close()
 			self.Writers.remove(writer)
-
 
 	async def main(self):
 		# Start server
