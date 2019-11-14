@@ -15,6 +15,7 @@ class DatagramSource(Source):
 	ConfigDefaults = {
 		'host': '127.0.0.1',
 		'port': 8888,
+		'socket_path': '',
 		'max_packet_size': 64 * 1024,
 	}
 
@@ -23,11 +24,20 @@ class DatagramSource(Source):
 		self.Loop = app.Loop
 
 		# Create a UDP socket
-		self.Socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.Host = self.Config['host']
+		self.Port = int(self.Config['port']) if self.Config['port'] else None
+		self.SocketPath = self.Config['socket_path']
+
+		family = socket.AF_UNIX if self.SocketPath else socket.AF_INET
+
+		self.Socket = socket.socket(family, socket.SOCK_DGRAM)
 		self.Socket.setblocking(False)
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-		self.Socket.bind((self.Config['host'], int(self.Config['port'])))
+		if self.SocketPath:
+			self.Socket.bind(self.SocketPath)
+		else:
+			self.Socket.bind((self.Host, self.Port))
 
 		self.MaxPacketSize = int(self.Config['max_packet_size'])
 
