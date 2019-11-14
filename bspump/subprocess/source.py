@@ -8,7 +8,9 @@ L = logging.getLogger(__name__)
 
 class SubProcessSource(Source):
 	"""
+	Sub-Process Source is capable of calling any command and fetch result from stdin as event
 
+	Can be useful with commands like `tail -f`, `tshark -l -n -T ek -i wlan0` or others
 	"""
 
 	ConfigDefaults = {
