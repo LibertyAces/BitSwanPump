@@ -99,7 +99,6 @@ class SSHConnection(Connection):
 		conn = asyncssh.connect(
 				host=self.Host,
 				port=self.Port,
-				loop=self.Loop,
 				username=self.User,
 				password=self.Password,
 				known_hosts=self.Known_hosts,
