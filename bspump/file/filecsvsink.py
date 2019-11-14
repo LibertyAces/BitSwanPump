@@ -55,11 +55,12 @@ class FileCSVSink(Sink):
 		kwargs['skipinitialspace'] = bool(self.Config.get('skipinitialspace'))
 		kwargs['strict'] = bool(self.Config.get('strict'))
 
-		return csv.DictWriter(f,
-		                      dialect=self.Dialect,
-		                      fieldnames=fieldnames,
-		                      **kwargs
-		                      )
+		return csv.DictWriter(
+			f,
+			dialect=self.Dialect,
+			fieldnames=fieldnames,
+			**kwargs
+		)
 
 	def process(self, context, event):
 		if self._csv_writer is None:

@@ -15,8 +15,11 @@ L = logging.getLogger(__name__)
 
 ###
 
-# Periodicity is achieved via means not related to the sink itself, for example through a processor
 class TimingProcessor(bspump.Processor):
+	"""
+	Periodicity is achieved via means not related to the sink itself, for example through a processor
+	"""
+
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		self.Time = app.time()
@@ -28,6 +31,7 @@ class TimingProcessor(bspump.Processor):
 			self.Time = app.time()
 			context["path"] = str(self.time()).replace(".", "_") + ".csv"
 			return event
+
 
 class SamplePipeline(bspump.Pipeline):
 
