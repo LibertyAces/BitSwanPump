@@ -34,10 +34,10 @@ class FileCSVSink(Sink):
 		'''
 		# Here we are able to modify the sink behavior from outside using context.
 		# If provided, the filename (and path) is taken from the context instead of the config
-		if bool(context) == True:
+		if bool(context):
 			return context['path']
 		else:
-			return self.Config['path']
+			return context.get("path", self.Config["path"])
 
 	def writer(self, f, fieldnames):
 		kwargs = dict()

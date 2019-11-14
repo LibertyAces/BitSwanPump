@@ -19,11 +19,15 @@ L = logging.getLogger(__name__)
 class TimingProcessor(bspump.Processor):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
+		self.Time = app.time()
 
 	def process(self, context, event):
-		time.sleep(1)
-		context["path"] = str(self.time()).replace(".", "_") + ".csv"
-		return event
+		# Every 10 seconds, we want to pass a new context into the pipeline,
+		# which is used as a filename. Context is passed along the pipeline via reference.
+		if app.time() > 10 + self.Time:
+			self.Time = app.time()
+			context["path"] = str(self.time()).replace(".", "_") + ".csv"
+			return event
 
 class SamplePipeline(bspump.Pipeline):
 
@@ -46,9 +50,7 @@ class SamplePipeline(bspump.Pipeline):
 		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
 
 	def on_cycle_end(self, event_name, pipeline):
-		'''
-		This ensures that at the end of the file scan, the target file is closed
-		'''
+		# This ensures that at the end of the file scan, the target file is closed
 		self.Sink.rotate()
 
 
