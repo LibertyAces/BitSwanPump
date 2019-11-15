@@ -6,10 +6,10 @@ from ..abc.sink import Sink
 
 L = logging.getLogger(__file__)
 
+
 #
 
 class FileCSVSink(Sink):
-
 	ConfigDefaults = {
 		'path': '',
 		'dialect': 'excel',
@@ -28,13 +28,16 @@ class FileCSVSink(Sink):
 		self.Dialect = csv.get_dialect(self.Config['dialect'])
 		self._csv_writer = None
 
-
 	def get_file_name(self, context, event):
 		'''
 		Override this method to gain control over output file name.
 		'''
-		return self.Config['path']
-
+		# Here we are able to modify the sink behavior from outside using context.
+		# If provided, the filename (and path) is taken from the context instead of the config
+		if bool(context):
+			return context['path']
+		else:
+			return context.get("path", self.Config["path"])
 
 	def writer(self, f, fieldnames):
 		kwargs = dict()
@@ -52,12 +55,12 @@ class FileCSVSink(Sink):
 		kwargs['skipinitialspace'] = bool(self.Config.get('skipinitialspace'))
 		kwargs['strict'] = bool(self.Config.get('strict'))
 
-		return csv.DictWriter(f,
+		return csv.DictWriter(
+			f,
 			dialect=self.Dialect,
 			fieldnames=fieldnames,
 			**kwargs
 		)
-
 
 	def process(self, context, event):
 		if self._csv_writer is None:
@@ -67,9 +70,8 @@ class FileCSVSink(Sink):
 			fo = open(fname, 'w', newline='')
 			self._csv_writer = self.writer(fo, fieldnames)
 			self._csv_writer.writeheader()
-		
-		self._csv_writer.writerow(event)
 
+		self._csv_writer.writerow(event)
 
 	def rotate(self):
 		'''
