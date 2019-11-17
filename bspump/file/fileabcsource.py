@@ -3,12 +3,10 @@ import os
 import logging
 import asyncio
 import time
-import asab
 
 from ..abc.source import TriggerSource
-from .. import ProcessingError
 
-from .globscan import _glob_scan, _file_check
+from .globscan import _glob_scan
 
 #
 
@@ -22,14 +20,14 @@ class FileABCSource(TriggerSource):
 	ConfigDefaults = {
 		'path': '',
 		'mode': 'rb',
-		'newline': None,
-		'post': 'move', # one of 'delete', 'noop' and 'move'
-		'exclude': '', # glob of filenames that should be excluded (has precedence over 'include')
-		'include': '', # glob of filenames that should be included
+		'newline': os.linesep,
+		'post': 'move',  # one of 'delete', 'noop' and 'move'
+		'exclude': '',  # glob of filenames that should be excluded (has precedence over 'include')
+		'include': '',  # glob of filenames that should be included
 		'encoding': '',
-		'move_destination': '', # destination folder for 'move'. Make sure it's outside of the glob search
-		'lines_per_event': 10000, # the number of lines after which the read method enters the idle state to allow other operations to perform their tasks
-		'event_idle_time': 0.01, # the time for which the read method enters the idle state (see above)
+		'move_destination': '',  # destination folder for 'move'. Make sure it's outside of the glob search
+		'lines_per_event': 10000,  # the number of lines after which the read method enters the idle state to allow other operations to perform their tasks
+		'event_idle_time': 0.01,  # the time for which the read method enters the idle state (see above)
 	}
 
 
@@ -122,6 +120,8 @@ class FileABCSource(TriggerSource):
 				f = lzma.open(locked_filename, self.mode, encoding=self.encoding)
 
 			else:
+				if 'b' in self.mode:  # Binary mode doesn't take a newline argument
+					self.newline = None
 				f = open(locked_filename, self.mode, newline=self.newline, encoding=self.encoding)
 
 		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows

@@ -6,4 +6,5 @@ from .elasticsearch import *
 from .file import *
 from .filter import *
 from .matrix import *
+from .test_config_defaults import *
 

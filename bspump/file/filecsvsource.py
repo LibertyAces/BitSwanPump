@@ -1,6 +1,7 @@
 import csv
-import asyncio
 import logging
+import os
+
 from .fileabcsource import FileABCSource
 
 #
@@ -14,16 +15,16 @@ class FileCSVSource(FileABCSource):
 
 	ConfigDefaults = {
 		'mode': 'r',
-		'newline': '', # Required by CSV parser
+		'newline': '',  # Required by CSV parser
 		'dialect': 'excel',
-		'delimiter': None,
-		'doublequote': None,
-		'escapechar': None,
-		'lineterminator': None,
-		'quotechar': None,
-		'quoting': None,
-		'skipinitialspace': None,
-		'strict': None,
+		'delimiter': ',',
+		'doublequote': True,
+		'escapechar': "",
+		'lineterminator': os.linesep,
+		'quotechar': '"',
+		'quoting': csv.QUOTE_MINIMAL,
+		'skipinitialspace': False,
+		'strict': False,
 	}
 
 
