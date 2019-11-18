@@ -15,6 +15,7 @@ class StreamSource(Source):
 	ConfigDefaults = {
 		'host': '127.0.0.1',
 		'port': 8888,
+		'socket_path': '',
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -22,6 +23,10 @@ class StreamSource(Source):
 
 		self.Loop = app.Loop
 		self.Writers = set()
+
+		self.Host = self.Config['host']
+		self.Port = int(self.Config['port']) if self.Config['port'] else None
+		self.SocketPath = self.Config['socket_path'] or None
 
 	async def handler(self, reader, writer):
 		"""
@@ -49,11 +54,18 @@ class StreamSource(Source):
 
 	async def main(self):
 		# Start server
-		server = await asyncio.start_server(
-			self._handler_wrapper,
-			self.Config['host'], int(self.Config['port']),
-			loop=self.Loop
-		)
+		if self.SocketPath:
+			server = await asyncio.start_unix_server(
+				self._handler_wrapper,
+				path=self.SocketPath,
+				loop=self.Loop
+			)
+		else:
+			server = await asyncio.start_server(
+				self._handler_wrapper,
+				self.Config['host'], int(self.Config['port']),
+				loop=self.Loop
+			)
 
 		await self.stopped()
 
