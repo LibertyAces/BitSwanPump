@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from ..abc.sink import Sink
 from ..abc.source import Source
 
 #
@@ -82,3 +83,28 @@ class StreamSource(Source):
 			if writer.can_write_eof():
 				writer.write_eof()
 			writer.close()
+
+
+class StreamSink(Sink):
+	ConfigDefaults = {
+		'host': '127.0.0.1',
+		'port': 8888,
+		'socket_path': '',
+	}
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+
+		self.Host = self.Config['host']
+		self.Port = int(self.Config['port']) if self.Config['port'] else None
+		self.SocketPath = self.Config['socket_path'] or None
+		app.PubSub.subscribe("Application.run!", self._open_connection)
+
+	async def _open_connection(self, _):
+		if self.SocketPath:
+			_reader, self.Writer = await asyncio.open_unix_connection(self.SocketPath)
+		else:
+			_reader, self.Writer = await asyncio.open_connection(self.Host, self.Port)
+
+	def process(self, context, event):
+		self.Writer.write(event)
