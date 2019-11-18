@@ -44,7 +44,7 @@ class ElasticSearchConnection(Connection):
 	"""
 
 	ConfigDefaults = {
-		'url': 'http://localhost:9200/', # Could be multiline, each line is a URL to a node in ElasticSearch cluster
+		'url': 'http://localhost:9200/', # Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
 		'username': '',
 		'password': '',
 		'loader_per_url': 4, # Number of parael loaders per URL
@@ -70,7 +70,7 @@ class ElasticSearchConnection(Connection):
 		
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
-		for url in self.Config['url'].split('\n'):
+		for url in self.Config['url'].split(';'):
 			url = url.strip()
 			if len(url) == 0: continue
 			if url[-1] != '/': url += '/'
