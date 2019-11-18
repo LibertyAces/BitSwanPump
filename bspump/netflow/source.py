@@ -43,7 +43,7 @@ class NetFlowSource(Source):
 			stderr=subprocess.DEVNULL,
 		)
 
-	async def main(self, *_, **__):
+	async def main(self):
 		while True:
 			await self.Pipeline.ready()
 			event = self.Capture.stdout.readline()

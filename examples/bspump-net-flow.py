@@ -1,6 +1,6 @@
 import bspump
 import bspump.common
-import bspump.net_flow
+import bspump.netflow
 
 
 class NetFlowPipeline(bspump.Pipeline):
@@ -8,7 +8,7 @@ class NetFlowPipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.net_flow.NetFlowSource(app, self, config={}),
+			bspump.netflow.NetFlowSource(app, self, config={}),
 			bspump.common.JsonBytesToDictParser(app, self),
 			bspump.common.PPrintSink(app, self),
 		)
