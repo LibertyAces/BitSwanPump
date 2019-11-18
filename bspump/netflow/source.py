@@ -3,7 +3,6 @@ import subprocess
 
 from ..abc.source import Source
 
-
 L = logging.getLogger(__name__)
 
 
@@ -27,9 +26,7 @@ class NetFlowSource(Source):
 		self.Interface = str(self.Config["interface"])
 
 		_command_check = ['tshark', '--version']
-		# _command_run = ['tshark', '-l', '-n', '-T', 'ek', '-i', self.Interface]
-		# TODO `args` should be list of strings but that executes `/bin/sh -c tshark -l -n -T ek`, passing args to bash
-		_command_run = ['tshark -l -n -T ek -i {interface}'.format(interface=self.Interface)]
+		_command_run = ['tshark', '-l', '-n', '-T', 'ek', '-i', self.Interface]
 		try:
 			subprocess.check_call(_command_check, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 		except FileNotFoundError:
@@ -38,7 +35,6 @@ class NetFlowSource(Source):
 		self.Capture = subprocess.Popen(
 			_command_run,
 
-			shell=True,
 			stdout=subprocess.PIPE,
 			stderr=subprocess.DEVNULL,
 		)
