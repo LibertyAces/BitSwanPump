@@ -64,7 +64,7 @@ class DatagramSource(Source):
 				break
 
 			except Exception as e:
-				L.exception(f"Error in UDP source. {e}")
+				L.exception(f"Error in datagram source.")
 				raise
 
 
