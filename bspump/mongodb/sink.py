@@ -65,7 +65,7 @@ class MongoDBSink(Sink):
             loop=self.Loop
         )
 
-    def _on_application_stop(self, message_type):
+    def _on_application_stop(self, message_type, counter):
         # On requested stop, we insert 'None' to the FIFO (first in first out) asyncio Queue this means (see later),
         # that no task or item inserted after will be processed.
         self._output_queue.put_nowait(None)
