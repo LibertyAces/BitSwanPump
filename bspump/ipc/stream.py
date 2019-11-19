@@ -14,9 +14,7 @@ L = logging.getLogger(__name__)
 
 class StreamSource(Source):
 	ConfigDefaults = {
-		'host': '127.0.0.1',
-		'port': 8888,
-		'socket_path': '',
+		'address': '127.0.0.1:8888',
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -25,9 +23,7 @@ class StreamSource(Source):
 		self.Loop = app.Loop
 		self.Writers = set()
 
-		self.Host = self.Config['host']
-		self.Port = int(self.Config['port']) if self.Config['port'] else None
-		self.SocketPath = self.Config['socket_path'] or None
+		self.Address = self.Config['address']
 
 	async def handler(self, reader, writer):
 		"""
@@ -55,16 +51,17 @@ class StreamSource(Source):
 
 	async def main(self):
 		# Start server
-		if self.SocketPath:
-			server = await asyncio.start_unix_server(
+		if ":" in self.Address:
+			host, separator, port = self.Address.rpartition(":")
+			server = await asyncio.start_server(
 				self._handler_wrapper,
-				path=self.SocketPath,
+				host, int(port),
 				loop=self.Loop
 			)
 		else:
-			server = await asyncio.start_server(
+			server = await asyncio.start_unix_server(
 				self._handler_wrapper,
-				self.Config['host'], int(self.Config['port']),
+				path=self.Address,
 				loop=self.Loop
 			)
 
@@ -87,24 +84,21 @@ class StreamSource(Source):
 
 class StreamSink(Sink):
 	ConfigDefaults = {
-		'host': '127.0.0.1',
-		'port': 8888,
-		'socket_path': '',
+		'address': '127.0.0.1:8888',
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self.Host = self.Config['host']
-		self.Port = int(self.Config['port']) if self.Config['port'] else None
-		self.SocketPath = self.Config['socket_path'] or None
+		self.Address = self.Config['address']
 		app.PubSub.subscribe("Application.run!", self._open_connection)
 
 	async def _open_connection(self, _):
-		if self.SocketPath:
-			_reader, self.Writer = await asyncio.open_unix_connection(self.SocketPath)
+		if ":" in self.Address:
+			host, separator, port = self.Address.rpartition(":")
+			_reader, self.Writer = await asyncio.open_connection(host, int(port))
 		else:
-			_reader, self.Writer = await asyncio.open_connection(self.Host, self.Port)
+			_reader, self.Writer = await asyncio.open_unix_connection(self.Address)
 
 	def process(self, context, event):
 		self.Writer.write(event)
