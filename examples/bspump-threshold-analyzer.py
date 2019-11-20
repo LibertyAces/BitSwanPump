@@ -21,7 +21,7 @@ class CustomPipeline(bspump.Pipeline):
         super().__init__(app, pipeline_id)
         self.build(
             bspump.random.RandomSource(app, self,
-                                       config={'number': 5, 'lower_bound': 1,'upper_bound': 5, 'field': 'server'}
+                                       config={'number': 15, 'lower_bound': 1,'upper_bound': 15, 'field': 'server'}
                                        ).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=.1)),
 
             bspump.random.RandomEnricher(app, self, config={'field': 'server_load', 'lower_bound': 1, 'upper_bound': 1500},
@@ -32,7 +32,8 @@ class CustomPipeline(bspump.Pipeline):
                 'upper_bound': int(datetime.datetime.timestamp(datetime.datetime.now()))}, id="RE1"),
 
             ExceedThresholdAnalyzer(app,self,config={'event_attribute': 'server', 'upper_bound': 1000,
-                                                     'event_value': 'server_load', 'analyze_period': 60, }),
+                                                     'event_value': 'server_load', 'anomaly_occurrence': 3,
+                                                     'analyze_period': 60, }),
 
             bspump.common.NullSink(app, self),
         )
@@ -52,26 +53,23 @@ class ExceedThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):
 
     Config example:
 
-    ExceedThresholdAnalyzer(app,self,config={'event_attribute': 'id', 'upper_bound': 1000,
-                                                     'event_value': 'id_load', 'analyze_period': 300, })
+    ExceedThresholdAnalyzer(app,self,config={'event_attribute': 'id', 'upper_bound': 1000, 'event_value': 'id_load',
+                                             'anomaly_occurrence': 2, 'analyze_period': 300, })
 
 ...
 
     Alarm example:
 
-    def alarm(self, x, y):
-        position = np.column_stack((x, y))
-        L.warning('Threshold has been exceeded on this positions: {}'.format(str(position)))
-        return position
-
-    :return Position of values out of bounds within the matrix. x = row position, y = column position
+    def alarm(self, x, y, count, index):
+        for c in range(0, count):
+            position = np.column_stack((x[index-c], y[index-c]))
+            L.warning('Threshold has been exceeded on those positions: {}'.format(str(position)))
 
     """
 
-    def alarm(self, x, y):
-        position = np.column_stack((x, y))
-        L.warning('Threshold has been exceeded on this positions: {}'.format(str(position)))
-        return position
+    def alarm(self, x, y, count, index):
+        for c in range(0, count):
+            L.warning('Threshold has been exceeded on those positions: {}'.format(str([x[index-c], y[index-c]])))
 
 
 if __name__=='__main__':
