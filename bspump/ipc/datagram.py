@@ -14,9 +14,7 @@ L = logging.getLogger(__name__)
 
 class DatagramSource(Source):
 	ConfigDefaults = {
-		'host': '127.0.0.1',
-		'port': 8888,
-		'socket_path': '',
+		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
 		'max_packet_size': 64 * 1024,
 	}
 
@@ -25,20 +23,19 @@ class DatagramSource(Source):
 		self.Loop = app.Loop
 
 		# Create a UDP socket
-		self.Host = self.Config['host']
-		self.Port = int(self.Config['port']) if self.Config['port'] else None
-		self.SocketPath = self.Config['socket_path']
+		self.Address = str(self.Config['address'])
 
-		family = socket.AF_UNIX if self.SocketPath else socket.AF_INET
+		family = socket.AF_INET if ":" in self.Address else socket.AF_UNIX
 
 		self.Socket = socket.socket(family, socket.SOCK_DGRAM)
 		self.Socket.setblocking(False)
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-		if self.SocketPath:
-			self.Socket.bind(self.SocketPath)
+		if ":" in self.Address:
+			host, separator, port = self.Address.rpartition(":")
+			self.Socket.bind((host, port))
 		else:
-			self.Socket.bind((self.Host, self.Port))
+			self.Socket.bind(self.Address)
 
 		self.MaxPacketSize = int(self.Config['max_packet_size'])
 
@@ -70,9 +67,7 @@ class DatagramSource(Source):
 
 class DatagramSink(Sink):
 	ConfigDefaults = {
-		'host': '127.0.0.1',
-		'port': 8888,
-		'socket_path': '',
+		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
 		'max_packet_size': 64 * 1024,
 	}
 
@@ -81,20 +76,19 @@ class DatagramSink(Sink):
 		self.Loop = app.Loop
 
 		# Create a UDP socket
-		self.Host = self.Config['host']
-		self.Port = int(self.Config['port']) if self.Config['port'] else None
-		self.SocketPath = self.Config['socket_path']
+		self.Address = str(self.Config['address'])
 
-		family = socket.AF_UNIX if self.SocketPath else socket.AF_INET
+		family = socket.AF_INET if ":" in self.Address else socket.AF_UNIX
 
 		self.Socket = socket.socket(family, socket.SOCK_DGRAM)
 		self.Socket.setblocking(False)
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-		if self.SocketPath:
-			self.Socket.connect(self.SocketPath)
+		if ":" in self.Address:
+			host, separator, port = self.Address.rpartition(":")
+			self.Socket.connect((host, port))
 		else:
-			self.Socket.connect((self.Host, self.Port))
+			self.Socket.connect(self.Address)
 
 		self.MaxPacketSize = int(self.Config['max_packet_size'])
 

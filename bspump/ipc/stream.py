@@ -14,7 +14,7 @@ L = logging.getLogger(__name__)
 
 class StreamSource(Source):
 	ConfigDefaults = {
-		'address': '127.0.0.1:8888',
+		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -23,7 +23,7 @@ class StreamSource(Source):
 		self.Loop = app.Loop
 		self.Writers = set()
 
-		self.Address = self.Config['address']
+		self.Address = str(self.Config['address'])
 
 	async def handler(self, reader, writer):
 		"""
@@ -84,13 +84,13 @@ class StreamSource(Source):
 
 class StreamSink(Sink):
 	ConfigDefaults = {
-		'address': '127.0.0.1:8888',
+		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self.Address = self.Config['address']
+		self.Address = str(self.Config['address'])
 		app.PubSub.subscribe("Application.run!", self._open_connection)
 
 	async def _open_connection(self, _):
