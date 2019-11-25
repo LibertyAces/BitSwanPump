@@ -1,6 +1,6 @@
 import bspump
 import bspump.common
-import bspump.netflow
+import bspump.subprocess
 
 
 class NetFlowPipeline(bspump.Pipeline):
@@ -8,7 +8,9 @@ class NetFlowPipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.netflow.NetFlowSource(app, self, config={}),
+			bspump.subprocess.SubProcessSource(app, self, config={
+				'command': 'tshark -l -n -T ek -i wlan0'
+			}),
 			bspump.common.JsonBytesToDictParser(app, self),
 			bspump.common.PPrintSink(app, self),
 		)
