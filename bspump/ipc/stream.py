@@ -52,7 +52,7 @@ class StreamSource(Source):
 	async def main(self):
 		# Start server
 		if ":" in self.Address:
-			host, separator, port = self.Address.rpartition(":")
+			host, port = self.Address.rsplit(":", maxsplit=1)
 			server = await asyncio.start_server(
 				self._handler_wrapper,
 				host, int(port),
@@ -95,7 +95,7 @@ class StreamSink(Sink):
 
 	async def _open_connection(self, _):
 		if ":" in self.Address:
-			host, separator, port = self.Address.rpartition(":")
+			host, port = self.Address.rsplit(":", maxsplit=1)
 			_reader, self.Writer = await asyncio.open_connection(host, int(port))
 		else:
 			_reader, self.Writer = await asyncio.open_unix_connection(self.Address)

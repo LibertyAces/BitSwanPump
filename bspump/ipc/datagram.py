@@ -32,8 +32,8 @@ class DatagramSource(Source):
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 		if ":" in self.Address:
-			host, separator, port = self.Address.rpartition(":")
-			self.Socket.bind((host, port))
+			host, port = self.Address.rsplit(":", maxsplit=1)
+			self.Socket.bind((host, int(port)))
 		else:
 			self.Socket.bind(self.Address)
 
@@ -85,8 +85,8 @@ class DatagramSink(Sink):
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 		if ":" in self.Address:
-			host, separator, port = self.Address.rpartition(":")
-			self.Socket.connect((host, port))
+			host, port = self.Address.rsplit(":", maxsplit=1)
+			self.Socket.connect((host, int(port)))
 		else:
 			self.Socket.connect(self.Address)
 
