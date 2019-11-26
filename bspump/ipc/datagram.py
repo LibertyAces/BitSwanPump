@@ -25,16 +25,23 @@ class DatagramSource(Source):
 		# Create a UDP socket
 		self.Address = str(self.Config['address'])
 
-		family = socket.AF_INET if ":" in self.Address else socket.AF_UNIX
-
-		self.Socket = socket.socket(family, socket.SOCK_DGRAM)
-		self.Socket.setblocking(False)
-		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 		if ":" in self.Address:
 			host, port = self.Address.rsplit(":", maxsplit=1)
-			self.Socket.bind((host, int(port)))
+			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
+
+			self.Socket = socket.socket(family, socket.SOCK_DGRAM)
+			self.Socket.setblocking(False)
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+			self.Socket.bind(sockaddr)
+
 		else:
+
+			self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+			self.Socket.setblocking(False)
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+
 			self.Socket.bind(self.Address)
 
 		self.MaxPacketSize = int(self.Config['max_packet_size'])
@@ -78,16 +85,23 @@ class DatagramSink(Sink):
 		# Create a UDP socket
 		self.Address = str(self.Config['address'])
 
-		family = socket.AF_INET if ":" in self.Address else socket.AF_UNIX
-
-		self.Socket = socket.socket(family, socket.SOCK_DGRAM)
-		self.Socket.setblocking(False)
-		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 		if ":" in self.Address:
 			host, port = self.Address.rsplit(":", maxsplit=1)
-			self.Socket.connect((host, int(port)))
+			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
+
+			self.Socket = socket.socket(family, socket.SOCK_DGRAM)
+			self.Socket.setblocking(False)
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+			self.Socket.connect(sockaddr)
+
 		else:
+
+			self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+			self.Socket.setblocking(False)
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+
 			self.Socket.connect(self.Address)
 
 		self.MaxPacketSize = int(self.Config['max_packet_size'])

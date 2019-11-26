@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import socket
 
 from ..abc.sink import Sink
 from ..abc.source import Source
@@ -53,9 +54,11 @@ class StreamSource(Source):
 		# Start server
 		if ":" in self.Address:
 			host, port = self.Address.rsplit(":", maxsplit=1)
+			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
+			host, port = sockaddr
 			server = await asyncio.start_server(
 				self._handler_wrapper,
-				host, int(port),
+				host, port,
 				loop=self.Loop
 			)
 		else:
@@ -96,7 +99,9 @@ class StreamSink(Sink):
 	async def _open_connection(self, _):
 		if ":" in self.Address:
 			host, port = self.Address.rsplit(":", maxsplit=1)
-			_reader, self.Writer = await asyncio.open_connection(host, int(port))
+			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
+			host, port = sockaddr
+			_reader, self.Writer = await asyncio.open_connection(host, port)
 		else:
 			_reader, self.Writer = await asyncio.open_unix_connection(self.Address)
 
