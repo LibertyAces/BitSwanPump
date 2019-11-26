@@ -15,10 +15,14 @@ L = logging.getLogger(__name__)
 
 ###
 
+"""
+This example illustrates the way how to adjust the CSV sink behavior in a way, that instead of outputting csv just once,
+it instead outputs periodically, with time interval being set up in the TimingProcessor. No modification of the sink 
+itself is needed. This approach can also be used whenever we want to add custom periodicity into the pipeline.
+"""
+
+
 class TimingProcessor(bspump.Processor):
-	"""
-	Periodicity is achieved via means not related to the sink itself, for example through a processor
-	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
