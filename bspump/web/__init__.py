@@ -152,7 +152,7 @@ def _initialize_web(app, listen="0.0.0.0:8080"):
 	websvc = app.get_service("asab.WebService")
 
 	# Create a dedicated web container
-	container = asab.web.WebContainer(websvc, 'bspump:web', config={"listen": listen})
+	container = asab.web.WebContainer(websvc, 'asab:web', config={"listen": listen})
 
 	# Add web app
 	asab.web.StaticDirProvider(
