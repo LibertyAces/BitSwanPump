@@ -93,17 +93,31 @@ class StreamSink(Sink):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self.Address = str(self.Config['address'])
-		app.PubSub.subscribe("Application.run!", self._open_connection)
+		self.Writer = None
 
-	async def _open_connection(self, _):
-		if ":" in self.Address:
-			host, port = self.Address.rsplit(":", maxsplit=1)
-			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
-			host, port = sockaddr
-			_reader, self.Writer = await asyncio.open_connection(host, port)
-		else:
-			_reader, self.Writer = await asyncio.open_unix_connection(self.Address)
+		self.Address = str(self.Config['address'])
+		self.Pipeline.PubSub.subscribe("bspump.pipeline.start!", self._open_connection)
+		self.Pipeline.PubSub.subscribe("bspump.pipeline.stop!", self._close_connection)
+
+	async def _open_connection(self, *_, **__):
+		while True:
+			await asyncio.sleep(1)
+			if not self.Writer:
+				if ":" in self.Address:
+					host, port = self.Address.rsplit(":", maxsplit=1)
+					(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
+					host, port = sockaddr
+					_reader, self.Writer = await asyncio.open_connection(host, port)
+				else:
+					_reader, self.Writer = await asyncio.open_unix_connection(self.Address)
+
+	async def _close_connection(self, *_, **__):
+		if self.Writer:
+			if not self.Writer.is_closing():
+				self.Writer.close()
+			self.Writer = None
+
+		assert not self.Writer
 
 	def process(self, context, event):
 		self.Writer.write(event)
