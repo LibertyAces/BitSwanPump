@@ -94,28 +94,30 @@ class StreamSink(Sink):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Writer = None
+		self.Pipeline.throttle(self, enable=True)
 
 		self.Address = str(self.Config['address'])
 		self.Pipeline.PubSub.subscribe("bspump.pipeline.start!", self._open_connection)
 		self.Pipeline.PubSub.subscribe("bspump.pipeline.stop!", self._close_connection)
 
 	async def _open_connection(self, *_, **__):
-		while True:
-			await asyncio.sleep(1)
-			if not self.Writer:
-				if ":" in self.Address:
-					host, port = self.Address.rsplit(":", maxsplit=1)
-					(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
-					host, port = sockaddr
-					_reader, self.Writer = await asyncio.open_connection(host, port)
-				else:
-					_reader, self.Writer = await asyncio.open_unix_connection(self.Address)
+		assert self.Writer is None
+		if ":" in self.Address:
+			host, port = self.Address.rsplit(":", maxsplit=1)
+			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
+			host, port = sockaddr
+			_reader, self.Writer = await asyncio.open_connection(host, port)
+		else:
+			_reader, self.Writer = await asyncio.open_unix_connection(self.Address)
+
+		self.Pipeline.throttle(self, enable=False)
 
 	async def _close_connection(self, *_, **__):
 		if self.Writer:
 			if not self.Writer.is_closing():
 				self.Writer.close()
 			self.Writer = None
+			self.Pipeline.throttle(self, enable=True)
 
 		assert not self.Writer
 
