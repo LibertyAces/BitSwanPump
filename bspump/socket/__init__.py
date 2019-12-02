@@ -1,5 +1,15 @@
-from .tcp import TCPSource
-from .udp import UDPSource
+from ..ipc import DatagramSource, StreamSource
 
 # Backward compatibility
-TCPStreamSource = TCPSource
+from ..ipc import DatagramSource as UDPSource
+from ..ipc import StreamSource as TCPSource
+from ..ipc import StreamSource as TCPStreamSource
+
+
+__all__ = [
+	"DatagramSource",
+	"StreamSource",
+	"UDPSource",
+	"TCPSource",
+	"TCPStreamSource",
+]

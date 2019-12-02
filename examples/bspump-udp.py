@@ -6,10 +6,12 @@ import bspump.common
 
 class SamplePipeline(bspump.Pipeline):
 
-	'''
+	"""
 	To test this pipeline, use:
 	socat STDIO UDP:127.0.0.1:8082
-	'''
+	or
+	socat STDIO UNIX:/tmp/bspump_udp.sock (config {'socket_path': '/tmp/bspump_udp.sock'})
+	"""
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
@@ -17,7 +19,6 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.socket.UDPSource(app, self, config={'host': '127.0.0.1', 'port': 8082}),
 			bspump.common.PPrintSink(app, self, "AMQPConnection1")
 		)
-
 
 
 if __name__ == '__main__':
