@@ -1,10 +1,12 @@
-import re
-import logging
-
-import aiokafka
-import kafka
-import concurrent
 import asyncio
+import concurrent
+import concurrent.futures
+import logging
+import re
+
+import kafka
+import kafka.errors
+import time
 
 from ..abc.source import Source
 
@@ -109,6 +111,16 @@ class KafkaSource(Source):
 
 		self.Retry = int(self.Config['retry'])
 		self.Pipeline = pipeline
+		self.MetricsService = app.get_service('asab.MetricsService')
+		self.ProfilerCounter = self.MetricsService.create_counter(
+			'bspump.kafka.profiler',
+			tags={
+				'source': self.Id,
+				'pipeline': self.Pipeline.Id,
+			},
+			init_values={'duration': 0.0, 'run': 0},
+			reset=self.Pipeline.ResetProfiler,
+		)
 
 		self.EventCounter = 0
 		self.EventBlockSize = int(self.Config["event_block_size"])
@@ -130,11 +142,17 @@ class KafkaSource(Source):
 		try:
 			while 1:
 				await self.Pipeline.ready()
+				t0 = time.perf_counter()
 				data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
+				self.ProfilerCounter.add('duration', time.perf_counter() - t0)
+				self.ProfilerCounter.add('run', 1)
 				if len(data) == 0:
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
+					t0 = time.perf_counter()
 					data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
+					self.ProfilerCounter.add('duration', time.perf_counter() - t0)
+					self.ProfilerCounter.add('run', 1)
 				for topic_partition, messages in data.items():
 					for message in messages:
 						# TODO: If pipeline is not ready, don't commit messages ...
