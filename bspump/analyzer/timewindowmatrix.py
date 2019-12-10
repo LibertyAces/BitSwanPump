@@ -172,10 +172,10 @@ class TimeWindowMatrix(NamedMatrix):
 
 		.. code-block:: python
 
-			------------------|-----------
-			target_ts  ^ >>>  |
-							  ^
-							Start
+			--------------------|-----------
+			target_ts  ^ >>>    |
+								^
+								Start
 			------------------------------
 
 		'''
