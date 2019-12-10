@@ -67,7 +67,7 @@ class DatagramSource(Source):
 			except asyncio.CancelledError:
 				break
 
-			except Exception as e:
+			except Exception:
 				L.exception(f"Error in datagram source.")
 				raise
 

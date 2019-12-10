@@ -3,6 +3,7 @@ import pprint
 from ..abc.sink import Sink
 from ..abc.processor import Processor
 
+
 class PrintSink(Sink):
 
 	def __init__(self, app, pipeline, id=None, config=None, stream=None):

@@ -1,12 +1,13 @@
-from ..abc.processor import Processor
-import asab
 import logging
+
+from ..abc.processor import Processor
 
 ###
 
 L = logging.getLogger(__name__)
 
 ###
+
 
 class AttributeFilter(Processor):
 	'''
@@ -30,7 +31,7 @@ class AttributeFilter(Processor):
 	def predicate(self, event):
 		return True
 
-	
+
 	def get_fields(self, event):
 		return set()
 

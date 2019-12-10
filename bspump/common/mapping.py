@@ -3,25 +3,21 @@ import collections.abc
 from ..abc.processor import Processor
 from ..abc.generator import Generator
 
-#
 
 class MappingKeysProcessor(Processor):
-	def process(self, context, event:collections.abc.Mapping) -> list:
+	def process(self, context, event: collections.abc.Mapping) -> list:
 		return [*event.keys()]
 
-#
 
 class MappingValuesProcessor(Processor):
-	def process(self, context, event:collections.abc.Mapping) -> list:
+	def process(self, context, event: collections.abc.Mapping) -> list:
 		return [*event.values()]
 
-#
 
 class MappingItemsProcessor(Processor):
-	def process(self, context, event:collections.abc.Mapping) -> list:
+	def process(self, context, event: collections.abc.Mapping) -> list:
 		return [*event.items()]
 
-#
 
 class MappingKeysGenerator(Generator):
 
@@ -29,7 +25,6 @@ class MappingKeysGenerator(Generator):
 		for item in event.keys():
 			await self.Pipeline.inject(context, item, depth)
 
-#
 
 class MappingValuesGenerator(Generator):
 
@@ -37,7 +32,6 @@ class MappingValuesGenerator(Generator):
 		for item in event.values():
 			await self.Pipeline.inject(context, item, depth)
 
-#
 
 class MappingItemsGenerator(Generator):
 

@@ -1,6 +1,7 @@
 from fastavro import reader
 from ..file.fileabcsource import FileABCSource
 
+
 class AvroSource(FileABCSource):
 
 	ConfigDefaults = {

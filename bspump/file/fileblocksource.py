@@ -1,14 +1,11 @@
 import logging
 from .fileabcsource import FileABCSource
 
-#
 
 L = logging.getLogger(__file__)
 
-#
 
 class FileBlockSource(FileABCSource):
-
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)

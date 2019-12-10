@@ -1,11 +1,11 @@
 import abc
-import logging
-import json
 import asyncio
-import time
-import aiohttp
+import json
+import logging
 
-import asab
+import aiohttp
+import time
+
 from ..abc.sink import Sink
 
 #
@@ -13,6 +13,7 @@ from ..abc.sink import Sink
 L = logging.getLogger(__name__)
 
 #
+
 
 class ElasticSearchSink(Sink):
 	"""
@@ -22,11 +23,11 @@ class ElasticSearchSink(Sink):
 
 
 	ConfigDefaults = {
-		"index_prefix" : "bspump_",
+		"index_prefix": "bspump_",
 		"doctype": "doc",
 		"time_period": "d",
 		"rollover_mechanism": 'time',
-		"max_index_size": 30*1024*1024*1024, #This is 30GB
+		"max_index_size": 30 * 1024 * 1024 * 1024,  # This is 30GB
 		"timeout": 30,
 	}
 
@@ -42,7 +43,7 @@ class ElasticSearchSink(Sink):
 		if ro == 'time':
 			self._rollover_mechanism = ElasticSearchTimeRollover(app, self)
 		elif ro == 'size':
-			self._rollover_mechanism = ElasticSearchSizeRollover(app, self,  self._connection)
+			self._rollover_mechanism = ElasticSearchSizeRollover(app, self, self._connection)
 		elif ro == 'noop' or ro == 'fixed':  # Do not use fixed, it is an obsolete name
 			self._rollover_mechanism = ElasticSearchNoopRollover(app, self)
 		else:
@@ -55,8 +56,10 @@ class ElasticSearchSink(Sink):
 
 	def process(self, context, event):
 		assert self._rollover_mechanism.Index is not None
-		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(self._rollover_mechanism.Index, self._doctype, json.dumps(event))
-		ret = self._connection.consume(data)
+		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(
+			self._rollover_mechanism.Index, self._doctype, json.dumps(event)
+		)
+		self._connection.consume(data)
 
 
 	def _connection_throttle(self, event_name, connection):
@@ -70,7 +73,6 @@ class ElasticSearchSink(Sink):
 		else:
 			raise RuntimeError("Unexpected event name '{}'".format(event_name))
 
-###
 
 class ElasticSearchBaseRollover(abc.ABC):
 
@@ -91,13 +93,13 @@ class ElasticSearchBaseRollover(abc.ABC):
 
 	@abc.abstractmethod
 	async def refresh_index(self, event_name=None):
-		if (self.InitThrottled == True) and (self.Index is not None):
+		if (self.InitThrottled is True) and (self.Index is not None):
 			self.Pipeline.throttle(self, False)
 			self.InitThrottled = False
 
 
 class ElasticSearchNoopRollover(ElasticSearchBaseRollover):
-	
+
 	async def refresh_index(self, event_name=None):
 		self.Index = self.IndexPrefix
 		return await super().refresh_index(event_name)
@@ -117,11 +119,14 @@ class ElasticSearchTimeRollover(ElasticSearchBaseRollover):
 
 
 	def parse_index_period(self, value):
-		if value == 'd': return 60*60*24 # 1 day
-		elif value == 'w': return 60*60*24*7 # 7 days
-		elif value == 'm': return 60*60*24*28 # 28 days
+		if value == 'd':
+			return 60 * 60 * 24  # 1 day
+		elif value == 'w':
+			return 60 * 60 * 24 * 7  # 7 days
+		elif value == 'm':
+			return 60 * 60 * 24 * 28  # 28 days
 
-		return int(value) # Otherwise use value in seconds
+		return int(value)  # Otherwise use value in seconds
 
 
 class ElasticSearchSizeRollover(ElasticSearchBaseRollover):
@@ -148,7 +153,7 @@ class ElasticSearchSizeRollover(ElasticSearchBaseRollover):
 		if data["_shards"]["failed"] != 0:
 			L.warning("There was one or more failed shards in the query.")
 
-		# Create a list of indices and sort them 
+		# Create a list of indices and sort them
 		ls = []
 		for index_name, index_stats in data['indices'].items():
 			ls.append(index_name)
@@ -170,4 +175,3 @@ class ElasticSearchSizeRollover(ElasticSearchBaseRollover):
 			self.Index = self.IndexPrefix + '{:05}'.format(1)
 
 		return await super().refresh_index(event_name)
-

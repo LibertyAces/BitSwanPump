@@ -10,7 +10,7 @@ class RandomEnricher(Processor):
 		a) User provides `choice` as an array of values to choice randomly and assigned to field;
 		b) The random integer between `Config['lower_bound']` and `Config['upper_bound']`.
 	'''
-	
+
 	ConfigDefaults = {
 		'field': 'enriched_field',
 		'lower_bound': 0,

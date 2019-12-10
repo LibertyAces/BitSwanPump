@@ -1,14 +1,10 @@
-import time
-import logging
-import numpy as np
-import re
 import collections
-
-import asab
+import logging
+import re
 
 from ..abc.generator import Generator
-from ..analyzer.timewindowmatrix import TimeWindowMatrix
 from ..analyzer.sessionmatrix import SessionMatrix
+from ..analyzer.timewindowmatrix import TimeWindowMatrix
 
 #
 
@@ -39,7 +35,7 @@ class TimeWindowMatrixExportTableauGenerator(Generator):
 			elif field_type in ['U']:
 				event_type = "unicodestring"
 			else:
-				L.warn("Incorrect type {}, skipping".format(field_type))
+				L.warning("Incorrect type {}, skipping".format(field_type))
 				break
 
 			for j in range(0, time_window_matrix.Dimensions[0]):
@@ -73,7 +69,7 @@ class SessionMatrixExportTableauGenerator(Generator):
 					event[name]["value"] = session_matrix.Array[name][i]
 					field_type = session_matrix.Array.dtype[name].kind
 					if field_type in ['f']:
-						event[field_name]["type"] = "double"
+						event[name]["type"] = "double"
 					elif field_type in ['i', 'u', 'b']:
 						if re.search(r'timestamp', name) is not None:
 							event[name]["type"] = "datetime"
@@ -83,7 +79,7 @@ class SessionMatrixExportTableauGenerator(Generator):
 					elif field_type in ['U', 'S']:
 						event[name]["type"] = "unicodestring"
 					else:
-						L.warn("Incorrect type {}, skipping".format(field_type))
+						L.warning("Incorrect type {}, skipping".format(field_type))
 						continue
 				else:
 					field_type = session_matrix.Array.dtype[name].subdtype[0].kind
@@ -104,6 +100,6 @@ class SessionMatrixExportTableauGenerator(Generator):
 							elif field_type in ['U', 'S']:
 								event[field_name]["type"] = "unicodestring"
 							else:
-								L.warn("Incorrect type {}, skipping".format(field_type))
+								L.warning("Incorrect type {}, skipping".format(field_type))
 								continue
 			await self.Pipeline.inject(context, event, depth)

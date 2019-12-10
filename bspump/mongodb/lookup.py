@@ -1,5 +1,3 @@
-import abc
-
 from ..abc.lookup import MappingLookup
 from ..cache import CacheDict
 
@@ -25,9 +23,9 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 	'''
 
 	ConfigDefaults = {
-		'database': '', # Specify a database if you want to overload the connection setting
-		'collection':'', # Specify collection name
-		'key':'' # Specify key name used for search
+		'database': '',  # Specify a database if you want to overload the connection setting
+		'collection': '',  # Specify collection name
+		'key': ''  # Specify key name used for search
 	}
 
 	def __init__(self, app, connection, id=None, config=None, cache=None):
@@ -36,8 +34,8 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 		self.Database = self.Config['database']
 		self.Collection = self.Config['collection']
-		self.Key =  self.Config['key']
-		
+		self.Key = self.Config['key']
+
 		if len(self.Database) == 0:
 			self.Database = self.Connection.Database
 
@@ -52,9 +50,9 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 
 	def _find_one(self, database, key):
-		return database[self.Collection].find_one({self.Key:key})
+		return database[self.Collection].find_one({self.Key: key})
 
-	
+
 	async def _count(self, database):
 		return await database[self.Collection].count_documents({})
 
@@ -92,4 +90,3 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 		if key is not None:
 			self.Cache[key] = element
 		return key
-

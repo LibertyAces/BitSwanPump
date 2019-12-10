@@ -1,12 +1,8 @@
-import asyncio
-
-import asab
 from .trigger import Trigger
 
-###
 
 class OpportunisticTrigger(Trigger):
-	
+
 	'''
 	This trigger tries to trigger the pump as frequenty as possible.
 	It triggers immediatelly when possible, after each Source report completed cycle and in 5 sec. period (see chilldown period)
@@ -14,7 +10,7 @@ class OpportunisticTrigger(Trigger):
 
 	def __init__(self, app, id=None, run_immediately=True, chilldown_period=5):
 		super().__init__(app, id=id)
-		self.ChilldownPeriod = chilldown_period # Seconds
+		self.ChilldownPeriod = chilldown_period  # Seconds
 
 		app.PubSub.subscribe("Application.tick!", self.on_tick)
 
@@ -31,7 +27,7 @@ class OpportunisticTrigger(Trigger):
 	def on_tick(self, event_type="simulated"):
 		now = self.Loop.time()
 		if (self.LastFireAt != 0) and (now < (self.LastFireAt + self.ChilldownPeriod)):
-			return 
+			return
 
 		self.fire()
 
@@ -41,9 +37,7 @@ class OpportunisticTrigger(Trigger):
 
 
 	@classmethod
-	def construct(cls, app, definition:dict):
+	def construct(cls, app, definition: dict):
 		newid = definition.get('id')
-		args = definition.get("args")
 		# TODO: fix
 		return cls(app, newid)
-

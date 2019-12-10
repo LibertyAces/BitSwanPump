@@ -1,18 +1,16 @@
 import abc
-import os
-import logging
 import asyncio
+import logging
+import os
+
 import time
 
+from .globscan import _glob_scan
 from ..abc.source import TriggerSource
 
-from .globscan import _glob_scan
-
-#
 
 L = logging.getLogger(__file__)
 
-#
 
 class FileABCSource(TriggerSource):
 
@@ -44,7 +42,7 @@ class FileABCSource(TriggerSource):
 		self.exclude = self.Config['exclude']
 		conf_encoding = self.Config['encoding']
 		self.encoding = conf_encoding if len(conf_encoding) > 0 else None
-		
+
 		self.MoveDestination = self.Config['move_destination']
 
 		if (self.MoveDestination != ''):
@@ -54,17 +52,18 @@ class FileABCSource(TriggerSource):
 			self.MoveDestination = None
 
 		metrics_service = app.get_service('asab.MetricsService')
-		self.Gauge = metrics_service.create_gauge("file_count",
-			tags = {
+		self.Gauge = metrics_service.create_gauge(
+			"file_count",
+			tags={
 				'pipeline': pipeline.Id,
 			},
-			init_values = {
+			init_values={
 				"processed": 0,
-				"failed" : 0,
+				"failed": 0,
 				"locked": 0,
 				"unprocessed": 0,
-				"all_files" : 0,
-				"scan_time" : 0.0, 
+				"all_files": 0,
+				"scan_time": 0.0,
 			}
 		)
 
@@ -84,7 +83,7 @@ class FileABCSource(TriggerSource):
 				break
 		end_time = time.time()
 		self.Gauge.set("scan_time", end_time - start_time)
-		
+
 		if filename is None:
 			self.Pipeline.PubSub.publish("bspump.file_source.no_files!")
 			return  # No file to read
@@ -98,7 +97,7 @@ class FileABCSource(TriggerSource):
 			os.rename(filename, locked_filename)
 		except FileNotFoundError:
 			return
-		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
+		except (OSError, PermissionError):  # OSError - UNIX, PermissionError - Windows
 			L.exception("Error when locking the file '{}'  - will try again".format(filename))
 			return
 		except BaseException as e:
@@ -124,7 +123,7 @@ class FileABCSource(TriggerSource):
 					self.newline = None
 				f = open(locked_filename, self.mode, newline=self.newline, encoding=self.encoding)
 
-		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
+		except (OSError, PermissionError):  # OSError - UNIX, PermissionError - Windows
 			L.exception("Error when opening the file '{}' - will try again".format(filename))
 			return
 		except BaseException as e:
@@ -136,7 +135,7 @@ class FileABCSource(TriggerSource):
 
 		try:
 			await self.read(filename, f)
-		except Exception as e:
+		except Exception:
 			try:
 				if self.post == "noop":
 					# When we should stop, rename file back to original
@@ -144,7 +143,7 @@ class FileABCSource(TriggerSource):
 				else:
 					# Otherwise rename to ...-failed and continue processing
 					os.rename(locked_filename, filename + '-failed')
-			except BaseException as e:
+			except BaseException:
 				L.exception("Error when renaming the file '{}'  - will try again".format(filename))
 			return
 		finally:
@@ -168,7 +167,7 @@ class FileABCSource(TriggerSource):
 					file_to = filename + "-processed"
 
 				os.rename(file_from, file_to)
-		except (OSError, PermissionError) as e:  # OSError - UNIX, PermissionError - Windows
+		except (OSError, PermissionError):  # OSError - UNIX, PermissionError - Windows
 			L.exception("Error when finalizing the file '{}' - will try again".format(filename))
 			return
 		except BaseException as e:
@@ -195,4 +194,4 @@ class FileABCSource(TriggerSource):
 		Override this method to implement your File Source.
 		`f` is an opened file object.
 		'''
-		raise NotImplemented()
+		raise NotImplementedError()

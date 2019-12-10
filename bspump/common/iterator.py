@@ -1,18 +1,15 @@
-import logging
 import collections.abc
+import logging
 
-from ..abc.source import TriggerSource
 from ..abc.generator import Generator
-
-#
+from ..abc.source import TriggerSource
 
 L = logging.getLogger(__name__)
 
-#
 
 class IteratorSource(TriggerSource):
 
-	def __init__(self, app, pipeline, iterator:collections.abc.Iterator, id=None, config=None):
+	def __init__(self, app, pipeline, iterator: collections.abc.Iterator, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Iterator = iterator
 

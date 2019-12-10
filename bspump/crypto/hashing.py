@@ -11,10 +11,11 @@ L = logging.getLogger(__name__)
 
 #
 
+
 class HashingBaseProcessor(Processor):
 
 	ConfigDefaults = {
-		"algorithm" : "sha256",
+		"algorithm": "sha256",
 		"digest_size": 64,
 	}
 
@@ -26,7 +27,7 @@ class HashingBaseProcessor(Processor):
 
 		algorithm = self.Config['algorithm'].upper()
 
-		if   algorithm == "SHA224":
+		if algorithm == "SHA224":
 			self.Algorithm = hashes.SHA224()
 		elif algorithm == "SHA256":
 			self.Algorithm = hashes.SHA256()

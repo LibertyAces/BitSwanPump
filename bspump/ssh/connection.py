@@ -60,9 +60,9 @@ class SSHConnection(Connection):
 		'port': 22,
 		'user': '',
 		'password': '',
-		'known_hosts': '', # separate paths / files with comma
-		'client_host_keysign': '', # '' -> False; 'true' -> True; 'anything_else' -> path to the directory with keys
-		'client_host_keys': '', # '' -> default. If set, separate keynames with comma
+		'known_hosts': '',  # separate paths / files with comma
+		'client_host_keysign': '',  # '' -> False; 'true' -> True; 'anything_else' -> path to the directory with keys
+		'client_host_keys': '',  # '' -> default. If set, separate keynames with comma
 
 	}
 
@@ -86,9 +86,9 @@ class SSHConnection(Connection):
 
 	def run(self):
 		# Checks void known hosts and client host keys
-		if not self.Known_hosts or self.Known_hosts == [''] or self.Known_hosts == None:
+		if not self.Known_hosts or self.Known_hosts == [''] or self.Known_hosts is None:
 			self.Known_hosts = None
-		if not self.Client_keys or self.Client_keys == [''] or self.Client_keys == None:
+		if not self.Client_keys or self.Client_keys == [''] or self.Client_keys is None:
 			self.Client_keys = None
 		# Sets client host keysign to boolean value. If set to path, it will try to find keysign in given path
 		if self.Client_keysign != '' and self.Client_keysign != 'true':
@@ -97,13 +97,13 @@ class SSHConnection(Connection):
 			self.Client_keysign = bool(self.Client_keysign)
 
 		conn = asyncssh.connect(
-				host=self.Host,
-				port=self.Port,
-				username=self.User,
-				password=self.Password,
-				known_hosts=self.Known_hosts,
-				client_host_keysign=self.Client_keysign,
-				client_host_keys=self.Client_keys)
+			host=self.Host,
+			port=self.Port,
+			username=self.User,
+			password=self.Password,
+			known_hosts=self.Known_hosts,
+			client_host_keysign=self.Client_keysign,
+			client_host_keys=self.Client_keys
+		)
 
 		return conn
-

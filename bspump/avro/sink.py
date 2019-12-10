@@ -17,22 +17,23 @@ class AvroSink(Sink):
 	Schemas are composed of primitive types null, boolean, int, long, float, double, bytes,
 	and string and complex types (record, enum, array, map, union, and fixed).
 	You can learn more about Avro from their documentation - https://avro.apache.org/docs/current/
-	
+
 	Avro schema example:
-		{"namespace": "example.avro",
-		 "type": "record",
-		 "name": "User",
-		 "fields": [
-		     {"name": "name", "type": "string"},
-		     {"name": "favorite_number",  "type": ["int", "null"]},
-		     {"name": "favorite_color", "type": ["string", "null"]}
-		 ]
+		{
+			"namespace": "example.avro",
+			"type": "record",
+			"name": "User",
+			"fields": [
+				{"name": "name", "type": "string"},
+				{"name": "favorite_number",  "type": ["int", "null"]},
+				{"name": "favorite_color", "type": ["string", "null"]}
+			]
 		}
-	
+
 	File Types:
 	.avro - Avro Serialized Data
 	.avsc - Avro Schema
-		
+
 	"""
 	ConfigDefaults = {
 		'file_name_template': './sink{index}.avro',

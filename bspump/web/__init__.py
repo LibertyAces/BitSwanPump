@@ -1,18 +1,16 @@
+import datetime
+import hashlib
 import os
 import os.path
-import hashlib
-import json
-import datetime
 
 import aiohttp.web
 
 import asab
 import asab.web.rest
 
-from ..__version__ import __version__ as bspump_version
 from ..__version__ import __build__ as bspump_build
+from ..__version__ import __version__ as bspump_version
 
-####
 
 async def pipelines(request):
 	app = request.app['app']
@@ -73,8 +71,9 @@ async def lookup(request):
 	if (request_etag is not None) and (request_etag == response_etag):
 		raise aiohttp.web.HTTPNotModified()
 
-	return aiohttp.web.Response(body=data, status=200,
-		headers= {
+	return aiohttp.web.Response(
+		body=data, status=200,
+		headers={
 			'ETag': response_etag
 		},
 		content_type="application/octet-stream")
@@ -114,7 +113,7 @@ async def manifest(request):
 KEY1=VALUE
 KEY2=${ENVIRONMENT_VARIABLE}
 	'''
-	
+
 	app = request.app['app']
 
 	d = {
@@ -127,7 +126,7 @@ KEY2=${ENVIRONMENT_VARIABLE}
 	container_host = os.environ.get('CONTAINER_HOST')
 	if container_host is not None:
 		d['CONTAINER_HOST'] = container_host
-	
+
 	try:
 
 		fname = '/manifest'
@@ -140,7 +139,7 @@ KEY2=${ENVIRONMENT_VARIABLE}
 		d['MANIFEST_MTIME'] = datetime.datetime.utcfromtimestamp(mtime).isoformat()
 	except FileNotFoundError:
 		pass
-	return asab.web.rest.json_response(request,d)
+	return asab.web.rest.json_response(request, d)
 
 
 Module = asab.web.Module

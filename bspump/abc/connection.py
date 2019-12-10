@@ -19,7 +19,7 @@ class Connection(abc.ABC, ConfigObject):
 
 
 	@classmethod
-	def construct(cls, app, definition:dict):
+	def construct(cls, app, definition: dict):
 		newid = definition.get('id')
 		config = definition.get('config')
 		return cls(app, newid, config)

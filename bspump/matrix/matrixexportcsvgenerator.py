@@ -1,32 +1,25 @@
-import time
-import logging
-import numpy as np
-import re
 import collections
-
-import asab
+import logging
 
 from ..abc.generator import Generator
-from ..analyzer.timewindowmatrix import TimeWindowMatrix
 from ..analyzer.sessionmatrix import SessionMatrix
+from ..analyzer.timewindowmatrix import TimeWindowMatrix
 
-#
 
 L = logging.getLogger(__name__)
 
-#
 
 class TimeWindowMatrixExportCSVGenerator(Generator):
 
 	def process(self, context, event):
 		assert(isinstance(event, TimeWindowMatrix))
-		
+
 		def generate(time_window_matrix):
 			for i in range(time_window_matrix.Array.shape[0]):
 				row_id = time_window_matrix.get_row_name(i)
 				if row_id is None:
 					continue
-				
+
 				for j in range(0, time_window_matrix.Dimensions[0]):
 					event = collections.OrderedDict()
 					event['id'] = row_id
@@ -34,7 +27,7 @@ class TimeWindowMatrixExportCSVGenerator(Generator):
 					for k in range(0, time_window_matrix.Dimensions[1]):
 						field_name = "value_{}".format(k)
 						event[field_name] = time_window_matrix.Array[i, j, k]
-				
+
 					yield event
 
 		return generate(event)
@@ -45,7 +38,7 @@ class SessionMatrixExportCSVGenerator(Generator):
 
 	def process(self, context, event):
 		assert(isinstance(event, SessionMatrix))
-		
+
 		def generate(session_matrix):
 			for i in range(0, session_matrix.Array.shape[0]):
 				event = collections.OrderedDict()
@@ -61,16 +54,12 @@ class SessionMatrixExportCSVGenerator(Generator):
 							for k in range(0, session_matrix.Array.dtype[name].shape[1]):
 								field_name = "{}_{}_{}".format(name, j, k)
 								if session_matrix.Array.dtype[name].subdtype[0].kind in ['f', 'u', 'i', 'b']:
-									value =  "{0:.10f}".format(session_matrix.Array[name][i, j, k])
+									value = "{0:.10f}".format(session_matrix.Array[name][i, j, k])
 								else:
 									value = session_matrix.Array[name][i, j, k]
-						
+
 								event[field_name] = value
-				
+
 				yield event
 
 		return generate(event)
-
-		
-		
-

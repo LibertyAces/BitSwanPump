@@ -6,11 +6,9 @@ import aiopg
 import asab
 from ..abc.connection import Connection
 
-#
 
 L = logging.getLogger(__name__)
 
-#
 
 class PostgreSQLConnection(Connection):
 
@@ -24,7 +22,7 @@ class PostgreSQLConnection(Connection):
 		'connect_timeout': aiopg.connection.TIMEOUT,  # 60.0
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
-		'max_bulk_size': 1, # This is because execute many is not supported by aiopg
+		'max_bulk_size': 1,  # This is because execute many is not supported by aiopg
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -58,7 +56,7 @@ class PostgreSQLConnection(Connection):
 		app.PubSub.subscribe("PostgreSQLConnection.unpause!", self._on_unpause)
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
-		self._bulks = {} # We have a "bulk" per query
+		self._bulks = {}  # We have a "bulk" per query
 
 
 	def _on_pause(self):
@@ -71,7 +69,7 @@ class PostgreSQLConnection(Connection):
 	def _flush(self):
 		for query in self._bulks.keys():
 			# Break if throttling was requested during the flush,
-			# so that put_nowait doesn't raise 
+			# so that put_nowait doesn't raise
 			if self._pause:
 				break
 
@@ -104,10 +102,10 @@ class PostgreSQLConnection(Connection):
 
 			try:
 				self._conn_future.result()
-			except:
+			except Exception:
 				# Connection future threw an error
 				L.exception("Unexpected connection future error")
-				
+
 			# Connection future already resulted (with or without exception)
 			self._conn_future = None
 
@@ -121,17 +119,17 @@ class PostgreSQLConnection(Connection):
 	def build_dsn(self):
 		dsn = ""
 		# Database
-		#if len(self._db) > 0:
+		# if len(self._db) > 0:
 		dsn += "dbname={} ".format(self._db)
 
 		# Host
-		#if len(self._host) > 0:
+		# if len(self._host) > 0:
 		dsn += "host={} ".format(self._host)
 
 		# Port
-		#if self._port is not None:
+		# if self._port is not None:
 		dsn += "port={} ".format(self._port)
-		
+
 		# User
 		if len(self._user) > 0:
 			dsn += "user={} ".format(self._user)
@@ -139,7 +137,7 @@ class PostgreSQLConnection(Connection):
 		# Password
 		if len(self._password):
 			dsn += "password={} ".format(self._password)
-		
+
 		dsn = dsn.strip()
 		return dsn
 
@@ -195,8 +193,7 @@ class PostgreSQLConnection(Connection):
 							for item in data:
 								_query = await cur.mogrify(query, item)
 								await cur.execute(_query)
-					except BaseException as e:
+					except BaseException:
 						L.exception("Unexpected error when processing PostgreSQL query.")
-			except BaseBaseException as e:
+			except BaseException:
 				L.exception("Couldn't acquire connection")
-

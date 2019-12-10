@@ -3,7 +3,9 @@ import io
 import apiclient.http
 from .abcsink import GoogleDriveABCSink
 
+
 L = logging.getLogger(__name__)
+
 
 class GoogleDriveBlockSink(GoogleDriveABCSink):
 	"""

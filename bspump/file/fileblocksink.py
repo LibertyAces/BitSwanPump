@@ -2,11 +2,9 @@ import os
 import logging
 from ..abc.sink import Sink
 
-#
 
 L = logging.getLogger(__file__)
 
-#
 
 class FileBlockSink(Sink):
 
@@ -31,9 +29,7 @@ class FileBlockSink(Sink):
 			try:
 				self._oflags |= self.OFlagDict[flag]
 			except KeyError:
-				L.warn("Unknown oflag '{}'".format(flag))
-			
-		
+				L.warning("Unknown oflag '{}'".format(flag))
 
 
 	def get_file_name(self, context, event):

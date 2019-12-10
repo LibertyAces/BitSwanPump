@@ -1,5 +1,6 @@
 import json
 
+
 def load_json_file(fname):
 
 	if fname.endswith(".gz"):

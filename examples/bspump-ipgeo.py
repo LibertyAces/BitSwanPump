@@ -72,7 +72,7 @@ class MyProcessorIPV6(bspump.Processor):
 		self.Lookup.PubSub.subscribe("bspump.Lookup.changed!", self.on_ip_geo_lookup_changed)
 
 	async def on_ip_geo_lookup_changed(self, event_name):
-		L.warn("lookup loaded!")
+		L.warning("lookup loaded!")
 
 	
 	def process(self, context, event):

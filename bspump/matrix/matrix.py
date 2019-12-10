@@ -1,13 +1,10 @@
 import abc
-import time
-import logging
-import json
 import collections
+import logging
 
 import numpy as np
 
 import asab
-
 
 ###
 
@@ -57,8 +54,8 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 
 		Object main attributes:
-		`Array` is numpy ndarray, the actual data representation of the matrix object.  
-		`ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.  
+		`Array` is numpy ndarray, the actual data representation of the matrix object.
+		`ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.
 
 	'''
 
@@ -77,13 +74,14 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		self.zeros()
 
 		metrics_service = app.get_service('asab.MetricsService')
-		self.Gauge = metrics_service.create_gauge("RowCounter",
-			tags = {
+		self.Gauge = metrics_service.create_gauge(
+			"RowCounter",
+			tags={
 				'matrix': self.Id,
 			},
-			init_values = {
-				"rows.closed" : 0,
-				"rows.active" : 0,
+			init_values={
+				"rows.closed": 0,
+				"rows.active": 0,
 			}
 		)
 
@@ -111,8 +109,8 @@ class Matrix(abc.ABC, asab.ConfigObject):
 	def close_row(self, row_index, clear=True):
 		assert(row_index < self.Array.shape[0])
 		if row_index in self.ClosedRows:
-			return 
-		
+			return
+
 		if clear:
 			self.Array[row_index] = np.zeros(1, dtype=self.DType)
 		self.ClosedRows.add(row_index)
@@ -138,7 +136,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		'''
 		Override this method to have a control over the shape of the matrix.
 		'''
-		return (rows,)
+		return rows,
 
 
 	def _grow_rows(self, rows=1):
@@ -146,8 +144,8 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
 		current_rows = self.Array.shape[0]
-		self.Array.resize((current_rows+rows,) + self.Array.shape[1:], refcheck=False)
-		self.ClosedRows |= frozenset(range(current_rows, current_rows+rows))
+		self.Array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
+		self.ClosedRows |= frozenset(range(current_rows, current_rows + rows))
 
 
 	def time(self):
@@ -163,9 +161,9 @@ class Matrix(abc.ABC, asab.ConfigObject):
 			Use `np.where(vector > 10)`.
 			2. You have a matrix with n rows and m columns. You need to find out which rows
 			fully consist of zeros. use `np.where(np.all(matrix == 0, axis=1))` to get those row indexes.
-			Instead `np.all()` you can use `np.any()` to get all row indexes, where there is at least one zero.  
+			Instead `np.all()` you can use `np.any()` to get all row indexes, where there is at least one zero.
 			3. Use `np.mean(matrix, axis=1)` to get means for all rows.
-			4. Usefull numpy functions: `np.unique()`, `np.sum()`, `np.argmin()`, `np.argmax()`.  
+			4. Usefull numpy functions: `np.unique()`, `np.sum()`, `np.argmin()`, `np.argmax()`.
 		'''
 		pass
 
@@ -174,7 +172,7 @@ class NamedMatrix(Matrix):
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
 		super().__init__(app, dtype=dtype, id=id, config=config)
-		self.PubSub = asab.PubSub(app) 
+		self.PubSub = asab.PubSub(app)
 
 	def zeros(self):
 		super().zeros()
@@ -186,7 +184,7 @@ class NamedMatrix(Matrix):
 		'''
 		The matrix will be recreated without rows from `ClosedRows`.
 		'''
-	
+
 		n2imap = collections.OrderedDict()
 		i2nmap = collections.OrderedDict()
 		saved_indexes = []
@@ -203,13 +201,13 @@ class NamedMatrix(Matrix):
 		self.N2IMap = n2imap
 		self.I2NMap = i2nmap
 		self.ClosedRows = set()
-		
+
 		self.Gauge.set("rows.closed", 0)
 		self.Gauge.set("rows.active", self.Array.shape[0])
 		self.PubSub.publish("Matrix changed!")
 
 
-	def add_row(self, row_name:str):
+	def add_row(self, row_name: str):
 		assert(row_name is not None)
 
 		row_index = super().add_row()
@@ -220,7 +218,7 @@ class NamedMatrix(Matrix):
 		return row_index
 
 
-	def close_row(self, row_index:int):
+	def close_row(self, row_index: int):
 		super().close_row(row_index)
 
 		row_name = self.I2NMap.pop(row_index)
@@ -228,11 +226,11 @@ class NamedMatrix(Matrix):
 		self.PubSub.publish("Matrix changed!")
 
 
-	def get_row_index(self, row_name:str):
+	def get_row_index(self, row_name: str):
 		return self.N2IMap.get(row_name)
 
 
-	def get_row_name(self, row_index:int):
+	def get_row_name(self, row_index: int):
 		return self.I2NMap.get(row_index)
 
 
@@ -251,11 +249,11 @@ class NamedMatrix(Matrix):
 		self.I2NMap = data['I2NMap']
 		self.ClosedRows = set(data['ClosedRows'])
 		self.DType = []
-		l = []
+		array = []
 		for member in data['DType']:
 			self.DType.append(tuple(member))
 
 		for member in data['Array']:
-			l.append(tuple(member))
+			array.append(tuple(member))
 
-		self.Array = np.array(l, dtype=self.DType)
+		self.Array = np.array(array, dtype=self.DType)

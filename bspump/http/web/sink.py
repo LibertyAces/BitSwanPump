@@ -1,10 +1,8 @@
 import logging
-import itertools
 import queue
-import weakref
-import asyncio
 
 import aiohttp.web
+import itertools
 
 from ...abc.sink import Sink
 
@@ -14,9 +12,10 @@ L = logging.getLogger(__name__)
 
 #
 
+
 class WebServiceStreamResponse(aiohttp.web.StreamResponse):
 
-	Counter = itertools.count(1,1)
+	Counter = itertools.count(1, 1)
 
 
 	def __init__(self, sink):
@@ -24,7 +23,6 @@ class WebServiceStreamResponse(aiohttp.web.StreamResponse):
 		self.Id = '{}.{}#{}'.format(sink.Pipeline.Id, sink.Id, next(self.Counter))
 		self.Sink = sink
 		self.Queue = queue.Queue()
-
 
 	# Context Manager
 
@@ -39,7 +37,6 @@ class WebServiceStreamResponse(aiohttp.web.StreamResponse):
 
 		await self.flush_events()
 		await self.write_eof()
-
 
 	# Queue management
 

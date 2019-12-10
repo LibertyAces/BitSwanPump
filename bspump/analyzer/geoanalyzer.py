@@ -1,25 +1,18 @@
 import logging
-import time
-import asab
-
-import numpy as np
 
 from .analyzer import Analyzer
-from .geomatrix import GeoMatrix 
+from .geomatrix import GeoMatrix
 
-
-##
 
 L = logging.getLogger(__name__)
 
-##
 
 class GeoAnalyzer(Analyzer):
 	'''
-        This is the analyzer for events with geografical points dimension.
+		This is the analyzer for events with geographical points dimension.
 
-        `GeoAnalyzer` operates over the `GeoMatrix` object.
-        `matrix_id` is an id of `GeoMatrix` object defined alternatively.
+		`GeoAnalyzer` operates over the `GeoMatrix` object.
+		`matrix_id` is an id of `GeoMatrix` object defined alternatively.
 	'''
 
 	ConfigDefaults = {
@@ -45,4 +38,3 @@ class GeoAnalyzer(Analyzer):
 			svc.add_matrix(self.GeoMatrix)
 		else:
 			self.GeoMatrix = svc.locate_matrix(matrix_id)
-

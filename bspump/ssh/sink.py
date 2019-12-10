@@ -1,14 +1,11 @@
 import asyncio
-import asyncssh
-import asab
-import logging
 import datetime
+import logging
 import random
-import typing
 import re
+import typing
 
-from ..abc.sink  import Sink
-
+from ..abc.sink import Sink
 
 #
 
@@ -91,7 +88,7 @@ class SFTPSink(Sink):
 
 			try:
 				self._conn_future.result()
-			except:
+			except Exception:
 				# Connection future threw an error
 				L.exception("Unexpected connection future error")
 
@@ -135,18 +132,19 @@ class SFTPSink(Sink):
 
 
 					# Writes event into a remote file
-					async with sftp.open(remote+filename, self.Mode, encoding=None) as sftpfile: #TODO fix RuntimeError when emptying queue on kill
+					async with sftp.open(remote + filename, self.Mode, encoding=None) as sftpfile:
+						# TODO fix RuntimeError when emptying queue on kill
 						await sftpfile.write(event)
 
 
-	def process(self, context, event:typing.Union[dict, str, bytes]):
+	def process(self, context, event: typing.Union[dict, str, bytes]):
 		# Checks bytes in the event
 		if type(event) == str:
 			event = event.encode('utf-8')
 		elif type(event) == bytes:
 			event = event
 
-		if self.FileName is None or self.FileName is '':
+		if self.FileName is None or self.FileName == '':
 			self.FileName = self.build_remote_file_name()
 
 		# Gets the defined remote path and filename from context
@@ -164,7 +162,6 @@ class SFTPSink(Sink):
 		basename = re.sub("[/,.,:, ]", "", str(self.FileName))
 		timestamp = str(int(datetime.datetime.timestamp(datetime.datetime.now())))
 		random_num = str(random.randint(1, self.RandIntLen))
-		filename = str(self.Prefix+basename+timestamp+random_num+self.Suffix)
+		filename = str(self.Prefix + basename + timestamp + random_num + self.Suffix)
 
 		return filename
-

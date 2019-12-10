@@ -1,14 +1,6 @@
-import time
 import logging
 
-import numpy as np
-
-import asab
-import collections
-import abc
-
 from ..matrix.matrix import NamedMatrix
-
 
 ###
 
@@ -24,7 +16,7 @@ class SessionMatrix(NamedMatrix):
 
 	'''
 		Matrix, specific for `SessionAnalyzer`.
-	
+
 	'''
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
@@ -40,18 +32,19 @@ class SessionMatrix(NamedMatrix):
 			The event must prepared so that it matches a data type of the cell (dtype)
 		'''
 		row_index = self.get_row_index(row_name)
-		if row_index is None: return False
+		if row_index is None:
+			return False
 		self.Array[row_index] = event
 
 
 
-	def store_event(self, row_index:int, event, keys=None):
+	def store_event(self, row_index: int, event, keys=None):
 		if keys is None:
 			keys = event.keys()
 
 		names = self.Array.dtype.names
 		if names is None:
-			L.warn("The matrix does not have correct column-like dtype")
+			L.warning("The matrix does not have correct column-like dtype")
 			raise
 
 		for key in keys:
@@ -59,18 +52,16 @@ class SessionMatrix(NamedMatrix):
 				self.Array[row_index][key] = event[key]
 
 
-	
-	def decode_row(self, row_index:int, keys=None):
+	def decode_row(self, row_index: int, keys=None):
 
 		if keys is None:
 			keys = list(self.Array.dtype.names)
-		
+
 		if keys is None:
-			L.warn("The matrix does not have correct column-like dtype")
+			L.warning("The matrix does not have correct column-like dtype")
 			raise
 
 		event = dict(zip(keys, self.Array[row_index][keys]))
 		event[self.PrimaryName] = self.get_row_name(row_index)
 
 		return event
-

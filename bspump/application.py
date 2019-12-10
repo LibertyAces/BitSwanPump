@@ -21,7 +21,7 @@ class BSPumpApplication(asab.Application):
 		from asab.metrics import Module
 		self.add_module(Module)
 
-		#TODO: Make sure that we don't occupy unnecessary high amount of threads
+		# TODO: Make sure that we don't occupy unnecessary high amount of threads
 		from asab.proactor import Module
 		self.add_module(Module)
 
@@ -94,12 +94,12 @@ build: {} [{}]
 
 	def _on_signal_usr1(self):
 		'''
-		To clear reset from all pipelines, run 
+		To clear reset from all pipelines, run
 		$ kill -SIGUSR1 xxxx
 		Equivalently, you can use `docker kill -s SIGUSR1 ....` to reset containerized BSPump.
 		'''
 		# Reset errors from all pipelines
 		for pipeline in self.PumpService.Pipelines.values():
-			if not pipeline.is_error(): continue # Focus only on pipelines that has errors
+			if not pipeline.is_error():
+				continue  # Focus only on pipelines that has errors
 			pipeline.set_error(None, None, None)
-

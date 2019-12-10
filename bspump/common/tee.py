@@ -1,10 +1,9 @@
 import logging
 from .routing import InternalSource, RouterProcessor
-#
+
 
 L = logging.getLogger(__name__)
 
-#
 
 class TeeSource(InternalSource):
 
@@ -86,15 +85,15 @@ class TeeProcessor(RouterProcessor):
 		self.Targets = []
 
 
-	def bind(self, target:str):
+	def bind(self, target: str):
 		'''
-		Target is a bspump.PumpService.locate() string 
+		Target is a bspump.PumpService.locate() string
 		'''
 		self.Targets.append(target)
 		return self
 
 
-	def unbind(self, target:str):
+	def unbind(self, target: str):
 		self.Targets.remove(target)
 		self.unlocate(target)
 		return self

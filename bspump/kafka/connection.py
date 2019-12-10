@@ -1,5 +1,6 @@
-import aiokafka
 import logging
+
+import aiokafka
 
 from ..abc.connection import Connection
 
@@ -30,7 +31,7 @@ class KafkaConnection(Connection):
 	``ConfigDefaults`` options:
 
 		* ``compression_type``: Kafka supports several compression types: ``gzip``, ``snappy`` and ``lz4``.
-		  This option needs to be specified in Kafka Producer only, Consumer will decompress automatically.
+			This option needs to be specified in Kafka Producer only, Consumer will decompress automatically.
 
 	"""
 
@@ -58,8 +59,8 @@ class KafkaConnection(Connection):
 	def create_consumer(self, *topics, **kwargs):
 		consumer = aiokafka.AIOKafkaConsumer(
 			*topics,
-			loop = self.Loop,
-			bootstrap_servers = self.get_bootstrap_servers(),
+			loop=self.Loop,
+			bootstrap_servers=self.get_bootstrap_servers(),
 			enable_auto_commit=False,
 			**kwargs
 		)
@@ -77,6 +78,3 @@ class KafkaConnection(Connection):
 		if compression_type in ("", "none", "None"):
 			compression_type = None
 		return compression_type
-
-
-

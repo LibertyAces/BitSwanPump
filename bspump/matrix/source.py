@@ -1,11 +1,5 @@
-import time
 import logging
-import numpy as np
-import re
-import collections
 
-import asyncio
-import asab
 from ..abc.source import TriggerSource
 
 #
@@ -13,6 +7,7 @@ from ..abc.source import TriggerSource
 L = logging.getLogger(__name__)
 
 #
+
 
 class MatrixSource(TriggerSource):
 
@@ -25,4 +20,3 @@ class MatrixSource(TriggerSource):
 
 	async def cycle(self):
 		await self.process(self.AnalyzeMatrix)
-

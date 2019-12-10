@@ -2,11 +2,9 @@ import logging
 import json
 from .fileabcsource import FileABCSource
 
-#
 
 L = logging.getLogger(__file__)
 
-#
 
 class FileJSONSource(FileABCSource):
 

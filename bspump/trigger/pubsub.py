@@ -1,10 +1,8 @@
-import asyncio
 from .trigger import Trigger
 
-###
 
 class PubSubTrigger(Trigger):
-	
+
 
 	def __init__(self, app, message_types, pubsub=None, id=None):
 		super().__init__(app, id)

@@ -3,11 +3,9 @@ import asyncio
 import random
 from ..abc.source import TriggerSource
 
-#
 
 L = logging.getLogger(__name__)
 
-#
 
 class RandomSource(TriggerSource):
 	'''
@@ -29,7 +27,7 @@ class RandomSource(TriggerSource):
 		'event_idle_time': 0.01,
 		'events_till_idle': 10000,
 	}
-	
+
 	def __init__(self, app, pipeline, choice=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Field = self.Config['field']
@@ -64,8 +62,5 @@ class RandomSource(TriggerSource):
 			if self.EventCounter >= self.EventsTillIdle:
 				await asyncio.sleep(self.EventIdleTime)
 				self.EventCounter = 0
-			
+
 			self.EventCounter += 1
-
-
-

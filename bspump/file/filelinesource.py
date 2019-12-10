@@ -1,7 +1,5 @@
 import logging
 
-import asyncio
-
 from .fileabcsource import FileABCSource
 
 #
@@ -37,8 +35,8 @@ class FileMultiLineSource(FileABCSource):
 
 	Example:
 	<133>1 2018-03-24T02:37:01+00:00 machine program 22068 - Start of the multiline event
-	    2nd line of the event
-	    3rd line of the event
+		2nd line of the event
+		3rd line of the event
 	<133>1 2018-03-24T02:37:01+00:00 machine program 22068 - New event
 
 	The separatpr is '<' string in this case
@@ -52,7 +50,7 @@ class FileMultiLineSource(FileABCSource):
 			separator = separator.encode('utf-8')
 
 		self._separator = separator
-		#TODO: self._max_latch_size = 10000
+		# TODO: self._max_latch_size = 10000
 
 
 	async def read(self, filename, f):

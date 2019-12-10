@@ -68,5 +68,3 @@ class LatchAnalyzer(Analyzer):
 		elif self.Query.match(event) != self.Inclusive:
 			self.Latch.append(event)
 		return event
-
-

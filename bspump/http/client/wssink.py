@@ -3,11 +3,9 @@ import asyncio
 import aiohttp
 from ...abc.sink import Sink
 
-#
 
 L = logging.getLogger(__name__)
 
-#
 
 class HTTPClientWebSocketSink(Sink):
 
@@ -24,9 +22,8 @@ class HTTPClientWebSocketSink(Sink):
 		self.WebSocket = None
 		self.Exiting = False
 
-		self.Task = asyncio.ensure_future(self._task(
-				self.Config['url']
-			),
+		self.Task = asyncio.ensure_future(
+			self._task(self.Config['url']),
 			loop=app.Loop
 		)
 
@@ -41,19 +38,19 @@ class HTTPClientWebSocketSink(Sink):
 			while not self.Exiting:
 				try:
 					async with session.ws_connect(
-							url,
-							ssl=self.SSL,
-							heartbeat=30.0,
-						) as ws:
+						url,
+						ssl=self.SSL,
+						heartbeat=30.0,
+					) as ws:
 
 						self.WebSocket = ws
 						self.Pipeline.throttle(self, False)
-						
+
 						try:
 							writer = asyncio.ensure_future(self._writer(ws), loop=self.Pipeline.Loop)
 							reader = asyncio.ensure_future(self._reader(ws), loop=self.Pipeline.Loop)
-							res = await asyncio.wait([writer, reader], return_when=asyncio.FIRST_COMPLETED)
-						
+							await asyncio.wait([writer, reader], return_when=asyncio.FIRST_COMPLETED)
+
 						finally:
 							self.WebSocket = None
 							self.Pipeline.throttle(self, True)
@@ -63,7 +60,7 @@ class HTTPClientWebSocketSink(Sink):
 
 						if not writer.done():
 							writer.cancel()
-						
+
 						try:
 							await writer
 						except asyncio.CancelledError:
@@ -71,7 +68,7 @@ class HTTPClientWebSocketSink(Sink):
 
 						if not reader.done():
 							reader.cancel()
-						
+
 						try:
 							await reader
 						except asyncio.CancelledError:
@@ -96,7 +93,7 @@ class HTTPClientWebSocketSink(Sink):
 			# Unthrottle if needed
 			if self.Queue.qsize() == (self.QueueMaxSize - 1):
 				self.Pipeline.throttle(self.Queue, True)
-	
+
 			if isinstance(event, (bytes, bytearray, memoryview)):
 				await ws.send_bytes(event)
 			else:

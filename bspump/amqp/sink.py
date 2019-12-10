@@ -5,11 +5,9 @@ import asab
 from ..abc.sink import Sink
 import logging
 
-###
 
 L = logging.getLogger(__name__)
 
-###
 
 class AMQPSink(Sink):
 
@@ -69,7 +67,7 @@ class AMQPSink(Sink):
 			exchange = self._exchange
 
 		if exchange is None:
-			L.warn("Exchange is not specified")
+			L.warning("Exchange is not specified")
 
 		try:
 			self._channel.basic_publish(

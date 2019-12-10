@@ -1,10 +1,9 @@
 import asab
 from .trigger import Trigger
 
-###
 
 class PeriodicTrigger(Trigger):
-	
+
 
 	def __init__(self, app, interval=None, id=None):
 		'''

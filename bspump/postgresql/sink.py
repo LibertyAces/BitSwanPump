@@ -1,8 +1,5 @@
-import datetime
-
-import asab
-
 from ..abc.sink import Sink
+
 
 class PostgreSQLSink(Sink):
 

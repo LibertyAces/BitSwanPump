@@ -1,9 +1,7 @@
-import logging
 import asyncio
-import aiohttp
-import json
+import logging
 
-from asab import Config
+import aiohttp
 
 from ..abc.connection import Connection
 
@@ -16,35 +14,35 @@ L = logging.getLogger(__name__)
 
 class InfluxDBConnection(Connection):
 	"""
-    InfluxDBConnection serves to connect BSPump application with an InfluxDB database.
-    The InfluxDB server is accessed via URL, and the database is specified
-    using the `db` parameter in the configuration.
+	InfluxDBConnection serves to connect BSPump application with an InfluxDB database.
+	The InfluxDB server is accessed via URL, and the database is specified
+	using the `db` parameter in the configuration.
 
 .. code:: python
 
-    app = bspump.BSPumpApplication()
-    svc = app.get_service("bspump.PumpService")
-    svc.add_connection(
-        bspump.influxdb.InfluxDBConnection(app, "InfluxConnection1")
-    )
+	app = bspump.BSPumpApplication()
+	svc = app.get_service("bspump.PumpService")
+	svc.add_connection(
+		bspump.influxdb.InfluxDBConnection(app, "InfluxConnection1")
+	)
 
-    """
+	"""
 
 	ConfigDefaults = {
 		"url": 'http://localhost:8086/',
 		'db': 'mydb',
 		'output_queue_max_size': 10,
-		'output_bucket_max_size': 1000*1000,
+		'output_bucket_max_size': 1000 * 1000,
 		'timeout': 30,
 	}
 
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 
-		self.url = self.Config["url"].strip()		
+		self.url = self.Config["url"].strip()
 		if self.url[-1] != '/':
 			self.url += '/'
-		
+
 		self._url_write = self.url + 'write?db=' + self.Config["db"]
 
 		self._output_bucket_max_size = self.Config["output_bucket_max_size"]
@@ -74,8 +72,8 @@ class InfluxDBConnection(Connection):
 	async def _on_exit(self, event_name):
 		self._started = False
 		self.flush()
-		await self._output_queue.put(None) # By sending None via queue, we signalize end of life
-		await self._future # Wait till the _loader() terminates
+		await self._output_queue.put(None)  # By sending None via queue, we signalize end of life
+		await self._future  # Wait till the _loader() terminates
 
 
 	def _on_tick(self, event_name):
@@ -85,7 +83,7 @@ class InfluxDBConnection(Connection):
 				r = self._future.result()
 				# This error should never happen
 				L.error("Influx error observed, returned: '{}' (should be None)".format(r))
-			except:
+			except Exception:
 				L.exception("Influx error observed, restoring the order")
 
 
@@ -118,7 +116,7 @@ class InfluxDBConnection(Connection):
 				break
 
 			if self._output_queue.qsize() == self._output_queue_max_size - 1:
-				self.PubSub.publish("InfluxDBConnection.unpause!", self, asynchronously=True)			
+				self.PubSub.publish("InfluxDBConnection.unpause!", self, asynchronously=True)
 
 			# Sending the data asynchronously
 			async with aiohttp.ClientSession() as session:
@@ -127,8 +125,7 @@ class InfluxDBConnection(Connection):
 					if resp.status != 204:
 						L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
 						raise RuntimeError("Failed to insert line into Influx")
-			
+
 			# Should be empty
 			if resp_body != '':
 				L.warning("InfluxDB returned '{}', expected empty string".format(resp_body))
-

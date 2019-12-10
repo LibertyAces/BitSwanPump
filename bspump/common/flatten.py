@@ -1,5 +1,6 @@
 from ..abc.processor import Processor
 
+
 class FlattenDictProcessor(Processor):
 	"""
 		Inspired by https://github.com/amirziai/flatten
@@ -19,7 +20,7 @@ class FlattenDictProcessor(Processor):
 		}
 
 		Gets converted to:
-		
+
 		{
 			"person.details.first_name": "John",
 			"person.details.last_name": "Doe",

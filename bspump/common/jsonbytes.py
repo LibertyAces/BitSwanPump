@@ -4,8 +4,9 @@ from ..abc.processor import Processor
 
 class DictToJsonBytesParser(Processor):
 	"""
-    DictToJsonBytesParser transforms a dictionary to JSON-string encoded in bytes. The encoding charset can be specified in the configuration in `encoding` field.
-"""
+	DictToJsonBytesParser transforms a dictionary to JSON-string encoded in bytes.
+	The encoding charset can be specified in the configuration in `encoding` field.
+	"""
 	ConfigDefaults = {
 		'encoding': 'utf-8',
 	}
@@ -22,8 +23,9 @@ class DictToJsonBytesParser(Processor):
 
 class JsonBytesToDictParser(Processor):
 	"""
-    JsonBytesToDictParser transforms a JSON-string encoded in bytes to a dictionary. The encoding charset can be specified in the configuration in `encoding` field.
-"""
+	JsonBytesToDictParser transforms a JSON-string encoded in bytes to a dictionary.
+	The encoding charset can be specified in the configuration in `encoding` field.
+	"""
 
 	ConfigDefaults = {
 		'encoding': 'utf-8',

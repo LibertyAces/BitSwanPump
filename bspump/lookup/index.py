@@ -1,9 +1,7 @@
 import abc
-import asab
-import json
 import logging
-import numpy as np
 
+import numpy as np
 
 ###
 
@@ -42,15 +40,15 @@ class BitMapIndex(Index):
 		super().__init__(id=id)
 		self.Column = column
 		self.BitMap = {}
-		
+
 		open_rows = list(matrix.I2NMap.keys())
 		self.UniqueValues = list(np.unique(matrix.Array[self.Column][open_rows]))
 
 		for u in self.UniqueValues:
-			x = np.where(matrix.Array[self.Column] == u)   
+			x = np.where(matrix.Array[self.Column] == u)
 			self.BitMap[int(u)] = set(x[0].tolist())
 
-	
+
 	def search(self, value):
 		'''
 			Returns set of matrix indexes.
@@ -63,9 +61,9 @@ class BitMapIndex(Index):
 	def update(self, matrix):
 		open_rows = list(matrix.I2NMap.keys())
 		unique_values = set(np.unique(matrix.Array[self.Column][open_rows]))
-		set_difference_left = set(self.UniqueValues) - unique_values # there are some deleted vals
-		set_difference_right = unique_values - set(self.UniqueValues) # there are some added vals
-		
+		set_difference_left = set(self.UniqueValues) - unique_values  # there are some deleted vals
+		set_difference_right = unique_values - set(self.UniqueValues)  # there are some added vals
+
 		if len(set_difference_left) != 0:
 			for set_member in set_difference_left:
 				self.BitMap.pop(set_member)
@@ -82,23 +80,23 @@ class BitMapIndex(Index):
 		serialized_bitmap = {}
 		for key in self.BitMap:
 			serialized_bitmap[key] = list(self.BitMap[key])
-		
+
 		serialized = super().serialize()
 		serialized.update({
 			'bitmap': serialized_bitmap,
 			'column': self.Column,
-			})
+		})
 
 		return serialized
 
-	
+
 	def deserialize(self, data):
 		self.BitMap = {}
 		self.Column = data['column']
-		
+
 		for key in data['bitmap']:
 			self.BitMap[key] = set(data['bitmap'][key])
-			
+
 		self.UniqueValues = list(self.BitMap.keys())
 
 
@@ -109,25 +107,25 @@ class TreeRangeIndex(Index):
 		self.ColumnStart = column_start
 		self.ColumnEnd = column_end
 		ranges = set()
-		
+
 		open_rows = list(matrix.I2NMap.keys())
 		unique_start = np.unique(matrix.Array[column_start][open_rows])
 		ranges |= set(unique_start)
 		unique_end = np.unique(matrix.Array[column_end][open_rows])
 		ranges |= set(unique_end)
 
-		assert(len(unique_start) == len(unique_end)) # ranges overlapping
-		
+		assert(len(unique_start) == len(unique_end))  # ranges overlapping
+
 		self.Ranges = sorted(list(ranges))
-		
+
 		self.MinValue = None
 		self.MaxValue = None
 		self.Tree = None
-		
+
 		if len(self.Ranges) != 0:
 			self.MinValue = int(self.Ranges[0])
 			self.MaxValue = int(self.Ranges[-1])
-			
+
 			self.Tree = self.sorted_array_to_bst(matrix, self.Ranges, [], [])
 
 
@@ -143,16 +141,16 @@ class TreeRangeIndex(Index):
 			node = subtree['node']
 			if node is None:
 				return set(subtree['indexes'])
-			
+
 			if value < node:
 				subtree = subtree['left']
 			else:
 				subtree = subtree['right']
-			
+
 		return set()
 
 
-	def sorted_array_to_bst(self, matrix, arr, path, mask): 
+	def sorted_array_to_bst(self, matrix, arr, path, mask):
 		if not arr:
 			mask_ = mask + [False]
 			if np.any(mask):
@@ -161,26 +159,26 @@ class TreeRangeIndex(Index):
 				lower = max(true_values)
 				false_values = np.array(path_)[~np.array(mask_)]
 				upper = min(false_values)
-				r = tuple([lower, upper])     
+				r = tuple([lower, upper])
 			else:
 				path_ = path + [-float('inf')]
 				r = tuple([path_[-1], path_[-2]])
-				
+
 			condition = (matrix.Array[self.ColumnEnd] <= r[1]) & (matrix.Array[self.ColumnStart] >= r[0])
 			indexes = np.where(condition)
 			result = {
 				'node': None,
 				'indexes': indexes[0].tolist(),
-				'left': None, 
+				'left': None,
 				'right': None
 			}
-			
+
 			return result
 
 		mid = int(len(arr) / 2)
-		root = {'node': int(arr[mid]), 'indexes':[]}
-		root['left'] = self.sorted_array_to_bst(matrix, arr[:mid], path + [arr[mid]], mask + [False]) 
-		root['right'] = self.sorted_array_to_bst(matrix, arr[mid+1:], path + [arr[mid]], mask + [True]) 
+		root = dict(node=int(arr[mid]), indexes=[])
+		root['left'] = self.sorted_array_to_bst(matrix, arr[:mid], path + [arr[mid]], mask + [False])
+		root['right'] = self.sorted_array_to_bst(matrix, arr[mid + 1:], path + [arr[mid]], mask + [True])
 		return root
 
 
@@ -200,14 +198,14 @@ class TreeRangeIndex(Index):
 		# 	# c) updated values, bug
 		# else:
 		# 	# full update
-		
-		assert(len(unique_start) == len(unique_end)) # ranges overlapping
+
+		assert(len(unique_start) == len(unique_end))  # ranges overlapping
 		self.Ranges = sorted(list(ranges))
 
 		self.MinValue = None
 		self.MaxValue = None
 		self.Tree = None
-		
+
 		if len(self.Ranges) != 0:
 			self.MinValue = self.Ranges[0]
 			self.MaxValue = self.Ranges[-1]
@@ -273,13 +271,13 @@ class SliceIndex(Index):
 		open_rows = list(matrix.I2NMap.keys())
 		self.MinValue = float(np.min(matrix.Array[self.ColumnStart][open_rows]))
 		self.MaxValue = float(np.max(matrix.Array[self.ColumnEnd][open_rows]))
-		
+
 		if self.Resolution is None:
 			diffs = matrix.Array[self.ColumnEnd][open_rows] - matrix.Array[self.ColumnStart][open_rows]
 			self.Resolution = float(np.min(diffs))
-		
+
 		start_value = self.MinValue
-		
+
 		while start_value < self.MaxValue:
 			end_value = start_value + self.Resolution
 			condition = (matrix.Array[self.ColumnEnd] >= end_value) & (matrix.Array[self.ColumnStart] <= start_value)

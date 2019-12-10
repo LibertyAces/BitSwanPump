@@ -1,8 +1,8 @@
 import abc
+import asyncio
 import collections.abc
 import json
 import logging
-import asyncio
 import os
 import struct
 
@@ -26,9 +26,9 @@ class Lookup(abc.ABC, asab.ConfigObject):
 
 
 	ConfigDefaults = {
-		"master_url": "", # If not empty, a lookup is in slave mode (will load data from master or cache)
-		"master_lookup_id": "", # If not empty, it specify the lookup id that will be used for loading from master
-		"master_timeout": 30, # In secs.
+		"master_url": "",  # If not empty, a lookup is in slave mode (will load data from master or cache)
+		"master_lookup_id": "",  # If not empty, it specify the lookup id that will be used for loading from master
+		"master_timeout": 30,  # In secs.
 	}
 
 
@@ -49,10 +49,11 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			while master_url[-1] == '/':
 				master_url = master_url[:-1]
 			master_lookup_id = self.Config['master_lookup_id']
-			if master_lookup_id == "": master_lookup_id = self.Id
+			if master_lookup_id == "":
+				master_lookup_id = self.Id
 			self.MasterURL = master_url + '/lookup/' + master_lookup_id
 		else:
-			self.MasterURL = None # No master is defined
+			self.MasterURL = None  # No master is defined
 
 
 	def time(self):
@@ -68,7 +69,7 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			updated = await self.load()
 		else:
 			updated = await self.load_from_master()
-		
+
 		if updated:
 			self.PubSub.publish("bspump.Lookup.changed!")
 
@@ -76,18 +77,17 @@ class Lookup(abc.ABC, asab.ConfigObject):
 	@abc.abstractmethod
 	async def load(self) -> bool:
 		"""
-        Return True is lookup has been changed.
+		Return True is lookup has been changed.
 
-        Example:
+		Example:
 
 .. code:: python
 
-        async def load(self):
-            self.set(bspump.load_json_file('./examples/data/country_names.json'))
-            return True
-    """
+		async def load(self):
+			self.set(bspump.load_json_file('./examples/data/country_names.json'))
+			return True
+		"""
 		pass
-
 
 	# Serialization
 
@@ -131,9 +131,9 @@ class Lookup(abc.ABC, asab.ConfigObject):
 				data = f.read()
 
 			self.deserialize(data)
-		
+
 		except Exception as e:
-			L.warn("Failed to read content of lookup cache '{}' from '{}': {}".format(self.Id, path, e))
+			L.warning("Failed to read content of lookup cache '{}' from '{}': {}".format(self.Id, path, e))
 			os.unlink(path)
 			return False
 
@@ -151,11 +151,10 @@ class Lookup(abc.ABC, asab.ConfigObject):
 
 			# Write E-Tag and '\n'
 			etag_b = self.ETag.encode('utf-8')
-			fo.write(struct.pack(r"<L", len(etag_b))+etag_b+b'\n')
+			fo.write(struct.pack(r"<L", len(etag_b)) + etag_b + b'\n')
 
 			# Write Data
 			fo.write(data)
-
 
 	# Master/slave mechanism
 
@@ -177,10 +176,10 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			try:
 				response = await session.get(self.MasterURL, headers=headers, timeout=float(self.Config['master_timeout']))
 			except aiohttp.ClientConnectorError as e:
-				L.warn("Failed to contact lookup master at '{}': {}".format(self.MasterURL, e))
+				L.warning("Failed to contact lookup master at '{}': {}".format(self.MasterURL, e))
 				return self.load_from_cache()
 			except asyncio.TimeoutError as e:
-				L.warn("Failed to contact lookup master at '{}' (timeout): {}".format(self.MasterURL, e))
+				L.warning("Failed to contact lookup master at '{}' (timeout): {}".format(self.MasterURL, e))
 				return self.load_from_cache()
 
 			if response.status == 304:
@@ -188,15 +187,15 @@ class Lookup(abc.ABC, asab.ConfigObject):
 				return False
 
 			if response.status == 404:
-				L.warn("Lookup '{}'' was not found at the provider.".format(self.Id))
+				L.warning("Lookup '{}'' was not found at the provider.".format(self.Id))
 				return self.load_from_cache()
 
 			if response.status == 501:
-				L.warn("Lookup '{}' method does not support serialization.".format(self.Id))
+				L.warning("Lookup '{}' method does not support serialization.".format(self.Id))
 				return False
 
 			if response.status != 200:
-				L.warn("Failed to get '{}' lookup from '{}' master.".format(self.Id, self.MasterURL))
+				L.warning("Failed to get '{}' lookup from '{}' master.".format(self.Id, self.MasterURL))
 				return self.load_from_cache()
 
 			data = await response.read()
@@ -245,10 +244,9 @@ class DictionaryLookup(MappingLookup):
 		rest["Dictionary"] = self.Dictionary
 		return rest
 
-	def set(self, dictionary:dict):
+	def set(self, dictionary: dict):
 		if self.MasterURL is not None:
-			L.warn("'master_url' provided, set() method can not be used")
+			L.warning("'master_url' provided, set() method can not be used")
 
 		self.Dictionary.clear()
 		self.Dictionary.update(dictionary)
-

@@ -17,7 +17,7 @@ from .matrix.matrix import Matrix, NamedMatrix
 
 from .__version__ import __version__, __build__
 
-__all__ = [
+__all__ = (
 	"BSPumpApplication",
 	"Pipeline",
 	"PumpBuilder",
@@ -27,11 +27,15 @@ __all__ = [
 	"Processor",
 	"Generator",
 	"Connection",
-	"Matrix",
-	"NamedMatrix"
+
 	"ProcessingError",
 	"Lookup",
 	"MappingLookup",
 	"DictionaryLookup",
 	"load_json_file",
-]
+	"Matrix",
+	"NamedMatrix",
+
+	"__version__",
+	"__build__",
+)

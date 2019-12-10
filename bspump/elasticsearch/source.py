@@ -1,9 +1,6 @@
-import aiohttp
 import logging
-import json
-import re
+
 from ..abc.source import TriggerSource
-import pprint
 
 L = logging.getLogger(__name__)
 
@@ -101,7 +98,6 @@ class ElasticSearchSource(TriggerSource):
 				break
 
 			hits = msg['hits']['hits']
-			#print(hits)
 			if len(hits) == 0:
 				break
 
@@ -196,7 +192,7 @@ class ElasticSearchAggsSource(TriggerSource):
 		await self.process_aggs(path, start_name, start)
 
 	async def process_aggs(self, path, aggs_name, aggs):
-		
+
 		if 'buckets' in aggs:
 			await self.process_buckets(path, aggs_name, aggs["buckets"])
 
@@ -213,7 +209,7 @@ class ElasticSearchAggsSource(TriggerSource):
 
 		Recursive function for buckets processing.
 		It iterates through keys of the dictionary, looking for 'buckets' or 'value'.
-		If there are 'buckets', calls itself, if there is 'value', calls process_aggs 
+		If there are 'buckets', calls itself, if there is 'value', calls process_aggs
 		and sends an event to process
 
 		'''
@@ -222,5 +218,5 @@ class ElasticSearchAggsSource(TriggerSource):
 			for k in bucket.keys():
 				if k == 'key':
 					path[parent] = bucket[k]
-				elif isinstance(bucket[k], dict): 
+				elif isinstance(bucket[k], dict):
 					await self.process_aggs(path, k, bucket[k])
