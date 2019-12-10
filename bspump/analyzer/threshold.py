@@ -95,7 +95,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		# Find the column in timewindow matrix to fit in
 		column = self.TimeWindow.get_column(time_stamp)
 		if column is None:
-			column = self.TimeWindow.get_column(time_stamp)
+			return
 
 		# Fill matrix with the values
 		self.TimeWindow.Array[row, column] = event[self.EventValue]
