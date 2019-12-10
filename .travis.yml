@@ -11,10 +11,12 @@ install:
   - pip install pyarrow>=0.13.0
   - pip install -r requirements-dev.txt
   - pip install codecov
+  - pip install flake8
 
 script:
   - coverage run -m unittest
   - coverage report
+  - flake8 bspump
 
 after_success:
   - codecov

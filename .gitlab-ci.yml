@@ -8,5 +8,7 @@ test:
     - source ~/.venv/bspump/bin/activate
     - python setup.py install
     - pip install -r requirements-dev.txt
+    - pip install flake8
     - coverage run -m unittest
     - coverage report -m
+    - flake8 bspump
