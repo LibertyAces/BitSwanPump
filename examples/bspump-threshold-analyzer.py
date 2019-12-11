@@ -32,7 +32,7 @@ class CustomPipeline(bspump.Pipeline):
                 'upper_bound': int(datetime.datetime.timestamp(datetime.datetime.now()))}, id="RE1"),
 
             ExceedThresholdAnalyzer(app,self,config={'event_attribute': 'server', 'upper_bound': 1000,
-                                                     'event_value': 'server_load', 'anomaly_occurrence': 3,
+                                                     'event_value': 'server_load', 'symptom_occurrence': 3,
                                                      'analyze_period': 60, }),
 
             bspump.common.NullSink(app, self),
@@ -54,7 +54,7 @@ class ExceedThresholdAnalyzer(bspump.analyzer.ThresholdAnalyzer):
     Config example:
 
     ExceedThresholdAnalyzer(app,self,config={'event_attribute': 'id', 'upper_bound': 1000, 'event_value': 'id_load',
-                                             'anomaly_occurrence': 2, 'analyze_period': 300, })
+                                             'symptom_occurrence': 2, 'analyze_period': 300, })
 
 ...
 

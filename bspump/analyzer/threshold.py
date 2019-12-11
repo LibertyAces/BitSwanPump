@@ -23,11 +23,11 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 	evaluate method - Take event attributes and sorts them into the matrix
 
 	analyze method - Check whether any value in the matrix is over the preconfigured bounds and if so, check the
-					occurrance of the anomaly in the array and then possibly call the alarm.
+					occurrance of the symptom in the array and then possibly call the alarm.
 					To analyze, whether the values are out of bounds, the 'np.where()' method is used. It pass the
 					position of values out of bounds within the matrix to the alarm method.
 					x = row position, y = column position
-					To detect whether the anomaly occurrance of the 'values out of bounds' is higher or equal, than number
+					To detect whether the symptom occurrance of the 'values out of bounds' is higher or equal, than number
 					set in the configuration, an aggregation is used. Result of aggregation is the number of occurrences
 					and indices of those values. It is then passed to the alarm method together with x and y arrays.
 
@@ -54,7 +54,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 						   # analyzing, e.g. server overload values
 		'lower_bound': '-inf', # Lower bound of the threshold
 		'upper_bound': 'inf', # Upper bound of the threshold
-		'anomaly_occurrence': 1, # Number of occurrences of anomaly in array
+		'symptom_occurrence': 1, # Number of occurrences of symptom in array
 		'analyze_period': 300, # Launch period of analyze method
 
 	}
@@ -68,7 +68,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		self.EventValue = self.Config['event_value']
 		self.Lower = float(self.Config['lower_bound'])
 		self.Upper = float(self.Config['upper_bound'])
-		self.AnomalyOccurrence = int(self.Config['anomaly_occurrence'])
+		self.SymptomOccurrence = int(self.Config['symptom_occurrence'])
 
 		self.WarmingUpLimit = int()
 
@@ -95,7 +95,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		# Find the column in timewindow matrix to fit in
 		column = self.TimeWindow.get_column(time_stamp)
 		if column is None:
-			column = self.TimeWindow.get_column(time_stamp)
+			return
 
 		# Fill matrix with the values
 		self.TimeWindow.Array[row, column] = event[self.EventValue]
@@ -124,7 +124,7 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		elif self.Lower != float('-inf') and self.Upper != float('inf'):
 			x, y = np.where(((data < self.Lower) | (data > self.Upper)) & warming_up)
 
-		# Anomaly occurrence detection
+		# Symptom occurrence detection
 		try:
 			# Setting previous value. When it is empty, further computation wont proceed.
 			previous = x[0]
@@ -140,12 +140,12 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 				count += 1
 			else:
 				# Checking whether count >= occurrence
-				if count >= self.AnomalyOccurrence:
+				if count >= self.SymptomOccurrence:
 					self.alarm(x, y, count, i-1)
 				count = 1
 				previous = actual
 			# Checking if count >= occurrence and if the loop is at its end
-			if (count >= self.AnomalyOccurrence) and (i+1 == len(x)):
+			if (count >= self.SymptomOccurrence) and (i+1 == len(x)):
 				self.alarm(x, y, count, i)
 
 
