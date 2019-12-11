@@ -8,11 +8,9 @@ from asab import PubSub
 
 from ..abc.connection import Connection
 
-#
 
 L = logging.getLogger(__name__)
 
-#
 
 class AMQPConnection(Connection):
 
@@ -34,7 +32,7 @@ class AMQPConnection(Connection):
 		self.PubSub = PubSub(app)
 		self.Loop = app.Loop
 
-		self._reconnect();
+		self._reconnect()
 
 
 	def _reconnect(self):
@@ -50,12 +48,11 @@ class AMQPConnection(Connection):
 
 
 		self.Connection = pika.adapters.asyncio_connection.AsyncioConnection(
-			parameters = parameters,
+			parameters=parameters,
 			on_open_callback=self._on_connection_open,
 			on_open_error_callback=self._on_connection_open_error,
 			on_close_callback=self._on_connection_close
 		)
-
 
 	# Connection callbacks
 
@@ -65,7 +62,7 @@ class AMQPConnection(Connection):
 		self.PubSub.publish("AMQPConnection.open!")
 
 	def _on_connection_close(self, connection, code, reason):
-		L.warn("AMQP disconnected ({}): {}".format(code, reason))
+		L.warning("AMQP disconnected ({}): {}".format(code, reason))
 		self.ConnectionEvent.clear()
 		self.PubSub.publish("AMQPConnection.close!")
 		self.Loop.call_later(float(self.Config['reconnect_delay']), self._reconnect)
@@ -76,4 +73,3 @@ class AMQPConnection(Connection):
 		self.ConnectionEvent.clear()
 		self.PubSub.publish("AMQPConnection.close!")
 		self.Loop.call_later(float(self.Config['reconnect_delay']), self._reconnect)
-

@@ -105,7 +105,7 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 			self.Sessions.close_row(user_from)
 
 		self.Sessions.flush()
-		L.warn("Graph is {}".format(graph))
+		L.warning("Graph is {}".format(graph))
 
 
 if __name__ == '__main__':

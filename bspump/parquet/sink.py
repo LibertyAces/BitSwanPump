@@ -22,15 +22,15 @@ class ParquetSink(Sink):
 
 	schema_file example:
 		{
-		  "name":{
-			  "type": "string"
-		  },
-		  "age":{
-			  "type": "int"
-		  },
-		  "salary":{
-			  "type": "float"
-		  }
+			"name":{
+				"type": "string"
+			},
+			"age":{
+				"type": "int"
+			},
+			"salary":{
+				"type": "float"
+			}
 		}
 	"""
 
@@ -47,10 +47,12 @@ class ParquetSink(Sink):
 		app.PubSub.subscribe("Application.tick/10!", self.on_tick)
 
 		metrics_service = app.get_service('asab.MetricsService')
-		self.Counter = metrics_service.create_counter("counter", tags={},
-													  init_values={'parquet.error': 0})
-		self.Gauge = metrics_service.create_gauge("gauge", tags={},
-												  init_values={'parquet.missing_attributes': 0, 'parquet.new_attributes': 0})
+		self.Counter = metrics_service.create_counter(
+			"counter", tags={},
+			init_values={'parquet.error': 0})
+		self.Gauge = metrics_service.create_gauge(
+			"gauge", tags={},
+			init_values={'parquet.missing_attributes': 0, 'parquet.new_attributes': 0})
 
 		self.Frames = []
 		self.ChunkSize = self.Config['rows_in_chunk']

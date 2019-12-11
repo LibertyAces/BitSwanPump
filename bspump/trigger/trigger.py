@@ -1,6 +1,7 @@
 import abc
 import random
 
+
 class Trigger(abc.ABC):
 
 

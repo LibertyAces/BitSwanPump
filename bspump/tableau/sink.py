@@ -8,11 +8,9 @@ import logging
 import os.path
 from ..abc.sink import Sink
 
-#
 
 L = logging.getLogger(__file__)
 
-#
 
 class FileTableauSink(Sink):
 
@@ -29,10 +27,10 @@ class FileTableauSink(Sink):
 		self.Table = None
 		self.ColumnMapping = {}
 		self.RotatePeriod = int(self.Config['rotate_period'])
-		self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True) 
+		self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True)
 		self.Timer.start(self.RotatePeriod)
 
-	
+
 	async def on_clock_tick(self):
 		self.rotate()
 
@@ -43,7 +41,7 @@ class FileTableauSink(Sink):
 		'''
 		return self.Config['path']
 
-	
+
 	def set_data_schema(self, data_names, data_types):
 		self.ColumnMapping = {}
 		for i, name in enumerate(data_names):
@@ -68,8 +66,8 @@ class FileTableauSink(Sink):
 			elif field_type == 'unicodestring':
 				self.DataSchema.addColumn(name, tableausdk.Types.Type.UNICODE_STRING)
 			else:
-				L.warn("Wrong type {} detected".format(field_type))
-	
+				L.warning("Wrong type {} detected".format(field_type))
+
 
 	def set_row(self, context, event):
 		row = tableausdk.Extract.Row(self.DataSchema)
@@ -89,7 +87,7 @@ class FileTableauSink(Sink):
 			elif field_type == 'datetime':
 				# field_value must be timestamp
 				t_t = datetime.datetime.fromtimestamp(event[key]['value']).timetuple()
-				frac = int((field_value - int(field_value)) * 10000) #	The fraction of a second as one tenth of a millisecond (1/10000)
+				frac = int((field_value - int(field_value)) * 10000)  # The fraction of a second as one tenth of a millisecond (1/10000)
 				row.setDateTime(self.ColumnMapping[key], t_t[0], t_t[1], t_t[2], t_t[3], t_t[4], t_t[5], frac)
 			elif field_type == 'double':
 				row.setDouble(self.ColumnMapping[key], field_value)
@@ -109,7 +107,7 @@ class FileTableauSink(Sink):
 			elif field_type == 'unicodestring':
 				row.setString(self.ColumnMapping[key], field_value)
 			else:
-				L.warn("Wrong type in event {} detected".format(field_type))
+				L.warning("Wrong type in event {} detected".format(field_type))
 
 		self.Table.insert(row)
 
@@ -122,7 +120,7 @@ class FileTableauSink(Sink):
 				self.DataSchema = tableausdk.Extract.TableDefinition()
 				data_types = [event[key]['type'] for key in event.keys()]
 				self.set_data_schema(event.keys(), data_types)
-				self.Table = self.DataExtract.addTable(self.Config['table_name'], self.DataSchema)		
+				self.Table = self.DataExtract.addTable(self.Config['table_name'], self.DataSchema)
 			else:
 				# get data_extract from table
 				self.DataExtract = tableausdk.Extract.Extract(self.get_file_name(context, event))

@@ -5,11 +5,9 @@ import aiohttp.web
 
 from ...abc.source import Source
 
-#
 
 L = logging.getLogger(__name__)
 
-#
 
 class WebSocketSource(Source):
 
@@ -36,7 +34,8 @@ class WebSocketSource(Source):
 			async for msg in ws:
 
 				if msg.type == aiohttp.WSMsgType.BINARY or msg.type == aiohttp.WSMsgType.TEXT:
-					await self.Pipeline.process(msg.data,
+					await self.Pipeline.process(
+						msg.data,
 						context={
 							'type': msg.type,
 							'request': request

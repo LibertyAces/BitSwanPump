@@ -1,8 +1,9 @@
-import abc
-import asab
 import json
 import logging
+
 import numpy as np
+
+import asab
 from ..abc.lookup import Lookup
 from ..analyzer.sessionmatrix import SessionMatrix
 
@@ -11,6 +12,7 @@ from ..analyzer.sessionmatrix import SessionMatrix
 L = logging.getLogger(__name__)
 
 ###
+
 
 class MatrixLookup(Lookup):
 	'''
@@ -22,7 +24,7 @@ class MatrixLookup(Lookup):
 	}
 
 	def __init__(self, app, matrix_id=None, dtype='float_', on_clock_update=False, id=None, config=None, lazy=False):
-		
+
 		super().__init__(app, id=id, config=config, lazy=lazy)
 		self.Indexes = {}
 
@@ -33,7 +35,7 @@ class MatrixLookup(Lookup):
 			svc.add_matrix(self.Matrix)
 		else:
 			self.Matrix = svc.locate_matrix(matrix_id)
-		
+
 		self.MatrixPubSub = None
 		self.Timer = None
 
@@ -42,7 +44,7 @@ class MatrixLookup(Lookup):
 		if self.is_master():
 			if on_clock_update:
 				self.UpdatePeriod = float(self.Config['update_period'])
-				self.Timer = asab.Timer(app, self._on_clock_tick, autorestart=True) 
+				self.Timer = asab.Timer(app, self._on_clock_tick, autorestart=True)
 				self.Timer.start(self.UpdatePeriod)
 
 			else:
@@ -53,7 +55,7 @@ class MatrixLookup(Lookup):
 
 	async def _on_matrix_changed(self, message):
 		self.update_indexes()
-		
+
 
 	async def _on_clock_tick(self):
 		self.update_indexes()
@@ -72,7 +74,7 @@ class MatrixLookup(Lookup):
 		if len(x[0]) == 0:
 
 			return None
-		
+
 		return np.asscalar(self.Matrix.Array[x[0][0]][target_column])
 
 
@@ -82,7 +84,7 @@ class MatrixLookup(Lookup):
 		serialized['Indexes'] = {}
 		for index in self.Indexes:
 			serialized["Indexes"][index] = self.Indexes[index].serialize()
-		
+
 		return (json.dumps(serialized)).encode('utf-8')
 
 

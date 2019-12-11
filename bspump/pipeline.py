@@ -69,15 +69,15 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.AsyncFuturesThrottler = object()
 
 		self.Sources = []
-		self.Processors = [[]] # List of lists of processors, the depth is increased by a Generator object
-		self._source_coros = [] # List of source main() coroutines
+		self.Processors = [[]]  # List of lists of processors, the depth is increased by a Generator object
+		self._source_coros = []  # List of source main() coroutines
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
 		self.MetricsService = app.get_service('asab.MetricsService')
 		self.MetricsCounter = self.MetricsService.create_counter(
 			"bspump.pipeline",
-			tags={'pipeline':self.Id},
+			tags={'pipeline': self.Id},
 			init_values={
 				'event.in': 0,
 				'event.out': 0,
@@ -88,15 +88,16 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		)
 		self.MetricsGauge = self.MetricsService.create_gauge(
 			"bspump.pipeline.gauge",
-			tags={'pipeline':self.Id},
+			tags={'pipeline': self.Id},
 			init_values={
 				'warning.ratio': 0.0,
 				'error.ratio': 0.0,
 			}
 		)
-		self.MetricsDutyCycle = self.MetricsService.create_duty_cycle(self.Loop,
+		self.MetricsDutyCycle = self.MetricsService.create_duty_cycle(
+			self.Loop,
 			"bspump.pipeline.dutycycle",
-			tags={'pipeline':self.Id},
+			tags={'pipeline': self.Id},
 			init_values={
 				'ready': False,
 			}
@@ -116,11 +117,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self.LastReadyStateSwitch = self.Loop.time()
 
-		self._error = None # None if not in error state otherwise there is a tuple (context, event, exc, timestamp)
+		self._error = None  # None if not in error state otherwise there is a tuple (context, event, exc, timestamp)
 
 		self._throttles = set()
 
-		self._ready = asyncio.Event(loop = app.Loop)
+		self._ready = asyncio.Event(loop=app.Loop)
 		self._ready.clear()
 
 		# Chillout is used to break a pipeline processing to smaller tasks that allows other event in event loop to be processed
@@ -141,8 +142,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			self.MetricsGauge.set("warning.ratio", 0.0)
 			self.MetricsGauge.set("error.ratio", 0.0)
 			return
-		self.MetricsGauge.set("warning.ratio", values["warning"]/values["event.in"])
-		self.MetricsGauge.set("error.ratio", values["error"]/values["event.in"])
+		self.MetricsGauge.set("warning.ratio", values["warning"] / values["event.in"])
+		self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"])
 
 
 	def is_error(self):
@@ -176,7 +177,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 			if (self._error is not None):
 				L.warning("Error on a pipeline is already set!")
-			
+
 			self._error = (context, event, exc, self.App.time())
 			L.warning("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
 
@@ -186,33 +187,33 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def catch_error(self, exception, event):
 		"""
-        Override to evaluate on the pipeline processing error.
-        Return True for hard errors (stop the pipeline processing) or False for soft errors that will be ignored
+		Override to evaluate on the pipeline processing error.
+		Return True for hard errors (stop the pipeline processing) or False for soft errors that will be ignored
 
 .. code:: python
 
-    class SampleInternalPipeline(bspump.Pipeline):
+	class SampleInternalPipeline(bspump.Pipeline):
 
-        def __init__(self, app, pipeline_id):
-            super().__init__(app, pipeline_id)
+		def __init__(self, app, pipeline_id):
+			super().__init__(app, pipeline_id)
 
-            self.build(
-                bspump.common.InternalSource(app, self),
-                bspump.common.JSONParserProcessor(app, self),
-                bspump.common.PPrintSink(app, self)
-            )
+			self.build(
+				bspump.common.InternalSource(app, self),
+				bspump.common.JSONParserProcessor(app, self),
+				bspump.common.PPrintSink(app, self)
+			)
 
-        def catch_error(self, exception, event):
-            if isinstance(exception, json.decoder.JSONDecodeError):
-                return False
-            return True
-        """
+		def catch_error(self, exception, event):
+			if isinstance(exception, json.decoder.JSONDecodeError):
+				return False
+			return True
+		"""
 
 		return True
 
 
 	def throttle(self, who, enable=True):
-		#L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
+		# L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
 		if enable:
 			self._throttles.add(who)
 		else:
@@ -229,7 +230,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		# Are we throttled?
 		if new_ready:
-			new_ready = len(self._throttles) == 0 
+			new_ready = len(self._throttles) == 0
 
 		if orig_ready != new_ready:
 			if new_ready:
@@ -250,7 +251,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._chillout_counter += 1
 		if self._chillout_counter >= self._chillout_trigger:
 			self._chillout_counter = 0
-			await asyncio.sleep(0.0001, loop = self.Loop)
+			await asyncio.sleep(0.0001, loop=self.Loop)
 
 		await self._ready.wait()
 		return True
@@ -267,7 +268,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			try:
 				event = processor.process(context, event)
 			except BaseException as e:
-				if depth > 0: raise # Handle error on the top depth
+				if depth > 0:
+					raise  # Handle error on the top depth
 				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))
 				self.set_error(context, event, e)
 				raise
@@ -275,7 +277,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				self.ProfilerCounter[processor.Id].add('duration', time.perf_counter() - t0)
 				self.ProfilerCounter[processor.Id].add('run', 1)
 
-			if event is None: # Event has been consumed on the way
+			if event is None:  # Event has been consumed on the way
 				if len(self.Processors) == (depth + 1):
 					if isinstance(processor, Sink):
 						self.MetricsCounter.add('event.out', 1)
@@ -335,7 +337,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		await self.inject(context, event, depth=0)
 
-
 	# Future methods
 
 	def ensure_future(self, coro):
@@ -379,7 +380,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		if exception is not None:
 			self.set_error(None, None, exception)
 
-
 	# Construction
 
 	def set_source(self, source):
@@ -390,8 +390,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	def append_processor(self, processor):
-		#TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
-		#TODO: Check if fitting
+		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
+		# TODO: Check if fitting
 		self.Processors[-1].append(processor)
 
 		if isinstance(processor, Generator):
@@ -460,7 +460,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			for processor in processors:
 				yield processor
 
-
 	# Locate  ...
 
 	def locate_source(self, address):
@@ -473,7 +472,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		return None
 
 	def locate_connection(self, app, connection_id):
-		if isinstance(connection_id, Connection): return connection_id
+		if isinstance(connection_id, Connection):
+			return connection_id
 		svc = app.get_service("bspump.PumpService")
 		connection = svc.locate_connection(connection_id)
 		if connection is None:
@@ -487,7 +487,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		for processor in self.iter_processors():
 				if processor.Id == processor_id:
 					return processor
-
 
 	# Lifecycle ...
 
@@ -515,7 +514,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		for source in self.Sources:
 			await source.stop()
 
-
 	# Rest API
 
 	def rest_get(self):
@@ -533,7 +531,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			rest['Processors'].append(processors)
 
 		if self._error:
-			error_text = str(self._error[2]) # (context, event, exc, timestamp)[2]
+			error_text = str(self._error[2])  # (context, event, exc, timestamp)[2]
 			error_time = self._error[3]
 			if len(error_text) == 0:
 				error_text = str(type(self._error[2]))
@@ -553,19 +551,19 @@ class PipelineLogger(logging.Logger):
 		self.Deque = collections.deque([], 50)
 		self._metrics_counter = metrics_counter
 		# TODO: configurable maxlen that is now 50 ^^
-		# TODO: configurable log level (per pipeline, from its config) 
+		# TODO: configurable log level (per pipeline, from its config)
 
 
 	def handle(self, record):
 		# Count errors and warnings
-		if (record.levelno == logging.WARNING):
+		if record.levelno == logging.WARNING:
 			self._metrics_counter.add("warning", 1)
-		elif (record.levelno >= logging.ERROR):
+		elif record.levelno >= logging.ERROR:
 			self._metrics_counter.add("error", 1)
 
 		# Add formatted timestamp
 		record.timestamp = self._format_time(record)
-		
+
 		# Add record
 		self.Deque.append(record)
 
@@ -577,4 +575,3 @@ class PipelineLogger(logging.Logger):
 		except BaseException as e:
 			L.error("ERROR when logging: {}".format(e))
 			return str(record.created)
-

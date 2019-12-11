@@ -1,22 +1,24 @@
-import logging
-from ..abc.source import Source
 import asyncio
+import json
+import logging
+
 import psycopg2
 import psycopg2.extras
-import aiopg
-import json
-import asyncio
+
+from ..abc.source import Source
+
 #
 
 L = logging.getLogger(__name__)
 
 #
 
+
 class PostgreSQLLogicalReplicationSource(Source):
 	'''
 		This is the source, which reads Postgres WAL-file and
 		produces events `INSERT`, `DELETE` or `UPDATE`.
-		By default it uses `wal2json` postgresql plugin 
+		By default it uses `wal2json` postgresql plugin
 		and it is not preinstalled. Here are the steps, how to install it.
 		`git clone https://github.com/eulerto/wal2json`
 		`cd wal2json`
@@ -26,7 +28,7 @@ class PostgreSQLLogicalReplicationSource(Source):
 		```
 		############ REPLICATION ##############
 		# MODULES
-		shared_preload_libraries = 'wal2json'   
+		shared_preload_libraries = 'wal2json'
 
 		# REPLICATION
 		wal_level = logical
@@ -56,7 +58,7 @@ class PostgreSQLLogicalReplicationSource(Source):
 		self.ProactorService = app.get_service("asab.ProactorService")
 		self.Running = True
 
-	
+
 	def decode(self, message):
 		'''
 			Override it if you use a different plug-in
@@ -82,20 +84,21 @@ class PostgreSQLLogicalReplicationSource(Source):
 	async def main(self):
 		await self.Pipeline.ready()
 
-		conn = psycopg2.connect(self.DSN,
+		conn = psycopg2.connect(
+			self.DSN,
 			connection_factory=psycopg2.extras.LogicalReplicationConnection)
 		self.Cursor = conn.cursor()
-		
+
 		try:
 			self.Cursor.start_replication(slot_name=self.SlotName, decode=False)
 		except psycopg2.ProgrammingError:
 			self.Cursor.create_replication_slot(self.SlotName, output_plugin=self.OutputPlugin)
 			self.Cursor.start_replication(slot_name=self.SlotName, decode=False)
 
-		worker = self.ProactorService.execute(self.stream_data)
+		self.ProactorService.execute(self.stream_data)
 
 		try:
-			while True:			
+			while True:
 				context, event = await self.Queue.get()
 				await self.process(event, context={})
 				self.Queue.task_done()
@@ -107,8 +110,3 @@ class PostgreSQLLogicalReplicationSource(Source):
 
 		finally:
 			self.Running = False
-			
-
-
-
-		

@@ -1,11 +1,10 @@
 import asyncio
-import aiohttp
-import logging
 import json
+import logging
 import random
 import re
 
-from asab import Config
+import aiohttp
 
 from ..abc.connection import Connection
 
@@ -44,12 +43,12 @@ class ElasticSearchConnection(Connection):
 	"""
 
 	ConfigDefaults = {
-		'url': 'http://localhost:9200/', # Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
+		'url': 'http://localhost:9200/',  # Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
 		'username': '',
 		'password': '',
-		'loader_per_url': 4, # Number of parael loaders per URL
+		'loader_per_url': 4,  # Number of parael loaders per URL
 		'output_queue_max_size': 10,
-		'bulk_out_max_size': 1024*1024,
+		'bulk_out_max_size': 1024 * 1024,
 		'timeout': 300,
 		'allowed_bulk_response_codes': '201',
 	}
@@ -67,15 +66,17 @@ class ElasticSearchConnection(Connection):
 			self._auth = None
 		else:
 			self._auth = aiohttp.BasicAuth(login=username, password=password)
-		
+
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
 		for url in self.Config['url'].split(';'):
 			url = url.strip()
-			if len(url) == 0: continue
-			if url[-1] != '/': url += '/'
+			if len(url) == 0:
+				continue
+			if url[-1] != '/':
+				url += '/'
 			self.node_urls.append(url)
- 
+
 		self._loader_per_url = int(self.Config['loader_per_url'])
 
 		self._bulk_out_max_size = int(self.Config['bulk_out_max_size'])
@@ -97,7 +98,7 @@ class ElasticSearchConnection(Connection):
 		self._futures = []
 		for url in self.node_urls:
 			for i in range(self._loader_per_url):
-				self._futures.append((url+'_bulk', None))
+				self._futures.append((url + '_bulk', None))
 
 		self._on_tick("simulated!")
 
@@ -139,7 +140,7 @@ class ElasticSearchConnection(Connection):
 					r = future.result()
 					# This error should never happen
 					L.error("ElasticSearch error observed, returned: '{}' (should be None)".format(r))
-				except:
+				except Exception:
 					L.exception("ElasticSearch error observed, restoring the order")
 
 				self._futures[i] = (url, None)
@@ -148,7 +149,7 @@ class ElasticSearchConnection(Connection):
 			if self._started:
 				url, future = self._futures[i]
 				if future is None:
-					future = asyncio.ensure_future(self._loader(url), loop = self.Loop)			
+					future = asyncio.ensure_future(self._loader(url), loop=self.Loop)
 					self._futures[i] = (url, future)
 
 		self.flush()
@@ -156,15 +157,15 @@ class ElasticSearchConnection(Connection):
 
 	def flush(self):
 		if len(self._bulk_out) == 0:
-			#TODO: Add this event to metrics
+			# TODO: Add this event to metrics
 			return
 
-		#TODO: Add this event to metrics
+		# TODO: Add this event to metrics
 		assert(self._bulk_out is not None)
 		self._output_queue.put_nowait(self._bulk_out)
 		self._bulk_out = ""
 
-		#Signalize need for throttling
+		# Signalize need for throttling
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
@@ -179,10 +180,10 @@ class ElasticSearchConnection(Connection):
 				if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("ElasticSearchConnection.unpause!", self, asynchronously=True)
 
-				#TODO: if exception happens, save bulk_out back to queue for a future resend (don't forget throttling)
+				# TODO: if exception happens, save bulk_out back to queue for a future resend (don't forget throttling)
 
 				L.debug("Sending bulk request (size: {}) to {}".format(len(bulk_out), url))
-			
+
 				async with session.post(url, data=bulk_out, headers={'Content-Type': 'application/json'}, timeout=self._timeout) as resp:
 					if resp.status != 200:
 						resp_body = await resp.text()
@@ -192,10 +193,10 @@ class ElasticSearchConnection(Connection):
 					else:
 						resp_body = await resp.text()
 						respj = json.loads(resp_body)
-						if respj.get('errors', True) != False:
+						if respj.get('errors', True) is not False:
 							error_level = 0
 							for item in respj['items']:
-								#TODO: item['index']['status']: add metrics counter for status code
+								# TODO: item['index']['status']: add metrics counter for status code
 								if item['index']['status'] not in self.AllowedBulkResponseCodes:
 									if error_level == 0:
 										L.error("Failed to insert bulk into ElasticSearch status: {}".format(resp.status))

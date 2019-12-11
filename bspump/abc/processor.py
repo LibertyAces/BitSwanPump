@@ -1,6 +1,7 @@
 import abc
 import asab
 
+
 class ProcessorBase(abc.ABC, asab.ConfigObject):
 
 
@@ -19,7 +20,7 @@ class ProcessorBase(abc.ABC, asab.ConfigObject):
 
 
 	@classmethod
-	def construct(cls, app, pipeline, definition:dict):
+	def construct(cls, app, pipeline, definition: dict):
 		newid = definition.get('id')
 		config = definition.get('config')
 		return cls(app, pipeline, id=newid, config=config)
@@ -28,7 +29,7 @@ class ProcessorBase(abc.ABC, asab.ConfigObject):
 
 	@abc.abstractmethod
 	def process(self, context, event):
-		raise NotImplemented()
+		raise NotImplementedError()
 
 
 	def locate_address(self):
@@ -42,7 +43,6 @@ class ProcessorBase(abc.ABC, asab.ConfigObject):
 			"PipelineId": self.Pipeline.Id,
 		}
 
-	
 
 	def __repr__(self):
 		return '%s(%r)' % (self.__class__.__name__, self.locate_address())

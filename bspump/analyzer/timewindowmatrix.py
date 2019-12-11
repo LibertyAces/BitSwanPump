@@ -43,22 +43,23 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype='float_', start_time=None, resolution=60, columns=15, clock_driven=False,  id=None, config=None):
+	def __init__(self, app, dtype='float_', start_time=None, resolution=60, columns=15, clock_driven=False, id=None, config=None):
 		self.Columns = columns
 		super().__init__(app, dtype=dtype, id=id, config=config)
-		
-		if start_time is None: start_time = time.time()
+
+		if start_time is None:
+			start_time = time.time()
 
 		self.Resolution = resolution
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
-		
+
 		self.End = self.Start - (self.Resolution * self.Array.shape[1])
-		
+
 		self.WarmingUpCount = np.zeros(self.Array.shape[0], dtype='int_')
 
 		if clock_driven:
 			advance_period = resolution / 4
-			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True) 
+			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True)
 			self.Timer.start(advance_period)
 		else:
 			self.Timer = None
@@ -76,7 +77,7 @@ class TimeWindowMatrix(NamedMatrix):
 				'events.late': 0,
 			}
 		)
-		
+
 	def zeros(self):
 		self.ClosedRows = set()
 		self.N2IMap = collections.OrderedDict()
@@ -87,7 +88,7 @@ class TimeWindowMatrix(NamedMatrix):
 	def add_column(self):
 		'''
 			Adds new time column to the matrix and deletes the first one, simulating
-			the time flow. `Start` and `End` attributes are advanced as well. 
+			the time flow. `Start` and `End` attributes are advanced as well.
 		'''
 
 		self.Start += self.Resolution
@@ -103,11 +104,11 @@ class TimeWindowMatrix(NamedMatrix):
 		self.Array = time_window
 		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows)
 		self.WarmingUpCount[open_rows] -= 1
-		
+
 		# Overflow prevention
 		self.WarmingUpCount[self.WarmingUpCount < 0] = 0
 
-	
+
 	def add_row(self, row_name):
 		'''
 			Adds new row with `row_id` to the matrix and sets `warming_up_count`.
@@ -124,7 +125,7 @@ class TimeWindowMatrix(NamedMatrix):
 
 		return row_index
 
-	
+
 	def get_column(self, event_timestamp):
 		'''
 			Returns the right column, where the timestamp fits.
@@ -148,13 +149,15 @@ class TimeWindowMatrix(NamedMatrix):
 
 		# These are temporal debug lines
 		if column_idx < 0:
-			L.exception("The column index {} is less then 0, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(column_idx, 
-				event_timestamp, self.Start, self.End, self.Resolution, self.Array.shape[1]))
+			L.exception(
+				"The column index {} is less then 0, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(
+					column_idx, event_timestamp, self.Start, self.End, self.Resolution, self.Array.shape[1]))
 			raise
 
 		if column_idx >= self.Array.shape[1]:
-			L.exception("The column index {} is more then columns number, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(column_idx, 
-				event_timestamp, self.Start, self.End, self.Resolution, self.Array.shape[1]))
+			L.exception(
+				"The column index {} is more then columns number, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(
+					column_idx, event_timestamp, self.Start, self.End, self.Resolution, self.Array.shape[1]))
 			raise
 
 		return column_idx
@@ -169,17 +172,18 @@ class TimeWindowMatrix(NamedMatrix):
 
 		.. code-block:: python
 
-			------------------|-----------
-			target_ts  ^ >>>  |          
-							  ^           
-							Start         
+			--------------------|-----------
+			target_ts  ^ >>>    |
+								^
+								Start
 			------------------------------
 
 		'''
 		added = 0
 		while True:
 			dt = (self.Start - target_ts) / self.Resolution
-			if dt > 0.25: break
+			if dt > 0.25:
+				break
 			self.add_column()
 			added += 1
 
@@ -189,17 +193,17 @@ class TimeWindowMatrix(NamedMatrix):
 	def close_row(self, row_index, clear=True):
 		super().close_row(row_index, clear=clear)
 		self.WarmingUpCount[row_index] = self.Array.shape[1]
-	
+
 
 	async def on_clock_tick(self):
 		'''
 			React on timer's tick and advance the window.
 		'''
-		
+
 		target_ts = time.time()
 		self.advance(target_ts)
-	
-	
+
+
 	# def close_row(self, row_id):
 	# 	'''
 	# 		Puts the `row_id` to the `ClosedRows`.

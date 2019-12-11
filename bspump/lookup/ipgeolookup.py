@@ -10,6 +10,7 @@ L = logging.getLogger(__name__)
 
 ###
 
+
 class IPGeoLookup(DictionaryLookup):
 	'''
 This lookup performs transformation of IP address into a geographical location.
@@ -26,7 +27,7 @@ Usage: specify in configuration the path to the database in csv format.
 
 	ConfigDefaults = {
 		'path': '',
-		'ipv4mapped': 'no', # IPv4-mapped IPv6 address (enables to use IPv6 lookups for IPv4 addresses)
+		'ipv4mapped': 'no',  # IPv4-mapped IPv6 address (enables to use IPv6 lookups for IPv4 addresses)
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -46,7 +47,7 @@ Usage: specify in configuration the path to the database in csv format.
 
 		with open(fname, 'r') as f:
 			array = []
-			
+
 			for line in csv.reader(f, delimiter=","):
 				ip_int_address_start = int(line[0])
 				ip_int_address_end = int(line[1])
@@ -56,13 +57,16 @@ Usage: specify in configuration the path to the database in csv format.
 				lon = float(line[7])
 
 				if (lat == 0.0) or (lon == 0.0):
-					d = {'lat' : None, 'lon' : None}
+					d = {'lat': None, 'lon': None}
 				else:
-					d = {'lat' : lat, 'lon' : lon}
+					d = {'lat': lat, 'lon': lon}
 
-				if line[2] != '-': d['country'] = line[2]
-				if line[4] != '-': d['region'] = line[4]
-				if line[5] != '-': d['city'] = line[5]
+				if line[2] != '-':
+					d['country'] = line[2]
+				if line[4] != '-':
+					d['region'] = line[4]
+				if line[5] != '-':
+					d['city'] = line[5]
 
 				self.Locations[ip_int_address_start] = d
 				self.Locations[ip_int_address_end] = d
@@ -84,15 +88,15 @@ Usage: specify in configuration the path to the database in csv format.
 		rest["IP4Mapped"] = self.IP4Mapped
 		return rest
 
-	def sorted_array_to_bst(self, arr): 
-		if not arr: 
+	def sorted_array_to_bst(self, arr):
+		if not arr:
 			return None
 
 		mid = int(len(arr) / 2)
-		root = Node(arr[mid]) 
-		root.left = self.sorted_array_to_bst(arr[:mid]) 
-		root.right = self.sorted_array_to_bst(arr[mid+1:]) 
-		return root 
+		root = Node(arr[mid])
+		root.left = self.sorted_array_to_bst(arr[:mid])
+		root.right = self.sorted_array_to_bst(arr[mid + 1:])
+		return root
 
 
 	def search(self, value):
@@ -100,25 +104,25 @@ Usage: specify in configuration the path to the database in csv format.
 		while True:
 			if root.data == value:
 				return root.data
-			
+
 			if root.data > value:
 
-				l = root.left
-				if l is None:
+				left = root.left
+				if left is None:
 					return root.data
 				else:
-					root = l
+					root = left
 			if root.data < value:
-				r = root.right
-				if r is None:
+				right = root.right
+				if right is None:
 					return root.data
 				else:
-					root = r
+					root = right
 
 
 	def lookup_location_ipv4(self, address):
 		if self.TreeRoot is None:
-			#L.warn("Cannnot enrich the location")
+			# L.warning("Cannot enrich the location")
 			return None
 
 		address_int = int(ipaddress.IPv4Address(address))
@@ -134,7 +138,7 @@ Usage: specify in configuration the path to the database in csv format.
 
 	def lookup_location_ipv6(self, address):
 		if self.TreeRoot is None:
-			#L.warn("Cannnot enrich the location")
+			# L.warning("Cannot enrich the location")
 			return None
 
 		address_int = int(ipaddress.IPv6Address(address))
@@ -151,8 +155,8 @@ Usage: specify in configuration the path to the database in csv format.
 			raise ValueError("Invalid IPv4/IPv6 format")
 
 
-class Node: 
-	def __init__(self, d): 
-		self.data = d 
+class Node:
+	def __init__(self, d):
+		self.data = d
 		self.left = None
 		self.right = None

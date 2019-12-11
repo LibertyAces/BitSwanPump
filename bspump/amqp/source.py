@@ -6,11 +6,9 @@ import pkg_resources
 
 from ..abc.source import Source
 
-#
 
 L = logging.getLogger(__name__)
 
-#
 
 class AMQPSource(Source):
 
@@ -98,11 +96,11 @@ class AMQPSource(Source):
 	def _on_consume_message(self, channel, method, properties, body):
 		try:
 			self._queue.put_nowait((method, properties, body))
-		except:
+		except Exception:
 			channel.basic_nack(method.delivery_tag, requeue=True)
 
 	@classmethod
-	def construct(cls, app, pipeline, definition:dict):
+	def construct(cls, app, pipeline, definition: dict):
 		newid = definition.get('id')
 		config = definition.get('config')
 		connection = definition['args']['connection']

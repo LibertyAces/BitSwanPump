@@ -1,4 +1,3 @@
-import asyncio
 from .trigger import Trigger
 
 ###

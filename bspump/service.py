@@ -6,11 +6,9 @@ from .abc.connection import Connection
 from .abc.lookup import Lookup
 from .matrix.matrix import Matrix
 
-#
 
 L = logging.getLogger(__file__)
 
-#
 
 class BSPumpService(asab.Service):
 
@@ -46,7 +44,6 @@ class BSPumpService(asab.Service):
 
 		return None
 
-
 	# Pipelines
 
 	def add_pipeline(self, pipeline):
@@ -57,7 +54,6 @@ class BSPumpService(asab.Service):
 	def add_pipelines(self, *pipelines):
 		for pipeline in pipelines:
 			self.add_pipeline(pipeline)
-
 
 	# Connections
 
@@ -72,12 +68,14 @@ class BSPumpService(asab.Service):
 			self.add_connection(connection)
 
 	def locate_connection(self, connection_id):
-		if isinstance(connection_id, Connection): return connection_id
+		if isinstance(connection_id, Connection):
+			return connection_id
 		try:
 			return self.Connections[connection_id]
 		except KeyError:
-			raise KeyError("Cannot find connection id '{}' (did you call add_connection() before add_pipeline() ?)".format(connection_id))
-
+			raise KeyError(
+				"Cannot find connection id '{}' (did you call add_connection() before add_pipeline() ?)".format(connection_id)
+			)
 
 	# Lookups
 
@@ -92,19 +90,19 @@ class BSPumpService(asab.Service):
 			self.add_lookup(lookup)
 
 	def locate_lookup(self, lookup_id):
-		if isinstance(lookup_id, Lookup): return lookup_id
+		if isinstance(lookup_id, Lookup):
+			return lookup_id
 		try:
 			return self.Lookups[lookup_id]
 		except KeyError:
 			raise KeyError("Cannot find lookup id '{}' (did you call add_lookup() ?)".format(lookup_id))
 
-
 	# Matrixes
 
 	def add_matrix(self, matrix):
 		if matrix.Id in self.Matrixes:
-			raise RuntimeError("Matrix '{}' already created".format(matrix.Id))	
-			
+			raise RuntimeError("Matrix '{}' already created".format(matrix.Id))
+
 		self.Matrixes[matrix.Id] = matrix
 		return matrix
 
@@ -113,7 +111,8 @@ class BSPumpService(asab.Service):
 			self.add_matrix(matrix)
 
 	def locate_matrix(self, matrix_id):
-		if isinstance(matrix_id, Matrix): return matrix_id
+		if isinstance(matrix_id, Matrix):
+			return matrix_id
 		try:
 			return self.Matrixes[matrix_id]
 		except KeyError:

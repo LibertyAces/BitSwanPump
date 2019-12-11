@@ -3,6 +3,7 @@ import collections.abc
 
 from ..abc.processor import Processor
 
+
 class MappingTransformator(Processor):
 
 
@@ -28,5 +29,5 @@ class MappingTransformator(Processor):
 			return key, value
 
 
-	def process(self, context, event:collections.abc.Mapping) -> dict:
+	def process(self, context, event: collections.abc.Mapping) -> dict:
 		return dict(map(self._map, event.items()))

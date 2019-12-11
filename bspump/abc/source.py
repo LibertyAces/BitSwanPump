@@ -4,11 +4,9 @@ import asyncio
 import concurrent.futures
 from asab import ConfigObject
 
-#
 
 L = logging.getLogger(__name__)
 
-#
 
 class Source(abc.ABC, ConfigObject):
 
@@ -26,7 +24,7 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		self.Id = id if id is not None else self.__class__.__name__
 		self.Pipeline = pipeline
 
-		self.Task = None # Contains a main coroutine `main()` if Pipeline is started
+		self.Task = None  # Contains a main coroutine `main()` if Pipeline is started
 
 
 	async def process(self, event, context=None):
@@ -36,12 +34,13 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		If there is an error in the processing of the event, the pipeline is throttled by setting the error and the exception raised.
 		The source should catch this exception and fail gracefully.
 		"""
-		#TODO: Remove this method completely, each source should call pipeline.process() method directly
+		# TODO: Remove this method completely, each source should call pipeline.process() method directly
 		await self.Pipeline.process(event, context=context)
 
 
 	def start(self, loop):
-		if self.Task is not None: return
+		if self.Task is not None:
+			return
 
 		async def _main():
 			# This is to properly handle a lifecycle of the main method
@@ -57,7 +56,8 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 
 	async def stop(self):
-		if self.Task is None: return # Source is not started
+		if self.Task is None:
+			return  # Source is not started
 		if not self.Task.done():
 			self.Task.cancel()
 		await self.Task
@@ -76,22 +76,22 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 	@abc.abstractmethod
 	async def main(self):
-		raise NotImplemented()
+		raise NotImplementedError()
 
 
 	async def stopped(self):
 		"""
-        Helper that simplyfies the implementation of sources:
+		Helper that simplyfies the implementation of sources:
 
 .. code:: python
 
-    async def main(self):
-        ... initialize resources here
+	async def main(self):
+		... initialize resources here
 
-        await self.stopped()
+		await self.stopped()
 
-        ... finalize resources here
-    """
+		... finalize resources here
+	"""
 
 		try:
 			while True:
@@ -117,36 +117,34 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 
 	@classmethod
-	def construct(cls, app, pipeline, definition:dict):
+	def construct(cls, app, pipeline, definition: dict):
 		newid = definition.get('id')
 		config = definition.get('config')
 		return cls(app, pipeline, id=newid, config=config)
 
 
-#
-
 class TriggerSource(Source):
 
 	"""
-    This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
-    You need to provide a trigger class and implement cycle() method.
+	This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
+	You need to provide a trigger class and implement cycle() method.
 
-    Trigger source will stop execution, when a pipeline is cancelled (raises concurrent.futures.CancelledError).
-    This typically happens when a program wants to quit in reaction to a on the signal.
+	Trigger source will stop execution, when a pipeline is cancelled (raises concurrent.futures.CancelledError).
+	This typically happens when a program wants to quit in reaction to a on the signal.
 
-    You also may overload the main() method to provide additional parameters for a cycle() method.
+	You also may overload the main() method to provide additional parameters for a cycle() method.
 
 .. code:: python
 
-    async def main(self):
-        async with aiohttp.ClientSession(loop=self.Loop) as session:
-            await super().main(session)
+	async def main(self):
+		async with aiohttp.ClientSession(loop=self.Loop) as session:
+			await super().main(session)
 
 
-    async def cycle(self, session):
-        session.get(...)
+	async def cycle(self, session):
+		session.get(...)
 
-    """
+	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -187,7 +185,7 @@ class TriggerSource(Source):
 			try:
 				await self.cycle(*args, **kwags)
 
-			except concurrent.futures.CancelledError as e:
+			except concurrent.futures.CancelledError:
 				# This happens when Ctrl-C is pressed
 				L.warning("Pipeline '{}' processing was cancelled".format(self.Pipeline.Id))
 
@@ -209,7 +207,7 @@ class TriggerSource(Source):
 
 	@abc.abstractmethod
 	async def cycle(self, *args, **kwags):
-		raise NotImplemented()
+		raise NotImplementedError()
 
 	def rest_get(self):
 		result = super().rest_get()

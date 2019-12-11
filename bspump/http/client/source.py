@@ -1,6 +1,5 @@
 from .abcsource import HTTPABCClientSource
 
-###
 
 class HTTPClientSource(HTTPABCClientSource):
 
@@ -8,7 +7,6 @@ class HTTPClientSource(HTTPABCClientSource):
 		response = await response.read()
 		await self.process(response)
 
-###
 
 class HTTPClientTextSource(HTTPABCClientSource):
 
@@ -20,13 +18,13 @@ class HTTPClientTextSource(HTTPABCClientSource):
 		super().__init__(app, pipeline, id=id, config=config, headers={})
 
 		self.encoding = self.Config['encoding']
-		if self.encoding == '': self.encoding = None
+		if self.encoding == '':
+			self.encoding = None
 
 	async def read(self, response):
 		response = await response.text(encoding=self.encoding)
 		await self.process(response)
 
-###
 
 class HTTPClientLineSource(HTTPClientTextSource):
 

@@ -1,14 +1,11 @@
-import datetime
-
-import asab
-
 from ..abc.sink import Sink
+
 
 class ODBCSink(Sink):
 
 
 	ConfigDefaults = {
-		'query': '', # e.g.: 'INSERT INTO table_name (first_name, last_name) VALUES (?, ?);'
+		'query': '',  # e.g.: 'INSERT INTO table_name (first_name, last_name) VALUES (?, ?);'
 		'data': '',  # e.g.: 'first_name,last_name'
 	}
 

@@ -4,11 +4,9 @@ import os
 
 from .fileabcsource import FileABCSource
 
-#
 
 L = logging.getLogger(__file__)
 
-#
 
 class FileCSVSource(FileABCSource):
 
@@ -39,30 +37,39 @@ class FileCSVSource(FileABCSource):
 		kwargs = {}
 
 		v = self.Config.get('delimiter')
-		if v is not None: kwargs['delimiter'] = v
+		if v is not None:
+			kwargs['delimiter'] = v
 
 		v = self.Config.get('doublequote')
-		if v is not None: kwargs['doublequote'] = v
+		if v is not None:
+			kwargs['doublequote'] = v
 
 		v = self.Config.get('escapechar')
-		if v is not None: kwargs['escapechar'] = v
+		if v is not None:
+			kwargs['escapechar'] = v
 
 		v = self.Config.get('lineterminator')
-		if v is not None: kwargs['lineterminator'] = v
+		if v is not None:
+			kwargs['lineterminator'] = v
 
 		v = self.Config.get('quotechar')
-		if v is not None: kwargs['quotechar'] = v
+		if v is not None:
+			kwargs['quotechar'] = v
 
 		v = self.Config.get('quoting')
-		if v is not None: kwargs['quoting'] = v
+		if v is not None:
+			kwargs['quoting'] = v
 
 		v = self.Config.get('skipinitialspace')
-		if v is not None: kwargs['skipinitialspace'] = v
+		if v is not None:
+			kwargs['skipinitialspace'] = v
 
 		v = self.Config.get('strict')
-		if v is not None: kwargs['strict'] = v
+		if v is not None:
+			kwargs['strict'] = v
 
-		return csv.DictReader(f,
+		return csv.DictReader(
+			f,
 			dialect=self.Dialect,
 			fieldnames=self.FieldNames,
 			**kwargs

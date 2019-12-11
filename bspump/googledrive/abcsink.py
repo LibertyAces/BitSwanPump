@@ -8,6 +8,7 @@ L = logging.getLogger(__name__)
 # TODO: Research option to refactor with aiogoogle
 # https://aiogoogle.readthedocs.io/en/latest/
 
+
 class GoogleDriveABCSink(Sink):
 	"""
 	GoogleDriveABCSink is abstract class ment to be used for uploading files to GoogleDrive.
@@ -18,8 +19,10 @@ class GoogleDriveABCSink(Sink):
 		self.Drive_service = None
 		self._conn_future = None
 		self.Connection = pipeline.locate_connection(app, connection)
-		self._output_queue = asyncio.Queue(loop=app.Loop,
-										   maxsize=self.Connection._output_queue_max_size + 1)
+		self._output_queue = asyncio.Queue(
+			loop=app.Loop,
+			maxsize=self.Connection._output_queue_max_size + 1
+		)
 
 		# Subscription
 		app.PubSub.subscribe("Application.stop!", self._on_exit)
@@ -38,7 +41,7 @@ class GoogleDriveABCSink(Sink):
 
 			try:
 				self._conn_future.result()
-			except:
+			except Exception:
 				# Connection future threw an error
 				L.exception("Unexpected connection future error")
 
@@ -57,7 +60,7 @@ class GoogleDriveABCSink(Sink):
 		# producer = await self.Connection.create_producer(**self._producer_params)
 		if self.Drive_service is None:
 			self.Drive_service = self.Connection._get_service()
-		await self._loader ()
+		await self._loader()
 
 
 	def process(self, context, event):
@@ -67,9 +70,9 @@ class GoogleDriveABCSink(Sink):
 			self.Pipeline.throttle(self, True)
 
 
-	async def _on_exit(self, event_name, counter= None):
+	async def _on_exit(self, event_name, counter=None):
 		self._output_queue.put_nowait((None, None))
 
 
 	async def _loader(self):
-		raise NotImplemented()
+		raise NotImplementedError()

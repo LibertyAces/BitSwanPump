@@ -1,7 +1,9 @@
-import logging
-from ..abc.source import Source
-import pymysqlreplication
 import asyncio
+import logging
+
+import pymysqlreplication
+
+from ..abc.source import Source
 
 #
 
@@ -9,24 +11,25 @@ L = logging.getLogger(__name__)
 
 #
 
+
 class MySQLBinaryLogSource(Source):
 
 	ConfigDefaults = {
 		'server_id': 1,
-		'log_file': '', #name of the first log file 
-		'log_pos' : 4,
-		'extract_events': 
-						"""
-						DeleteRowsEvent 
-						UpdateRowsEvent 
-						WriteRowsEvent
-						"""
+		'log_file': '',  # name of the first log file
+		'log_pos': 4,
+		'extract_events':
+			"""
+			DeleteRowsEvent
+			UpdateRowsEvent
+			WriteRowsEvent
+			"""
 	}
-	
+
 	'''
-	Before you started using it, make sure that 
+	Before you started using it, make sure that
 	my.cnf configuration file contains following lines:
-	
+
 	[mysqld]
 	server-id		 = 1
 	log_bin			 = /var/log/mysql/mysql-bin.log
@@ -41,8 +44,8 @@ class MySQLBinaryLogSource(Source):
 
 	The source extracts events from MySQL binary log. By default it extracts only [DeleteRowsEvent, UpdateRowsEvent, WriteRowsEvent],
 	but you can extend the list in configuration with [QueryEvent, RotateEvent,StopEvent,FormatDescriptionEvent,XidEvent,
-		GtidEvent,BeginLoadQueryEvent,ExecuteLoadQueryEvent,TableMapEvent,HeartbeatLogEvent]	
-	
+		GtidEvent,BeginLoadQueryEvent,ExecuteLoadQueryEvent,TableMapEvent,HeartbeatLogEvent]
+
 	Examples:
 	UpdateRowsEvent event:
 		{
@@ -50,8 +53,10 @@ class MySQLBinaryLogSource(Source):
 			'event_size': 47,
 			'log_position': 1251,
 			'read_bytes': 13,
-			'rows': [{'after_values': {'data': 'World', 'data2': 'Hello', 'id': 1},
-			          'before_values': {'data': 'Hello', 'data2': 'World', 'id': 1}}],
+			'rows': [
+				{'after_values': {'data': 'World', 'data2': 'Hello', 'id': 1}},
+				{'before_values': {'data': 'Hello', 'data2': 'World', 'id': 1}}
+			],
 			'type': 'UpdateRowsEvent'
 		}
 
@@ -65,7 +70,7 @@ class MySQLBinaryLogSource(Source):
 			'type': 'DeleteRowsEvent'
 		}
 
-	WriteRowsEvent event: 
+	WriteRowsEvent event:
 		{
 			'@timestamp': 1551791153,
 			'event_size': 29,
@@ -82,23 +87,23 @@ class MySQLBinaryLogSource(Source):
 		super().__init__(app, pipeline, id=id, config=config)
 		self._connection = pipeline.locate_connection(app, connection)
 		self.MySQLSettings = {
-			'host': self._connection._host, 
-			'port': self._connection._port, 
-			'user': self._connection._user, 
-			'passwd': self._connection._password, 
+			'host': self._connection._host,
+			'port': self._connection._port,
+			'user': self._connection._user,
+			'passwd': self._connection._password,
 		}
 
 		self.ServerId = int(self.Config['server_id'])
 		self.ProactorService = app.get_service("asab.ProactorService")
-		
+
 		self.ServerId = int(self.Config['server_id'])
 		self.LogFile = self.Config['log_file']
 		self.LogPos = int(self.Config['log_pos'])
-		
+
 		if self.LogFile == '':
 			self.LogFile = None
 			self.LogPos = None
-		
+
 		extract_events = []
 		lines = self.Config["extract_events"].split('\n')
 		for line in lines:
@@ -106,31 +111,32 @@ class MySQLBinaryLogSource(Source):
 			if len(line_core) == 0:
 				continue
 			extract_events.append(line_core)
-		
+
 		self.ExtractEvents = frozenset(extract_events)
 		self.Loop = app.Loop
 		self.Queue = asyncio.Queue(loop=self.Loop)
 		self.Running = True
 		self.Stream = None
-		
-	
+
+
 	def stream_data(self):
 		self.Stream = pymysqlreplication.BinLogStreamReader(
-						connection_settings=self.MySQLSettings, 
-						server_id=self.ServerId,
-						log_file=self.LogFile,
-						log_pos=self.LogPos,
-						resume_stream=True)
+			connection_settings=self.MySQLSettings,
+			server_id=self.ServerId,
+			log_file=self.LogFile,
+			log_pos=self.LogPos,
+			resume_stream=True
+		)
 
 		for binlogevent in self.Stream:
-			
+
 			if not self.Running:
 				return False
-			
+
 			event = {}
 
 			event_type = binlogevent.__class__.__name__
-			
+
 			if event_type not in self.ExtractEvents:
 				continue
 
@@ -158,10 +164,10 @@ class MySQLBinaryLogSource(Source):
 			if event_type == 'RotateEvent':
 				event['position'] = binlogevent.position
 				event['next_binlog_file'] = binlogevent.next_binlog
-				
+
 			if event_type == 'XidEvent':
 				event['transaction_id'] = binlogevent.xid
-			
+
 			if event_type == 'HeartbeatLogEvent':
 				event['current_binlog'] = binlogevent.ident
 
@@ -188,10 +194,10 @@ class MySQLBinaryLogSource(Source):
 			if event_type == 'IntvarEvent':
 				event['type'] = binlogevent.type
 				event['value'] = binlogevent.value
-			
-			self.Queue.put_nowait(({},event))
+
+			self.Queue.put_nowait(({}, event))
 		return True
-	
+
 
 	async def main(self):
 		worker = self.ProactorService.execute(self.stream_data)

@@ -1,9 +1,9 @@
 import asyncio
 import logging
-import socket
-import aioodbc
-from asab import PubSub
 
+import aioodbc
+
+from asab import PubSub
 from ..abc.connection import Connection
 
 #
@@ -58,7 +58,7 @@ class ODBCConnection(Connection):
 		app.PubSub.subscribe("ODBCConnection.unpause!", self._on_unpause)
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
-		self._bulks = {} # We have a "bulk" per query
+		self._bulks = {}  # We have a "bulk" per query
 
 
 	def _on_pause(self):
@@ -71,7 +71,7 @@ class ODBCConnection(Connection):
 	def _flush(self):
 		for query in self._bulks.keys():
 			# Break if throttling was requested during the flush,
-			# so that put_nowait doesn't raise 
+			# so that put_nowait doesn't raise
 			if self._pause:
 				break
 
@@ -104,10 +104,10 @@ class ODBCConnection(Connection):
 
 			try:
 				self._conn_future.result()
-			except:
+			except Exception:
 				# Connection future threw an error
 				L.exception("Unexpected connection future error")
-				
+
 			# Connection future already resulted (with or without exception)
 			self._conn_future = None
 
@@ -127,7 +127,7 @@ class ODBCConnection(Connection):
 				user=self._user,
 				password=self._password,
 				dsn=self._dsn,
-				connect_timeout=self._connect_timeout, 
+				connect_timeout=self._connect_timeout,
 				loop=self.Loop) as pool:
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
@@ -167,5 +167,3 @@ class ODBCConnection(Connection):
 				async with conn.cursor() as cur:
 					await cur.executemany(query, data)
 					await conn.commit()
-
-

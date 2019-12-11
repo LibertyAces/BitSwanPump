@@ -47,5 +47,4 @@ class TimeZoneNormalizer(bspump.Processor):
 			>>> local_time = self.normalize(native_time)
 			>>> event["@timestamp"] = local_time
 		"""
-		raise NotImplemented()
-
+		raise NotImplementedError()

@@ -41,8 +41,8 @@ class ElasticSearchLookup(MappingLookup):
 	"""
 
 	ConfigDefaults = {
-		'index': '', # Specify an index
-		'key':'', # Specify field name to match
+		'index': '',  # Specify an index
+		'key': '',  # Specify field name to match
 		'scroll_timeout': '1m',
 	}
 
@@ -96,12 +96,12 @@ class ElasticSearchLookup(MappingLookup):
 		prefix = "_count"
 		request = {
 			"query": {
-				"match_all":{}
+				"match_all": {}
 			}
 		}
 
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
-		
+
 		async with self.Connection.get_session() as session:
 			async with session.post(
 				url,
@@ -110,9 +110,9 @@ class ElasticSearchLookup(MappingLookup):
 			) as response:
 
 				if response.status != 200:
-					data = await response.text() #!
+					data = await response.text()
 					L.error("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(response.status, url, data))
-					
+
 
 				msg = await response.json()
 
@@ -142,9 +142,9 @@ class ElasticSearchLookup(MappingLookup):
 	def __iter__(self):
 		scroll_id = None
 		request = {
-			"size":10000,
+			"size": 10000,
 			"query": {
-				"match_all":{}
+				"match_all": {}
 			}
 		}
 
@@ -159,26 +159,26 @@ class ElasticSearchLookup(MappingLookup):
 
 			url = self.Connection.get_url() + path
 			response = requests.post(url, json=request_body)
-			
+
 			if response.status_code != 200:
 				data = response.text()
-				L.error("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(response.status, url, data))
+				L.error("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(response.status_code, url, data))
 				break
-			
+
 			data = json.loads(response.text)
 
 			scroll_id = data.get('_scroll_id')
-			
+
 			if scroll_id is None:
 				break
 
 			hits = data['hits']['hits']
-			
+
 			if len(hits) == 0:
 				break
-			
+
 			all_hits.extend(hits)
-		
+
 		self.Iterator = all_hits.__iter__()
 		return self
 
@@ -192,7 +192,7 @@ class ElasticSearchLookup(MappingLookup):
 		return key
 
 	@classmethod
-	def construct(cls, app, definition:dict):
+	def construct(cls, app, definition: dict):
 		newid = definition.get('id')
 		config = definition.get('config')
 		connection = definition['args']['connection']

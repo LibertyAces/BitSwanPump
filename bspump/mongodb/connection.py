@@ -1,8 +1,7 @@
 import logging
-import abc
 
-import pymongo
 import motor.motor_asyncio
+import pymongo
 
 from ..abc.connection import Connection
 
@@ -12,20 +11,24 @@ L = logging.getLogger(__name__)
 
 #
 
-#TODO: Generalize this function to ConfigObject
+
+# TODO: Generalize this function to ConfigObject
 def _get_int_or_none(config_obj, key):
 	v = config_obj.get(key)
-	if isinstance(v, str) and len(v) == 0: return None
+	if isinstance(v, str) and len(v) == 0:
+		return None
 	try:
 		return int(v)
 	except ValueError:
 		L.error("Expects integer value", struct_data={'key': key, 'value': v})
 		return None
 
-#TODO: Generalize this function to ConfigObject
+
+# TODO: Generalize this function to ConfigObject
 def _get_str_or_none(config_obj, key):
 	v = config_obj.get(key)
-	if len(v) == 0: return None
+	if len(v) == 0:
+		return None
 	return v
 
 
@@ -49,7 +52,7 @@ host=mongodb://host1,host2/?replicaSet=my-replicaset-name
 	'''
 
 	ConfigDefaults = {
-		'host': 'localhost', # hostname or IP address or Unix domain socket path of a single mongod or mongos instance to connect to, or a mongodb URI, or a list of hostnames / mongodb URIs.
+		'host': 'localhost',  # hostname or IP address or Unix domain socket path of a single mongod or mongos instance to connect to, or a mongodb URI, or a list of hostnames / mongodb URIs.
 		'port': 27017,
 		'username': '',
 		'password': '',
@@ -61,14 +64,14 @@ host=mongodb://host1,host2/?replicaSet=my-replicaset-name
 		'server_selection_timeout': '',
 		'wait_queue_timeout': '',
 		'wait_queue_multiple': '',
-		'heartbeat_frequency': 10*1000, # 10 seconds
+		'heartbeat_frequency': 10 * 1000,  # 10 seconds
 		'database': 'database',
 	}
 
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 
-		#TODO: SSL ...
+		# TODO: SSL ...
 
 		self.Client = motor.motor_asyncio.AsyncIOMotorClient(
 			host=self.Config['host'],
@@ -85,8 +88,8 @@ host=mongodb://host1,host2/?replicaSet=my-replicaset-name
 			heartbeatFrequencyMS=_get_int_or_none(self.Config, 'heartbeat_frequency'),
 			appname=id,
 			driver=pymongo.driver_info.DriverInfo(
-				name="bspump.MongoDBConnection", 
-				#TODO: version=...
+				name="bspump.MongoDBConnection",
+				# TODO: version=...
 				platform="BitSwan",
 			),
 			io_loop=app.Loop

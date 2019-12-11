@@ -2,3 +2,11 @@ from .matrixexportcsvgenerator import SessionMatrixExportCSVGenerator, TimeWindo
 from .source import MatrixSource
 from .matrix import Matrix, NamedMatrix
 
+
+__all__ = (
+	'SessionMatrixExportCSVGenerator',
+	'TimeWindowMatrixExportCSVGenerator',
+	'MatrixSource',
+	'Matrix',
+	'NamedMatrix',
+)

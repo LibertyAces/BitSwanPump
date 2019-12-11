@@ -10,16 +10,17 @@ from .latch import LatchAnalyzer
 from .analyzingsource import AnalyzingSource
 from .threshold import ThresholdAnalyzer
 
-__all__ = [
+
+__all__ = (
 	'Analyzer',
-	'TimeDriftAnalyzer',
 	'TimeWindowAnalyzer',
+	'TimeDriftAnalyzer',
 	'SessionAnalyzer',
 	'GeoAnalyzer',
 	'GeoMatrix',
 	'TimeWindowMatrix',
 	'SessionMatrix',
 	'LatchAnalyzer',
+	'AnalyzingSource',
 	'ThresholdAnalyzer',
-]
-
+)

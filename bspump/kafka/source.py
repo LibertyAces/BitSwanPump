@@ -47,10 +47,10 @@ class KafkaSource(Source):
 	"""
 
 	ConfigDefaults = {
-		"topic": "", # Multiple values are allowed, separated by , character
+		"topic": "",  # Multiple values are allowed, separated by , character
 		"retry": 20,
 		"group_id": "",
-		
+
 		"client_id": "BSPump-KafkaSource",
 
 		"auto_offset_reset": "earliest",
@@ -62,7 +62,7 @@ class KafkaSource(Source):
 		"request_timeout_ms": "",
 		"get_timeout_ms": 20000,
 
-		"event_block_size": 1000, # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
+		"event_block_size": 1000,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
 		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
 	}
 
@@ -73,31 +73,38 @@ class KafkaSource(Source):
 
 
 		consumer_params = {}
-		
+
 		self._group_id = self.Config.get("group_id")
-		if len (self._group_id) > 0:
+		if len(self._group_id) > 0:
 			consumer_params['group_id'] = self._group_id
 
 		v = self.Config.get('client_id')
-		if v != "": consumer_params['client_id'] = v
-		
+		if v != "":
+			consumer_params['client_id'] = v
+
 		v = self.Config.get('auto_offset_reset')
-		if v != "": consumer_params['auto_offset_reset'] = v
+		if v != "":
+			consumer_params['auto_offset_reset'] = v
 
 		v = self.Config.get('api_version')
-		if v != "": consumer_params['api_version'] = v
-		
+		if v != "":
+			consumer_params['api_version'] = v
+
 		v = self.Config.get('max_partition_fetch_bytes')
-		if v != "": consumer_params['max_partition_fetch_bytes'] = int(v)
+		if v != "":
+			consumer_params['max_partition_fetch_bytes'] = int(v)
 
 		v = self.Config.get('session_timeout_ms')
-		if v != "": consumer_params['session_timeout_ms'] = int(v)
+		if v != "":
+			consumer_params['session_timeout_ms'] = int(v)
 
 		v = self.Config.get('consumer_timeout_ms')
-		if v != "": consumer_params['consumer_timeout_ms'] = int(v)
+		if v != "":
+			consumer_params['consumer_timeout_ms'] = int(v)
 
 		v = self.Config.get('request_timeout_ms')
-		if v != "": consumer_params['request_timeout_ms'] = int(v)
+		if v != "":
+			consumer_params['request_timeout_ms'] = int(v)
 
 		self.GetTimeoutMs = int(self.Config.get("get_timeout_ms"))
 
@@ -177,12 +184,12 @@ class KafkaSource(Source):
 				# Ctrl-C -> terminate and exit
 				raise e
 			except (
-					kafka.errors.IllegalStateError,
-					kafka.errors.CommitFailedError,
-					kafka.errors.UnknownMemberIdError,
-					kafka.errors.NodeNotReadyError,
-					kafka.errors.RebalanceInProgressError,
-					concurrent.futures.CancelledError,
+				kafka.errors.IllegalStateError,
+				kafka.errors.CommitFailedError,
+				kafka.errors.UnknownMemberIdError,
+				kafka.errors.NodeNotReadyError,
+				kafka.errors.RebalanceInProgressError,
+				concurrent.futures.CancelledError,
 			) as e:
 				# Retry-able errors
 				if i == 1:

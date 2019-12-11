@@ -6,13 +6,12 @@ from cryptography.hazmat.backends import default_backend
 
 from ..abc.processor import Processor
 
-#
 
 class CommonAESMixin(object):
 
 
 	ConfigDefaults = {
-		"key" : "00000000000000000000000000000000", # Hexadecimal key, It must be 16 (AES-128), 24 (AES-192), or 32 (AES-256) bytes long.
+		"key": "00000000000000000000000000000000",  # Hexadecimal key, It must be 16 (AES-128), 24 (AES-192), or 32 (AES-256) bytes long.
 		"iv": "00000000000000000000000000000000",
 	}
 
@@ -42,7 +41,6 @@ class EncryptAESProcessor(Processor, CommonAESMixin):
 		data = padder.update(event) + padder.finalize()
 		return encryptor.update(data) + encryptor.finalize()
 
-#
 
 class DecryptAESProcessor(Processor, CommonAESMixin):
 
@@ -57,4 +55,3 @@ class DecryptAESProcessor(Processor, CommonAESMixin):
 		unpadder = self.padding.unpadder()
 		data = decryptor.update(event) + decryptor.finalize()
 		return unpadder.update(data) + unpadder.finalize()
-

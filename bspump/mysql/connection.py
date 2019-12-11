@@ -89,7 +89,7 @@ class MySQLConnection(Connection):
 		app.PubSub.subscribe("MySQLConnection.unpause!", self._on_unpause)
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
-		self._bulks = {} # We have a "bulk" per query
+		self._bulks = {}  # We have a "bulk" per query
 
 
 	def _on_pause(self):
@@ -102,7 +102,7 @@ class MySQLConnection(Connection):
 	def _flush(self):
 		for query in self._bulks.keys():
 			# Break if throttling was requested during the flush,
-			# so that put_nowait doesn't raise 
+			# so that put_nowait doesn't raise
 			if self._pause:
 				break
 
@@ -135,10 +135,10 @@ class MySQLConnection(Connection):
 
 			try:
 				self._conn_future.result()
-			except:
+			except Exception:
 				# Connection future threw an error
 				L.exception("Unexpected connection future error")
-				
+
 			# Connection future already resulted (with or without exception)
 			self._conn_future = None
 
@@ -250,4 +250,3 @@ class MySQLConnection(Connection):
 				async with connection.cursor() as cursor:
 					await cursor.executemany(query, data)
 					await connection.commit()
-

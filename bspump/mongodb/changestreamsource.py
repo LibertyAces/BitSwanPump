@@ -1,12 +1,14 @@
-import logging
-from ..abc.source import Source
 import asyncio
-import pymongo
+import logging
+
+from ..abc.source import Source
+
 #
 
 L = logging.getLogger(__name__)
 
 #
+
 
 class MongoDBChangeStreamSource(Source):
 	'''
@@ -20,10 +22,10 @@ class MongoDBChangeStreamSource(Source):
 	'''
 
 	ConfigDefaults = {
-		'database':'',
-		'collection':'',
+		'database': '',
+		'collection': '',
 	}
-	
+
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -32,7 +34,7 @@ class MongoDBChangeStreamSource(Source):
 		self.Collection = self.Config['collection']
 		if self.Collection == '':
 			self.Collection = None
-	
+
 
 	async def main(self):
 		running = True
@@ -42,7 +44,7 @@ class MongoDBChangeStreamSource(Source):
 			stream = db.watch()
 		else:
 			stream = db[self.Collection].watch()
-		
+
 		while True:
 			if not running:
 				await stream.close()
@@ -53,7 +55,3 @@ class MongoDBChangeStreamSource(Source):
 
 			except asyncio.CancelledError:
 				running = False
-
-
-
-		

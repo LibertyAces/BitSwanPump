@@ -1,7 +1,7 @@
+import asyncio
 import json
 import logging
 import typing
-import asyncio
 
 from ..abc.sink import Sink
 
@@ -31,8 +31,8 @@ class KafkaSink(Sink):
 		)
 
 	There are two ways to use KafkaSink:
-	 - Specify a single topic in KafkaSink config - topic, to be used for all the events in pipeline.
-	 - Specify topic separetly for each event in event context - context['kafka_topic'].
+	- Specify a single topic in KafkaSink config - topic, to be used for all the events in pipeline.
+	- Specify topic separetly for each event in event context - context['kafka_topic'].
 		Topic from configuration is than used as a default topic.
 		To provide business logic for event distribution, you can create topic selector processor.
 	Processor example:
@@ -58,22 +58,22 @@ class KafkaSink(Sink):
 		"encoding": "utf-8",
 		"output_queue_max_size": 100,
 
-		"client_id":"",			# defaults set in AIOKafka
-		"metadata_max_age_ms":"",
-		"request_timeout_ms":"",
-		"api_version":"",
-		"acks":"",
-		"key_serializer":"",
-		"value_serializer":"",
-		"max_batch_size":"",
-		"max_request_size":"",
-		"linger_ms":"",
-		"send_backoff_ms":"",
-		"retry_backoff_ms":"",
-		"connections_max_idle_ms":"",
-		"enable_idempotency":"",
-		"transactional_id":"",
-		"transaction_timeout_ms":"",
+		"client_id": "",  # defaults set in AIOKafka
+		"metadata_max_age_ms": "",
+		"request_timeout_ms": "",
+		"api_version": "",
+		"acks": "",
+		"key_serializer": "",
+		"value_serializer": "",
+		"max_batch_size": "",
+		"max_request_size": "",
+		"linger_ms": "",
+		"send_backoff_ms": "",
+		"retry_backoff_ms": "",
+		"connections_max_idle_ms": "",
+		"enable_idempotency": "",
+		"transactional_id": "",
+		"transaction_timeout_ms": "",
 	}
 
 
@@ -92,11 +92,11 @@ class KafkaSink(Sink):
 
 		producer_param_names = [
 			"client_id", "metadata_max_age_ms", "request_timeout_ms", "api_version",
-			"acks", "max_batch_size", "max_request_size", "linger_ms", "send_backoff_ms", 
-			"retry_backoff_ms", "connections_max_idle_ms", "enable_idempotence", 
+			"acks", "max_batch_size", "max_request_size", "linger_ms", "send_backoff_ms",
+			"retry_backoff_ms", "connections_max_idle_ms", "enable_idempotence",
 			"transactional_id", "transaction_timeout_ms",
 		]
-		self._producer_params = {x:y for x,y in self.Config.items() if x in producer_param_names and y != ""}
+		self._producer_params = {x: y for x, y in self.Config.items() if x in producer_param_names and y != ""}
 
 
 		# Subscription
@@ -116,7 +116,7 @@ class KafkaSink(Sink):
 
 			try:
 				self._conn_future.result()
-			except:
+			except Exception:
 				# Connection future threw an error
 				L.exception("Unexpected connection future error")
 
@@ -154,7 +154,7 @@ class KafkaSink(Sink):
 			await producer.stop()
 
 
-	def process(self, context, event:typing.Union[dict, str, bytes]):
+	def process(self, context, event: typing.Union[dict, str, bytes]):
 		if type(event) == dict:
 			event = json.dumps(event)
 			event = event.encode(self.Encoding)

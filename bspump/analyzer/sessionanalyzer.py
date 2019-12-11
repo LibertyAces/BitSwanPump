@@ -1,8 +1,4 @@
-import time
 import logging
-import numpy as np
-
-import asab
 
 from .analyzer import Analyzer
 from .sessionmatrix import SessionMatrix
@@ -44,8 +40,8 @@ class SessionAnalyzer(Analyzer):
 
 		Example: 'i8' stands for int64.
 		Important! However it is possible to use all these letters, it is recommeded to use only 'i' for integers, 'f' for
-		floats, 'U' for strings. Anything else might cause problems in serialization. 
-		It is possible to create a matrix with elements of specified format. The tuple with number of dimensions should 
+		floats, 'U' for strings. Anything else might cause problems in serialization.
+		It is possible to create a matrix with elements of specified format. The tuple with number of dimensions should
 		stand before the letter.
 		Example: '(6, 3)i8' will create the matrix with n rows, 6 columns and 3 third dimensions with integer elements.
 		`column_names` is an array with names of each column, with the same length as `column_formats`.
@@ -62,13 +58,3 @@ class SessionAnalyzer(Analyzer):
 			svc.add_matrix(self.Sessions)
 		else:
 			self.Sessions = svc.locate_matrix(matrix_id)
-
-
-
-
-
-
-
-
-	
-

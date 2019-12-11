@@ -1,9 +1,4 @@
-import time
 import logging
-
-import numpy as np
-
-import asab
 
 from .analyzer import Analyzer
 from .timewindowmatrix import TimeWindowMatrix
@@ -50,7 +45,7 @@ class TimeWindowAnalyzer(Analyzer):
 		Example: 'i8' stands for int64.
 		`resolution`is how many seconds fit in one time cell, default value is `60`.
 		`start_time` is a unix timestamp for time to start. Default value is `None`, which will be equivalent current time.
-		`clock_driven` is a boolean parameter, specifying how the matrix should be advanced. If `True`, it advances on timer's tick, 
+		`clock_driven` is a boolean parameter, specifying how the matrix should be advanced. If `True`, it advances on timer's tick,
 		else manually. Default value is `True`.
 		`matrix_id` is an id of `TimeWindowMatrix` object alternatively passed, if not provided, the new matrix will be created with and ID derived from the Analyzer Id
 		`analyze_on_clock` enables enables analyzis by timer.
@@ -61,13 +56,15 @@ class TimeWindowAnalyzer(Analyzer):
 	'''
 
 	ConfigDefaults = {
-		'resolution': 60, # Resolution (aka column width) in seconds
+		'resolution': 60,  # Resolution (aka column width) in seconds
 	}
 
-	def __init__(self, app, pipeline, matrix_id=None, dtype='float_', columns=15, analyze_on_clock=False, resolution=60, 
-				start_time=None, clock_driven=False, 
-				id=None, config=None):
-		
+	def __init__(
+		self, app, pipeline, matrix_id=None, dtype='float_',
+		columns=15, analyze_on_clock=False, resolution=60,
+		start_time=None, clock_driven=False, id=None, config=None
+	):
+
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
@@ -78,14 +75,10 @@ class TimeWindowAnalyzer(Analyzer):
 				columns=columns,
 				resolution=resolution,
 				clock_driven=clock_driven,
-				start_time=start_time, 
+				start_time=start_time,
 				id=matrix_id
-			)	
+			)
 			svc.add_matrix(self.TimeWindow)
 		else:
 			# locate
 			self.TimeWindow = svc.locate_matrix(matrix_id)
-
-
-
-

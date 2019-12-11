@@ -49,20 +49,18 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 	ConfigDefaults = {
 
-		'event_attribute': '', # Name of the attribute, e.g. server name
-		'event_value': '', # Name of the attribute values to load into the matrix and to be used for
-						   # analyzing, e.g. server overload values
-		'lower_bound': '-inf', # Lower bound of the threshold
-		'upper_bound': 'inf', # Upper bound of the threshold
-		'symptom_occurrence': 1, # Number of occurrences of symptom in array
-		'analyze_period': 300, # Launch period of analyze method
-
+		'event_attribute': '',  # Name of the attribute, e.g. server name
+		'event_value': '',  # Name of the attribute values to load into the matrix and to be used for
+		# analyzing, e.g. server overload values
+		'lower_bound': '-inf',  # Lower bound of the threshold
+		'upper_bound': 'inf',  # Upper bound of the threshold
+		'anomaly_occurrence': 1,  # Number of occurrences of anomaly in array
+		'analyze_period': 300,  # Launch period of analyze method
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
 
-		super().__init__(app, pipeline, matrix_id=None, dtype='float_', columns=15, analyze_on_clock=True,
-						 resolution=60, start_time=None, clock_driven=True, id=id, config=config)
+		super().__init__(app, pipeline, analyze_on_clock=True, clock_driven=True, id=id, config=config)
 
 		self.EventAttribute = self.Config['event_attribute']
 		self.EventValue = self.Config['event_value']
@@ -140,15 +138,15 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 				count += 1
 			else:
 				# Checking whether count >= occurrence
+
 				if count >= self.SymptomOccurrence:
-					self.alarm(x, y, count, i-1)
+					self.alarm(x, y, count, i - 1)
 				count = 1
 				previous = actual
 			# Checking if count >= occurrence and if the loop is at its end
-			if (count >= self.SymptomOccurrence) and (i+1 == len(x)):
+			if (count >= self.SymptomOccurrence) and (i + 1 == len(x)):
 				self.alarm(x, y, count, i)
 
 
 	def alarm(self, *args):
 		pass
-
