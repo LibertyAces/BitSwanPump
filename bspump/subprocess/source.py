@@ -41,4 +41,3 @@ class SubProcessSource(Source):
     async def stop(self):
         self._process.kill()
         await super().stop()
-
