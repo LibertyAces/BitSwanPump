@@ -37,7 +37,3 @@ class SubProcessSource(Source):
             await self.Pipeline.ready()
             event = await self._process.stdout.readline()
             await self.process(event)
-
-    async def stop(self):
-        self._process.kill()
-        await super().stop()
