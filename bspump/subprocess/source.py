@@ -1,5 +1,5 @@
 import logging
-import subprocess
+import asyncio
 
 from ..abc.source import Source
 
@@ -15,6 +15,7 @@ class SubProcessSource(Source):
 
 	ConfigDefaults = {
 		'command': '',
+		'line_len_limit': 2 ** 20,
 	}
 
 	def __init__(self, app, pipeline, *, id=None, config=None):
@@ -22,20 +23,17 @@ class SubProcessSource(Source):
 
 		self.Command = str(self.Config["command"])
 		assert self.Command, "`command` not set on " + self.__class__.__name__
-
-		self.Capture = subprocess.Popen(
-			self.Command,
-			shell=True,
-			stdout=subprocess.PIPE,
-			stderr=subprocess.DEVNULL,
-		)
+		self._process = None
 
 	async def main(self):
+		self._process = await asyncio.create_subprocess_shell(
+			self.Command,
+			shell=True,
+			stdout=asyncio.subprocess.PIPE,
+			stderr=asyncio.subprocess.DEVNULL,
+			limit=self.Config.get("line_len_limit"),
+		)
 		while True:
 			await self.Pipeline.ready()
-			event = self.Capture.stdout.readline()
+			event = await self._process.stdout.readline()
 			await self.process(event)
-
-	async def stop(self):
-		self.Capture.kill()
-		await super().stop()
