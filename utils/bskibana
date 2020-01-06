@@ -1082,7 +1082,8 @@ def parse_cmdline():
 	import_parser = subparsers.add_parser('import', help='Imports a Kibana index from a file')
 	import_parser.add_argument('FILE', action='store', help='a file to read from')
 	import_parser.add_argument('URL', action='store', help='a Kibana URL to import data to')
-	import_parser.add_argument('--index', action='store', type=str, required=False, help='override kibana _index for import')
+	import_parser.add_argument('--index', action='store', type=str, required=False,
+							   help='override kibana _index for import (indices are called .kibana_<index number>')
 	import_parser.set_defaults(COMMAND='import')
 
 	# decompile command
