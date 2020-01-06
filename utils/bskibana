@@ -51,7 +51,7 @@ def load_from_es_search(URL, INDEX):
 		hits = result['hits']['hits']
 		if len(hits) == 0:
 			break
-		
+
 		if PRINT_LEVEL >= 1:
 			print("Received {} objects".format(len(hits)))
 
@@ -74,7 +74,7 @@ def do_export(URL, FILE):
 	"""
 
 	if URL[-1:] != '/':
-		URL += '/'	
+		URL += '/'
 	for index in INDECES:
 		actual_url = URL + index + '/_search?scroll=1m'
 		query = {"size":"1"}
@@ -115,12 +115,18 @@ def do_export(URL, FILE):
 		print("{} objects exported from Kibana index {}".format(counter, URL))
 
 
-def do_import(FILE, URL):
+def do_import(FILE, URL, index=None):
 
 	import_data = ""
-	for obj in load_from_compiled_file(FILE):
-		import_data += json.dumps({"index": {"_index": obj["_index"], "_type": obj["_type"], "_id": obj["_id"]}}) + '\n'
-		import_data += json.dumps(obj['_source']) + '\n'
+	if index:
+		for obj in load_from_compiled_file(FILE):
+			import_data += json.dumps(
+				{"index": {"_index": index, "_type": obj["_type"], "_id": obj["_id"]}}) + '\n'
+			import_data += json.dumps(obj['_source']) + '\n'
+	else:
+		for obj in load_from_compiled_file(FILE):
+			import_data += json.dumps({"index": {"_index": obj["_index"], "_type": obj["_type"], "_id": obj["_id"]}}) + '\n'
+			import_data += json.dumps(obj['_source']) + '\n'
 
 	if URL[-1:] != '/':
 		URL += '/'
@@ -214,7 +220,7 @@ class LibraryObject(object):
 			inc = json.loads(inc)
 		with open(inc_fname, 'w') as fo:
 			json.dump(inc, fo, indent='\t')
-			fo.write('\n') # 
+			fo.write('\n') #
 		return inc_name
 
 
@@ -227,7 +233,7 @@ class LibraryObject(object):
 			raise
 
 		if self.type == 'index-pattern':
-			
+
 			inc_name = obj_source["index-pattern"].get("fields")
 			if inc_name is None:
 				pass
@@ -381,7 +387,7 @@ class LibraryObject(object):
 		obj_source = self.obj["_source"]
 
 		if self.type == 'index-pattern':
-			
+
 			## Fields
 
 			inc = obj_source["index-pattern"]["fields"]
@@ -510,7 +516,7 @@ def do_decompile(FILE, DIRS, CSVLOG):
 		counter += 1
 
 		trg_obj = library.get(obj.id)
-		
+
 		# skipping unwanted lookups
 		if trg_obj and "skip" in trg_obj.obj and trg_obj.obj["skip"] == True:
 			print (f"Skipping {obj.obj['_id']}")
@@ -552,7 +558,7 @@ def check_pattern_match (obj, INDEXPATTERNS):
 
 def check_search_source_match (obj, INDEXPATTERNS, library):
 	obj_id = obj.obj['_id']
-	
+
 	saved_search_id = obj.obj['_source'][obj.type].get('savedSearchId')
 	if saved_search_id != None and obj_id != ':'.join(['search',saved_search_id]):
 		saved_search_id = ':'.join(['search',saved_search_id])
@@ -561,9 +567,9 @@ def check_search_source_match (obj, INDEXPATTERNS, library):
 			return False
 		else:
 			search = library [saved_search_id]
-			return check_search_source_match (search, INDEXPATTERNS, library)	
+			return check_search_source_match (search, INDEXPATTERNS, library)
 
-	else:	
+	else:
 		ssj = obj.obj ['_source'][obj.type]['kibanaSavedObjectMeta']['searchSourceJSON']
 		ssj_json = json.loads (ssj)
 
@@ -578,10 +584,10 @@ def check_search_source_match (obj, INDEXPATTERNS, library):
 		pattern = library [pattern_idx]
 
 		return check_pattern_match (pattern, INDEXPATTERNS)
-		
+
 
 def do_compile(DIRS, FILE, INDEXPATTERN):
-	if INDEXPATTERN != None: 
+	if INDEXPATTERN != None:
 		INDEXPATTERNS = INDEXPATTERN.split (',')
 
 		# if id passed, convert to index_prefix (ensure "_*" on string end)
@@ -590,7 +596,7 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 
 	if FILE == None:
 		FILE = 'out.json'
-	
+
 	library = load_library(DIRS)
 	related_lookup_ids = set ()
 	encountered_type_counter = {}
@@ -600,7 +606,7 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 	with open(FILE + '~', "w") as fo:
 		fo.write('[\n')
 		for obj in sorted(library.values(), key=lambda obj: obj.id):
-			
+
 			# skipping unwanted lookups
 			if "skip" in obj.obj and obj.obj["skip"] == True:
 				print (f"Skipping {obj.obj['_id']}")
@@ -612,26 +618,26 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 					compiled_type_counter [obj.type] = 0
 				else:
 					encountered_type_counter [obj.type] += 1
-				
+
 				if (obj.type == 'index-pattern'):
 
 					if not 'fields' in obj.obj['_source']['index-pattern'].keys ():
 						print ("ALERT: {} doesn't reference fields. It should.".format (obj.obj['_id']))
 
-					if not check_pattern_match (obj, INDEXPATTERNS):						
+					if not check_pattern_match (obj, INDEXPATTERNS):
 						continue
-			
+
 					if 'fieldFormatMap' in obj.obj['_source']['index-pattern'].keys ():
 						ffm = obj.obj['_source']['index-pattern']['fieldFormatMap']
 						ffm_json = json.loads (ffm)
 						for value in ffm_json.values ():
 							lookup_id = 'x-lff-lookup:' + value['id']
-							related_lookup_ids.add (lookup_id)						
-				
+							related_lookup_ids.add (lookup_id)
+
 				elif (obj.type == 'search' or obj.type == 'visualization'):
 					if not check_search_source_match (obj, INDEXPATTERNS, library):
 						continue
-				
+
 				elif (obj.type == 'dashboard'):
 					obj_id = obj.obj['_id']
 					panels = obj.obj ['_source'][obj.type]['panelsJSON']
@@ -649,7 +655,7 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 					if not related:
 						continue
 
-				elif (obj.type == 'x-lff-lookup'):					
+				elif (obj.type == 'x-lff-lookup'):
 					if obj.obj['_id'] not in related_lookup_ids:
 						continue
 
@@ -657,7 +663,7 @@ def do_compile(DIRS, FILE, INDEXPATTERN):
 					if 'config' in obj.obj['_source'].keys() \
 					and obj.obj['_source']['config']['defaultIndex'] + "_*" not in INDEXPATTERNS:
 						obj.obj['_source']['config'].pop ('defaultIndex', None)
-					print ('Including {0} object, as {0}s are always included.'.format (obj.type))					
+					print ('Including {0} object, as {0}s are always included.'.format (obj.type))
 
 				elif (obj.type == 'timelion-sheet'):
 					print ('Including {0} object, as {0}s are always included.'.format (obj.type))
@@ -701,30 +707,30 @@ def do_rename(DIRS, index_pattern = None, new_id = None, args = None):
 
 	library = load_library(DIRS)
 	ip_dict = {} # index pattern dict
-	
+
 
 	# add selected index-pattern
-	if index_pattern != None:				
-		if new_id == None:			
+	if index_pattern != None:
+		if new_id == None:
 			obj = library.get('index-pattern:' + index_pattern)
 			if obj != None:
 				new_id = obj.obj ['_source']['index-pattern']['title'].strip ('_*')
 			else:
 				print ('Error: Index pattern "{}" has not been found.'.format (index_pattern))
-				return 
-			
-		ip_dict [index_pattern] = new_id			
+				return
 
-	# go trough library and get all index patterns titles and ids	
-	else:				
+		ip_dict [index_pattern] = new_id
+
+	# go trough library and get all index patterns titles and ids
+	else:
 		for obj in sorted(library.values(), key=lambda obj: obj.id):
-			
+
 			if (obj.type == 'index-pattern'):
 				key = obj.obj['_id'].replace ('index-pattern:','')
 				val = obj.obj ['_source']['index-pattern']['title'].strip ('_*')
-				ip_dict [key] = val				
+				ip_dict [key] = val
 
-	
+
 	# let go of indexes-patterns that are already named correctly
 	ip_dict = {k:v for k,v in ip_dict.items () if k!=v}
 
@@ -736,15 +742,15 @@ def do_rename(DIRS, index_pattern = None, new_id = None, args = None):
 	count_renamed = 0
 	rename_dict = {}
 
-	
+
 	# Go through objects rename and replace
 	for idx, obj in library.items ():
 		obj_updated = 0
 
-		if obj.type == 'index-pattern':			
+		if obj.type == 'index-pattern':
 			key = obj.obj ['_id'].split ('index-pattern:')[1]
-			
-			if key in ip_dict.keys():				
+
+			if key in ip_dict.keys():
 				rename_list = [obj.fname]
 
 				# get all @ include file names
@@ -755,9 +761,9 @@ def do_rename(DIRS, index_pattern = None, new_id = None, args = None):
 				# create replace dict for all related file names
 				for file_name in rename_list:
 					new_file_name = file_name.replace (
-						'index-pattern_' + key, 
+						'index-pattern_' + key,
 						'index-pattern_' + ip_dict [key]
-					)				
+					)
 					rename_dict [file_name] = new_file_name
 
 				# replace id
@@ -767,47 +773,47 @@ def do_rename(DIRS, index_pattern = None, new_id = None, args = None):
 
 
 		elif obj.type in ['search', 'visualization', 'dashboard']:
-			
+
 			if '@searchSourceJSON' in obj.includes.keys():
 				search_source = obj.includes ['@searchSourceJSON']
 				if 'index' in search_source:
 					if search_source['index'] in ip_dict.keys():
-						
+
 						key = search_source['index']
-						search_source['index'] = ip_dict [key]	
-						ip_match_count [key] += 1					
-						obj_updated += 1						
+						search_source['index'] = ip_dict [key]
+						ip_match_count [key] += 1
+						obj_updated += 1
 
 				if 'filter' in search_source:
 					for idx, search_filter in enumerate(search_source['filter']):
-						if 'meta' in search_filter:					
+						if 'meta' in search_filter:
 							if search_filter['meta']['index'] in ip_dict.keys():
 								key = search_filter['meta']['index']
 								search_source['filter'][idx]['meta']['index'] = ip_dict [key]
 								ip_match_count [key] += 1
-								obj_updated += 1	
+								obj_updated += 1
 
-				if obj_updated > 0:	
-					ssj = json.dumps (search_source)							
-					obj.obj ['_source'][obj.type]['kibanaSavedObjectMeta']['searchSourceJSON'] = ssj					
+				if obj_updated > 0:
+					ssj = json.dumps (search_source)
+					obj.obj ['_source'][obj.type]['kibanaSavedObjectMeta']['searchSourceJSON'] = ssj
 
 		elif obj.type == 'url':
 			# TODO: treat URLS
 			pass
-			
-		elif obj.type == 'config':						
-			if 'defaultIndex' in obj.obj["_source"]["config"]:				
+
+		elif obj.type == 'config':
+			if 'defaultIndex' in obj.obj["_source"]["config"]:
 				if obj.obj["_source"]["config"]['defaultIndex'] in ip_dict.keys():
 					key = obj.obj["_source"]["config"]['defaultIndex']
 					obj.obj["_source"]["config"]['defaultIndex'] = ip_dict [key]
 					ip_match_count [key] += 1
-					obj_updated += 1				
-					
+					obj_updated += 1
+
 
 		# SAVE OBJECT
-		if obj_updated > 0:	
+		if obj_updated > 0:
 			ip_object_referece_count [key] += 1
-			count_replaced += 1				
+			count_replaced += 1
 			obj.save()
 
 
@@ -817,13 +823,13 @@ def do_rename(DIRS, index_pattern = None, new_id = None, args = None):
 			print ('Renaming {} to {}'.format (key, value))
 		count_renamed += 1
 		os.rename (key, value)
-						
+
 
 	if PRINT_LEVEL >= 1:
 		for key in ip_match_count.keys():
 			msg = 'For index-pattern {0:16} there were {1:2} replacements done across {2:2} objects.'
 			print (msg.format (key, ip_match_count[key], ip_object_referece_count[key]))
-	
+
 	if PRINT_LEVEL >= 0:
 		print("BSKibana made changes in {} files and renamed {}.".format(count_replaced, count_renamed))
 
@@ -933,7 +939,7 @@ def do_document(DIRS, TEMPLATEDIR, OUTPUT):
 		elif obj.type == 'dashboard':
 			obj._expand_includes()
 			obj_list = json.loads(obj.obj["_source"]["dashboard"]["panelsJSON"])
-			
+
 			for o in obj_list:
 				o_id = o["type"]+":"+o["id"]
 				try:
@@ -950,8 +956,8 @@ def do_document(DIRS, TEMPLATEDIR, OUTPUT):
 		elif obj.type == 'fieldcategory':
 			library[obj.obj["index_pattern_id"]].fieldcategories.append(obj)
 
-	
-	# Postprocessing			
+
+	# Postprocessing
 	# Sort uses/used by
 	for obj in sorted(library.values(), key=lambda obj: obj.id):
 		obj.uses.sort(key=lambda o: o.type+'-'+o.title)
@@ -1049,7 +1055,7 @@ def parse_cmdline():
 	bskibana.py export http://localhost:9200/ /tmp/kibana-index-exported.json
 	bskibana.py decompile /tmp/kibana-index-exported.json /tmp/kibana-index-decompiled/ ./kibana/library/objects/
 	bskibana.py compile /tmp/kibana-index-decompiled/ ./kibana/library/objects/ -o /tmp/kibana-index-exported.json
-	bskibana.py import /tmp/kibana-index-exported.json http://localhost:9200/
+	bskibana.py import /tmp/kibana-index-exported.json http://localhost:9200/ .kibana_4
 
 	bskibana.py document -t ./kibana/library/templates/ ./kibana/library/objects/ -o /tmp/doc
 
@@ -1076,6 +1082,7 @@ def parse_cmdline():
 	import_parser = subparsers.add_parser('import', help='Imports a Kibana index from a file')
 	import_parser.add_argument('FILE', action='store', help='a file to read from')
 	import_parser.add_argument('URL', action='store', help='a Kibana URL to import data to')
+	import_parser.add_argument('--index', action='store', type=str, required=False, help='override kibana _index for import')
 	import_parser.set_defaults(COMMAND='import')
 
 	# decompile command
@@ -1095,9 +1102,9 @@ def parse_cmdline():
 	# rename command
 	compile_parser = subparsers.add_parser('rename', help='Change ids of Kibana index-pattern objects and fix references.')
 	compile_parser.add_argument('DIR', action='store', nargs='+', help='a directories that will be scanned for Kibana objects.')
-	compile_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='index pattern id to be changed')	
+	compile_parser.add_argument('--index-pattern', '-i', metavar='INDEXPATTERN', action='store', help='index pattern id to be changed')
 	compile_parser.add_argument('--new-id', '-o', metavar='NEWID', action='store', help='new id')
-	compile_parser.set_defaults(COMMAND='rename')	
+	compile_parser.set_defaults(COMMAND='rename')
 
 	if jinja2 is not None:
 		doc_parser = subparsers.add_parser('document', help='Generate a documentation')
@@ -1131,7 +1138,7 @@ def main():
 		do_export(args.URL, args.FILE)
 
 	elif args.COMMAND == 'import':
-		do_import(args.FILE, args.URL)
+		do_import(args.FILE, args.URL, args.index)
 
 	elif args.COMMAND == 'decompile':
 		do_decompile(args.FILE, args.DIR, args.csv)
@@ -1147,6 +1154,7 @@ def main():
 
 	else:
 		print("Unknown command {}".format(args.COMMAND))
+
 
 if __name__ == '__main__':
 	main()
