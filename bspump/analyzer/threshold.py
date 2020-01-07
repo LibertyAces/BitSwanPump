@@ -122,6 +122,10 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		elif self.Lower != float('-inf') and self.Upper != float('inf'):
 			x, y = np.where(((data < self.Lower) | (data > self.Upper)) & warming_up)
 
+		# No boundaries set
+		else:
+			raise ValueError('Boundaries of the threshold has not been set!')
+
 		# Symptom occurrence detection
 		try:
 			# Setting previous value. When it is empty, further computation wont proceed.
