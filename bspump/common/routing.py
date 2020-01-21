@@ -9,6 +9,30 @@ from ..abc.processor import Processor
 L = logging.getLogger(__name__)
 
 
+class DirectSource(Source):
+	"""
+	This source processes inserted event immediately and awaits the completion of the processing.
+	"""
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+
+	def put(self, context, event, copy_event=True):
+		"""
+		This method serves to put events into the pipeline and process them right away.
+
+		Context can be an empty dictionary if is not provided.
+		"""
+
+		if copy_event:
+			event = copy.deepcopy(event)
+
+		self.Pipeline._do_process(event, context={'ancestor': copy.deepcopy(context)}, depth=0)
+
+	async def main(self):
+		pass
+
+
 class InternalSource(Source):
 
 
