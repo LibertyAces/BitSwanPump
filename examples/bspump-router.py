@@ -35,7 +35,6 @@ class CustomRouterSink(bspump.common.RouterSink):
 		"C": 	"TargetPipelineC.*SlowerInternalSource",
 	}
 
-
 	def process(self, context, event):
 		target = self.TYPE_TO_SOURCE.get(event[0], 'A')
 		self.route(context, event, target)
@@ -150,13 +149,22 @@ listen=127.0.0.1 8080
 
 	svc = app.get_service("bspump.PumpService")
 
-	svc.add_pipelines(
-		RandomSourcePipeline(app, "RandomSourcePipeline"),
-		TargetPipeline(app, "TargetPipelineA"),
-		TargetPipeline(app, "TargetPipelineB"),
-		TargetPipeline(app, "TargetPipelineC"),
-	)
+	# Build a graph of pipelines
+	random_source_pipeline = RandomSourcePipeline(app, "RandomSourcePipeline")
+	target_pipeline_a = TargetPipeline(app, "TargetPipelineA")
+	target_pipeline_a.link_primary_pipeline(random_source_pipeline)
+	target_pipeline_b = TargetPipeline(app, "TargetPipelineB")
+	target_pipeline_b.link_primary_pipeline(random_source_pipeline)
+	target_pipeline_c = TargetPipeline(app, "TargetPipelineC")
+	target_pipeline_c.link_primary_pipeline(random_source_pipeline)
 
+	# Register pipelines
+	svc.add_pipelines(
+		random_source_pipeline,
+		target_pipeline_a,
+		target_pipeline_b,
+		target_pipeline_c
+	)
 	svc.add_pipeline(
 		TeePipeline(app, "TeePipeline")
 	)

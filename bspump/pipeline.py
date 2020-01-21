@@ -120,6 +120,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._error = None  # None if not in error state otherwise there is a tuple (context, event, exc, timestamp)
 
 		self._throttles = set()
+		self._primary_pipelines = set()
 
 		self._ready = asyncio.Event(loop=app.Loop)
 		self._ready.clear()
@@ -211,6 +212,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		return True
 
+	def link_primary_pipeline(self, primary_pipeline):
+		self._primary_pipelines.add(primary_pipeline)
+
+	def unlink_primary_pipeline(self, primary_pipeline):
+		self._primary_pipelines.remove(primary_pipeline)
 
 	def throttle(self, who, enable=True):
 		# L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
@@ -218,6 +224,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			self._throttles.add(who)
 		else:
 			self._throttles.remove(who)
+
+		# Throttle primary pipelines, if there are any
+		for primary_pipeline in self._primary_pipelines:
+			primary_pipeline.throttle(who=who, enable=enable)
 
 		self._evaluate_ready()
 
