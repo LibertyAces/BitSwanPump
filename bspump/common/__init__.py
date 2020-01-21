@@ -21,6 +21,7 @@ from .tee import TeeProcessor
 from .tee import TeeSource
 from .time import TimeZoneNormalizer
 from .transfr import MappingTransformator
+from .enricher import OOBLookupEnricher
 
 __all__ = (
 	'BytesToStringParser',
@@ -55,4 +56,5 @@ __all__ = (
 	'TeeSource',
 	'TimeZoneNormalizer',
 	'MappingTransformator',
+	'OOBLookupEnricher',
 )

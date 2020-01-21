@@ -89,7 +89,8 @@ The MySQLLookup can be then located and used inside a custom processor:
 			self.Cache = cache
 
 		metrics_service = app.get_service('asab.MetricsService')
-		self.CacheCounter = metrics_service.create_counter("mysql.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.CacheCounter = metrics_service.create_counter("mysql.lookup.cache", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.SuccessCounter = metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
 
 	def _find_one(self, key):
@@ -97,7 +98,16 @@ The MySQLLookup can be then located and used inside a custom processor:
 		cursor_sync = self.Connection.acquire_sync_cursor()
 		cursor_sync.execute(query, key)
 		result = cursor_sync.fetchone()
+		cursor_sync.close()
 		return result
+
+	async def _find_one_async(self, key):
+		query = self.QueryFindOne.format(self.Statement, self.From, self.Key)
+		async with self.Connection.acquire_connection() as connection:
+			async with connection.cursor(aiomysql.cursors.DictCursor) as cursor_async:
+				await cursor_async.execute(query, key)
+				result = await cursor_async.fetchone()
+				return result
 
 
 	async def _count(self):
@@ -108,27 +118,49 @@ The MySQLLookup can be then located and used inside a custom processor:
 				result = await cursor.fetchone()
 				return result['count']
 
+	async def get_async(self, key):
+		"""
+		Allows the lookup to work with OOB.
+		Synchronous operations cannot be used, because pymysql does not support threads.
+		"""
+
+		try:
+			value = self.Cache[key]
+			self.CacheCounter.add('hit', 1)
+		except KeyError:
+			value = await self._find_one_async(key)
+			self.Cache[key] = value
+			self.CacheCounter.add('miss', 1)
+
+		if value is None:
+			self.SuccessCounter.add('miss', 1)
+		else:
+			self.SuccessCounter.add('hit', 1)
+
+		return value
 
 	async def load(self):
 		await self.Connection.ConnectionEvent.wait()
 		self.Count = await self._count()
 
-
 	def __len__(self):
 		return self.Count
-
 
 	def __getitem__(self, key):
 		try:
 			value = self.Cache[key]
 			self.CacheCounter.add('hit', 1)
-			return value
 		except KeyError:
-			v = self._find_one(key)
-			self.Cache[key] = v
+			value = self._find_one(key)
+			self.Cache[key] = value
 			self.CacheCounter.add('miss', 1)
-			return v
 
+		if value is None:
+			self.SuccessCounter.add('miss', 1)
+		else:
+			self.SuccessCounter.add('hit', 1)
+
+		return value
 
 	def __iter__(self):
 		query = self.QueryIter.format(self.Statement, self.From)
