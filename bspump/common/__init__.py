@@ -56,4 +56,5 @@ __all__ = (
 	'TeeSource',
 	'TimeZoneNormalizer',
 	'MappingTransformator',
+	'DirectSource',
 )
