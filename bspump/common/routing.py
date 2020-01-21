@@ -11,7 +11,7 @@ L = logging.getLogger(__name__)
 
 class DirectSource(Source):
 	"""
-	This source processes inserted event immediately and awaits the completion of the processing.
+	This source processes inserted event synchronously.
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
