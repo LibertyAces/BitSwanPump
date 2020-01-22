@@ -14,6 +14,7 @@ from .mapping import MappingKeysGenerator, MappingValuesGenerator, MappingItemsG
 from .mapping import MappingKeysProcessor, MappingValuesProcessor, MappingItemsProcessor
 from .null import NullSink
 from .print import PrintSink, PPrintSink, PrintProcessor, PPrintProcessor, PrintContextProcessor, PPrintContextProcessor
+from .routing import DirectSource
 from .routing import InternalSource
 from .routing import RouterProcessor
 from .routing import RouterSink
@@ -57,4 +58,5 @@ __all__ = (
 	'TimeZoneNormalizer',
 	'MappingTransformator',
 	'OOBLookupEnricher',
+	'DirectSource',
 )
