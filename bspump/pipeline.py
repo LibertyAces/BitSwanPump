@@ -120,6 +120,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._error = None  # None if not in error state otherwise there is a tuple (context, event, exc, timestamp)
 
 		self._throttles = set()
+		self._ancestral_pipelines = set()
 
 		self._ready = asyncio.Event(loop=app.Loop)
 		self._ready.clear()
@@ -211,6 +212,27 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		return True
 
+	def link(self, ancestral_pipeline):
+		"""
+		Link this pipeline with an ancestral pipeline.
+		This is needed e. g. for a propagation of the throttling from child pipelines back to their ancestors.
+		If the child pipeline uses InternalSource, which may become throttled because the internal queue is full,
+		the throttling is propagated to the ancestral pipeline, so that its source may block incoming events until the
+		internal queue is empty again.
+
+		:param ancestral_pipeline: pipeline
+		"""
+
+		self._ancestral_pipelines.add(ancestral_pipeline)
+
+	def unlink(self, ancestral_pipeline):
+		"""
+		Unlink an ancestral pipeline from this pipeline.
+
+		:param ancestral_pipeline: pipeline
+		"""
+
+		self._ancestral_pipelines.remove(ancestral_pipeline)
 
 	def throttle(self, who, enable=True):
 		# L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
@@ -218,6 +240,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			self._throttles.add(who)
 		else:
 			self._throttles.remove(who)
+
+		# Throttle primary pipelines, if there are any
+		for ancestral_pipeline in self._ancestral_pipelines:
+			ancestral_pipeline.throttle(who=who, enable=enable)
 
 		self._evaluate_ready()
 
