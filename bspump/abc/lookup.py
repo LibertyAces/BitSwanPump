@@ -214,6 +214,17 @@ class MappingLookup(Lookup, collections.abc.Mapping):
 	pass
 
 
+class AsyncLookup(Lookup):
+	"""
+	AsyncLookup makes sure the value from the lookup is obtained asynchronously,
+	which is especially useful with lookups based on write-through cache.
+	"""
+
+	@abc.abstractmethod
+	async def get(self, key):
+		pass
+
+
 class DictionaryLookup(MappingLookup):
 
 	def __init__(self, app, id=None, config=None, lazy=False):

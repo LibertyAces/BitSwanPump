@@ -2,6 +2,7 @@ import logging
 import aiomysql
 
 from ..abc.lookup import MappingLookup
+from ..abc.lookup import AsyncLookup
 from ..cache import CacheDict
 
 ##
@@ -11,11 +12,12 @@ L = logging.getLogger(__name__)
 ##
 
 
-class MySQLLookup(MappingLookup):
+class MySQLLookup(MappingLookup, AsyncLookup):
 
 	'''
 MySQLLookup is linked with a MySQL.
 MySQLLookup provides a mapping (dictionary-like) interface to pipelines.
+MySQLLookup expects user to obtain values asynchronously in an enricher based on Generator.
 MySQLLookup feeds lookup data from MySQL database using a query.
 MySQLLookup also has a simple cache to reduce a number of database hits.
 
@@ -44,20 +46,23 @@ The configuration option "from" can include a table name ...
 
 	from="Orders INNER JOIN Customers ON Orders.CustomerID=Customers.CustomerID"
 
-The MySQLLookup can be then located and used inside a custom processor:
+The MySQLLookup can be then located and used inside a custom enricher:
 
-	class MyProcessor(Processor):
+	class AsyncEnricher(bspump.Generator):
 
 		def __init__(self, app, pipeline, id=None, config=None):
 			super().__init__(app, pipeline, id, config)
 			svc = app.get_service("bspump.PumpService")
 			self.Lookup = svc.locate_lookup("MySQLLookup")
 
-		def process(self, context, event):
+		async def generate(self, context, event, depth):
 			if 'user' not in event:
 				return None
 
-			info = self.Lookup.get(event['user'])
+			info = await self.Lookup.get(event['user'])
+
+			# Inject a new event into a next depth of the pipeline
+			await self.Pipeline.inject(context, event, depth)
 
 	'''
 
@@ -92,16 +97,7 @@ The MySQLLookup can be then located and used inside a custom processor:
 		self.CacheCounter = metrics_service.create_counter("mysql.lookup.cache", tags={}, init_values={'hit': 0, 'miss': 0})
 		self.SuccessCounter = metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
-
-	def _find_one(self, key):
-		query = self.QueryFindOne.format(self.Statement, self.From, self.Key)
-		cursor_sync = self.Connection.acquire_sync_cursor()
-		cursor_sync.execute(query, key)
-		result = cursor_sync.fetchone()
-		cursor_sync.close()
-		return result
-
-	async def _find_one_async(self, key):
+	async def _find_one(self, key):
 		query = self.QueryFindOne.format(self.Statement, self.From, self.Key)
 		async with self.Connection.acquire_connection() as connection:
 			async with connection.cursor(aiomysql.cursors.DictCursor) as cursor_async:
@@ -118,17 +114,16 @@ The MySQLLookup can be then located and used inside a custom processor:
 				result = await cursor.fetchone()
 				return result['count']
 
-	async def get_async(self, key):
+	async def get(self, key):
 		"""
-		Allows the lookup to work with OOB.
-		Synchronous operations cannot be used, because pymysql does not support threads.
+		Obtain the value from lookup asynchronously.
 		"""
 
 		try:
 			value = self.Cache[key]
 			self.CacheCounter.add('hit', 1)
 		except KeyError:
-			value = await self._find_one_async(key)
+			value = await self._find_one(key)
 			self.Cache[key] = value
 			self.CacheCounter.add('miss', 1)
 
@@ -147,20 +142,8 @@ The MySQLLookup can be then located and used inside a custom processor:
 		return self.Count
 
 	def __getitem__(self, key):
-		try:
-			value = self.Cache[key]
-			self.CacheCounter.add('hit', 1)
-		except KeyError:
-			value = self._find_one(key)
-			self.Cache[key] = value
-			self.CacheCounter.add('miss', 1)
-
-		if value is None:
-			self.SuccessCounter.add('miss', 1)
-		else:
-			self.SuccessCounter.add('hit', 1)
-
-		return value
+		# To avoid synchronous operations completely
+		raise NotImplementedError()
 
 	def __iter__(self):
 		query = self.QueryIter.format(self.Statement, self.From)
@@ -169,7 +152,6 @@ The MySQLLookup can be then located and used inside a custom processor:
 		result = cursor_sync.fetchall()
 		self.Iterator = result.__iter__()
 		return self
-
 
 	def __next__(self):
 		element = next(self.Iterator)
