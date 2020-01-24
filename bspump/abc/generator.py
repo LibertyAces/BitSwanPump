@@ -19,7 +19,7 @@ class Generator(ProcessorBase):
 
 			async def generate(self, context, event, depth):
 				for item in event.items:
-					await self.Pipeline.inject(context, item, depth)
+					self.Pipeline.inject(context, item, depth)
 
 	2.) Generator can in the same way also generate completely independent events, if necessary.
 	In this way, the generator processes originally synchronous events "out-of-band" e.g. out of the synchronous processing within the pipeline.
@@ -42,7 +42,7 @@ class Generator(ProcessorBase):
 					new_event = await resp.json()
 
 			# Inject a new event into a next depth of the pipeline
-			await self.Pipeline.inject(context, new_event, depth)
+			self.Pipeline.inject(context, new_event, depth)
 """
 
 	def __init__(self, app, pipeline, id=None, config=None):
