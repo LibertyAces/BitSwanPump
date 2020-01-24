@@ -64,12 +64,12 @@ class MyPipeline(bspump.Pipeline):
 				"post": "noop",
 				"path": "./data/users.csv"
 			}).on(bspump.trigger.OpportunisticTrigger(app)),
-			AsyncEnricher(app, self),
+			MyEnricher(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
 
 
-class AsyncEnricher(bspump.Generator):
+class MyEnricher(bspump.Generator):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)

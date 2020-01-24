@@ -2,7 +2,7 @@ import logging
 import aiomysql
 
 from ..abc.lookup import MappingLookup
-from ..abc.lookup import AsyncLookup
+from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
 
 ##
@@ -12,7 +12,7 @@ L = logging.getLogger(__name__)
 ##
 
 
-class MySQLLookup(MappingLookup, AsyncLookup):
+class MySQLLookup(MappingLookup, AsyncLookupMixin):
 
 	'''
 MySQLLookup is linked with a MySQL.

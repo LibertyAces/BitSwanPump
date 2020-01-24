@@ -214,10 +214,11 @@ class MappingLookup(Lookup, collections.abc.Mapping):
 	pass
 
 
-class AsyncLookup(Lookup):
+class AsyncLookupMixin(Lookup):
 	"""
-	AsyncLookup makes sure the value from the lookup is obtained asynchronously,
-	which is especially useful with lookups based on write-through cache.
+	AsyncLookupMixin makes sure the value from the lookup is obtained asynchronously.
+	AsyncLookupMixin is to be used for every technology that is external to BSPump,
+	respective that require a connection to resource server such as SQL etc.
 	"""
 
 	@abc.abstractmethod
