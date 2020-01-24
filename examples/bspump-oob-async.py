@@ -40,7 +40,7 @@ class SampleOOBGenerator(bspump.Generator):
 				event["color_obtained_in_async"] = color
 				event["time"] = time.time()
 
-		await self.Pipeline.inject(context, event, depth)
+		self.Pipeline.inject(context, event, depth)
 
 
 class SamplePipeline(bspump.Pipeline):

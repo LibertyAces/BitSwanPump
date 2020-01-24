@@ -47,7 +47,7 @@ class SampleOOBGenerator(bspump.Generator):
 			event
 		)
 
-		await self.Pipeline.inject(context, new_event, depth)
+		self.Pipeline.inject(context, new_event, depth)
 
 	def process_on_thread(self, context, event):
 		r = requests.get("https://reqres.in/api/{}/4".format(event.get("description", "unknown")))

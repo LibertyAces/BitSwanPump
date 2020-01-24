@@ -296,7 +296,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			raise
 
 
-	async def inject(self, context, event, depth):
+	def inject(self, context, event, depth):
 		"""
 		Inject method serves to inject events into the pipeline's depth defined by the depth attribute.
 		Every depth is interconnected with a generator object.
@@ -335,7 +335,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self.MetricsCounter.add('event.in', 1)
 
-		await self.inject(context, event, depth=0)
+		self.inject(context, event, depth=0)
 
 	# Future methods
 
