@@ -16,6 +16,10 @@ L = logging.getLogger(__name__)
 
 class MyApplication(bspump.BSPumpApplication):
 	"""
+	The following example illustrates usage of MySQLLookup with AsyncEnricher,
+	so the write-through cache loading, which may take some time,
+	is processed asynchronously.
+
 	## Try it out
 
 		$ docker run --rm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password mysql
@@ -37,12 +41,10 @@ class MyApplication(bspump.BSPumpApplication):
 		mysql_connection = bspump.mysql.MySQLConnection(self, "MySQLConnection", config={
 			"user": "root",
 			"password": "root_password",
-			"db": "users"
+			"db": "users",
 		})
 
 		svc.add_connection(mysql_connection)
-		# mysql_connection.
-		# print(">>>>>", mysql_connection.acquire_connection())
 
 		self.MySQLLookup = bspump.mysql.MySQLLookup(self, connection=mysql_connection, id="MySQLLookup", config={
 			'from': 'user_loc',
@@ -62,27 +64,28 @@ class MyPipeline(bspump.Pipeline):
 				"post": "noop",
 				"path": "./data/users.csv"
 			}).on(bspump.trigger.OpportunisticTrigger(app)),
-			MyProcessor(app, self),
+			MyEnricher(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
 
 
-class MyProcessor(bspump.Processor):
+class MyEnricher(bspump.Generator):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
 		self.Lookup = svc.locate_lookup("MySQLLookup")
 
-	def process(self, context, event):
+	async def generate(self, context, event, depth):
 		if 'user' not in event:
 			return None
 
-		info = self.Lookup.get(event['user'])
+		info = await self.Lookup.get(event['user'])
 		if info is not None:
 			event['L'] = {'lat': info.get('lat'), 'lon': info.get('lon')}
 
-		return event
+		# Inject a new event into a next depth of the pipeline
+		self.Pipeline.inject(context, event, depth)
 
 
 if __name__ == '__main__':
