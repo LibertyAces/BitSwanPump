@@ -214,6 +214,18 @@ class MappingLookup(Lookup, collections.abc.Mapping):
 	pass
 
 
+class AsyncLookupMixin(Lookup):
+	"""
+	AsyncLookupMixin makes sure the value from the lookup is obtained asynchronously.
+	AsyncLookupMixin is to be used for every technology that is external to BSPump,
+	respective that require a connection to resource server such as SQL etc.
+	"""
+
+	@abc.abstractmethod
+	async def get(self, key):
+		pass
+
+
 class DictionaryLookup(MappingLookup):
 
 	def __init__(self, app, id=None, config=None, lazy=False):
