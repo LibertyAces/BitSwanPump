@@ -9,6 +9,35 @@ from ..abc.processor import Processor
 L = logging.getLogger(__name__)
 
 
+class DirectSource(Source):
+	"""
+	This source processes inserted event synchronously.
+	"""
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+
+	def put(self, context, event, copy_context=False, copy_event=False):
+		"""
+		This method serves to put events into the pipeline and process them right away.
+
+		Context can be an empty dictionary if is not provided.
+		"""
+
+		if copy_context:
+			child_context = {'ancestor': copy.deepcopy(context)}
+		else:
+			child_context = {'ancestor': context}
+
+		if copy_event:
+			event = copy.deepcopy(event)
+
+		self.Pipeline.inject(context=child_context, event=event, depth=0)
+
+	async def main(self):
+		pass
+
+
 class InternalSource(Source):
 
 
@@ -36,7 +65,7 @@ class InternalSource(Source):
 		self.Queue = asyncio.Queue(maxsize=maxsize, loop=self.Loop)
 
 
-	def put(self, context, event, copy_event=True):
+	def put(self, context, event, copy_context=False, copy_event=False):
 		'''
 		Context can be an empty dictionary if is not provided.
 
@@ -45,11 +74,14 @@ class InternalSource(Source):
 		The simpliest approach is to use RouterSink / RouterProcessor.
 		'''
 
+		if copy_context:
+			context = copy.deepcopy(context)
+
 		if copy_event:
 			event = copy.deepcopy(event)
 
 		self.Queue.put_nowait((
-			copy.deepcopy(context),
+			context,
 			event
 		))
 
@@ -58,7 +90,7 @@ class InternalSource(Source):
 			self.Pipeline.PubSub.publish("bspump.InternalSource.backpressure_on!", source=self)
 
 
-	async def put_async(self, context, event, copy_event=False):
+	async def put_async(self, context, event, copy_context=False, copy_event=False):
 		'''
 		This method allows to put an event into InternalSource asynchronously.
 		Since a processing in the pipeline is synchronous, this method is useful mainly
@@ -67,11 +99,15 @@ class InternalSource(Source):
 
 		Context can be an empty dictionary if is not provided.
 		'''
+
+		if copy_context:
+			context = copy.deepcopy(context)
+
 		if copy_event:
 			event = copy.deepcopy(event)
 
 		await self.Queue.put((
-			copy.deepcopy(context),
+			context,
 			event
 		))
 
