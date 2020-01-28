@@ -149,9 +149,11 @@ def _initialize_web(app, listen="0.0.0.0:8080"):
 	app.add_module(Module)
 
 	websvc = app.get_service("asab.WebService")
+	container = websvc.Containers.get("asab:web")
+	assert container is not None, "asab:web webcontainer have not been found. Probably not initialized correctly."
 
 	# Create a dedicated web container
-	container = asab.web.WebContainer(websvc, 'asab:web', config={"listen": listen})
+	# container = asab.web.WebContainer(websvc, 'asab:web', config={"listen": listen})
 
 	# Add web app
 	asab.web.StaticDirProvider(
@@ -161,17 +163,33 @@ def _initialize_web(app, listen="0.0.0.0:8080"):
 		index="app.html")
 
 	# Add routes
-	container.WebApp.router.add_get('/pipelines', pipelines)
-	container.WebApp.router.add_get('/example/trigger', example_trigger)
-	container.WebApp.router.add_get('/example/internal', example_internal)
+	# LEGACY
+	container.WebApp.router.add_get('/bspump/pipelines', pipelines)
+	container.WebApp.router.add_get('/bspump/example/trigger', example_trigger)
+	container.WebApp.router.add_get('/bspump/example/internal', example_internal)
 
-	container.WebApp.router.add_get('/lookup', lookup_list)
-	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup)
-	container.WebApp.router.add_get('/lookup/{lookup_id}/meta', lookup_meta)
+	container.WebApp.router.add_get('/bspump/lookup', lookup_list)
+	container.WebApp.router.add_get('/bspump/lookup/{lookup_id}', lookup)
+	container.WebApp.router.add_get('/bspump/lookup/{lookup_id}/meta', lookup_meta)
 
-	container.WebApp.router.add_get('/metric', metric_list)
-	container.WebApp.router.add_get('/metric/{metric_id}', metric_detail)
+	container.WebApp.router.add_get('/bspump/metric', metric_list)
+	container.WebApp.router.add_get('/bspump/metric/{metric_id}', metric_detail)
 
-	container.WebApp.router.add_get('/manifest', manifest)
+	container.WebApp.router.add_get('/bspump/manifest', manifest)
+
+
+	# API VERSION 1
+	container.WebApp.router.add_get('/bspump/v1/pipelines', pipelines)
+	container.WebApp.router.add_get('/bspump/v1/example/trigger', example_trigger)
+	container.WebApp.router.add_get('/bspump/v1/example/internal', example_internal)
+
+	container.WebApp.router.add_get('/bspump/v1/lookup', lookup_list)
+	container.WebApp.router.add_get('/bspump/v1/lookup/{lookup_id}', lookup)
+	container.WebApp.router.add_get('/bspump/v1/lookup/{lookup_id}/meta', lookup_meta)
+
+	container.WebApp.router.add_get('/bspump/v1/metric', metric_list)
+	container.WebApp.router.add_get('/bspump/v1/metric/{metric_id}', metric_detail)
+
+	container.WebApp.router.add_get('/bspump/v1/manifest', manifest)
 
 	return container
