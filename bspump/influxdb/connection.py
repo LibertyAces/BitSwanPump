@@ -45,8 +45,9 @@ class InfluxDBConnection(Connection):
 
 		self._url_write = self.url + 'write?db=' + self.Config["db"]
 
-		self._output_bucket_max_size = self.Config["output_bucket_max_size"]
+		self._output_bucket_max_size = int(self.Config["output_bucket_max_size"])
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+		self._timeout = aiohttp.ClientTimeout(total=int(self.Config['timeout']))
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._started = True
@@ -119,7 +120,7 @@ class InfluxDBConnection(Connection):
 				self.PubSub.publish("InfluxDBConnection.unpause!", self, asynchronously=True)
 
 			# Sending the data asynchronously
-			async with aiohttp.ClientSession() as session:
+			async with aiohttp.ClientSession(timeout=self._timeout) as session:
 				async with session.post(self._url_write, data=_output_bucket) as resp:
 					resp_body = await resp.text()
 					if resp.status != 204:
