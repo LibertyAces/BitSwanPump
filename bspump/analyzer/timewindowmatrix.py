@@ -190,8 +190,8 @@ class TimeWindowMatrix(NamedMatrix):
 		return added
 
 
-	def close_row(self, row_index, clear=True):
-		super().close_row(row_index, clear=clear)
+	def close_row(self, row_index):
+		super().close_row(row_index)
 		self.WarmingUpCount[row_index] = self.Array.shape[1]
 
 
