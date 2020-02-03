@@ -1,7 +1,4 @@
-import unittest
 import time
-import numpy as np
-import asab.abc.singleton
 
 import bspump
 import bspump.analyzer
@@ -44,6 +41,16 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 		matrix = bspump.analyzer.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
 		row_index = matrix.add_row("abc")
 		self.assertEqual(matrix.Array.shape[0], matrix.WarmingUpCount.shape[0])
+
+
+	def test_matrix_close_row(self):
+		matrix = bspump.analyzer.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
+		row_index = matrix.add_row("abc")
+		self.assertFalse(row_index in matrix.ClosedRows)
+		matrix.close_row(row_index)
+		self.assertTrue(row_index in matrix.ClosedRows)
+		matrix.flush()
+		self.assertEqual(0, matrix.Array.shape[0])
 
 	
 	def test_matrix_get_column(self):
