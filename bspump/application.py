@@ -83,6 +83,9 @@ build: {} [{}]
 
 	async def main(self):
 		print("{} pipeline(s) ready.".format(len(self.PumpService.Pipelines)))
+		# TODO: Come up with solution how to reconsile this with unittests, maybe as follows?
+		# L.log(31, "{} pipeline(s) ready.".format(len(self.PumpService.Pipelines)))
+		pass
 
 
 	def _on_signal_usr1(self):
