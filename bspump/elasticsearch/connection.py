@@ -88,7 +88,7 @@ class ElasticSearchConnection(Connection):
 		self.Loop = app.Loop
 
 		self.PubSub = app.PubSub
-		self.PubSub.subscribe("Application.tick/10!", self._on_tick)
+		self.PubSub.subscribe("Application.run!", self._start)
 		self.PubSub.subscribe("Application.exit!", self._on_exit)
 
 		self.AllowedBulkResponseCodes = frozenset(
@@ -99,8 +99,6 @@ class ElasticSearchConnection(Connection):
 		for url in self.node_urls:
 			for i in range(self._loader_per_url):
 				self._futures.append((url + '_bulk', None))
-
-		self._on_tick("simulated!")
 
 
 	def get_url(self):
@@ -116,6 +114,9 @@ class ElasticSearchConnection(Connection):
 	def get_session(self):
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
+	def _start(self, event_type):
+		self.PubSub.subscribe("Application.tick/10!", self._on_tick)
+		self._on_tick("simulated!")
 
 	async def _on_exit(self, event_name):
 		self._started = False
