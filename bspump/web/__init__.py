@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import os
 import os.path
+import logging
 
 import aiohttp.web
 
@@ -10,6 +11,54 @@ import asab.web.rest
 
 from ..__version__ import __build__ as bspump_build
 from ..__version__ import __version__ as bspump_version
+
+L = logging.getLogger(__name__)
+
+
+# TODO: Remove functions *_v0 after September 2020
+async def pipelines_v0(request):
+	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
+	return await pipelines(request)
+
+
+async def example_trigger_v0(request):
+	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
+	return await example_trigger(request)
+
+
+async def example_internal_v0(request):
+	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
+	return await example_internal(request)
+
+
+async def lookup_list_v0(request):
+	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
+	return await lookup_list(request)
+
+
+async def lookup_v0(request):
+	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
+	return await lookup(request)
+
+
+async def lookup_meta_v0(request):
+	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
+	return await lookup_meta(request)
+
+
+async def metric_list_v0(request):
+	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
+	return await metric_list(request)
+
+
+async def metric_detail_v0(request):
+	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
+	return await metric_detail(request)
+
+
+async def manifest_v0(request):
+	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
+	return await manifest(request)
 
 
 async def pipelines(request):
@@ -164,18 +213,19 @@ def _initialize_web(app, listen="0.0.0.0:8080"):
 
 	# Add routes
 	# LEGACY
-	container.WebApp.router.add_get('/pipelines', pipelines)
-	container.WebApp.router.add_get('/example/trigger', example_trigger)
-	container.WebApp.router.add_get('/example/internal', example_internal)
+	# TODO: Remove this after September 2020
+	container.WebApp.router.add_get('/pipelines', pipelines_v0)
+	container.WebApp.router.add_get('/example/trigger', example_trigger_v0)
+	container.WebApp.router.add_get('/example/internal', example_internal_v0)
 
-	container.WebApp.router.add_get('/lookup', lookup_list)
-	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup)
-	container.WebApp.router.add_get('/lookup/{lookup_id}/meta', lookup_meta)
+	container.WebApp.router.add_get('/lookup', lookup_list_v0)
+	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup_v0)
+	container.WebApp.router.add_get('/lookup/{lookup_id}/meta', lookup_meta_v0)
 
-	container.WebApp.router.add_get('/metric', metric_list)
-	container.WebApp.router.add_get('/metric/{metric_id}', metric_detail)
+	container.WebApp.router.add_get('/metric', metric_list_v0)
+	container.WebApp.router.add_get('/metric/{metric_id}', metric_detail_v0)
 
-	container.WebApp.router.add_get('/manifest', manifest)
+	container.WebApp.router.add_get('/manifest', manifest_v0)
 
 
 	# API VERSION 1
