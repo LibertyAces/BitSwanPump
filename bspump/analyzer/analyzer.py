@@ -35,11 +35,14 @@ class Analyzer(Processor):
 
 		if analyze_on_clock:
 			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True)
-			self.Timer.start(self.AnalyzePeriod)
+			app.PubSub.subscribe("Application.run!", self.start_timer)
 		else:
 			self.Timer = None
 
 	# Implementation interface
+
+	def start_timer(self, event_type):
+		self.Timer.start(self.AnalyzePeriod)
 
 	def analyze(self):
 		'''
