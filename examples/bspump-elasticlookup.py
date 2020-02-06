@@ -20,6 +20,7 @@ class MyApplication(bspump.BSPumpApplication):
 		svc = self.get_service("bspump.PumpService")
 
 		es_connection = bspump.elasticsearch.ElasticSearchConnection(self, "ElasticSearchConnection")
+		svc.add_connection(es_connection)
 		
 		self.ElasticSearchLookup = bspump.elasticsearch.ElasticSearchLookup(
 			self,
@@ -37,24 +38,34 @@ class MyPipeline(bspump.Pipeline):
 	# Enriches the event with location from ES lookup
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
+
 		self.build(
-			bspump.file.FileCSVSource(app, self, config={
-				"post": "noop",
-				"path": "./data/users.csv"
-			}).on(bspump.trigger.OpportunisticTrigger(app)),
-			MyProcessor(app, self), 
+			bspump.random.RandomSource(app, self,
+				config={'number': 10, 'upper_bound': 10, 'field':'user', 'prefix':''}
+			).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
+			LocationEnricher(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
 
 
-class MyProcessor(bspump.Processor):
+class LocationEnricher(bspump.Generator):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
 		self.Lookup = svc.locate_lookup("ElasticSearchLookup")
 
+
+	async def generate(self, context, event, depth):
+		if 'user' not in event:
+			return None
+
+		info = await self.Lookup.get(event['user'])
+
+		# Inject a new event into a next depth of the pipeline
+		await self.Pipeline.inject(context, event, depth)
 	
+
 	def process(self, context, event):
 		if 'user' not in event:
 			return None

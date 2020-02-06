@@ -4,12 +4,13 @@ import logging
 import requests
 
 from ..abc.lookup import MappingLookup
+from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
 
 L = logging.getLogger(__name__)
 
-
-class ElasticSearchLookup(MappingLookup):
+# TODO: counters, cache dict?? serialization, doc, generator
+class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 	"""
 	The lookup that is linked with a ES.
@@ -61,23 +62,58 @@ class ElasticSearchLookup(MappingLookup):
 			self.Cache = cache
 
 		metrics_service = app.get_service('asab.MetricsService')
-		self.CacheCounter = metrics_service.create_counter("es.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.CacheCounter = metrics_service.create_counter("es.lookup.cache", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.SuccessCounter = metrics_service.create_counter("es.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
-	def _find_one(self, key):
+
+	async def _find_one(self, key): #TODO
 		prefix = '_search'
 		request = {
 			"size": 1,
 			"query": self.build_find_one_query(key)
 		}
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
-		response = requests.post(url, json=request)
-		data = json.loads(response.text)
-		try:
-			hit = data['hits']['hits'][0]
-		except IndexError:
-			return None
+
+		async with self.Connection.get_session() as session:
+			async with session.post(
+				url,
+				json=request,
+				headers={'Content-Type': 'application/json'}
+			) as response:
+
+				if response.status != 200:
+					data = await response.text()
+					L.error("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(response.status, url, data))
+
+
+				msg = await response.json()
+				try:
+					hit = data['hits']['hits'][0]
+				except IndexError:
+					return None
 
 		return hit["_source"]
+
+
+	async def get(self, key):
+		"""
+		Obtain the value from lookup asynchronously.
+		"""
+
+		try:
+			value = self.Cache[key]
+			self.CacheCounter.add('hit', 1)
+		except KeyError:
+			value = await self._find_one(key)
+			self.Cache[key] = value
+			self.CacheCounter.add('miss', 1)
+
+		if value is None:
+			self.SuccessCounter.add('miss', 1)
+		else:
+			self.SuccessCounter.add('hit', 1)
+
+		return value
 
 
 	def build_find_one_query(self, key) -> dict:
@@ -120,7 +156,8 @@ class ElasticSearchLookup(MappingLookup):
 
 
 	async def load(self):
-		self.Count = await self._count()
+		self.Count = len(self.Cache)
+		return True
 
 
 	def __len__(self):
@@ -128,15 +165,8 @@ class ElasticSearchLookup(MappingLookup):
 
 
 	def __getitem__(self, key):
-		try:
-			value = self.Cache[key]
-			self.CacheCounter.add('hit', 1)
-			return value
-		except KeyError:
-			v = self._find_one(key)
-			self.Cache[key] = v
-			self.CacheCounter.add('miss', 1)
-			return v
+		# To avoid synchronous operations completely
+		raise NotImplementedError()
 
 
 	def __iter__(self):
@@ -190,6 +220,25 @@ class ElasticSearchLookup(MappingLookup):
 		if key is not None:
 			self.Cache[key] = element['_source']
 		return key
+
+
+	def serialize(self):
+		return (json.dumps(dict(self.Cache))).encode('utf-8')
+
+	
+	def deserialize(self, data):
+		new_cache = json.loads(data.decode('utf-8'))
+		old_cache = dict(self.Cache)
+		old_cache.update(new_cache)
+		self.Cache = CacheDict(old_cache)
+
+	# REST
+
+	def rest_get(self):
+		rest = super().rest_get()
+		rest["Cache"] = dict(self.Cache)
+		return rest
+
 
 	@classmethod
 	def construct(cls, app, definition: dict):
