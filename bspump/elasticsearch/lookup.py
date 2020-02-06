@@ -9,7 +9,7 @@ from ..cache import CacheDict
 
 L = logging.getLogger(__name__)
 
-# TODO: counters, cache dict?? serialization, doc, generator
+# TODO doc
 class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 	"""
@@ -47,8 +47,8 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		'scroll_timeout': '1m',
 	}
 
-	def __init__(self, app, connection, id=None, config=None, cache=None):
-		super().__init__(app, id=id, config=config)
+	def __init__(self, app, connection, id=None, config=None, cache=None, lazy=False):
+		super().__init__(app, id=id, config=config, lazy=lazy)
 		self.Connection = connection
 
 		self.Index = self.Config['index']
@@ -66,7 +66,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		self.SuccessCounter = metrics_service.create_counter("es.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
 
-	async def _find_one(self, key): #TODO
+	async def _find_one(self, key):
 		prefix = '_search'
 		request = {
 			"size": 1,
