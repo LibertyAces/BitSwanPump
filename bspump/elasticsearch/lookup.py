@@ -7,10 +7,14 @@ from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
 
+
 L = logging.getLogger(__name__)
 
+
 # TODO doc
+
 class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
+
 
 	"""
 	The lookup that is linked with a ES.
@@ -40,6 +44,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 			return database['projects'].find_one({'_id':key})
 
 	"""
+
 
 	ConfigDefaults = {
 		'index': '',  # Specify an index
@@ -225,7 +230,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 	def serialize(self):
 		return (json.dumps(dict(self.Cache))).encode('utf-8')
 
-	
+
 	def deserialize(self, data):
 		new_cache = json.loads(data.decode('utf-8'))
 		old_cache = dict(self.Cache)
