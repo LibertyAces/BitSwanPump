@@ -88,7 +88,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 				msg = await response.json()
 				try:
-					hit = data['hits']['hits'][0]
+					hit = msg['hits']['hits'][0]
 				except IndexError:
 					return None
 
