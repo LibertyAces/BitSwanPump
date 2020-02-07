@@ -97,7 +97,6 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 			"size": 1,
 			"query": self.build_find_one_query(key)
 		}
-		print("req", request)
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 
 		async with self.Connection.get_session() as session:
@@ -113,7 +112,6 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 
 
 				msg = await response.json()
-				print("messsssssssssssssss", msg)
 				try:
 					hit = msg['hits']['hits'][0]
 				except IndexError:
