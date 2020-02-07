@@ -106,6 +106,8 @@ class KafkaSource(Source):
 		if v != "":
 			consumer_params['request_timeout_ms'] = int(v)
 
+		self.MaxRecords = self.Config.get('max_records')
+
 		self.GetTimeoutMs = int(self.Config.get("get_timeout_ms"))
 
 		self.Connection = pipeline.locate_connection(app, connection)
@@ -150,7 +152,7 @@ class KafkaSource(Source):
 			while 1:
 				await self.Pipeline.ready()
 				t0 = time.perf_counter()
-				data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
+				data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs, max_records=self.MaxRecords)
 				self.ProfilerCounter.add('duration', time.perf_counter() - t0)
 				self.ProfilerCounter.add('run', 1)
 				if len(data) == 0:
