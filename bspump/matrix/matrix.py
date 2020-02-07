@@ -218,8 +218,8 @@ class NamedMatrix(Matrix):
 		return row_index
 
 
-	def close_row(self, row_index: int):
-		super().close_row(row_index)
+	def close_row(self, row_index, clear=True):
+		super().close_row(row_index, clear=clear)
 
 		row_name = self.I2NMap.pop(row_index)
 		del self.N2IMap[row_name]
