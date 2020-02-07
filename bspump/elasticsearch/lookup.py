@@ -2,6 +2,7 @@ import json
 import logging
 
 import requests
+import asab
 
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
@@ -50,9 +51,10 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		'index': '',  # Specify an index
 		'key': '',  # Specify field name to match
 		'scroll_timeout': '1m',
+		'update_period': 10,
 	}
 
-	def __init__(self, app, connection, id=None, config=None, cache=None, lazy=False):
+	def __init__(self, app, connection, on_time_update=False, id=None, config=None, cache=None, lazy=False):
 		super().__init__(app, id=id, config=config, lazy=lazy)
 		self.Connection = connection
 
@@ -70,6 +72,14 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		self.CacheCounter = metrics_service.create_counter("es.lookup.cache", tags={}, init_values={'hit': 0, 'miss': 0})
 		self.SuccessCounter = metrics_service.create_counter("es.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
+		if on_time_update and not self.is_master():
+			self.UpdatePeriod = float(self.Config['update_period'])
+			self.Timer = asab.Timer(app, self.load_from_master, autorestart=True)
+			self.Timer.start(self.UpdatePeriod)
+		else:
+			self.Timer = None
+			self.UpdatePeriod = None
+
 
 	async def _find_one(self, key):
 		prefix = '_search'
@@ -77,6 +87,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 			"size": 1,
 			"query": self.build_find_one_query(key)
 		}
+		print("req", request)
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 
 		async with self.Connection.get_session() as session:
@@ -92,6 +103,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 
 				msg = await response.json()
+				print("messsssssssssssssss", msg)
 				try:
 					hit = msg['hits']['hits'][0]
 				except IndexError:
@@ -110,8 +122,9 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 			self.CacheCounter.add('hit', 1)
 		except KeyError:
 			value = await self._find_one(key)
-			self.Cache[key] = value
-			self.CacheCounter.add('miss', 1)
+			if value is not None:
+				self.Cache[key] = value
+				self.CacheCounter.add('miss', 1)
 
 		if value is None:
 			self.SuccessCounter.add('miss', 1)
