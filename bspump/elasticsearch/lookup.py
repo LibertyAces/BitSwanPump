@@ -36,13 +36,23 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 .. code:: python
 
-	class ProjectLookup(bspump.elasticsearch.ElasticSearchLookup):
+The ElasticSearchLookup can be then located and used inside a custom enricher:
 
-		async def count(self, database):
-			return await database['projects'].count_documents({})
+	class AsyncEnricher(bspump.Generator):
 
-		def find_one(self, database, key):
-			return database['projects'].find_one({'_id':key})
+		def __init__(self, app, pipeline, id=None, config=None):
+			super().__init__(app, pipeline, id, config)
+			svc = app.get_service("bspump.PumpService")
+			self.Lookup = svc.locate_lookup("MySQLLookup")
+
+		async def generate(self, context, event, depth):
+			if 'user' not in event:
+				return None
+
+			info = await self.Lookup.get(event['user'])
+
+			# Inject a new event into a next depth of the pipeline
+			self.Pipeline.inject(context, event, depth)
 
 	"""
 
