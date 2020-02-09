@@ -21,7 +21,6 @@ class ElasticSearchSink(Sink):
 
 	"""
 
-
 	ConfigDefaults = {
 		"index_prefix": "bspump_",
 		"doctype": "doc",
@@ -56,8 +55,20 @@ class ElasticSearchSink(Sink):
 
 	def process(self, context, event):
 		assert self._rollover_mechanism.Index is not None
-		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(
-			self._rollover_mechanism.Index, self._doctype, json.dumps(event)
+		operation = context.get("elasticsearch_operation", "index")
+
+		doc_metadata = {"doc": event}
+		doc_metadata.update(context.get("elasticsearch_doc_metadata", {}))
+
+		operation_metadata = {
+			"_index": self._rollover_mechanism.Index,
+			"_type": self._doctype
+		}
+		operation_metadata.update(context.get("elasticsearch_operation_metadata", {}))
+
+		data = '{}\n{}\n'.format(
+			json.dumps({operation: operation_metadata}),
+			json.dumps(doc_metadata)
 		)
 		self._connection.consume(data)
 
