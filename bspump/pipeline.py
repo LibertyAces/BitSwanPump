@@ -173,7 +173,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				self.MetricsCounter.add('warning', 1)
 				self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
 				return
-
+			else:
 				self.MetricsCounter.add('error', 1)
 
 			if (self._error is not None):
