@@ -77,7 +77,7 @@ setup(
 		'mongoquery>=1.3.5,<2.0',
 		'motor>=2.0.0,<3.0',
 		'mysql-replication>=0.19,<1.0',
-		'numpy>=1.16.3,<2.0',
+		'numpy>=1.18.1,<2.0',
 		'pandas>=0.24.2,<1.0',
 		'pika>=1.0.1,<2.0',
 		'pymysql>=0.9,<=0.9.2',  # aiomysql 0.0.20 requires PyMySQL<=0.9.2
