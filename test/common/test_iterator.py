@@ -1,9 +1,6 @@
-from bspump.unittest import UnitTestSink
-from bspump.common import IteratorSource
-from bspump import Pipeline
-
-import bspump.unittest
 import bspump.common
+import bspump.unittest
+import bspump.trigger
 
 
 class TestIteratorGenerator(bspump.unittest.ProcessorTestCase):
@@ -29,13 +26,16 @@ class TestIteratorGenerator(bspump.unittest.ProcessorTestCase):
 class TestIteratorSource(bspump.unittest.ProcessorTestCase):
 
 	def test_iterator_source(self):
+		# TODO Generalize to SourceTestCase
 		svc = self.App.get_service("bspump.PumpService")
 
 		iterator = iter([1, 2, 3])
 
-		pipeline = Pipeline(app=self.App)
-		sink = UnitTestSink(self.App, pipeline)
-		source = IteratorSource(self.App, pipeline, iterator)
+		pipeline = bspump.Pipeline(app=self.App)
+		sink = bspump.unittest.UnitTestSink(self.App, pipeline)
+		source = bspump.common.IteratorSource(self.App, pipeline, iterator).on(
+			bspump.trigger.PubSubTrigger(self.App, "Application.run!", self.App.PubSub)
+		)
 		pipeline.build(
 			source,
 			sink

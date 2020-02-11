@@ -1,9 +1,12 @@
+from unittest.mock import patch
+
 import bspump.unittest
 from bspump.kafka import KafkaConnection, KafkaSink
 
 
 class TestKafkaSink(bspump.unittest.ProcessorTestCase):
 
+	@patch("bspump.kafka.sink.KafkaSink._on_health_check", lambda *x: None)
 	def test_producer_params_configuration(self):
 
 		svc = self.App.get_service("bspump.PumpService")
@@ -24,7 +27,7 @@ class TestKafkaSink(bspump.unittest.ProcessorTestCase):
 				"client_id": "a",
 				"metadata_max_age_ms": "1",
 				"request_timeout_ms": "2",
-				"api_version": "b",
+				"api_version": "2.9.0",
 				"max_batch_size": "3",
 				"max_request_size": "4",
 				"linger_ms": "5",
@@ -38,10 +41,13 @@ class TestKafkaSink(bspump.unittest.ProcessorTestCase):
 			}
 		)
 
+		output = self.execute([(None, {})])
+		self.assertEqual(output, [])
+
 		self.assert_config_value("client_id", "a")
 		self.assert_config_value("metadata_max_age_ms", 1)
 		self.assert_config_value("request_timeout_ms", 2)
-		self.assert_config_value("api_version", "b")
+		self.assert_config_value("api_version", "2.9.0")
 		self.assert_config_value("max_batch_size", 3)
 		self.assert_config_value("max_request_size", 4)
 		self.assert_config_value("linger_ms", 5)
