@@ -12,6 +12,7 @@ install:
   - pip install -r requirements-dev.txt
   - pip install codecov
   - pip install flake8
+  - pip freeze
 
 script:
   - coverage run -m unittest
