@@ -145,6 +145,12 @@ class KafkaSource(Source):
 	async def initialize_consumer(self):
 		await self.Consumer.start()
 		self.Partitions = self.Consumer.assignment()
+		self.Pipeline.PubSub.subscribe("bspump.pipeline.not_ready!", self._not_ready_handler)
+
+	async def _not_ready_handler(self, message_type):
+		# Preventive commit, when the pipeline is throttled
+		if len(self._group_id) > 0:
+			await self._commit()
 
 	async def main(self):
 		await self.initialize_consumer()
