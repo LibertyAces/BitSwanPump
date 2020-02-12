@@ -82,6 +82,7 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 		self.CacheCounter = metrics_service.create_counter("es.lookup.cache", tags={}, init_values={'hit': 0, 'miss': 0})
 		self.SuccessCounter = metrics_service.create_counter("es.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
+		self.Invalidated = set()
 		if on_time_update and not self.is_master():
 			self.UpdatePeriod = float(self.Config['update_period'])
 			self.Timer = asab.Timer(app, self.load_from_master, autorestart=True)
@@ -90,6 +91,8 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 			self.Timer = None
 			self.UpdatePeriod = None
 
+	def invalidate(self, member_id):
+		self.Invalidated.add(member_id)
 
 	async def _find_one(self, key):
 		prefix = '_search'
@@ -249,21 +252,14 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 
 
 	def serialize(self):
-		return (json.dumps(dict(self.Cache))).encode('utf-8')
+		return (json.dumps(list(self.Invalidated))).encode('utf-8')
 
 
 	def deserialize(self, data):
-		new_cache = json.loads(data.decode('utf-8'))
-		old_cache = dict(self.Cache)
-		old_cache.update(new_cache)
-		self.Cache = CacheDict(old_cache)
-
-	# REST
-
-	def rest_get(self):
-		rest = super().rest_get()
-		rest["Cache"] = dict(self.Cache)
-		return rest
+		invalidated = json.loads(data.decode('utf-8'))
+		for i in invalidated:
+			if i in self.Cache:
+				self.Cache.pop(i)
 
 
 	@classmethod
