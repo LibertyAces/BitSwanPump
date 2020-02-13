@@ -108,7 +108,7 @@ The MySQLLookup can be then located and used inside a custom enricher:
 					await cursor_async.execute(query, key)
 					result = await cursor_async.fetchone()
 					return result
-				except pymysql.err.ProgrammingError as e:
+				except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
 					if e.args[0] in connection.RetryErrors:
 						L.warn("Recoverable error '{}' occurred in MySQLLookup. Skipping lookup.".format(e.args[0]))
 						return None

@@ -268,7 +268,7 @@ class MySQLConnection(Connection):
 					try:
 						await cursor.executemany(query, data)
 						await connection.commit()
-					except pymysql.err.ProgrammingError as e:
+					except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
 						if e.args[0] in self.RetryErrors:
 							L.warn("Recoverable error '{}' occurred in MySQLConnection. Retrying.".format(e.args[0]))
 							self._output_queue.put_nowait((query, data))
