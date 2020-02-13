@@ -2,7 +2,6 @@ import json
 import logging
 
 import requests
-import asab
 
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
