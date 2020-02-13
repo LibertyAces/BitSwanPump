@@ -1,5 +1,8 @@
 import logging
+
 import aiomysql
+import pymysql
+import pymysql.err
 
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
@@ -101,9 +104,15 @@ The MySQLLookup can be then located and used inside a custom enricher:
 		query = self.QueryFindOne.format(self.Statement, self.From, self.Key)
 		async with self.Connection.acquire_connection() as connection:
 			async with connection.cursor(aiomysql.cursors.DictCursor) as cursor_async:
-				await cursor_async.execute(query, key)
-				result = await cursor_async.fetchone()
-				return result
+				try:
+					await cursor_async.execute(query, key)
+					result = await cursor_async.fetchone()
+					return result
+				except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
+					if e.args[0] in connection.RetryErrors:
+						L.warn("Recoverable error '{}' occurred in MySQLLookup. Skipping lookup.".format(e.args[0]))
+						return None
+					raise e
 
 
 	async def _count(self):

@@ -3,6 +3,8 @@ import logging
 
 import aiomysql
 import aiomysql.utils
+
+import pymysql
 import pymysql.cursors
 import pymysql.err
 
@@ -57,6 +59,8 @@ class MySQLConnection(Connection):
 		'output_queue_max_size': 10,
 		'max_bulk_size': 2,
 	}
+
+	RetryErrors = frozenset([1047, 1053, 1077, 1078, 1079, 1080, 2003, 2006, 2012, 2013, 1152, 1205, 1213, 1223])
 
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
@@ -167,6 +171,13 @@ class MySQLConnection(Connection):
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
 				await self._loader()
+		except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
+			if e.args[0] in self.RetryErrors:
+				L.warn("Recoverable error '{}' occurred in MySQLConnection. Retrying.".format(e.args[0]))
+				self._conn_future = None
+				return
+			L.exception("Unexpected MySQL connection error")
+			raise e
 		except BaseException:
 			L.exception("Unexpected MySQL connection error")
 			raise
@@ -183,6 +194,12 @@ class MySQLConnection(Connection):
 				conv=convertors,
 				connect_timeout=self._connect_timeout)
 			self._conn_sync = connection
+		except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
+			if e.args[0] in self.RetryErrors:
+				L.warn("Recoverable error '{}' occurred in MySQLConnection. Retrying.".format(e.args[0]))
+				return
+			L.exception("Unexpected MySQL connection error")
+			raise e
 		except BaseException:
 			L.exception("Unexpected MySQL connection error")
 			raise
@@ -248,5 +265,11 @@ class MySQLConnection(Connection):
 
 			async with self.acquire_connection() as connection:
 				async with connection.cursor() as cursor:
-					await cursor.executemany(query, data)
-					await connection.commit()
+					try:
+						await cursor.executemany(query, data)
+						await connection.commit()
+					except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
+						if e.args[0] in self.RetryErrors:
+							L.warn("Recoverable error '{}' occurred in MySQLConnection. Retrying.".format(e.args[0]))
+							self._output_queue.put_nowait((query, data))
+						raise e
