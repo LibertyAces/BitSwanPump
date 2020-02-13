@@ -61,10 +61,9 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 		'index': '',  # Specify an index
 		'key': '',  # Specify field name to match
 		'scroll_timeout': '1m',
-		'update_period': 10,
 	}
 
-	def __init__(self, app, connection, on_time_update=False, id=None, config=None, cache=None, lazy=False):
+	def __init__(self, app, connection, id=None, config=None, cache=None, lazy=False):
 		super().__init__(app, id=id, config=config, lazy=lazy)
 		self.Connection = connection
 
@@ -82,17 +81,6 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 		self.CacheCounter = metrics_service.create_counter("es.lookup.cache", tags={}, init_values={'hit': 0, 'miss': 0})
 		self.SuccessCounter = metrics_service.create_counter("es.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
-		self.Invalidated = set()
-		if on_time_update and not self.is_master():
-			self.UpdatePeriod = float(self.Config['update_period'])
-			self.Timer = asab.Timer(app, self.load_from_master, autorestart=True)
-			self.Timer.start(self.UpdatePeriod)
-		else:
-			self.Timer = None
-			self.UpdatePeriod = None
-
-	def invalidate(self, member_id):
-		self.Invalidated.add(member_id)
 
 	async def _find_one(self, key):
 		prefix = '_search'
@@ -249,17 +237,6 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 		if key is not None:
 			self.Cache[key] = element['_source']
 		return key
-
-
-	def serialize(self):
-		return (json.dumps(list(self.Invalidated))).encode('utf-8')
-
-
-	def deserialize(self, data):
-		invalidated = json.loads(data.decode('utf-8'))
-		for i in invalidated:
-			if i in self.Cache:
-				self.Cache.pop(i)
 
 
 	@classmethod
