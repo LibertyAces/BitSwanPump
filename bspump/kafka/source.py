@@ -150,6 +150,7 @@ class KafkaSource(Source):
 	async def _not_ready_handler(self, message_type):
 		# Preventive commit, when the pipeline is throttled
 		if len(self._group_id) > 0:
+			# TODO: Consider cases where self.MaxRecords != 1
 			await self._commit()
 
 	async def main(self):
