@@ -84,6 +84,7 @@ class MySQLConnection(Connection):
 		self._conn_future = None
 		self._connection_request = False
 		self._pause = False
+		self._throttled_by_error = False
 
 		# Subscription
 		self._on_health_check('connection.open!')
@@ -268,8 +269,13 @@ class MySQLConnection(Connection):
 					try:
 						await cursor.executemany(query, data)
 						await connection.commit()
+						if self._throttled_by_error:
+							self.Pipeline.throttle(self, False)
+							self._throttled_by_error = False
 					except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
 						if e.args[0] in self.RetryErrors:
 							L.warn("Recoverable error '{}' occurred in MySQLConnection. Retrying.".format(e.args[0]))
 							self._output_queue.put_nowait((query, data))
+							self.Pipeline.throttle(self, True)
+							self._throttled_by_error = True
 						raise e
