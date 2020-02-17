@@ -76,8 +76,8 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		return {self.Key: key}
 
 
-	def _find_one(self, query):
-		return await (self.Connection.Client[self.Database][self.Collection]).find_one(query) #TODO params
+	async def _find_one(self, query):
+		return await (self.Connection.Client[self.Database][self.Collection]).find_one(query)
 
 
 	async def get(self, key):
