@@ -11,7 +11,6 @@ from ..cache import CacheDict
 L = logging.getLogger(__name__)
 
 
-# TODO doc
 
 class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
