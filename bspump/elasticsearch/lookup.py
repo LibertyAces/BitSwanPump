@@ -4,12 +4,16 @@ import logging
 import requests
 
 from ..abc.lookup import MappingLookup
+from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
+
 
 L = logging.getLogger(__name__)
 
 
-class ElasticSearchLookup(MappingLookup):
+
+class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
+
 
 	"""
 	The lookup that is linked with a ES.
@@ -30,15 +34,26 @@ class ElasticSearchLookup(MappingLookup):
 
 .. code:: python
 
-	class ProjectLookup(bspump.elasticsearch.ElasticSearchLookup):
+The ElasticSearchLookup can be then located and used inside a custom enricher:
 
-		async def count(self, database):
-			return await database['projects'].count_documents({})
+	class AsyncEnricher(bspump.Generator):
 
-		def find_one(self, database, key):
-			return database['projects'].find_one({'_id':key})
+		def __init__(self, app, pipeline, id=None, config=None):
+			super().__init__(app, pipeline, id, config)
+			svc = app.get_service("bspump.PumpService")
+			self.Lookup = svc.locate_lookup("MySQLLookup")
+
+		async def generate(self, context, event, depth):
+			if 'user' not in event:
+				return None
+
+			info = await self.Lookup.get(event['user'])
+
+			# Inject a new event into a next depth of the pipeline
+			self.Pipeline.inject(context, event, depth)
 
 	"""
+
 
 	ConfigDefaults = {
 		'index': '',  # Specify an index
@@ -46,8 +61,8 @@ class ElasticSearchLookup(MappingLookup):
 		'scroll_timeout': '1m',
 	}
 
-	def __init__(self, app, connection, id=None, config=None, cache=None):
-		super().__init__(app, id=id, config=config)
+	def __init__(self, app, connection, id=None, config=None, cache=None, lazy=False):
+		super().__init__(app, id=id, config=config, lazy=lazy)
 		self.Connection = connection
 
 		self.Index = self.Config['index']
@@ -61,23 +76,59 @@ class ElasticSearchLookup(MappingLookup):
 			self.Cache = cache
 
 		metrics_service = app.get_service('asab.MetricsService')
-		self.CacheCounter = metrics_service.create_counter("es.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.CacheCounter = metrics_service.create_counter("es.lookup.cache", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.SuccessCounter = metrics_service.create_counter("es.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
-	def _find_one(self, key):
+
+	async def _find_one(self, key):
 		prefix = '_search'
 		request = {
 			"size": 1,
 			"query": self.build_find_one_query(key)
 		}
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
-		response = requests.post(url, json=request)
-		data = json.loads(response.text)
-		try:
-			hit = data['hits']['hits'][0]
-		except IndexError:
-			return None
+
+		async with self.Connection.get_session() as session:
+			async with session.post(
+				url,
+				json=request,
+				headers={'Content-Type': 'application/json'}
+			) as response:
+
+				if response.status != 200:
+					data = await response.text()
+					L.error("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(response.status, url, data))
+
+
+				msg = await response.json()
+				try:
+					hit = msg['hits']['hits'][0]
+				except IndexError:
+					return None
 
 		return hit["_source"]
+
+
+	async def get(self, key):
+		"""
+		Obtain the value from lookup asynchronously.
+		"""
+
+		try:
+			value = self.Cache[key]
+			self.CacheCounter.add('hit', 1)
+		except KeyError:
+			value = await self._find_one(key)
+			if value is not None:
+				self.Cache[key] = value
+				self.CacheCounter.add('miss', 1)
+
+		if value is None:
+			self.SuccessCounter.add('miss', 1)
+		else:
+			self.SuccessCounter.add('hit', 1)
+
+		return value
 
 
 	def build_find_one_query(self, key) -> dict:
@@ -120,7 +171,8 @@ class ElasticSearchLookup(MappingLookup):
 
 
 	async def load(self):
-		self.Count = await self._count()
+		self.Count = len(self.Cache)
+		return True
 
 
 	def __len__(self):
@@ -128,15 +180,8 @@ class ElasticSearchLookup(MappingLookup):
 
 
 	def __getitem__(self, key):
-		try:
-			value = self.Cache[key]
-			self.CacheCounter.add('hit', 1)
-			return value
-		except KeyError:
-			v = self._find_one(key)
-			self.Cache[key] = v
-			self.CacheCounter.add('miss', 1)
-			return v
+		# To avoid synchronous operations completely
+		raise NotImplementedError()
 
 
 	def __iter__(self):
@@ -190,6 +235,7 @@ class ElasticSearchLookup(MappingLookup):
 		if key is not None:
 			self.Cache[key] = element['_source']
 		return key
+
 
 	@classmethod
 	def construct(cls, app, definition: dict):
