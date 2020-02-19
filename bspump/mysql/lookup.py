@@ -109,11 +109,10 @@ The MySQLLookup can be then located and used inside a custom enricher:
 					result = await cursor_async.fetchone()
 					return result
 				except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
-					if e.args[0] in connection.RetryErrors:
-						L.warn("Recoverable error '{}' occurred in MySQLLookup. Skipping lookup.".format(e.args[0]))
+					if e.args[0] in self.Connection.RetryErrors:
+						L.warning("Recoverable error '{}' occurred in MySQLLookup. Skipping lookup.".format(e.args[0]))
 						return None
 					raise e
-
 
 	async def _count(self):
 		query = self.QueryCount.format(self.From)
