@@ -1,8 +1,9 @@
 from ..abc.lookup import MappingLookup
+from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
 
 
-class MongoDBLookup(MappingLookup):
+class MongoDBLookup(MappingLookup, AsyncLookupMixin):
 
 
 	"""
@@ -71,20 +72,22 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.SuccessCounter = metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
+
 
 	def build_query(self, key):
 		return {self.Key: key}
 
 
 	async def _find_one(self, query):
-		return await (self.Connection.Client[self.Database][self.Collection]).find_one(query)
+		res =  await (self.Connection.Client[self.Database][self.Collection]).find_one(query)
+		return res
 
 
 	async def get(self, key):
 		"""
 		Obtain the value from lookup asynchronously.
 		"""
-
 		try:
 			value = self.Cache[key]
 			self.CacheCounter.add('hit', 1)
@@ -99,7 +102,6 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 			self.SuccessCounter.add('miss', 1)
 		else:
 			self.SuccessCounter.add('hit', 1)
-
 		return value
 
 
@@ -109,7 +111,7 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 
 
 	async def load(self):
-		self.Count = await self._count(self.Connection.Client[self.Database])
+		return True
 
 
 	def __len__(self):
@@ -117,17 +119,6 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 
 
 	def __getitem__(self, key):
-		# try:
-		# 	value = self.Cache[key]
-		# 	self.CacheCounter.add('hit', 1)
-		# 	return value
-		# except KeyError:
-		# 	database = self.Connection.Client[self.Database].delegate
-		# 	v = self._find_one(database, key)
-		# 	if v is not None:
-		# 		self.Cache[key] = v
-		# 	self.CacheCounter.add('miss', 1)
-		# 	return v
 		raise NotImplementedError()
 
 
