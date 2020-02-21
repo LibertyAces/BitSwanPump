@@ -1,26 +1,51 @@
 from ..abc.lookup import MappingLookup
+from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
 
 
-class MongoDBLookup(MappingLookup):
+class MongoDBLookup(MappingLookup, AsyncLookupMixin):
 
-	'''
-The lookup that is linked with a MongoDB.
-It provides a mapping (dictionary-like) interface to pipelines.
-It feeds lookup data from MongoDB using a query.
-It also has a simple cache to reduce a number of datbase hits.
 
-Example:
+	"""
+	The lookup that is linked with a MongoDB.
+	It provides a mapping (dictionary-like) interface to pipelines.
+	It feeds lookup data from Mongo using a query.
+	It also has a simple cache to reduce a number of database hits.
 
-class ProjectLookup(bspump.mongodb.MongoDBLookup):
+	**configs**
 
-	async def count(self, database):
-		return await database['projects'].count_documents({})
+	*database* - Mongo database name
 
-	def find_one(self, database, key):
-		return database['projects'].find_one({'_id':key})
+	*collection* - Mongo collection name
 
-	'''
+	*key* - field name to match
+
+
+	Example:
+
+.. code:: python
+
+The MongoDBLookup can be then located and used inside a custom enricher:
+
+	class AsyncEnricher(bspump.Generator):
+
+		def __init__(self, app, pipeline, id=None, config=None):
+			super().__init__(app, pipeline, id, config)
+			svc = app.get_service("bspump.PumpService")
+			self.Lookup = svc.locate_lookup("MyMongoLookup")
+
+		async def generate(self, context, event, depth):
+			if 'user' not in event:
+				return None
+
+			info = await self.Lookup.get(event['user'])
+
+			# Inject a new event into a next depth of the pipeline
+			self.Pipeline.inject(context, event, depth)
+
+	"""
+
+
 
 	ConfigDefaults = {
 		'database': '',  # Specify a database if you want to overload the connection setting
@@ -47,10 +72,37 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.SuccessCounter = metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
 
-	def _find_one(self, database, key):
-		return database[self.Collection].find_one({self.Key: key})
+	def build_query(self, key):
+		return {self.Key: key}
+
+
+	async def _find_one(self, query):
+		return await (self.Connection.Client[self.Database][self.Collection]).find_one(query)
+
+
+	async def get(self, key):
+		"""
+		Obtain the value from lookup asynchronously.
+		"""
+		try:
+			value = self.Cache[key]
+			self.CacheCounter.add('hit', 1)
+		except KeyError:
+			query = self.build_query(key)
+			value = await self._find_one(query)
+			if value is not None:
+				self.Cache[key] = value
+				self.CacheCounter.add('miss', 1)
+
+		if value is None:
+			self.SuccessCounter.add('miss', 1)
+		else:
+			self.SuccessCounter.add('hit', 1)
+		return value
+
 
 
 	async def _count(self, database):
@@ -58,7 +110,7 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 
 	async def load(self):
-		self.Count = await self._count(self.Connection.Client[self.Database])
+		return True
 
 
 	def __len__(self):
@@ -66,17 +118,7 @@ class ProjectLookup(bspump.mongodb.MongoDBLookup):
 
 
 	def __getitem__(self, key):
-		try:
-			value = self.Cache[key]
-			self.CacheCounter.add('hit', 1)
-			return value
-		except KeyError:
-			database = self.Connection.Client[self.Database].delegate
-			v = self._find_one(database, key)
-			if v is not None:
-				self.Cache[key] = v
-			self.CacheCounter.add('miss', 1)
-			return v
+		raise NotImplementedError()
 
 
 	def __iter__(self):

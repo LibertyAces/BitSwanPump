@@ -2,7 +2,7 @@ import logging
 
 import bspump
 import bspump.common
-import bspump.file
+import bspump.random
 import bspump.mongodb
 import bspump.trigger
 
@@ -40,34 +40,32 @@ class MyPipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 
-			bspump.file.FileCSVSource(app, self, config={
-				"post": "noop",
-				"path": "./data/users.csv"
-			}).on(bspump.trigger.OpportunisticTrigger(app)),
+			bspump.random.RandomSource(app, self,
+				config={'field':'user', 'prefix':'', 'upper_bound':10, 'number':10}
+				).on(bspump.trigger.OpportunisticTrigger(app)),
 
-			MyProcessor(app, self),
+			MyEnricher(app, self),
 			bspump.common.PPrintSink(app, self),
 			# bspump.common.NullSink(app, self),
 
 		)
 
 
-class MyProcessor(bspump.Processor):
+class MyEnricher(bspump.Generator):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		svc = app.get_service("bspump.PumpService")
 		self.Lookup = svc.locate_lookup("MongoDBLookup")
 
-	def process(self, context, event):
-		if 'user' not in event:
-			return None
 
-		info = self.Lookup.get(event['user'])
+	async def generate(self, context, event, depth):
+		# print("77777777777", int(event['user']))
+		info = await self.Lookup.get(int(event['user']))
 		if info is not None:
-			event['L'] = info.get('L')
-
-		return event
+			event["info"] = info
+		# print("8888888888888888")
+		self.Pipeline.inject(context, event, depth)
 
 
 if __name__ == '__main__':
