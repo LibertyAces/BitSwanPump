@@ -180,7 +180,7 @@ class KafkaSource(Source):
 						await self._simulate_event()
 
 					if topic_partition in self.Offsets:
-						self.Offsets[topic_partition] +=1
+						self.Offsets[topic_partition] += 1
 
 				if len(self._group_id) > 0:
 					await self._commit()
