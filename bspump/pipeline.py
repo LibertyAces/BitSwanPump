@@ -239,7 +239,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		if enable:
 			self._throttles.add(who)
 		else:
-			self._throttles.remove(who)
+			if who in self._throttles:
+				self._throttles.remove(who)
 
 		# Throttle primary pipelines, if there are any
 		for ancestral_pipeline in self._ancestral_pipelines:
