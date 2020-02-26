@@ -134,6 +134,7 @@ class KafkaSource(Source):
 		self.EventCounter = 0
 		self.EventBlockSize = int(self.Config["event_block_size"])
 		self.EventIdleTime = float(self.Config["event_idle_time"])
+		self.Offsets = {}
 
 	def create_consumer(self):
 		self.Partitions = None
@@ -145,6 +146,13 @@ class KafkaSource(Source):
 	async def initialize_consumer(self):
 		await self.Consumer.start()
 		self.Partitions = self.Consumer.assignment()
+		self.Pipeline.PubSub.subscribe("bspump.pipeline.not_ready!", self._not_ready_handler)
+
+	async def _not_ready_handler(self, message_type, *args, **kwargs):
+		# Preventive commit, when the pipeline is throttled
+		if len(self._group_id) > 0:
+			# TODO: Consider cases where self.MaxRecords != 1
+			await self._commit(self.Offsets)
 
 	async def main(self):
 		await self.initialize_consumer()
@@ -159,17 +167,21 @@ class KafkaSource(Source):
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
 					t0 = time.perf_counter()
-					data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
+					data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs, max_records=self.MaxRecords)
 					self.ProfilerCounter.add('duration', time.perf_counter() - t0)
 					self.ProfilerCounter.add('run', 1)
 				for topic_partition, messages in data.items():
 					for message in messages:
-						# TODO: If pipeline is not ready, don't commit messages ...
+						self.Offsets[topic_partition] = message.offset
 						# Process message
 						context = {"kafka": message}
 						await self.process(message.value, context=context)
 						# Simulate event
 						await self._simulate_event()
+
+					if topic_partition in self.Offsets:
+						self.Offsets[topic_partition] += 1
+
 				if len(self._group_id) > 0:
 					await self._commit()
 		except concurrent.futures._base.CancelledError:
@@ -177,10 +189,14 @@ class KafkaSource(Source):
 		finally:
 			await self.Consumer.stop()
 
-	async def _commit(self):
+	async def _commit(self, offsets=None):
 		for i in range(self.Retry, 0, -1):
 			try:
-				await self.Consumer.commit()
+				if offsets is not None and len(offsets) > 0:
+					await self.Consumer.commit(offsets)
+				else:
+					await self.Consumer.commit()
+
 				break
 			except concurrent.futures._base.CancelledError as e:
 				# Ctrl-C -> terminate and exit
