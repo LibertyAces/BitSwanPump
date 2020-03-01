@@ -74,6 +74,10 @@ class KafkaSink(Sink):
 		"enable_idempotency": "",
 		"transactional_id": "",
 		"transaction_timeout_ms": "",
+		"sasl_mechanism": "",
+		"sasl_plain_username": "",
+		"sasl_plain_password": "",
+		"security_protocol": "",
 	}
 
 
@@ -103,7 +107,11 @@ class KafkaSink(Sink):
 			"connections_max_idle_ms": int,
 			"enable_idempotence": bool,
 			"transactional_id": str,
-			"transaction_timeout_ms": int
+			"transaction_timeout_ms": int,
+			"sasl_mechanism": str,
+			"sasl_plain_username": str,
+			"sasl_plain_password": str,
+			"security_protocol": str,
 		}
 		self._producer_params = {
 			x: producer_param_definition[x](y)
