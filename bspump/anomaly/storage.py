@@ -62,40 +62,40 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 			"size": 10000,
 			"query": {
 				"bool": {
-						"must": [
-							{
-								"exists": {
-									"field": "@timestamp"
-								},
+					"must": [
+						{
+							"exists": {
+								"field": "@timestamp"
 							},
-							{
-								"exists": {
-									"field": "type"
-								},
+						},
+						{
+							"exists": {
+								"field": "type"
 							},
-							{
-								"exists": {
-									"field": "status"
-								},
+						},
+						{
+							"exists": {
+								"field": "status"
 							},
-							{
-								"match": {
-									"status": {
-										"query": "open",
-										"minimum_should_match": 1,
-										"zero_terms_query": "all"
-									}
+						},
+						{
+							"match": {
+								"status": {
+									"query": "open",
+									"minimum_should_match": 1,
+									"zero_terms_query": "all"
 								}
-							},
-							{
-								"range": {
-									"@timestamp": {
-										"gte": "now-14d",
-										"lte": "now"
-									},
+							}
+						},
+						{
+							"range": {
+								"@timestamp": {
+									"gte": "now-14d",
+									"lte": "now"
 								},
 							},
-						]
+						},
+					]
 				}
 			},
 			"sort": [
