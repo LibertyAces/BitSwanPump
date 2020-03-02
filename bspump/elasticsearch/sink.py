@@ -19,6 +19,12 @@ class ElasticSearchSink(Sink):
 	"""
 	ElasticSearchSink allows you to insert events into ElasticSearch through POST requests
 
+	The following attributes can be passed to the context and thus override the default behavior
+	of the sink:
+
+	es_index (STRING): ElasticSearch index name
+	es_id (STRING): ElasticSearch document "_id"
+	es_version (INT): ElasticSearch document version
 	"""
 
 
@@ -44,7 +50,7 @@ class ElasticSearchSink(Sink):
 			self._rollover_mechanism = ElasticSearchTimeRollover(app, self)
 		elif ro == 'size':
 			self._rollover_mechanism = ElasticSearchSizeRollover(app, self, self._connection)
-		elif ro == 'noop' or ro == 'fixed':  # Do not use fixed, it is an obsolete name
+		elif ro == 'noop' or ro == 'ilm' or ro == 'fixed':  # Do not use fixed, it is an obsolete name
 			self._rollover_mechanism = ElasticSearchNoopRollover(app, self)
 		else:
 			L.error("Unknown rollover mechanism: '{}'".format(ro))
@@ -56,9 +62,27 @@ class ElasticSearchSink(Sink):
 
 	def process(self, context, event):
 		assert self._rollover_mechanism.Index is not None
-		data = '{{"index": {{ "_index": "{}", "_type": "{}" }}\n{}\n'.format(
-			self._rollover_mechanism.Index, self._doctype, json.dumps(event)
+
+		_index = context.get("es_index")
+		_id = context.get("es_id")
+		_version = context.get("es_version")
+
+		# Header
+		data = '{{"index": {{ "_index": "{}", "_type": "{}"'.format(
+			_index if _index is not None else self._rollover_mechanism.Index, self._doctype, json.dumps(event)
 		)
+
+		# ID
+		if _id is not None:
+			data += ', "_id": "{}"'.format(_id)
+
+		# Version
+		if _version is not None:
+			data += ', "version_type": "external_gte", "version": {}'.format(_version)
+
+		# Ending
+		data += ' }}\n{}\n'
+
 		self._connection.consume(data)
 
 
