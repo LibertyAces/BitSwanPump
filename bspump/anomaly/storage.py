@@ -87,14 +87,14 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 									}
 								}
 							},
-							# {
-							# 	"range": {
-							# 		"@timestamp": {
-							# 			"gte": "now-14d",
-							# 			"lte": "now"
-							# 		},
-							# 	},
-							# },
+							{
+								"range": {
+									"@timestamp": {
+										"gte": "now-14d",
+										"lte": "now"
+									},
+								},
+							},
 						]
 				}
 			},
