@@ -14,6 +14,25 @@ L = logging.getLogger(__name__)
 ###
 
 
+class ElasticContextEnricher(bspump.Processor):
+	"""
+	Index, _id and version can be specified in the event's context.
+
+	If they are not specified, ElasticSearch will create custom _id
+	and version. Index will be in this case created by the specified rollover_mechanism.
+	"""
+
+	def process(self, context, event):
+
+		context["es_index"] = "bs_example_es_sink"
+		name = event.get("name")
+		if name is not None:
+			context["es_id"] = name.replace(" ", "").lower()
+			context["es_version"] = 1
+
+		return event
+
+
 class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
@@ -24,6 +43,7 @@ class SamplePipeline(bspump.Pipeline):
 				'post': 'noop',
 			}).on(bspump.trigger.RunOnceTrigger(app)),
 			bspump.common.JsonBytesToDictParser(app, self),
+			ElasticContextEnricher(app, self),
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
 		)
 
