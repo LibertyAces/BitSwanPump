@@ -106,9 +106,9 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		url = self.Connection.get_url() + '{}/_search'.format(self.Index)
 		async with self.Connection.get_session() as session:
 			async with session.post(
-					url,
-					json=query,
-					headers={'Content-Type': 'application/json'}
+				url,
+				json=query,
+				headers={'Content-Type': 'application/json'}
 			) as response:
 				if response.status != 200:
 					data = await response.text()
