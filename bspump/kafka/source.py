@@ -64,11 +64,6 @@ class KafkaSource(Source):
 
 		"event_block_size": 1000,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
 		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
-
-		"sasl_mechanism": "",
-		"sasl_plain_username": "",
-		"sasl_plain_password": "",
-		"security_protocol": "",
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -110,22 +105,6 @@ class KafkaSource(Source):
 		v = self.Config.get('request_timeout_ms')
 		if v != "":
 			consumer_params['request_timeout_ms'] = int(v)
-
-		v = self.Config.get('sasl_mechanism')
-		if v != "":
-			consumer_params['sasl_mechanism'] = v
-
-		v = self.Config.get('sasl_plain_username')
-		if v != "":
-			consumer_params['sasl_plain_username'] = v
-
-		v = self.Config.get('sasl_plain_password')
-		if v != "":
-			consumer_params['sasl_plain_password'] = v
-
-		v = self.Config.get('security_protocol')
-		if v != "":
-			consumer_params['security_protocol'] = v
 
 		self.MaxRecords = self.Config.get('max_records')
 
