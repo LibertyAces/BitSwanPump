@@ -1,0 +1,4 @@
+{"@timestamp": 1583159761, "type": "network_down", "server_id": 1, "status": "open" }
+{"@timestamp": 1583159781, "type": "user_login_failed", "user_id": 1230, "status": "open" }
+{"@timestamp": 1583159791, "type": "network_down", "server_id": 2, "status": "open" }
+{"@timestamp": 1583159961, "type": "network_down", "server_id": 1, "status": "closed" }

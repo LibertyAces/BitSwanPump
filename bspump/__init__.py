@@ -15,6 +15,8 @@ from .abc.lookup import DictionaryLookup
 from .fileloader import load_json_file
 from .matrix.matrix import Matrix, NamedMatrix
 
+from .abc.anomaly import Anomaly
+
 from .__version__ import __version__, __build__
 
 __all__ = (
@@ -35,6 +37,8 @@ __all__ = (
 	"load_json_file",
 	"Matrix",
 	"NamedMatrix",
+
+	"Anomaly",
 
 	"__version__",
 	"__build__",
