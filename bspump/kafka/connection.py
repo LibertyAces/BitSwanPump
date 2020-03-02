@@ -30,14 +30,26 @@ class KafkaConnection(Connection):
 
 	``ConfigDefaults`` options:
 
-		* ``compression_type``: Kafka supports several compression types: ``gzip``, ``snappy`` and ``lz4``.
+		compression_type (str): Kafka supports several compression types: ``gzip``, ``snappy`` and ``lz4``.
 			This option needs to be specified in Kafka Producer only, Consumer will decompress automatically.
-
+		security_protocol (str): Protocol used to communicate with brokers.
+			Valid values are: PLAINTEXT, SSL. Default: PLAINTEXT.
+		sasl_mechanism (str): Authentication mechanism when security_protocol
+			is configured for SASL_PLAINTEXT or SASL_SSL. Valid values are:
+			PLAIN, GSSAPI, SCRAM-SHA-256, SCRAM-SHA-512. Default: PLAIN
+		sasl_plain_username (str): username for sasl PLAIN authentication.
+			Default: None
+		sasl_plain_password (str): password for sasl PLAIN authentication.
+			Default: None
 	"""
 
 	ConfigDefaults = {
 		'bootstrap_servers': 'localhost:9092',
 		'compression_type': '',
+		'security_protocol': 'PLAINTEXT',
+		'sasl_mechanism': 'PLAIN',
+		'sasl_plain_username': '',
+		'sasl_plain_password': '',
 	}
 
 
@@ -51,6 +63,10 @@ class KafkaConnection(Connection):
 			loop=self.Loop,
 			bootstrap_servers=self.get_bootstrap_servers(),
 			compression_type=self.get_compression(),
+			security_protocol=self.Config.get('security_protocol'),
+			sasl_mechanism=self.Config.get('sasl_mechanism'),
+			sasl_plain_username=self.Config.get('sasl_plain_username') or None,
+			sasl_plain_password=self.Config.get('sasl_plain_password') or None,
 			**kwargs
 		)
 		return producer
@@ -62,6 +78,10 @@ class KafkaConnection(Connection):
 			loop=self.Loop,
 			bootstrap_servers=self.get_bootstrap_servers(),
 			enable_auto_commit=False,
+			security_protocol=self.Config.get('security_protocol'),
+			sasl_mechanism=self.Config.get('sasl_mechanism'),
+			sasl_plain_username=self.Config.get('sasl_plain_username') or None,
+			sasl_plain_password=self.Config.get('sasl_plain_password') or None,
 			**kwargs
 		)
 		return consumer

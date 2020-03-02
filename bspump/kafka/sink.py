@@ -103,7 +103,7 @@ class KafkaSink(Sink):
 			"connections_max_idle_ms": int,
 			"enable_idempotence": bool,
 			"transactional_id": str,
-			"transaction_timeout_ms": int
+			"transaction_timeout_ms": int,
 		}
 		self._producer_params = {
 			x: producer_param_definition[x](y)
