@@ -69,7 +69,7 @@ class ElasticSearchSink(Sink):
 
 		# Header
 		data = '{{"index": {{ "_index": "{}", "_type": "{}"'.format(
-			_index if _index is not None else self._rollover_mechanism.Index, self._doctype, json.dumps(event)
+			_index if _index is not None else self._rollover_mechanism.Index, self._doctype
 		)
 
 		# ID
@@ -80,8 +80,8 @@ class ElasticSearchSink(Sink):
 		if _version is not None:
 			data += ', "version_type": "external_gte", "version": {}'.format(_version)
 
-		# Ending
-		data += ' }}\n{}\n'
+		# Event/Ending
+		data += ' }}\n{}\n'.format(json.dumps(event))
 
 		self._connection.consume(data)
 
