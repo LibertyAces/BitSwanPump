@@ -34,6 +34,8 @@ class InfluxDBConnection(Connection):
 		'output_queue_max_size': 10,
 		'output_bucket_max_size': 1000 * 1000,
 		'timeout': 30,
+		'retry_enabled': False,
+		'retryable_exceptions': ConnectionRefusedError
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -83,6 +85,13 @@ class InfluxDBConnection(Connection):
 				r = self._future.result()
 				# This error should never happen
 				L.error("Influx error observed, returned: '{}' (should be None)".format(r))
+
+			except self.Config["retryable_exceptions"]:
+				if self.Config["retry_enabled"]:
+					L.warning("Retryable exception raised, retrying...")
+					return
+				L.exception("Influx error observed, restoring the order")
+
 			except Exception:
 				L.exception("Influx error observed, restoring the order")
 
