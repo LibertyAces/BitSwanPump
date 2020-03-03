@@ -77,8 +77,7 @@ class InfluxDBConnection(Connection):
 		await self._output_queue.put(None)  # By sending None via queue, we signalize end of life
 		await self._future  # Wait till the _loader() terminates
 
-
-	def _on_tick(self, event_name):
+	async def _on_tick(self, event_name):
 		if self._started and self._future.done():
 			# Ups, _loader() task crashed during runtime, we need to restart it
 			try:
@@ -89,12 +88,12 @@ class InfluxDBConnection(Connection):
 			except self.Config["retryable_exceptions"]:
 				if self.Config["retry_enabled"]:
 					L.warning("Retryable exception raised, retrying...")
+					await self._future
 					return
 				L.exception("Influx error observed, restoring the order")
 
-			except Exception:
-				L.exception("Influx error observed, restoring the order")
-
+			except Exception as e:
+				print(e)
 
 			self._future = asyncio.ensure_future(self._loader())
 
@@ -131,6 +130,7 @@ class InfluxDBConnection(Connection):
 			async with aiohttp.ClientSession() as session:
 				async with session.post(self._url_write, data=_output_bucket) as resp:
 					resp_body = await resp.text()
+					print(f"Response status: {resp.status}, response body: {resp_body}")
 					if resp.status != 204:
 						L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
 						raise RuntimeError("Failed to insert line into Influx")
