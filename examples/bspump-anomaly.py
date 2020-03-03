@@ -202,7 +202,7 @@ class IDVersionEnricher(bspump.Generator):
 
 		# Duplicate the event for backup
 		if event.get("status") == "closed":
-			context["es_version"] = "b_{}_{}".format(context["_id"], context["es_version"])
+			context["es_version"] = "b_{}_{}".format(context["es_id"], context["es_version"])
 			event["backup"] = 1
 			self.Pipeline.inject(context, event, depth)
 

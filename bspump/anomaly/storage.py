@@ -28,13 +28,14 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		"index": "bs_anomaly*",
 	}
 
-	def __init__(self, app, es_connection, anomaly_classes=list(), id="AnomalyStorage", config=None):
+	def __init__(self, app, es_connection, anomaly_classes=list(), anomaly_storage_pipeline_source="AnomalyStoragePipeline.*InternalSource", id="AnomalyStorage", config=None):
 		super().__init__(config_section_name=id, config=config)
 
 		self["open"] = {}
 		self["closed"] = {}
 
 		self.App = app
+		self.AnomalyStoragePipelineSource = anomaly_storage_pipeline_source
 		self.Context = {}
 		self.AnomalyClasses = anomaly_classes
 		self.ClosedAnomalyLongevity = int(self.Config["closed_anomaly_longevity"])
@@ -153,7 +154,7 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		current_time = int(time.time())
 
 		svc = self.App.get_service("bspump.PumpService")
-		anomaly_storage_pipeline_source = svc.locate("AnomalyStoragePipeline.*InternalSource")
+		anomaly_storage_pipeline_source = svc.locate(self.AnomalyStoragePipelineSource)
 
 		if anomaly_storage_pipeline_source is None:
 			L.warning("The anomaly storage pipeline is not yet ready, skipping ...")
