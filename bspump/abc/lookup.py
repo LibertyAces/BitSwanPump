@@ -52,7 +52,7 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			if master_lookup_id == "":
 				master_lookup_id = self.Id
 			# TODO: Replace this with /bspump/v1/lookup/ after September 2020
-			self.MasterURL = master_url + '/bspump/lookup/' + master_lookup_id
+			self.MasterURL = master_url + '/lookup/' + master_lookup_id
 		else:
 			self.MasterURL = None  # No master is defined
 
