@@ -29,6 +29,7 @@ class Lookup(abc.ABC, asab.ConfigObject):
 		"master_url": "",  # If not empty, a lookup is in slave mode (will load data from master or cache)
 		"master_lookup_id": "",  # If not empty, it specify the lookup id that will be used for loading from master
 		"master_timeout": 30,  # In secs.
+		"master_url_endpoint": "/bspump/v1/lookup"
 	}
 
 
@@ -51,8 +52,7 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			master_lookup_id = self.Config['master_lookup_id']
 			if master_lookup_id == "":
 				master_lookup_id = self.Id
-			# TODO: Replace this with /bspump/v1/lookup/ after September 2020
-			self.MasterURL = master_url + '/lookup/' + master_lookup_id
+			self.MasterURL = "{}{}/{}".format(master_url, self.Config['master_url_endpoint'], master_lookup_id)
 		else:
 			self.MasterURL = None  # No master is defined
 
