@@ -122,10 +122,7 @@ class InfluxDBConnection(Connection):
 					async with session.post(self._url_write, data=_output_bucket) as resp:
 						resp_body = await resp.text()
 						print(f"Response status: {resp.status}, response body: {resp_body}")
-						if resp.status is not 204:
-							print(f"Response was: {resp}")
-							self._output_queue.put_nowait(_output_bucket)
-						elif resp.status != 204:
+						if resp.status != 204:
 							L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
 							raise RuntimeError("Failed to insert line into Influx")
 						elif resp.status is None:
