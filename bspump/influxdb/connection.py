@@ -34,7 +34,7 @@ class InfluxDBConnection(Connection):
 		'output_queue_max_size': 10,
 		'output_bucket_max_size': 1000 * 1000,
 		'timeout': 30,
-		'retry_enabled': True,
+		'retry_enabled': False,
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -48,6 +48,7 @@ class InfluxDBConnection(Connection):
 
 		self._output_bucket_max_size = self.Config["output_bucket_max_size"]
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+		self.RetryEnabled = self.Config.getboolean("retry_enabled")
 
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._started = True
@@ -84,7 +85,7 @@ class InfluxDBConnection(Connection):
 				# This error should never happen
 				L.error("Influx error observed, returned: '{}' (should be None)".format(r))
 			except Exception as e:
-				print(e)
+				L.exception(f"Influx error, {e}, observed, restoring the order")
 
 			self._future = asyncio.ensure_future(self._loader())
 		self.flush()
@@ -129,7 +130,6 @@ class InfluxDBConnection(Connection):
 							raise RuntimeError("Failed to insert line into Influx")
 			# Here we define errors, that we want to retry
 			except OSError:
-				if self.Config.getboolean("retry_enabled"):
+				if self.RetryEnabled:
 					L.warning(f"Retryable exception raised, retrying. Queue size {self._output_queue.qsize()}")
 					self._output_queue.put_nowait(_output_bucket)
-					self.flush()
