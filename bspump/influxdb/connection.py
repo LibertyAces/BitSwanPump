@@ -121,7 +121,6 @@ class InfluxDBConnection(Connection):
 				async with aiohttp.ClientSession() as session:
 					async with session.post(self._url_write, data=_output_bucket) as resp:
 						resp_body = await resp.text()
-						print(f"Response status: {resp.status}, response body: {resp_body}")
 						if resp.status != 204:
 							L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
 							raise RuntimeError("Failed to insert line into Influx")
