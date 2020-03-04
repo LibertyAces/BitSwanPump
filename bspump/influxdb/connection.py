@@ -35,7 +35,6 @@ class InfluxDBConnection(Connection):
 		'output_bucket_max_size': 1000 * 1000,
 		'timeout': 30,
 		'retry_enabled': True,
-		'retryable_exceptions': OSError
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -128,7 +127,8 @@ class InfluxDBConnection(Connection):
 						elif resp.status is None:
 							L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
 							raise RuntimeError("Failed to insert line into Influx")
-			except self.Config["retryable_exceptions"]:
+			# Here we define errors, that we want to retry
+			except OSError:
 				print(self.Config["retry_enabled"])
 				if self.Config.getboolean("retry_enabled"):
 					L.warning(f"Retryable exception raised, retrying. Queue size {self._output_queue.qsize()}")
