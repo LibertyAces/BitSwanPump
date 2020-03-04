@@ -42,7 +42,7 @@ class MyApplication(bspump.BSPumpApplication):
 		svc.add_lookup(self.MySQLLookup)
 
 
-def webservice(request):
+def lookup_webservice(request):
 	"""
 	Here, we get the bspump service, and from it, we localize the MySQLLookup using their respective id strings.
 	That gives us access to the Lookup, and we are able to serve its contents, using the keys we define, in the
@@ -63,6 +63,6 @@ if __name__ == '__main__':
 	app.add_module(bspump.web.Module)
 	websvc = app.get_service("asab.WebService")
 
-	websvc.WebApp.router.add_get('/query_result', webservice)
+	websvc.WebApp.router.add_get('/lookup-results', lookup_webservice)
 
 	app.run()
