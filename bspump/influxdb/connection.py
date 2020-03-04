@@ -86,6 +86,8 @@ class InfluxDBConnection(Connection):
 				L.error("Influx error observed, returned: '{}' (should be None)".format(r))
 			except Exception as e:
 				print(e)
+
+			self._future = asyncio.ensure_future(self._loader())
 		self.flush()
 
 
