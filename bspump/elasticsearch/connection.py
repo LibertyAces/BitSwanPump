@@ -50,7 +50,7 @@ class ElasticSearchConnection(Connection):
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 1024 * 1024,
 		'timeout': 300,
-		'allowed_bulk_response_codes': '201',
+		'allowed_bulk_response_codes': '200,201,409',
 		"allow_retry": 0,  # Allows retry of the inserted bulk, when the allowed bulk response code occurs in error
 	}
 
