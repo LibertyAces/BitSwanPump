@@ -107,8 +107,6 @@ class InfluxDBConnection(Connection):
 
 
 	async def _loader(self):
-		print("baket")
-
 		# A cycle that regularly sends buckets if there are any
 		while self._started:
 			_output_bucket = await self._output_queue.get()
@@ -132,8 +130,7 @@ class InfluxDBConnection(Connection):
 							raise RuntimeError("Failed to insert line into Influx")
 			except self.Config["retryable_exceptions"]:
 				print(self.Config["retry_enabled"])
-				if self.Config["retry_enabled"]:
-					L.warning("Retryable exception raised, retrying...")
-					print(self._output_queue.qsize())
+				if self.Config.getboolean("retry_enabled"):
+					L.warning(f"Retryable exception raised, retrying. Queue size {self._output_queue.qsize()}")
 					self._output_queue.put_nowait(_output_bucket)
 					self.flush()
