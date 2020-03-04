@@ -129,7 +129,6 @@ class InfluxDBConnection(Connection):
 							raise RuntimeError("Failed to insert line into Influx")
 			# Here we define errors, that we want to retry
 			except OSError:
-				print(self.Config["retry_enabled"])
 				if self.Config.getboolean("retry_enabled"):
 					L.warning(f"Retryable exception raised, retrying. Queue size {self._output_queue.qsize()}")
 					self._output_queue.put_nowait(_output_bucket)
