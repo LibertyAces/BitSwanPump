@@ -34,8 +34,8 @@ class InfluxDBConnection(Connection):
 		'output_queue_max_size': 10,
 		'output_bucket_max_size': 1000 * 1000,
 		'timeout': 30,
-		'retry_enabled': False,
-		'retryable_exceptions': ConnectionRefusedError
+		'retry_enabled': True,
+		'retryable_exceptions': OSError
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -84,19 +84,8 @@ class InfluxDBConnection(Connection):
 				r = self._future.result()
 				# This error should never happen
 				L.error("Influx error observed, returned: '{}' (should be None)".format(r))
-
-			except self.Config["retryable_exceptions"]:
-				if self.Config["retry_enabled"]:
-					L.warning("Retryable exception raised, retrying...")
-					await self._future
-					return
-				L.exception("Influx error observed, restoring the order")
-
 			except Exception as e:
 				print(e)
-
-			self._future = asyncio.ensure_future(self._loader())
-
 		self.flush()
 
 
@@ -116,6 +105,7 @@ class InfluxDBConnection(Connection):
 
 
 	async def _loader(self):
+		print("baket")
 
 		# A cycle that regularly sends buckets if there are any
 		while self._started:
@@ -127,14 +117,24 @@ class InfluxDBConnection(Connection):
 				self.PubSub.publish("InfluxDBConnection.unpause!", self, asynchronously=True)
 
 			# Sending the data asynchronously
-			async with aiohttp.ClientSession() as session:
-				async with session.post(self._url_write, data=_output_bucket) as resp:
-					resp_body = await resp.text()
-					print(f"Response status: {resp.status}, response body: {resp_body}")
-					if resp.status != 204:
-						L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
-						raise RuntimeError("Failed to insert line into Influx")
-
-			# Should be empty
-			if resp_body != '':
-				L.warning("InfluxDB returned '{}', expected empty string".format(resp_body))
+			try:
+				async with aiohttp.ClientSession() as session:
+					async with session.post(self._url_write, data=_output_bucket) as resp:
+						resp_body = await resp.text()
+						print(f"Response status: {resp.status}, response body: {resp_body}")
+						if resp.status is not 204:
+							print(f"Response was: {resp}")
+							self._output_queue.put_nowait(_output_bucket)
+						elif resp.status != 204:
+							L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
+							raise RuntimeError("Failed to insert line into Influx")
+						elif resp.status is None:
+							L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
+							raise RuntimeError("Failed to insert line into Influx")
+			except self.Config["retryable_exceptions"]:
+				print(self.Config["retry_enabled"])
+				if self.Config["retry_enabled"]:
+					L.warning("Retryable exception raised, retrying...")
+					print(self._output_queue.qsize())
+					self._output_queue.put_nowait(_output_bucket)
+					self.flush()
