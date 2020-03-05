@@ -249,6 +249,7 @@ if __name__ == '__main__':
 
 	anomaly_pipeline = SymptomPipeline(app, "SymptomPipeline", anomaly_storage)
 	svc.add_pipeline(anomaly_pipeline)
+	anomaly_storage.set_pipeline(anomaly_pipeline)
 
 	# Run the application
 

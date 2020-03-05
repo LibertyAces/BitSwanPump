@@ -28,13 +28,15 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		"index": "bs_anomaly*",
 	}
 
-	def __init__(self, app, es_connection, anomaly_classes=list(), anomaly_storage_pipeline_source="AnomalyStoragePipeline.*InternalSource", id="AnomalyStorage", config=None):
+	def __init__(self, app, es_connection, anomaly_classes=list(), anomaly_storage_pipeline_source="AnomalyStoragePipeline.*InternalSource", pipeline=None, id="AnomalyStorage", config=None):
 		super().__init__(config_section_name=id, config=config)
 
 		self["open"] = {}
 		self["closed"] = {}
 
 		self.App = app
+		self.Id = id
+		self.Pipeline = pipeline
 		self.AnomalyStoragePipelineSource = anomaly_storage_pipeline_source
 		self.Context = {}
 		self.AnomalyClasses = anomaly_classes
@@ -57,6 +59,9 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		# Load previously saved anomalies from the external system
 		self.LoadTasks = [asyncio.ensure_future(self.load(), loop=self.App.Loop)]
 		self.App.PubSub.subscribe("Application.exit!", self._on_exit)
+
+	def set_pipeline(self, pipeline):
+		self.Pipeline = pipeline
 
 	async def load(self):
 		query = {
@@ -153,6 +158,10 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 
 		current_time = int(time.time())
 
+		# Throttle the parental pipeline
+		if self.Pipeline is not None:
+			self.Pipeline.throttle(self.Id, True)
+
 		svc = self.App.get_service("bspump.PumpService")
 		anomaly_storage_pipeline_source = svc.locate(self.AnomalyStoragePipelineSource)
 
@@ -183,7 +192,7 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 			if current_time > anomaly["ts_end"] + self.ClosedAnomalyLongevity:
 				# Pass anomaly to the storage pipeline
 				self.Context["es_id"] = key
-				anomaly_storage_pipeline_source.put(self.Context, anomaly)
+				await anomaly_storage_pipeline_source.put_async(self.Context, anomaly)
 				self.AnomalyStorageCounter.add("anomalies.closed.flushed", 1)
 				keys_to_be_deleted.append(key)
 
@@ -196,7 +205,11 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		# Synchronous to make atomic cycle
 		for key, anomaly in self["open"].items():
 			self.Context["es_id"] = key
-			anomaly_storage_pipeline_source.put(self.Context, anomaly)
+			await anomaly_storage_pipeline_source.put_async(self.Context, anomaly)
 			self.AnomalyStorageCounter.add("anomalies.open.flushed", 1)
+
+		# Throttle the parental pipeline
+		if self.Pipeline is not None:
+			self.Pipeline.throttle(self.Id, False)
 
 		L.info("End flushing of closed anomalies ...")
