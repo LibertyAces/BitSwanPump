@@ -43,7 +43,7 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		self.Connection = es_connection
 
 		# Subscribe to periodically flush old closed anomalies
-		self.App.PubSub.subscribe("Application.tick/10!", self.flush)
+		self.App.PubSub.subscribe("Application.tick/300!", self.flush)
 
 		metrics_service = self.App.get_service('asab.MetricsService')
 		self.AnomalyStorageCounter = metrics_service.create_counter(
@@ -169,7 +169,6 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 				anomaly.close(current_time)
 				self["closed"][key] = anomaly
 				keys_to_be_deleted.append(key)
-				await asyncio.sleep(0.001)
 
 		# Remove moved anomalies from the storage
 		for key in keys_to_be_deleted:
@@ -179,13 +178,12 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 
 		# FLUSH old closed anomalies to external database
 		await asyncio.sleep(0.01)
+		# Synchronous to make atomic cycle
 		for key, anomaly in self["closed"].items():
 			if current_time > anomaly["ts_end"] + self.ClosedAnomalyLongevity:
 				# Pass anomaly to the storage pipeline
 				self.Context["es_id"] = key
-				# Synchronous to make atomic cycle
 				anomaly_storage_pipeline_source.put(self.Context, anomaly)
-				await asyncio.sleep(0.01)
 				self.AnomalyStorageCounter.add("anomalies.closed.flushed", 1)
 				keys_to_be_deleted.append(key)
 
@@ -195,11 +193,10 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 
 		# FLUSH open anomalies for persistence to external system
 		await asyncio.sleep(0.01)
+		# Synchronous to make atomic cycle
 		for key, anomaly in self["open"].items():
 			self.Context["es_id"] = key
-			# Synchronous to make atomic cycle
 			anomaly_storage_pipeline_source.put(self.Context, anomaly)
-			await asyncio.sleep(0.01)
 			self.AnomalyStorageCounter.add("anomalies.open.flushed", 1)
 
 		L.info("End flushing of closed anomalies ...")
