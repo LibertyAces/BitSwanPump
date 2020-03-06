@@ -1,6 +1,6 @@
 import asyncio
 import logging
-
+import re
 import aiohttp
 
 from ..abc.connection import Connection
@@ -8,6 +8,7 @@ from ..abc.connection import Connection
 #
 
 L = logging.getLogger(__name__)
+
 
 #
 
@@ -35,6 +36,7 @@ class InfluxDBConnection(Connection):
 		'output_bucket_max_size': 1000 * 1000,
 		'timeout': 30,
 		'retry_enabled': False,
+		'response_codes_to_retry': '404,502,503,504'
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -50,6 +52,10 @@ class InfluxDBConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self.RetryEnabled = self.Config.getboolean("retry_enabled")
 
+		self.AllowedBulkResponseCodes = frozenset(
+			[int(x) for x in re.findall(r"[0-9]+", self.Config['response_codes_to_retry'])]
+		)
+
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 		self._started = True
 
@@ -61,7 +67,6 @@ class InfluxDBConnection(Connection):
 
 		self._future = asyncio.ensure_future(self._loader())
 
-
 	def consume(self, data):
 		"""
 		Consumes user-defined data to be stored in the InfluxDB database.
@@ -69,7 +74,6 @@ class InfluxDBConnection(Connection):
 		self._output_bucket += data
 		if len(self._output_bucket) > self._output_bucket_max_size:
 			self.flush()
-
 
 	async def _on_exit(self, event_name):
 		self._started = False
@@ -90,7 +94,6 @@ class InfluxDBConnection(Connection):
 			self._future = asyncio.ensure_future(self._loader())
 		self.flush()
 
-
 	def flush(self, event_name=None):
 		"""
 		Directly flushes the content of the internal bucket with data to InfluxDB database.
@@ -98,13 +101,12 @@ class InfluxDBConnection(Connection):
 		if len(self._output_bucket) == 0:
 			return
 
-		assert(self._output_bucket is not None)
+		assert (self._output_bucket is not None)
 		self._output_queue.put_nowait(self._output_bucket)
 		self._output_bucket = ""
 
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			self.PubSub.publish("InfluxDBConnection.pause!", self)
-
 
 	async def _loader(self):
 		# A cycle that regularly sends buckets if there are any
@@ -121,11 +123,15 @@ class InfluxDBConnection(Connection):
 				async with aiohttp.ClientSession() as session:
 					async with session.post(self._url_write, data=_output_bucket) as resp:
 						resp_body = await resp.text()
-						if resp.status != 204:
-							L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
-							raise RuntimeError("Failed to insert line into Influx")
+						if resp.status in self.AllowedBulkResponseCodes and self.RetryEnabled:
+							L.warning(
+								f"Retryable response code recieved, retrying. Queue size {self._output_queue.qsize()}"
+							)
+							self._output_queue.put_nowait(_output_bucket)
+
 						elif resp.status is None:
-							L.error("Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
+							L.error(
+								"Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
 							raise RuntimeError("Failed to insert line into Influx")
 			# Here we define errors, that we want to retry
 			except OSError:
