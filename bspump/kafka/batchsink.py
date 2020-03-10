@@ -7,6 +7,16 @@ from .sink import KafkaSink
 
 
 class KafkaBatchSink(KafkaSink):
+	"""
+	KafkaBatchSink is a sink processor that forwards the event to
+	an Apache Kafka specified by a KafkaConnection object in batches.
+
+	It is a proof of concept sink, that allows faster processing of events in the pipeline,
+	but does not guarantee processing of all events in situations when the pump is closed etc.
+
+	There is a work to be done with cooperation with aiokafka, so the send_and_wait method works
+	properly and is able to send events in batches.
+	"""
 
 	ConfigDefaults = {
 		"batch_size": 10000,
