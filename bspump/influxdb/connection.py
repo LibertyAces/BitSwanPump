@@ -128,6 +128,9 @@ class InfluxDBConnection(Connection):
 								f"Retryable response code recieved, retrying. Queue size {self._output_queue.qsize()}"
 							)
 							self._output_queue.put_nowait(_output_bucket)
+							self.PubSub.publish("InfluxDBConnection.pause!", self)
+							await asyncio.sleep(3)
+							self.PubSub.publish("InfluxDBConnection.unpause!", self)
 
 						elif resp.status is None:
 							L.error(
@@ -138,3 +141,6 @@ class InfluxDBConnection(Connection):
 				if self.RetryEnabled:
 					L.warning(f"Retryable exception raised, retrying. Queue size {self._output_queue.qsize()}")
 					self._output_queue.put_nowait(_output_bucket)
+					self.PubSub.publish("InfluxDBConnection.pause!", self)
+					await asyncio.sleep(3)
+					self.PubSub.publish("InfluxDBConnection.unpause!", self)
