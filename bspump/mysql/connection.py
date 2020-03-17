@@ -58,6 +58,7 @@ class MySQLConnection(Connection):
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
 		'max_bulk_size': 2,
+		'autocommit': True,
 	}
 
 	RetryErrors = frozenset([1047, 1053, 1077, 1078, 1079, 1080, 2003, 2006, 2012, 2013, 1152, 1205, 1213, 1223])
@@ -80,6 +81,7 @@ class MySQLConnection(Connection):
 		self._reconnect_delay = self.Config['reconnect_delay']
 		self._output_queue_max_size = self.Config['output_queue_max_size']
 		self._max_bulk_size = int(self.Config['max_bulk_size'])
+		self._autocommit = self.Config.getboolean('autocommit')
 
 		self._conn_future = None
 		self._connection_request = False
@@ -167,6 +169,7 @@ class MySQLConnection(Connection):
 				db=self._db,
 				conv=convertors,
 				connect_timeout=self._connect_timeout,
+				autocommit=self._autocommit,
 				loop=self.Loop) as pool:
 
 				self._conn_pool = pool
@@ -193,6 +196,7 @@ class MySQLConnection(Connection):
 				password=self._password,
 				database=self._db,
 				conv=convertors,
+				autocommit=self._autocommit,
 				connect_timeout=self._connect_timeout)
 			self._conn_sync = connection
 		except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
