@@ -148,7 +148,7 @@ class KafkaSource(Source):
 		)
 		if len(self.Config["user_defined_partitions"]) != 0:
 			self.Partitions = [aiokafka.TopicPartition(self.topics, partition)
-								for partition in self.Config["user_defined_partitions"].split(",")]
+			                   for partition in self.Config["user_defined_partitions"].split(",")]
 			self.Consumer.assign(self.Partitions)
 
 	async def initialize_consumer(self):
