@@ -14,8 +14,7 @@ L = logging.getLogger(__name__)
 class IntegrityEnricherProcessor(bspump.Processor):
 
 
-	'''
-	
+	'''	
 	IntegrityEnricherProcessor is a enricher processor, which enriches JSON data
 	by hashed events. Data are encoded by JSON Web Tokens standards.
 
@@ -24,25 +23,24 @@ class IntegrityEnricherProcessor(bspump.Processor):
 	Supported algorithms for cryptographic signing, default is HS256
 
 
-    HS256 - HMAC using SHA-256 hash algorithm (default)
-    HS384 - HMAC using SHA-384 hash algorithm
-    HS512 - HMAC using SHA-512 hash algorithm
-    ES256 - ECDSA signature algorithm using SHA-256 hash algorithm
-    ES384 - ECDSA signature algorithm using SHA-384 hash algorithm
-    ES512 - ECDSA signature algorithm using SHA-512 hash algorithm
-    RS256 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-256 hash algorithm
-    RS384 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-384 hash algorithm
-    RS512 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-512 hash algorithm
-    PS256 - RSASSA-PSS signature using SHA-256 and MGF1 padding with SHA-256
-    PS384 - RSASSA-PSS signature using SHA-384 and MGF1 padding with SHA-384
-    PS512 - RSASSA-PSS signature using SHA-512 and MGF1 padding with SHA-512
-
+	HS256 - HMAC using SHA-256 hash algorithm (default)
+	HS384 - HMAC using SHA-384 hash algorithm
+	HS512 - HMAC using SHA-512 hash algorithm
+	ES256 - ECDSA signature algorithm using SHA-256 hash algorithm
+	ES384 - ECDSA signature algorithm using SHA-384 hash algorithm
+	ES512 - ECDSA signature algorithm using SHA-512 hash algorithm
+	RS256 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-256 hash algorithm
+	RS384 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-384 hash algorithm
+	RS512 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-512 hash algorithm
+	PS256 - RSASSA-PSS signature using SHA-256 and MGF1 padding with SHA-256
+	PS384 - RSASSA-PSS signature using SHA-384 and MGF1 padding with SHA-384
+	PS512 - RSASSA-PSS signature using SHA-512 and MGF1 padding with SHA-512
 	'''
 
 	ConfigDefaults = {
 		'key_path': '',
 		'algorithm': 'HS256',
-	}
+		}
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -52,7 +50,7 @@ class IntegrityEnricherProcessor(bspump.Processor):
 
 		# Check if the key path is set
 		self.JWTPrivateKey = None
-		if self.KeyPath == '' or self.KeyPath == None:
+		if self.KeyPath == '' or self.KeyPath is None:
 			self.JWTPrivateKey = None
 		else:
 			with open(self.KeyPath, 'r') as file:
@@ -60,7 +58,7 @@ class IntegrityEnricherProcessor(bspump.Processor):
 
 	# Encoding event and enriching JSON with the encoded event
 	def hash_event(self, context, event):
-		if self.JWTPrivateKey == None:
+		if self.JWTPrivateKey is None:
 			L.warning('Key has not been loaded!')
 			return
 		event["hash"] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
