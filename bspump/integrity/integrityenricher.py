@@ -69,5 +69,3 @@ class IntegrityEnricherProcessor(bspump.Processor):
 	def process(self, context, event):
 		self.hash_event(context, event)
 		return event
-
-		
