@@ -3,6 +3,7 @@ import concurrent
 import concurrent.futures
 import logging
 import re
+import aiokafka
 
 import kafka
 import kafka.errors
@@ -13,6 +14,7 @@ from ..abc.source import Source
 #
 
 L = logging.getLogger(__name__)
+
 
 #
 
@@ -57,20 +59,22 @@ class KafkaSource(Source):
 		"max_partition_fetch_bytes": "",
 		"api_version": "auto",
 
-		"session_timeout_ms": 10000,  # Maximum time between two heartbeats that will not cause removal of the consumer from consumer group
+		"session_timeout_ms": 10000,
+		# Maximum time between two heartbeats that will not cause removal of the consumer from consumer group
 		"consumer_timeout_ms": "",
 		"request_timeout_ms": "",
 		"get_timeout_ms": 20000,
 
-		"event_block_size": 1000,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
+		"event_block_size": 1000,
+		# The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
 		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
+		"user_defined_partitions": '',  # Specify partitions the consumer should use
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.topics = re.split(r'\s*,\s*', self.Config['topic'])
-
 
 		consumer_params = {}
 
@@ -142,6 +146,10 @@ class KafkaSource(Source):
 			*self.topics,
 			**self.ConsumerParams
 		)
+		if len(self.Config["user_defined_partitions"]) != 0:
+			self.Partitions = [aiokafka.TopicPartition(self.topics, partition)
+								for partition in self.Config["user_defined_partitions"].split(",")]
+			self.Consumer.assign(self.Partitions)
 
 	async def initialize_consumer(self):
 		await self.Consumer.start()
@@ -202,12 +210,12 @@ class KafkaSource(Source):
 				# Ctrl-C -> terminate and exit
 				raise e
 			except (
-				kafka.errors.IllegalStateError,
-				kafka.errors.CommitFailedError,
-				kafka.errors.UnknownMemberIdError,
-				kafka.errors.NodeNotReadyError,
-				kafka.errors.RebalanceInProgressError,
-				concurrent.futures.CancelledError,
+					kafka.errors.IllegalStateError,
+					kafka.errors.CommitFailedError,
+					kafka.errors.UnknownMemberIdError,
+					kafka.errors.NodeNotReadyError,
+					kafka.errors.RebalanceInProgressError,
+					concurrent.futures.CancelledError,
 			) as e:
 				# Retry-able errors
 				if i == 1:
