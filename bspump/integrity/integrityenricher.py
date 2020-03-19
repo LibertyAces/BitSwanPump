@@ -13,7 +13,6 @@ L = logging.getLogger(__name__)
 
 class IntegrityEnricherProcessor(bspump.Processor):
 
-
 	'''	
 	IntegrityEnricherProcessor is a enricher processor, which enriches JSON data
 	by hashed events. Data are encoded by JSON Web Tokens standards.
@@ -36,11 +35,11 @@ class IntegrityEnricherProcessor(bspump.Processor):
 	PS384 - RSASSA-PSS signature using SHA-384 and MGF1 padding with SHA-384
 	PS512 - RSASSA-PSS signature using SHA-512 and MGF1 padding with SHA-512
 	'''
-
+	
 	ConfigDefaults = {
 		'key_path': '',
 		'algorithm': 'HS256',
-		}
+	}
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
