@@ -80,6 +80,7 @@ setup(
 		'numpy>=1.18.1,<2.0',
 		'pandas>=0.24.2,<1.0',
 		'pika>=1.0.1,<2.0',
+		'pyjwt>=1.7.1,<2.0',
 		'pymysql>=0.9,<=0.9.2',  # aiomysql 0.0.20 requires PyMySQL<=0.9.2
 		# 'pyarrow>=0.13.0,<1.0',  # `pip install pyarrow` fails on Apline Linux
 		'pytz>=2019.1,<2020.0',
