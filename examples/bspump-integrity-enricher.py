@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
 import logging
-
 import time
 
 import bspump
@@ -21,11 +19,11 @@ L = logging.getLogger(__name__)
 """
 
 	This is an example of encrypting JSON data and enriching them by hash 
-	which has been made by IntegrityEnricherProcessor. Those JSON data are
-	then uploaded to ElasticSearch
+	which has been made by IntegrityEnricherProcessor. JSON data are
+	then uploaded to ElasticSearch.
 
 
-	example of site.conf
+	Example of site.conf
 
 	# ElasticSearch connection
 

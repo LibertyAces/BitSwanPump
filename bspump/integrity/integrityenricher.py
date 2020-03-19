@@ -15,6 +15,12 @@ class IntegrityEnricherProcessor(bspump.Processor):
 
 
 	'''
+	
+	IntegrityEnricherProcessor is a enricher processor, which enriches JSON data
+	by hashed events. Data are encoded by JSON Web Tokens standards.
+
+...
+
 	Supported algorithms for cryptographic signing, default is HS256
 
 
@@ -52,7 +58,7 @@ class IntegrityEnricherProcessor(bspump.Processor):
 			with open(self.KeyPath, 'r') as file:
 				self.JWTPrivateKey = file.read()
 
-	# Encoding event and adding the encoded event to the JSON
+	# Encoding event and enriching JSON with the encoded event
 	def hash_event(self, context, event):
 		if self.JWTPrivateKey == None:
 			L.warning('Key has not been loaded!')
