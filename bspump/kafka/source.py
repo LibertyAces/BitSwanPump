@@ -148,7 +148,7 @@ class KafkaSource(Source):
 			)
 			self.Partitions = \
 				[aiokafka.TopicPartition(topic, int(partition))
-				 for topic, partition in zip(self.topics, self.Config["user_defined_partitions"].split(","))]
+				for topic, partition in zip(self.topics, self.Config["user_defined_partitions"].split(","))]
 			self.Consumer.assign(self.Partitions)
 
 		else:
