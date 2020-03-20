@@ -142,18 +142,21 @@ class KafkaSource(Source):
 		self.Offsets = {}
 
 	def create_consumer(self):
-		self.Partitions = None
-		self.Consumer = self.Connection.create_consumer(
-			*self.topics,
-			**self.ConsumerParams
-		)
 		if len(self.Config["user_defined_partitions"]) != 0:
 			self.Consumer = self.Connection.create_consumer(
 				**self.ConsumerParams
 			)
 			self.Partitions = \
-				[aiokafka.TopicPartition(topic, int(partition)) for topic, partition in zip(self.topics, self.Config["user_defined_partitions"].split(","))]
+				[aiokafka.TopicPartition(topic, int(partition)) for topic, partition in zip(self.topics, self.Config[
+					"user_defined_partitions"].split(","))]
 			self.Consumer.assign(self.Partitions)
+
+		else:
+			self.Partitions = None
+			self.Consumer = self.Connection.create_consumer(
+				*self.topics,
+				**self.ConsumerParams
+			)
 
 	async def initialize_consumer(self):
 		await self.Consumer.start()
