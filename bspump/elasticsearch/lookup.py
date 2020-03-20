@@ -103,7 +103,7 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 				msg = await response.json()
 				try:
 					hit = msg['hits']['hits'][0]
-				except IndexError:
+				except Exception:
 					return None
 
 		return hit["_source"]
