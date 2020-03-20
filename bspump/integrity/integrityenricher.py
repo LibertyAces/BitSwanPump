@@ -57,9 +57,14 @@ class IntegrityEnricherProcessor(bspump.Processor):
 
 	# Encoding event and enriching JSON with the encoded event
 	def hash_event(self, context, event):
+		# Check if previous hash present in JSON and if so, delete it
+		if event.get("hash") is not None:
+			del event["hash"]
+		# Check on loaded key
 		if self.JWTPrivateKey is None:
 			L.warning('Key has not been loaded!')
 			return
+		# Hash event
 		event["hash"] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
 
 
