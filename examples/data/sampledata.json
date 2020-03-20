@@ -1,6 +1,6 @@
 { "name" : "John Wick", "tester": "Afds fdsioh" }
 { "name" : "Chuck Norris", "tester": "fdskoi jifdjs" }
-{ "name" : "Ch", "tester": "fdsfdjs" }
+{ "name" : "Ch", "tester": "fdsfdjs", "hash": "4321" }
 { "name" : "Chrris", "tester": "fdskoi ji" }
 { "name" : "Chuck ris", "tester": "fkoi jifdjs" }
 { "name" : "Chs", "tester": "fdskoidjs" }
@@ -13,6 +13,6 @@
 { "name" : "Chuck Nor", "tester": "fdskodjs" }
 { "name" : "Chuck N", "tester": "fds jifdjs" }
 { "name" : "Ch Norris", "tester": "fdskoi js" }
-{ "name" : "Chuck", "tester": "fjs" }
+{ "name" : "Chuck", "hash": "1234", "tester": "fjs" }
 { "name" : "Chu", "tester": "fdskodjs" }
 { "name" : "Cs", "tester": "ffdjs" }
