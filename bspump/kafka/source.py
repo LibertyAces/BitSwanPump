@@ -64,11 +64,12 @@ class KafkaSource(Source):
 		"consumer_timeout_ms": "",
 		"request_timeout_ms": "",
 		"get_timeout_ms": 20000,
-
+		# The number of lines after which the main method enters the idle
+		# state to allow other operations to perform their tasks
 		"event_block_size": 1000,
-		# The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
 		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
-		"user_defined_partitions": '',  # Specify partitions the consumer should use
+		# Specify partitions the consumer should use, use with caution when specifying more topics
+		"user_defined_partitions": '',
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -147,7 +148,11 @@ class KafkaSource(Source):
 			**self.ConsumerParams
 		)
 		if len(self.Config["user_defined_partitions"]) != 0:
-			self.Partitions = [aiokafka.TopicPartition(self.topics, partition) for partition in self.Config["user_defined_partitions"].split(",")]
+			self.Consumer = self.Connection.create_consumer(
+				**self.ConsumerParams
+			)
+			self.Partitions = \
+				[aiokafka.TopicPartition(topic, int(partition)) for topic, partition in zip(self.topics, self.Config["user_defined_partitions"].split(","))]
 			self.Consumer.assign(self.Partitions)
 
 	async def initialize_consumer(self):
