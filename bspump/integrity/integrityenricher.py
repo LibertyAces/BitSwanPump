@@ -64,13 +64,13 @@ class IntegrityEnricher(bspump.Processor):
 			L.warning('Key has not been loaded!')
 			return
 
-		# Check if previous hash present in JSON and if so, delete it from JSON and store it as previous hash 
+		# Check if previous hash present in JSON and if so, delete it from JSON and store it as previous hash
 		previous_hash = event.pop("hash", None)
 		# Hash event
 		event["hash"] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
 		# Add recent and previous hash to hash set
 		self.Counter += 1
-		self.HashSet.update({str(self.Counter) : {"hash" : event["hash"], "prev_hash" : previous_hash}})
+		self.HashSet.update({str(self.Counter): {"hash": event["hash"], "prev_hash": previous_hash}})
 
 
 	def process(self, context, event):
