@@ -217,12 +217,12 @@ class KafkaSource(Source):
 				# Ctrl-C -> terminate and exit
 				raise e
 			except (
-					kafka.errors.IllegalStateError,
-					kafka.errors.CommitFailedError,
-					kafka.errors.UnknownMemberIdError,
-					kafka.errors.NodeNotReadyError,
-					kafka.errors.RebalanceInProgressError,
-					concurrent.futures.CancelledError,
+				kafka.errors.IllegalStateError,
+				kafka.errors.CommitFailedError,
+				kafka.errors.UnknownMemberIdError,
+				kafka.errors.NodeNotReadyError,
+				kafka.errors.RebalanceInProgressError,
+				concurrent.futures.CancelledError,
 			) as e:
 				# Retry-able errors
 				if i == 1:
