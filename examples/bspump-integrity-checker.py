@@ -18,22 +18,24 @@ L = logging.getLogger(__name__)
 
 """
 
-	This is an example of encrypting JSON data and enriching them by hash 
-	which has been made by IntegrityEnricherProcessor. JSON data are
-	then uploaded to ElasticSearch.
+	This is an example of encrypting JSON data from ElasticSearh and enriching them by hash 
+	which has been made by IntegrityEnricher. Then the data integrity is checked by 
+	IntegrityChecker.
 
 
 	Example of site.conf
 
 	# ElasticSearch connection
-
 	[connection:ESConnection]
-	url=http://localhost:9200/
+	url=http://127.0.0.1:9200
+
+	[connection:ESConnectionLocal]
+	url=http://127.0.0.1:9201
 
 	# ElasticSearch sink
-
 	[pipeline:SamplePipeline:ElasticSearchSink]
 	index_prefix=bs_
+
 
 """
 
@@ -48,15 +50,16 @@ class SamplePipeline(bspump.Pipeline):
 		self.build(
 			bspump.elasticsearch.ElasticSearchSource(
 				app, self, "ESConnection", config={
-					"index": "bs_xdr_sbr_ilm-000002"
+					"index": "bs_xdr_sbr_ilm-000002" # TODO: change it to bs_* 
 				}
 			).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
-			bspump.integrity.IntegrityEnricherProcessor(app, self, 
+			bspump.integrity.IntegrityEnricher(app, self, 
 				config={'key_path': './data/test_ec_key',
 						'algorithm': 'HS512',
 				}),
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnectionLocal")
 		)
+
 
 class SamplePipeline2(bspump.Pipeline):
 
@@ -66,13 +69,13 @@ class SamplePipeline2(bspump.Pipeline):
 		self.build(
 			bspump.elasticsearch.ElasticSearchSource(
 				app, self, "ESConnectionLocal", config={
-					"index": "bs_xdr_sbr_ilm-000002"
+					"index": "bs_xdr_sbr_ilm-000002" # TODO: change it to bs_* 
 				}
 			).on(bspump.trigger.PeriodicTrigger(app, 1)),
 			bspump.integrity.IntegrityChecker(app, self, "ESConnectionLocal",
 				config={'key_path': './data/test_ec_key',
 						'algorithm': 'HS512',
-						'index': 'bs_xdr_sbr_ilm-000002',
+						'index': 'bs_xdr_sbr_ilm-000002', # TODO: change it to bs_
 						'items_size': 20
 				}),
 			bspump.common.NullSink(app, self)
