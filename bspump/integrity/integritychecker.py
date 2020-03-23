@@ -30,7 +30,7 @@ class IntegrityChecker(bspump.Generator):
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.Index = self.Config['index']
 		self.ItemsSize = self.Config['items_size']
-		self.Scroll = str(self.Config['scroll_time']) # Scroll time in minutes
+		self.Scroll = str(self.Config['scroll_time'])  # Scroll time in minutes
 
 		self.KeyPath = self.Config['key_path']
 		self.Algorithm = self.Config['algorithm']
@@ -70,7 +70,7 @@ class IntegrityChecker(bspump.Generator):
 				if response.status != 200:
 					data = await response.text()
 					L.error("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(response.status, url, data))
-					return 
+					return
 
 				msg = await response.json()
 
@@ -106,7 +106,7 @@ class IntegrityChecker(bspump.Generator):
 				if len(hits) == 0:
 					break
 
-				## Decoding finalhases by object
+				# Decoding finalhashes by object
 				if self.JWTPrivateKey is not None:
 					for JSONobject in hits:
 						self.object_check(JSONobject)
@@ -114,7 +114,7 @@ class IntegrityChecker(bspump.Generator):
 			L.warning('No data in ElasticSearch.')
 
 	# Checking for hash
-	def object_check(self,JSONobject):
+	def object_check(self, JSONobject):
 		if 'hash' in JSONobject:
 			decode = jwt.decode(JSONobject["hash"], self.JWTPrivateKey, algorithm=self.Algorithm)
 			self.compare(JSONobject, decode)
@@ -123,7 +123,6 @@ class IntegrityChecker(bspump.Generator):
 				if type(JSONobject[key]) is dict:
 					self.object_check(JSONobject[key])
 
-
 	# Compare data
 	def compare(self, original_data, decoded_data):
 		# Removing hash from the decoded data if there is any
@@ -131,7 +130,7 @@ class IntegrityChecker(bspump.Generator):
 		# And appending it with recent hash to the HashSet dictionary
 		if 'hash' in original_data:
 			self.Counter += 1
-			self.HashSet.update({str(self.Counter) : {"hash" : original_data["hash"], "prev_hash" : previous_hash}})
+			self.HashSet.update({str(self.Counter): {"hash": original_data["hash"], "prev_hash": previous_hash}})
 
 		for key in original_data:
 			# Avoiding comparison on hash key to prevent incomparability
