@@ -18,8 +18,8 @@ L = logging.getLogger(__name__)
 
 """
 
-	This is an example of encrypting JSON data and enriching them by hash 
-	which has been made by IntegrityEnricherProcessor. JSON data are
+	This is an example of encrypting JSON data from ElasticSearch and enriching them by hash 
+	which has been made by IntegrityEnricher. JSON data are
 	then uploaded to ElasticSearch.
 
 
@@ -29,6 +29,9 @@ L = logging.getLogger(__name__)
 
 	[connection:ESConnection]
 	url=http://localhost:9200/
+
+	[connection:ESConnection2]
+	url=http://localhost:9201/
 
 	# ElasticSearch sink
 
@@ -42,24 +45,17 @@ class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
-		upper_bound = int(time.time())
-		lower_bound = upper_bound - 100500
 		self.build(
-			bspump.file.FileLineSource(app, self, config={
-				'path': './data/sampledata.json',
-				'post': 'noop',
-			}).on(bspump.trigger.RunOnceTrigger(app)),
-			bspump.common.JsonBytesToDictParser(app, self),
-			bspump.random.RandomEnricher(app, self, config={
-				'field': '@timestamp',
-				'lower_bound': lower_bound,
-				'upper_bound': upper_bound
-			}),
-			bspump.integrity.IntegrityEnricherProcessor(app, self, 
+			bspump.elasticsearch.ElasticSearchSource(
+				app, self, "ESConnection", config={
+					"index": "bs_*"
+				}
+			).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
+			bspump.integrity.IntegrityEnricher(app, self, 
 				config={'key_path': './data/test_ec_key',
 						'algorithm': 'HS512',
 				}),
-			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
+			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection2")
 		)
 		
 
@@ -72,9 +68,14 @@ if __name__ == '__main__':
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection", config={
 			"bulk_out_max_size": 100,
 		}))
+	svc.add_connection(
+		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection2"))
 
 	# Construct and register Pipeline
 	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
 
+	pl.PubSub.publish("go!")
+
 	app.run()
+
