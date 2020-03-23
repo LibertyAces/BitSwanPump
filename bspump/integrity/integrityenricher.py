@@ -11,10 +11,10 @@ L = logging.getLogger(__name__)
 ###
 
 
-class IntegrityEnricherProcessor(bspump.Processor):
+class IntegrityEnricher(bspump.Processor):
 
 	'''
-	IntegrityEnricherProcessor is a enricher processor, which enriches JSON data
+	IntegrityEnricher is a enricher processor, which enriches JSON data
 	by hashed events. Data are encoded by JSON Web Tokens standards.
 
 ...
@@ -75,4 +75,4 @@ class IntegrityEnricherProcessor(bspump.Processor):
 
 	def process(self, context, event):
 		self.hash_event(context, event)
-		return event
+		return event #, self.HashSet TODO: Should it return also HashSet?
