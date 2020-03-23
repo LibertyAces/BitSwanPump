@@ -3,6 +3,7 @@ import concurrent
 import concurrent.futures
 import logging
 import re
+import aiokafka
 
 import kafka
 import kafka.errors
@@ -13,6 +14,7 @@ from ..abc.source import Source
 #
 
 L = logging.getLogger(__name__)
+
 
 #
 
@@ -57,20 +59,23 @@ class KafkaSource(Source):
 		"max_partition_fetch_bytes": "",
 		"api_version": "auto",
 
-		"session_timeout_ms": 10000,  # Maximum time between two heartbeats that will not cause removal of the consumer from consumer group
+		"session_timeout_ms": 10000,
+		# Maximum time between two heartbeats that will not cause removal of the consumer from consumer group
 		"consumer_timeout_ms": "",
 		"request_timeout_ms": "",
 		"get_timeout_ms": 20000,
-
-		"event_block_size": 1000,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
+		# The number of lines after which the main method enters the idle
+		# state to allow other operations to perform their tasks
+		"event_block_size": 1000,
 		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
+		# Specify partitions the consumer should use, use with caution when specifying more topics
+		"user_defined_partitions": '',
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.topics = re.split(r'\s*,\s*', self.Config['topic'])
-
 
 		consumer_params = {}
 
@@ -137,11 +142,21 @@ class KafkaSource(Source):
 		self.Offsets = {}
 
 	def create_consumer(self):
-		self.Partitions = None
-		self.Consumer = self.Connection.create_consumer(
-			*self.topics,
-			**self.ConsumerParams
-		)
+		if len(self.Config["user_defined_partitions"]) != 0:
+			self.Consumer = self.Connection.create_consumer(
+				**self.ConsumerParams
+			)
+			self.Partitions = \
+				[aiokafka.TopicPartition(topic, int(partition))
+					for topic, partition in zip(self.topics, self.Config["user_defined_partitions"].split(","))]
+			self.Consumer.assign(self.Partitions)
+
+		else:
+			self.Partitions = None
+			self.Consumer = self.Connection.create_consumer(
+				*self.topics,
+				**self.ConsumerParams
+			)
 
 	async def initialize_consumer(self):
 		await self.Consumer.start()
