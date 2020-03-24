@@ -1,0 +1,188 @@
+import argparse
+import os
+import json
+import pprint
+import re
+import datetime
+import time
+import requests
+import jwt
+
+
+class Integrity:
+
+	def __init__(self):
+		self.Counter = 0
+		self.HashSet = {}
+
+
+	def get_items_count_in_index(self, es_url, index_name):
+		url = es_url + '{}/_count'.format(index_name)
+		r = requests.get(url, 
+			data={'query':{'bool':{'must':{'match_all':{}}}}}, 
+			headers={'Content-Type': 'application/json'})
+		if r.status_code != 200:
+			print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
+			return
+		else:
+			msg = r.json()
+			return msg['count']
+
+
+	def open_keyfile(self, key_path):
+		# Check if the key path is set
+		private_key = None
+		if key_path == '' or key_path is None:
+			private_key = None
+		else:
+			with open(key_path, 'r') as file:
+				private_key = file.read()
+		return private_key
+
+
+	# Checking for hash
+	def object_check(self, JSONobject, private_key, algorithm):
+		if 'hash' in JSONobject:
+			decode = jwt.decode(JSONobject["hash"], private_key, algorithm=algorithm)
+			self.compare(JSONobject, decode)
+		else:
+			for key in JSONobject:
+				if type(JSONobject[key]) is dict:
+					self.object_check(JSONobject[key])
+
+
+	# Compare data
+	def compare(self, original_data, decoded_data):
+		# Removing hash from the decoded data if there is any
+		previous_hash = decoded_data.pop("hash", None)
+		# And appending it with recent hash to the HashSet dictionary
+		if 'hash' in original_data:
+			self.Counter += 1
+			self.HashSet.update({str(self.Counter): {"hash": original_data["hash"], "prev_hash": previous_hash}})
+			# TODO: return HashSet?
+
+		for key in original_data:
+			# Avoiding comparison on hash key to prevent incomparability
+			if str(key) != 'hash':
+				# Recursive iteration through nested dictionaries
+				if type(original_data[key]) is dict:
+					self.compare(original_data[key], decoded_data[key])
+				else:
+					# TODO: use metrics for counting successful / unsuccessful attempts?
+					if original_data[key] == decoded_data[key]:
+						# self.HashCounter.add('hit', 1)
+						print('Integrity has been approved.')
+					else:
+						# self.HashCounter.add('miss', 1)
+						print('Integrity has not been enthroned!')
+
+
+
+	def COMMAND_hash(self, URL, key_path, algorithm):
+		url = URL
+		# TODO
+
+
+
+	def COMMAND_check(self, URL, index, key_path, algorithm, items_size, scroll_time):
+		url = URL
+		count = self.get_items_count_in_index(url, index)
+		private_key = self.open_keyfile(key_path)
+		if count > 0:
+			while True:
+				url = url + '{}/_search?scroll={}m'.format(index, scroll_time)
+				r = requests.post(url, 
+					data={"size":items_size,'query': {'bool': {'must': {'match_all': {}}}}}, 
+					headers={'Content-Type': 'application/json'})
+				
+				if r.status_code != 200:
+					print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
+					break
+
+				msg = r.json()
+				hits = msg['hits']['hits']
+				if len(hits) == 0:
+					break
+
+				# Decoding hashes by object
+				if private_key is None:
+					break
+				else:
+					for JSONobject in hits:
+						self.object_check(JSONobject, private_key, algorithm)
+
+
+
+
+def parse_cmdline():
+
+	# Parse args
+	parser = argparse.ArgumentParser(
+		formatter_class=argparse.RawDescriptionHelpFormatter,
+		description='''Hash the events from ElasticSearch.\n
+					Check integrity on ElasticSearch hashes.\n
+
+					-----------------------------------------------------
+
+					Supported algorithms for cryptographic signing, default is HS256
+
+
+					HS256 - HMAC using SHA-256 hash algorithm (default)
+					HS384 - HMAC using SHA-384 hash algorithm
+					HS512 - HMAC using SHA-512 hash algorithm
+					ES256 - ECDSA signature algorithm using SHA-256 hash algorithm
+					ES384 - ECDSA signature algorithm using SHA-384 hash algorithm
+					ES512 - ECDSA signature algorithm using SHA-512 hash algorithm
+					RS256 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-256 hash algorithm
+					RS384 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-384 hash algorithm
+					RS512 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-512 hash algorithm
+					PS256 - RSASSA-PSS signature using SHA-256 and MGF1 padding with SHA-256
+					PS384 - RSASSA-PSS signature using SHA-384 and MGF1 padding with SHA-384
+					PS512 - RSASSA-PSS signature using SHA-512 and MGF1 padding with SHA-512''')
+
+	subparsers = parser.add_subparsers(help='commands')
+
+
+	# An hash command
+	hash_parser = subparsers.add_parser('hash', help='hash the events')
+	hash_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
+	hash_parser.add_argument('key_path', action='store', help='a Path to a file with key')
+	hash_parser.add_argument('algorithm', action='store', help='a Algorithms to use for decoding. More info in Description')
+	hash_parser.set_defaults(COMMAND='hash')
+
+	# An check command
+	check_parser = subparsers.add_parser('check', help='check on integrity of hashed events')
+	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
+	check_parser.add_argument('index', action='store', help='a ElasticSearch index')
+	check_parser.add_argument('key_path', action='store', help='a Path to a file with key')
+	check_parser.add_argument('algorithm', action='store', help='a Algorithms to use for decoding. More info in Description')
+	check_parser.add_argument('items_size', action='store', help='a Number of the items loaded from ES')
+	check_parser.add_argument('scroll_time', action='store', help='a ES Scroll time')
+	check_parser.set_defaults(COMMAND='check')
+
+
+	return parser.parse_args()
+
+
+
+
+def main():
+	# Get arguments
+	args = parse_cmdline()
+
+	# Call the command
+	if 'COMMAND' not in args:
+		print("Please select a command: hash, check.")
+		print("For more information see --help")
+		return 1
+
+	if args.COMMAND == 'hash':
+		return Integrity.COMMAND_hash(args.URL, args.key_path, args.algorithm)
+
+	elif args.COMMAND == 'check':
+		return Integrity.COMMAND_check(args.URL, args.index, args.key_path, args.algorithm, 
+			args.items_size, args.scroll_time)
+
+
+if __name__ == '__main__':
+	main()
