@@ -27,13 +27,13 @@ class MyApplication(bspump.BSPumpApplication):
 class MyPipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
-		lower_bound = 1
-		upper_bound = 2 ** 32 - 1
+		lower_bound = 0
+		upper_bound = 10**6
 
 		values = set()
 		self.build(
 			bspump.random.RandomSource(app, self, choice=['a', 'b', 'c'], config={
-				'number': 10000
+				'number': 1000000
 			}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
 
 			bspump.random.RandomEnricher(app, self, id="RE0", config={
@@ -42,9 +42,9 @@ class MyPipeline(bspump.Pipeline):
 				'upper_bound': upper_bound
 			}),
 
-
 			ConservativeUniqueCounter(app, self, values,),
 			HyperLogLogTimeWindowCounter(app, self, values, config={'analyze_period': 10}),
+			
 			bspump.common.NullSink(app, self)
 		)
 
@@ -65,9 +65,9 @@ class ConservativeUniqueCounter(bspump.Processor):
 
 class HyperLogLogTimeWindowCounter(bspump.analyzer.SessionAnalyzer):
 
-	def __init__(self, app, pipeline, values,id=None, config=None):
-		m = 64
-		super().__init__(app, pipeline, analyze_on_clock=True, dtype="({},)i8".format(m), id=id, config=config)
+	def __init__(self, app, pipeline, values, id=None, config=None):
+		m = 2048
+		super().__init__(app, pipeline, analyze_on_clock=True, dtype="({},)i2".format(m), id=id, config=config)
 		
 		self.HLLAggregator = bspump.aggregation.HyperLogLog(m)
 
