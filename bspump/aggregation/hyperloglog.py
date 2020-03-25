@@ -13,7 +13,7 @@ class HyperLogLog(object):
 	alphas = {16: 0.673, 32: 0.697, 64: 0.709}
 
 	def __init__(self, m=2048):
-		
+
 		'''
 			`m` is number of registers.
 			`b` is the number of last bits of the value to take.
@@ -26,10 +26,10 @@ class HyperLogLog(object):
 		self.m = m
 		
 		if m >= 128:
-			self.alpha = 0.7213/(1 + 1.079/m )
+			self.alpha = 0.7213 / (1 + 1.079 / m)
 		else:
 			self.alpha = self.alphas.get(m)
-	
+
 		if self.alpha is None:
 			raise "Incorrect m, it should be 16, 32 or 64, or powers of 2 >= 128"
 
@@ -47,7 +47,7 @@ class HyperLogLog(object):
 		array[position] = np.max([array[position], rho])
 
 
-	def count(self, array): 
+	def count(self, array):
 		'''
 			Count unique values in array.
 		'''
@@ -65,7 +65,7 @@ class HyperLogLog(object):
 
 		if not isinstance(value, str):
 			value = str(value)
-		
+
 		value = value.encode('utf8')
 		return zlib.crc32(value)
 
@@ -78,15 +78,15 @@ class HyperLogLog(object):
 
 	def _calculate_e(self, z, array):
 		e = z * self.alpha * self.m ** 2
-		if e < 5/2 * self.m:
+		if e < 5 / 2 * self.m:
 			v = self._get_zeros(array)
 			if v != 0:
 				e_star = float(self._linear_count(v))
 
 			else:
 				e_star = e
-		
-		elif e < 1/30 * self.max:
+
+		elif e < 1 / 30 * self.max:
 			e_star = e
 
 		else:
@@ -112,17 +112,13 @@ class HyperLogLog(object):
 
 	def _calculate_rho(self, hashed_value):
 		'''
-			rho = 1 + <leftmost 1 position> 
+			rho = 1 + <leftmost 1 position>
 		'''
 		# SLOW: TODO: find the way to do it better
 		x = hashed_value
 		pos = self.num_bits
 		while x > 1:
-			x = x >> 1 
+			x = x >> 1
 			pos -= 1
 
 		return pos
-
-
-
-	
