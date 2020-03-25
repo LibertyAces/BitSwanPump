@@ -24,7 +24,7 @@ class HyperLogLog(object):
 		self.b = int(np.ceil(np.log2(m)))
 		self.max = 2 ** self.num_bits
 		self.m = m
-		
+
 		if m >= 128:
 			self.alpha = 0.7213 / (1 + 1.079 / m)
 		else:
