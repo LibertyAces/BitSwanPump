@@ -5,6 +5,7 @@ import bspump.common
 import bspump.random
 import bspump.trigger
 import bspump.aggregation
+from bspump.aggregation import HyperLogLog
 import bspump.analyzer
 import numpy as np
 
@@ -48,7 +49,10 @@ class MyPipeline(bspump.Pipeline):
 
 
 class ConservativeUniqueCounter(bspump.Processor):
-	Values = set()
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+		self.Values = set()
+	
 	def process(self, context, event):
 		value = event['value']
 		self.Values.add(value)		
@@ -62,7 +66,7 @@ class ConservativeUniqueCounter(bspump.Processor):
 class HyperLogLogTimeWindowCounter(bspump.analyzer.SessionAnalyzer):
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		self.HLLAggregator = bspump.aggregation.HyperLogLog()
+		self.HLLAggregator = HyperLogLog()
 		super().__init__(app, pipeline, analyze_on_clock=True, dtype="({},)i2".format(self.HLLAggregator.m), id=id, config=config)
 		self.Sessions.add_row("The one and only row")
 
