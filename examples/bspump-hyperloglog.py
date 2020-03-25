@@ -5,7 +5,7 @@ import bspump.common
 import bspump.random
 import bspump.trigger
 import bspump.aggregation
-from bspump.aggregation import HyperLogLog
+from bspump.aggregation.hyperloglog import HyperLogLog
 import bspump.analyzer
 import numpy as np
 
