@@ -15,10 +15,10 @@ class HyperLogLog(object):
 	def __init__(self, m=2048):
 
 		'''
-			`m` is number of registers. It is bounded with b, b = log2m. Higher `m` is, 
-			the more precise calculation, however, in the paper above it is proved, that 
-			`m` = 2048 is optimal and produces error around 2%, other values can deviate 
-			up to 20%. 
+			`m` is number of registers. It is bounded with b, b = log2m. Higher `m` is,
+			the more precise calculation, however, in the paper above it is proved, that
+			`m` = 2048 is optimal and produces error around 2%, other values can deviate
+			up to 20%.
 			`b` is the number of last bits of the value to take.
 			`alpha` is the parameter from papers above.
 		'''
@@ -76,7 +76,7 @@ class HyperLogLog(object):
 	def compute_error(self, ground_truth, hll_count):
 		'''
 			If the ground truth is known, the error can be calculated in %.
-		'''	
+		'''
 
 		return np.abs(hll_count - ground_truth) / ground_truth * 100
 
