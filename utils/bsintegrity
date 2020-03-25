@@ -102,6 +102,7 @@ class Integrity:
 	        print()
 
 
+	#TODO: finish enricher implementation
 	def COMMAND_hash(self, URL_source, URL_sink, index, key_path, algorithm, items_size, scroll_time):
 		count = self.get_items_count_in_index(URL_source, index)
 		private_key = self.open_keyfile(key_path)
@@ -224,8 +225,8 @@ def parse_cmdline():
 	subparsers = parser.add_subparsers(help='commands')
 
 
-	# An hash command
-	hash_parser = subparsers.add_parser('hash', help='hash the events')
+	# An hash / enricher command
+	hash_parser = subparsers.add_parser('hash', help='enrich the events by hash')
 	hash_parser.add_argument('URL_source', action='store', help='a ElasticSearch URL source')
 	hash_parser.add_argument('URL_sink', action='store', help='a ElasticSearch URL sink')
 	hash_parser.add_argument('index', action='store', help='a ElasticSearch index')
