@@ -117,7 +117,7 @@ class Integrity:
 			return
 		if count > 0:
 			self.LoopCount = count
-			self.printProgressBar(0, count, prefix='Progress:', suffix='Complete', length=50)
+			self.progress_bar(0, count, prefix='Progress:', suffix='Complete', length=50)
 			while True:
 				if not self.LoopCount <= 0:
 					r = requests.post(url, 
@@ -145,7 +145,6 @@ class Integrity:
 			    	# Update Progress Bar
 					self.progress_bar(self.Counter, count, prefix='Progress:', suffix='Complete', length=50)
 				else:
-					self.progress_bar(self.Counter, count, prefix='Progress:', suffix='Complete', length=50)
 					break
 
 		print(self.HashSet)
