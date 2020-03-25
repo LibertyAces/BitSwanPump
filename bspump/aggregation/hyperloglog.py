@@ -15,7 +15,10 @@ class HyperLogLog(object):
 	def __init__(self, m=2048):
 
 		'''
-			`m` is number of registers.
+			`m` is number of registers. It is bounded with b, b = log2m. Higher `m` is, 
+			the more precise calculation, however, in the paper above it is proved, that 
+			`m` = 2048 is optimal and produces error around 2%, other values can deviate 
+			up to 20%. 
 			`b` is the number of last bits of the value to take.
 			`alpha` is the parameter from papers above.
 		'''
@@ -31,7 +34,7 @@ class HyperLogLog(object):
 			self.alpha = self.alphas.get(m)
 
 		if self.alpha is None:
-			raise "Incorrect m, it should be 16, 32 or 64, or powers of 2 >= 128"
+			raise RuntimeError("Incorrect m, it should be 16, 32 or 64, or powers of 2 >= 128")
 
 
 
@@ -42,8 +45,8 @@ class HyperLogLog(object):
 		'''
 
 		hashed_value = self.hash_data(value)
-		position = self._calculate_position(hashed_value)
-		rho = self._calculate_rho(hashed_value)
+		position = self._compute_position(hashed_value)
+		rho = self._compute_rho(hashed_value)
 		array[position] = np.max([array[position], rho])
 
 
@@ -52,8 +55,8 @@ class HyperLogLog(object):
 			Count unique values in array.
 		'''
 
-		z = self._calculate_z(array)
-		e = self._calculate_e(z, array)
+		z = self._compute_z(array)
+		e = self._compute_e(z, array)
 		return int(e)
 
 
@@ -70,13 +73,21 @@ class HyperLogLog(object):
 		return zlib.crc32(value)
 
 
-	def _calculate_z(self, array):
+	def compute_error(self, ground_truth, hll_count):
+		'''
+			If the ground truth is known, the error can be calculated in %.
+		'''	
+
+		return np.abs(hll_count - ground_truth) / ground_truth * 100
+
+
+	def _compute_z(self, array):
 		twos = [0.5] * len(array)
 		z = 1 / float(np.sum(np.power(twos, array)))
 		return z
 
 
-	def _calculate_e(self, z, array):
+	def _compute_e(self, z, array):
 		e = z * self.alpha * self.m ** 2
 		if e < 5 / 2 * self.m:
 			v = self._get_zeros(array)
@@ -102,7 +113,7 @@ class HyperLogLog(object):
 		return self.m * np.log(self.m / v)
 
 
-	def _calculate_position(self, hashed_value):
+	def _compute_position(self, hashed_value):
 		'''
 			takes b right bits.
 		'''
@@ -110,7 +121,7 @@ class HyperLogLog(object):
 		return move
 
 
-	def _calculate_rho(self, hashed_value):
+	def _compute_rho(self, hashed_value):
 		'''
 			rho = 1 + <leftmost 1 position>
 		'''

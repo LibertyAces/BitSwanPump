@@ -30,7 +30,6 @@ class MyPipeline(bspump.Pipeline):
 		lower_bound = 0
 		upper_bound = 10**6
 
-		values = set()
 		self.build(
 			bspump.random.RandomSource(app, self, choice=['a', 'b', 'c'], config={
 				'number': 1000000
@@ -42,37 +41,30 @@ class MyPipeline(bspump.Pipeline):
 				'upper_bound': upper_bound
 			}),
 
-			ConservativeUniqueCounter(app, self, values,),
-			HyperLogLogTimeWindowCounter(app, self, values, config={'analyze_period': 10}),
-			
+			ConservativeUniqueCounter(app, self),
+			HyperLogLogTimeWindowCounter(app, self, config={'analyze_period': 10}),		
 			bspump.common.NullSink(app, self)
 		)
 
 
 class ConservativeUniqueCounter(bspump.Processor):
-	def __init__(self, app, pipeline, values, id=None, config=None):
-		super().__init__(app, pipeline, id, config)
-		self.Values = values
-
-
+	Values = set()
 	def process(self, context, event):
 		value = event['value']
-		self.Values.add(value)
-		
+		self.Values.add(value)		
 		return event
+
+	def analyze(self):
+		return len(self.Values)
 
 
 
 class HyperLogLogTimeWindowCounter(bspump.analyzer.SessionAnalyzer):
 
-	def __init__(self, app, pipeline, values, id=None, config=None):
-		m = 2048
-		super().__init__(app, pipeline, analyze_on_clock=True, dtype="({},)i2".format(m), id=id, config=config)
-		
-		self.HLLAggregator = bspump.aggregation.HyperLogLog(m)
-
+	def __init__(self, app, pipeline, id=None, config=None):
+		self.HLLAggregator = bspump.aggregation.HyperLogLog()
+		super().__init__(app, pipeline, analyze_on_clock=True, dtype="({},)i2".format(self.HLLAggregator.m), id=id, config=config)
 		self.Sessions.add_row("The one and only row")
-		self.Values = values
 
 
 	def evaluate(self, context, event):
@@ -81,11 +73,12 @@ class HyperLogLogTimeWindowCounter(bspump.analyzer.SessionAnalyzer):
 		
 
 	def analyze(self):
-		ground_truth = len(self.Values)
-
+		svc = self.App.get_service("bspump.PumpService")
+		conservative_processor = svc.locate("MyPipeline.ConservativeUniqueCounter")
+		ground_truth = conservative_processor.analyze()
 		hll_count = self.HLLAggregator.count(self.Sessions.Array[0, :])
-		err = np.abs(hll_count - ground_truth) / ground_truth * 100
-		L.warning("Ground Truth is {}, HyperLogLog estimation is {}, error is {} %".format(ground_truth, hll_count, err))
+		error = self.HLLAggregator.compute_error(ground_truth, hll_count)
+		L.warning("Ground Truth is {}, HyperLogLog estimation is {}, error is {} %".format(ground_truth, hll_count, error))
 
 
 if __name__ == '__main__':
