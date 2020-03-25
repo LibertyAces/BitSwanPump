@@ -13,6 +13,8 @@ class Integrity:
 
 	def __init__(self):
 		self.Counter = 0
+		self.HitCount = 0
+		self.MissCount = 0
 		self.HashSet = {}
 
 
@@ -70,11 +72,11 @@ class Integrity:
 				else:
 					# TODO: use metrics for counting successful / unsuccessful attempts?
 					if original_data[key] == decoded_data[key]:
-						# self.HashCounter.add('hit', 1)
-						print('Integrity has been approved.')
+						self.HitCount += 1
+						# print('Integrity has been approved.')
 					else:
-						# self.HashCounter.add('miss', 1)
-						print('Integrity has not been enthroned!')
+						self.MissCount += 1
+						# print('Integrity has not been enthroned!')
 
 
 
@@ -110,6 +112,12 @@ class Integrity:
 				else:
 					for JSONobject in hits:
 						self.object_check(JSONobject, private_key, algorithm)
+
+		print(self.HashSet)
+		print('\n')
+		print('Integrity has been approved on {} objects\n'.format(str(self.HitCount)))
+		print('Integrity has not been enthroned on {} objects\n'.format(str(self.MissCount)))
+		  
 
 
 
