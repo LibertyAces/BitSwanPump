@@ -19,13 +19,13 @@ class Integrity:
 
 
 	def get_items_count_in_index(self, es_url, index_name):
-		url = es_url + '{}/_count'.format(index_name)
+		url = es_url + '/{}/_count'.format(index_name)
 		r = requests.get(url, 
 			data={'query':{'bool':{'must':{'match_all':{}}}}}, 
 			headers={'Content-Type': 'application/json'})
 		if r.status_code != 200:
 			print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
-			return
+			return None
 		else:
 			msg = r.json()
 			return msg['count']
@@ -86,13 +86,17 @@ class Integrity:
 
 
 
-	def COMMAND_check(self, URL, index, key_path, algorithm, items_size, scroll_time):
+	def COMMAND_check(self, URL, index, key_path, algorithm, items_size, scroll_time=1):
 		url = URL
 		count = self.get_items_count_in_index(url, index)
 		private_key = self.open_keyfile(key_path)
+		if algorithm == '' or algorithm is None:
+			algorithm = 'HS256'
+		if count is None:
+			return
 		if count > 0:
 			while True:
-				url = url + '{}/_search?scroll={}m'.format(index, scroll_time)
+				url = url + '/{}/_search?scroll={}m'.format(index, scroll_time)
 				r = requests.post(url, 
 					data={"size":items_size,'query': {'bool': {'must': {'match_all': {}}}}}, 
 					headers={'Content-Type': 'application/json'})
@@ -185,10 +189,10 @@ def main():
 		return 1
 
 	if args.COMMAND == 'hash':
-		return Integrity.COMMAND_hash(args.URL, args.key_path, args.algorithm)
+		return Integrity().COMMAND_hash(args.URL, args.key_path, args.algorithm)
 
 	elif args.COMMAND == 'check':
-		return Integrity.COMMAND_check(args.URL, args.index, args.key_path, args.algorithm, 
+		return Integrity().COMMAND_check(args.URL, args.index, args.key_path, args.algorithm, 
 			args.items_size, args.scroll_time)
 
 
