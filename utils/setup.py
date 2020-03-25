@@ -62,10 +62,12 @@ setup(
 	install_requires=[
 		'Jinja2>=2.10.1,<3.0',
 		'requests>=2.21.0,<3.0',
+		'pyjwt>=1.7.1,<2.0',
 	],
 	scripts=[
 		'bselastic',
 		'bskibana',
+		'bsintegrity',
 	],
 	cmdclass={
 		'build_py': custom_build_py,
