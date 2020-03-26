@@ -70,6 +70,26 @@ bskibana
     --silent, -s          Don't print anything
 
 
+bsintegrity
+^^^^^^^^^^^
+
+::
+
+  bsintegrity [-h] {check} ...
+
+  Manage hashed data from ElasticSearch
+
+  positional arguments:
+    {check}
+                          commands
+      check               Check the integrity of hashed data from ElasticSearch
+
+
+  optional arguments:
+    -h, --help            show this help message and exit
+
+
+
 Licence
 -------
 
