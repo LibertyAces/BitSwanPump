@@ -1,0 +1,230 @@
+import argparse
+import os
+import json
+import pprint
+import re
+import datetime
+import time
+import requests
+import jwt
+
+'''
+
+	BS integrity checker
+
+	The main role of integrity check is to find whether the hashed events consist the same
+	information as the unhashed. The output of bsintegrity is the set of recent and previous hashes
+	and number of items on which has / has not been integrity approved.
+
+	Below is the brief description of functionality.
+
+	Integrity checker:
+
+	1] Take one ElasticSearch index - for which the integrity is going to be analyzed
+
+	2] Check total count of index items
+
+	3] Request ElasticSearch for all items
+		- by series of requests where every iteration has "n" items which is defined by
+		the user (items_size). Number of iterations is set by the count of items in index 
+		and by items_size
+
+	4] For every item
+		a] checks its signature (hash) with the items
+		b] saves to HashSet the set of actual hash and previous hash (if there is any)
+		previous hash is the hash of the previous entry (there might be some)
+
+	5] At the end of the iteration, there will be a set of hash pairs which could be examined
+	e.g. from the chart perspective
+
+'''
+
+class Integrity:
+
+	def __init__(self):
+		self.Counter = 0
+		self.HitCount = 0
+		self.MissCount = 0
+		# LoopCount helps to preserve while loop not break after 1st iteration 
+		self.LoopCount = 0
+		self.HashSet = {}
+
+
+	# Return count of all items for given index
+	def get_items_count_in_index(self, es_url, index_name):
+		url = es_url + '/{}/_count'.format(index_name)
+		r = requests.get(url, 
+			json={'query':{'bool':{'must':{'match_all':{}}}}}, 
+			headers={'Content-Type': 'application/json'})
+		if r.status_code != 200:
+			print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
+			return None
+		else:
+			msg = r.json()
+			return msg['count']
+
+
+	# Open a file with key
+	def open_keyfile(self, key_path):
+		# Check if the key path is set
+		private_key = None
+		if key_path == '' or key_path is None:
+			private_key = None
+		else:
+			with open(key_path, 'r') as file:
+				private_key = file.read()
+		return private_key
+
+
+	# Check for hash
+	def object_check(self, JSONobject, private_key, algorithm):
+		if 'hash' in JSONobject:
+			decode = jwt.decode(JSONobject["hash"], private_key, algorithm=algorithm)
+			self.compare(JSONobject, decode)
+		else:
+			for key in JSONobject:
+				if type(JSONobject[key]) is dict:
+					self.object_check(JSONobject[key], private_key, algorithm)
+
+
+	# Compare data
+	def compare(self, original_data, decoded_data):
+		# Removing hash from the decoded data if there is any
+		previous_hash = decoded_data.pop("hash", None)
+		# And appending it with recent hash to the HashSet dictionary
+		if 'hash' in original_data:
+			self.Counter += 1
+			self.HashSet.update({str(self.Counter): {"hash": original_data["hash"], "prev_hash": previous_hash}})
+
+		for key in original_data:
+			# Avoiding comparison on hash key to prevent incomparability
+			if str(key) != 'hash':
+				# Recursive iteration through nested dictionaries
+				if type(original_data[key]) is dict:
+					self.compare(original_data[key], decoded_data[key])
+				else:
+					# Counting successful and unsuccessful hits on items
+					if original_data[key] == decoded_data[key]:
+						self.HitCount += 1
+					else:
+						self.MissCount += 1
+
+
+	# Progress bar
+	def progress_bar(self, iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
+	    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+	    filledLength = int(length * iteration // total)
+	    bar = fill * filledLength + '-' * (length - filledLength)
+	    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
+	    # Print new line after the end of iteration
+	    if iteration == total: 
+	        print()
+
+
+	# On command method
+	def COMMAND_check(self, URL, index, key_path, algorithm, items_size, scroll_time):
+		count = self.get_items_count_in_index(URL, index)
+		private_key = self.open_keyfile(key_path)
+		url = URL + '/{}/_search?scroll={}m'.format(index, scroll_time)
+		if algorithm == '' or algorithm is None:
+			algorithm = 'HS256'
+		if count is None:
+			return
+		if count > 0:
+			self.LoopCount = count
+			self.progress_bar(0, count, prefix='Progress:', suffix='Complete', length=50)
+			while True:
+				if not self.LoopCount <= 0:
+					r = requests.post(url, 
+						json={"size":items_size,'query': {'bool': {'must': {'match_all': {}}}}}, 
+						headers={'Content-Type': 'application/json'})
+					
+					if r.status_code != 200:
+						print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
+						break
+
+					msg = r.json()
+					hits = msg['hits']['hits']
+					if len(hits) == 0:
+						break
+
+					# Decoding hashes by object
+					if private_key is None:
+						break
+					else:
+						for JSONobject in hits:
+							self.object_check(JSONobject, private_key, algorithm)
+					self.LoopCount -= int(items_size)
+
+					time.sleep(0.1)
+			    	# Update Progress Bar
+					self.progress_bar(self.Counter, count, prefix='Progress:', suffix='Complete', length=50)
+				else:
+					break
+
+		print(self.HashSet)
+		print('\n')
+		print('Integrity has been approved on {} items\n'.format(str(self.HitCount)))
+		print('Integrity has not been enthroned on {} items\n'.format(str(self.MissCount)))
+		  
+
+
+def parse_cmdline():
+
+	# Parse args
+	parser = argparse.ArgumentParser(
+		formatter_class=argparse.RawDescriptionHelpFormatter,
+		description='''
+		Check integrity on ElasticSearch hashes.\n
+
+		-----------------------------------------------------
+
+		Supported algorithms for cryptographic signing, default is HS256
+
+
+		HS256 - HMAC using SHA-256 hash algorithm (default)
+		HS384 - HMAC using SHA-384 hash algorithm
+		HS512 - HMAC using SHA-512 hash algorithm
+		ES256 - ECDSA signature algorithm using SHA-256 hash algorithm
+		ES384 - ECDSA signature algorithm using SHA-384 hash algorithm
+		ES512 - ECDSA signature algorithm using SHA-512 hash algorithm
+		RS256 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-256 hash algorithm
+		RS384 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-384 hash algorithm
+		RS512 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-512 hash algorithm
+		PS256 - RSASSA-PSS signature using SHA-256 and MGF1 padding with SHA-256
+		PS384 - RSASSA-PSS signature using SHA-384 and MGF1 padding with SHA-384
+		PS512 - RSASSA-PSS signature using SHA-512 and MGF1 padding with SHA-512''')
+
+	subparsers = parser.add_subparsers(help='commands')
+
+
+	# An check command
+	check_parser = subparsers.add_parser('check', help='check on integrity of hashed events')
+	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL, e.g. http://localhost:9200')
+	check_parser.add_argument('index', action='store', help='a ElasticSearch index, e.g. my_index-01')
+	check_parser.add_argument('key_path', action='store', help='a Path to a file with key, e.g. ../path/to/my_ec_key')
+	check_parser.add_argument('algorithm', action='store', help='a Algorithms to use for decoding. More in bsintegrity --help')
+	check_parser.add_argument('items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. 50')
+	check_parser.add_argument('scroll_time', action='store', help='a ES Scroll time (in minutes), e.g. 1')
+	check_parser.set_defaults(COMMAND='check')
+
+	return parser.parse_args()
+
+
+def main():
+	# Get arguments
+	args = parse_cmdline()
+
+	# Call the command
+	if 'COMMAND' not in args:
+		print("Please select a command: check")
+		print("For more information see --help")
+		return 1
+
+	if args.COMMAND == 'check':
+		return Integrity().COMMAND_check(args.URL, args.index, args.key_path, args.algorithm, 
+			args.items_size, args.scroll_time)
+
+
+if __name__ == '__main__':
+	main()

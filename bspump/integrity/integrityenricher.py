@@ -11,10 +11,10 @@ L = logging.getLogger(__name__)
 ###
 
 
-class IntegrityEnricherProcessor(bspump.Processor):
+class IntegrityEnricher(bspump.Processor):
 
 	'''
-	IntegrityEnricherProcessor is a enricher processor, which enriches JSON data
+	IntegrityEnricher is a enricher processor, which enriches JSON data
 	by hashed events. Data are encoded by JSON Web Tokens standards.
 
 ...
@@ -46,6 +46,8 @@ class IntegrityEnricherProcessor(bspump.Processor):
 		super().__init__(app, pipeline, id, config)
 		self.KeyPath = self.Config['key_path']
 		self.Algorithm = self.Config['algorithm']
+		self.HashSet = {}
+		self.Counter = 0
 
 		# Check if the key path is set
 		self.JWTPrivateKey = None
@@ -62,12 +64,15 @@ class IntegrityEnricherProcessor(bspump.Processor):
 			L.warning('Key has not been loaded!')
 			return
 
-		# Check if previous hash present in JSON and if so, delete it
-		event.pop("hash", None)
+		# Check if previous hash present in JSON and if so, delete it from JSON and store it as previous hash
+		previous_hash = event.pop("hash", None)
 		# Hash event
 		event["hash"] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
+		# Add recent and previous hash to hash set
+		self.Counter += 1
+		self.HashSet.update({str(self.Counter): {"hash": event["hash"], "prev_hash": previous_hash}})
 
 
 	def process(self, context, event):
 		self.hash_event(context, event)
-		return event
+		return event, self.HashSet

@@ -1,5 +1,5 @@
-from .integrityenricher import IntegrityEnricherProcessor
+from .integrityenricher import IntegrityEnricher
 
 __all__ = [
-	"IntegrityEnricherProcessor",
+	"IntegrityEnricher",
 ]
