@@ -57,18 +57,6 @@ class Integrity:
 					self.object_check(JSONobject[key], private_key, algorithm)
 
 
-	# Hash objects
-	def object_hash(self, JSONobject, private_key, algorithm):
-		# Check if previous hash present in JSON and if so, delete it from JSON and store it as previous hash
-		previous_hash = JSONobject.pop("hash", None)
-		# Hash event
-		JSONobject["hash"] = jwt.encode(JSONobject, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
-		# Add recent and previous hash to hash set
-		self.Counter += 1
-		self.HashSet.update({str(self.Counter): {"hash": JSONobject["hash"], "prev_hash": previous_hash}})
-		# TODO: Sending the hashed data to ES
-
-
 	# Compare data
 	def compare(self, original_data, decoded_data):
 		# Removing hash from the decoded data if there is any
@@ -102,51 +90,7 @@ class Integrity:
 	        print()
 
 
-	#TODO: finish enricher implementation
-	def COMMAND_hash(self, URL_source, URL_sink, index, key_path, algorithm, items_size, scroll_time):
-		count = self.get_items_count_in_index(URL_source, index)
-		private_key = self.open_keyfile(key_path)
-		url = URL
-		if algorithm == '' or algorithm is None:
-			algorithm = 'HS256'
-		if count is None:
-			return
-		if count > 0:
-			self.LoopCount = count
-			self.progress_bar(0, count, prefix='Loading and hashing progress:', 
-				suffix='Loading and hashing complete', length=50)
-			while True:
-				if not self.LoopCount <= 0:
-					r = requests.post(url, 
-						json={"size":items_size,'query': {'bool': {'must': {'match_all': {}}}}}, 
-						headers={'Content-Type': 'application/json'})
-					
-					if r.status_code != 200:
-						print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
-						break
-
-					msg = r.json()
-					hits = msg['hits']['hits']
-					if len(hits) == 0:
-						break
-
-					# Encoding by object
-					if private_key is None:
-						break
-					else:
-						for JSONobject in hits:
-							self.object_hash(JSONobject, private_key, algorithm)
-					self.LoopCount -= int(items_size)
-
-					time.sleep(0.1)
-			    	# Update Progress Bar
-					self.progress_bar(self.Counter, count, prefix='Progress:', suffix='Complete', length=50)
-				else:
-					break
-
-		print(self.HashSet)
-
-
+	# On command method
 	def COMMAND_check(self, URL, index, key_path, algorithm, items_size, scroll_time):
 		count = self.get_items_count_in_index(URL, index)
 		private_key = self.open_keyfile(key_path)
@@ -225,17 +169,6 @@ def parse_cmdline():
 	subparsers = parser.add_subparsers(help='commands')
 
 
-	# An hash / enricher command
-	hash_parser = subparsers.add_parser('hash', help='enrich the events by hash')
-	hash_parser.add_argument('URL_source', action='store', help='a ElasticSearch URL source')
-	hash_parser.add_argument('URL_sink', action='store', help='a ElasticSearch URL sink')
-	hash_parser.add_argument('index', action='store', help='a ElasticSearch index')
-	hash_parser.add_argument('key_path', action='store', help='a Path to a file with key')
-	hash_parser.add_argument('algorithm', action='store', help='a Algorithms to use for decoding. More info in Description')
-	hash_parser.add_argument('items_size', action='store', help='a Number of the items loaded from ES')
-	hash_parser.add_argument('scroll_time', action='store', help='a ES Scroll time')
-	hash_parser.set_defaults(COMMAND='hash')
-
 	# An check command
 	check_parser = subparsers.add_parser('check', help='check on integrity of hashed events')
 	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
@@ -260,10 +193,7 @@ def main():
 		print("For more information see --help")
 		return 1
 
-	if args.COMMAND == 'hash':
-		return Integrity().COMMAND_hash(args.URL, args.key_path, args.algorithm)
-
-	elif args.COMMAND == 'check':
+	if args.COMMAND == 'check':
 		return Integrity().COMMAND_check(args.URL, args.index, args.key_path, args.algorithm, 
 			args.items_size, args.scroll_time)
 
