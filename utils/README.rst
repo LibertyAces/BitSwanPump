@@ -79,6 +79,11 @@ bsintegrity
 
   Manage hashed data from ElasticSearch
 
+    Example of use:
+
+    bsintegrity check http://localhost:9200 index-001 ../path/to/your_ec_key HS256 20 1
+
+
   positional arguments:
     {check}
                           commands
