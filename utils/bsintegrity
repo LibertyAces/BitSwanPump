@@ -176,7 +176,7 @@ def parse_cmdline():
 	# Parse args
 	parser = argparse.ArgumentParser(
 		formatter_class=argparse.RawDescriptionHelpFormatter,
-		description='''Hash the events from ElasticSearch.\n
+		description='''
 		Check integrity on ElasticSearch hashes.\n
 
 		-----------------------------------------------------
@@ -202,12 +202,12 @@ def parse_cmdline():
 
 	# An check command
 	check_parser = subparsers.add_parser('check', help='check on integrity of hashed events')
-	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL')
-	check_parser.add_argument('index', action='store', help='a ElasticSearch index')
-	check_parser.add_argument('key_path', action='store', help='a Path to a file with key')
-	check_parser.add_argument('algorithm', action='store', help='a Algorithms to use for decoding. More info in Description')
-	check_parser.add_argument('items_size', action='store', help='a Number of the items loaded from ES')
-	check_parser.add_argument('scroll_time', action='store', help='a ES Scroll time')
+	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL, e.g. http://localhost:9200')
+	check_parser.add_argument('index', action='store', help='a ElasticSearch index, e.g. my_index-01')
+	check_parser.add_argument('key_path', action='store', help='a Path to a file with key, e.g. ../path/to/my_ec_key')
+	check_parser.add_argument('algorithm', action='store', help='a Algorithms to use for decoding. More in bsintegrity --help')
+	check_parser.add_argument('items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. 50')
+	check_parser.add_argument('scroll_time', action='store', help='a ES Scroll time (in minutes), e.g. 1')
 	check_parser.set_defaults(COMMAND='check')
 
 	return parser.parse_args()
