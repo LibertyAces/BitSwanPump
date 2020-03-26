@@ -8,6 +8,36 @@ import time
 import requests
 import jwt
 
+'''
+
+	BS integrity checker
+
+	The main role of integrity check is to find whether the hashed events consist the same
+	information as the unhashed. The output of bsintegrity is the set of recent and previous hashes
+	and number of items on which has / has not been integrity approved.
+
+	Below is the brief description of functionality.
+
+	Integrity checker:
+
+	1] Take one ElasticSearch index - for which the integrity is going to be analyzed
+
+	2] Check total count of index items
+
+	3] Request ElasticSearch for all items
+		- by series of requests where every iteration has "n" items which is defined by
+		the user (items_size). Number of iterations is set by the count of items in index 
+		and by items_size
+
+	4] For every item
+		a] checks its signature (hash) with the items
+		b] saves to HashSet the set of actual hash and previous hash (if there is any)
+		previous hash is the hash of the previous entry (there might be some)
+
+	5] At the end of the iteration, there will be a set of hash pairs which could be examined
+	e.g. from the chart perspective
+
+'''
 
 class Integrity:
 
@@ -79,13 +109,14 @@ class Integrity:
 					else:
 						self.MissCount += 1
 
+
 	# Progress bar
 	def progress_bar(self, iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
 	    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
 	    filledLength = int(length * iteration // total)
 	    bar = fill * filledLength + '-' * (length - filledLength)
 	    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
-	    # Print New Line on Complete
+	    # Print new line after the end of iteration
 	    if iteration == total: 
 	        print()
 
