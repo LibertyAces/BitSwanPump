@@ -248,11 +248,9 @@ class NamedMatrix(Matrix):
 		self.N2IMap = data['N2IMap']
 		self.I2NMap = data['I2NMap']
 		self.ClosedRows = set(data['ClosedRows'])
-		self.DType = []
-		array = []
-		for member in data['DType']:
-			self.DType.append(tuple(member))
+		self.DType = data['DType']
 
+		array = []
 		for member in data['Array']:
 			array.append(tuple(member))
 
