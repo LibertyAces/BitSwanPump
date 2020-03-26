@@ -220,7 +220,7 @@ def main():
 
 	# Call the command
 	if 'COMMAND' not in args:
-		print("Please select a command: hash, check.")
+		print("Please select a command: check.")
 		print("For more information see --help")
 		return 1
 
