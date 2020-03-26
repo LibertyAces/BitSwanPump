@@ -75,5 +75,4 @@ class IntegrityEnricher(bspump.Processor):
 
 	def process(self, context, event):
 		self.hash_event(context, event)
-		# TODO: should it return also self.HashSet?
-		return event
+		return event, self.HashSet
