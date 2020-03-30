@@ -75,7 +75,7 @@ class IntegrityEnricher(bspump.Processor):
 		# Check if hash / previous hash already present in event and if so, delete it from event
 		event.pop(self.HashKey, None)
 		event.pop(self.PrevHashKey, None)
-		event.pop('hash_id', None)
+		event.pop(self.HashIdKey, None)
 		# Hash event
 		event[self.HashKey] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
 		# Set previous hash
