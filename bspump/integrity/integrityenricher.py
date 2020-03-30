@@ -61,6 +61,7 @@ class IntegrityEnricher(bspump.Processor):
 			with open(self.KeyPath, 'r') as file:
 				self.JWTPrivateKey = file.read()
 
+
 	# Encoding event and enriching JSON with the encoded event
 	def process(self, context, event):
 		# Check on loaded key
