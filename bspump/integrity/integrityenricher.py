@@ -67,6 +67,7 @@ class IntegrityEnricher(bspump.Processor):
 
 	# Encoding event and enriching JSON with the encoded event
 	def process(self, context, event):
+
 		# Check on loaded key
 		if self.JWTPrivateKey is None:
 			L.warning('Key has not been loaded!')
