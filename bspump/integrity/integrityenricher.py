@@ -84,6 +84,8 @@ class IntegrityEnricher(bspump.Processor):
 		self.PreviousHash = event[self.HashKey]
 		self.HashId += 1
 		# Enrich event by hash ID to faster event comparison in integrity checker
-		# Hased events need to be sorted in integrity checker by order in which has been hashed
+		# Hashed events are sorted by HashId on request to ES from bsintegrity
+		# It is a prevention of proceeding comparison on unsorted events. Comparison on
+		# unsorted events can produce odd results
 		event[self.HashIdKey] = self.HashId
 		return event
