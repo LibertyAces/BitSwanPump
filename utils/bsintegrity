@@ -6,15 +6,15 @@ import re
 import datetime
 import time
 import requests
-import jwt
 
 '''
 
-	BS integrity checker
+	BS integrity
 
-	The main role of integrity check is to find whether the hashed events consist the same
-	information as the unhashed. The output of bsintegrity is the set of recent and previous hashes
-	and number of items on which has / has not been integrity approved.
+	The main role of integrity check is to find whether the actual hashed event consist the same
+	information as it is stored in the previous event in its previous hash. The output of bsintegrity is 
+	the number of items on which has / has not been integrity approved. Items where integrity has not been
+	approved also returns the set of actual and previous hash.
 
 	Below is the brief description of functionality.
 
@@ -31,8 +31,9 @@ import jwt
 
 	4] For every item
 		a] checks its signature (hash) with the items
-		b] saves to HashSet the set of actual hash and previous hash (if there is any)
-		previous hash is the hash of the previous entry (there might be some)
+		b] Integrity enricher add to the event the set of actual hash and previous hash
+		   Previous hash is the hash of the previous entry
+		   bspump.integrity.integrityenricher
 
 	5] At the end of the iteration, there will be a set of hash pairs which could be examined
 	e.g. from the chart perspective
@@ -67,18 +68,18 @@ class Integrity:
 			return msg['count']
 
 
-	# Check for hash
+	# Signature comparison
 	# act_prev_hash: previous hash of actual event is assigned to this variable
 	# self.PrevActHash: hash of actual event is assigned to this global variable, initially set to None
-	def object_check(self, JSONobject):
-		act_prev_hash = JSONobject["_source"]['previous_hash']
+	def signature_comparison(self, JSONobject, hash_name, prev_hash_name):
+		act_prev_hash = JSONobject["_source"][str(prev_hash_name)]
 		# Comparison between previous hash of actual event and hash of previous event
 		if act_prev_hash == self.PrevActHash:
 			self.HitCount += 1
 		else:
 			self.MissCount +=1
 			self.HashSet.update({str(self.MissCount): {"ActualPrevious": act_prev_hash, "PreviousActual": self.PrevActHash}})
-		self.PrevActHash = JSONobject["_source"]["hash"]
+		self.PrevActHash = JSONobject["_source"][str(hash_name)]
 
 
 	# Progress bar
@@ -127,7 +128,7 @@ class Integrity:
 				# Checking hashes by object
 				for JSONobject in hits:
 					self.PBCounter += 1
-					self.object_check(JSONobject)
+					self.signature_comparison(JSONobject, hash_name, prev_hash_name)
 
 				# Creating cursor to ES using "search_after"
 				# In while loop, it search for another n events in ES 
@@ -166,9 +167,9 @@ def parse_cmdline():
 	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL, e.g. http://localhost:9200')
 	check_parser.add_argument('index', action='store', help='a ElasticSearch index, e.g. my_index-01')
 	check_parser.add_argument('items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. 50')
-	check_parser.add_argument('--hash_name', action='store', help='a Optional argument Hash key name, e.g. hash')
-	check_parser.add_argument('--prev_hash_name', action='store', help='a Optional argument Previous hash key name, e.g. previous_hash')
-	check_parser.add_argument('--hash_id', action='store', help='a Optional argument Hash ID key name, e.g. hash_id')
+	check_parser.add_argument('--hash_name', action='store', help='a Hash key name, e.g. --hash_name=hash')
+	check_parser.add_argument('--prev_hash_name', action='store', help='a Previous hash key name, e.g. --prev_hash_name=previous_hash')
+	check_parser.add_argument('--hash_id', action='store', help='a Hash ID key name, e.g. --hash_id=hash_id')
 	check_parser.set_defaults(COMMAND='check')
 
 	return parser.parse_args()
