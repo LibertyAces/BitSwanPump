@@ -78,8 +78,8 @@ class MySQLConnection(Connection):
 		self._password = self.Config['password']
 		self._connect_timeout = int(self.Config['connect_timeout'])
 		self._db = self.Config['db']
-		self._reconnect_delay = self.Config['reconnect_delay']
-		self._output_queue_max_size = self.Config['output_queue_max_size']
+		self._reconnect_delay = float(self.Config['reconnect_delay'])
+		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._max_bulk_size = int(self.Config['max_bulk_size'])
 		self._autocommit = self.Config.getboolean('autocommit')
 
