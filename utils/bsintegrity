@@ -45,8 +45,6 @@ class Integrity:
 		# Hit and Miss count to see how many items (objects) were checked and with hit or miss result
 		self.HitCount = 0
 		self.MissCount = 0
-		# LoopCount helps to preserve while loop not break after 1st iteration 
-		self.LoopCount = 0
 		# Progress Bar Event counter - helps to visualize progress bar
 		self.PBCounter = 0
 		# Global variable of previous hash
@@ -109,47 +107,42 @@ class Integrity:
 		if count is None:
 			return
 		if count > 0:
-			self.LoopCount = count
 			self.progress_bar(0, count, prefix='Progress:', suffix='Complete', length=50)
 			# Initialize search_after value
 			search_after = 0
 			while True:
-				if not self.LoopCount <= 0:
-					r = requests.post(url, 
-						json={"size":items_size,"search_after":[search_after],"sort":[{hash_id:{"order":"asc"}}],'query': {'bool': {'must': {'match_all': {}}}}}, 
-						headers={'Content-Type': 'application/json'})
-					
-					if r.status_code != 200:
-						print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
-						break
-
-					msg = r.json()
-					hits = msg['hits']['hits']
-					if len(hits) == 0:
-						break
-
-					# Decoding hashes by object
-					for JSONobject in hits:
-						self.PBCounter += 1
-						self.object_check(JSONobject)
-
-					self.LoopCount -= int(items_size)
-
-					time.sleep(0.1)
-			    	# Update Progress Bar
-					self.progress_bar(self.PBCounter, count, prefix='Progress:', suffix='Complete', length=50)
-
-					# Creating cursor to ES using "search_after"
-					# In while loop, it search for another n events in ES 
-					# after request get response from ES
-					# "search_after" is based on items_size 
-					search_after += int(items_size)
-				else:
+				r = requests.post(url, 
+					json={"size":items_size,"search_after":[search_after],"sort":[{hash_id:{"order":"asc"}}],'query': {'bool': {'must': {'match_all': {}}}}}, 
+					headers={'Content-Type': 'application/json'})
+				
+				if r.status_code != 200:
+					print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
 					break
+
+				msg = r.json()
+				hits = msg['hits']['hits']
+				if len(hits) == 0:
+					break
+
+				# Checking hashes by object
+				for JSONobject in hits:
+					self.PBCounter += 1
+					self.object_check(JSONobject)
+
+				# Creating cursor to ES using "search_after"
+				# In while loop, it search for another n events in ES 
+				# after request get response from ES
+				# "search_after" is based on items_size 
+				search_after += int(items_size)
+
+		    	# Update Progress Bar
+				time.sleep(0.1)
+				self.progress_bar(self.PBCounter, count, prefix='Progress:', suffix='Complete', length=50)
+
 
 		if not self.HashSet == {}:
 			print(self.HashSet)
-			print('\n')
+		print('\n')
 		print('Integrity has been approved on {} items\n'.format(str(self.HitCount)))
 		print('Integrity has not been enthroned on {} items\n'.format(str(self.MissCount)))
 		  
