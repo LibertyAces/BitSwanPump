@@ -39,6 +39,8 @@ class IntegrityEnricher(bspump.Processor):
 	ConfigDefaults = {
 		'key_path': '',
 		'algorithm': 'HS256',
+		'hash_name': 'hash',
+		'prev_hash_name': 'previous_hash'
 	}
 
 
@@ -46,8 +48,10 @@ class IntegrityEnricher(bspump.Processor):
 		super().__init__(app, pipeline, id, config)
 		self.KeyPath = self.Config['key_path']
 		self.Algorithm = self.Config['algorithm']
-		self.HashSet = {}
-		self.Counter = 0
+		self.HashKey = self.Config['hash_name']
+		self.PrevHashKey = self.Config['prev_hash_name']
+
+		self.PreviousHash = None
 
 		# Check if the key path is set
 		self.JWTPrivateKey = None
@@ -58,21 +62,19 @@ class IntegrityEnricher(bspump.Processor):
 				self.JWTPrivateKey = file.read()
 
 	# Encoding event and enriching JSON with the encoded event
-	def hash_event(self, context, event):
+	def process(self, context, event):
 		# Check on loaded key
 		if self.JWTPrivateKey is None:
 			L.warning('Key has not been loaded!')
 			return
 
-		# Check if previous hash present in JSON and if so, delete it from JSON and store it as previous hash
-		previous_hash = event.pop("hash", None)
+		# Check if hash / previous hash already present in event and if so, delete it from event
+		event.pop(self.HashKey, None)
+		event.pop(self.PrevHashKey, None)
 		# Hash event
-		event["hash"] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
-		# Add recent and previous hash to hash set
-		self.Counter += 1
-		self.HashSet.update({str(self.Counter): {"hash": event["hash"], "prev_hash": previous_hash}})
-
-
-	def process(self, context, event):
-		self.hash_event(context, event)
-		return event, self.HashSet
+		event[self.HashKey] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
+		# Set previous hash
+		event[self.PrevHashKey] = self.PreviousHash
+		# Actuall hash will become previous hash in the next iteration
+		self.PreviousHash = event[self.HashKey] 
+		return event
