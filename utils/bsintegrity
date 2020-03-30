@@ -113,7 +113,10 @@ class Integrity:
 			search_after = 0
 			while True:
 				r = requests.post(url, 
-					json={"size":items_size,"search_after":[search_after],"sort":[{hash_id:{"order":"asc"}}],'query': {'bool': {'must': {'match_all': {}}}}}, 
+					json={"size":items_size,
+					"search_after":[search_after],
+					"sort":[{hash_id:{"order":"asc"}}],
+					'query': {'bool': {'must': {'match_all': {}}}}}, 
 					headers={'Content-Type': 'application/json'})
 				
 				if r.status_code != 200:
@@ -131,7 +134,7 @@ class Integrity:
 					self.signature_comparison(JSONobject, hash_name, prev_hash_name)
 
 				# Creating cursor to ES using "search_after"
-				# In while loop, it search for another n events in ES 
+				# In while loop, it search for another n items in ES 
 				# after request get response from ES
 				# "search_after" is based on items_size 
 				search_after += int(items_size)
