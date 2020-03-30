@@ -42,11 +42,16 @@ import jwt
 class Integrity:
 
 	def __init__(self):
-		self.Counter = 0
+		# Hit and Miss count to see how many items (objects) were checked and with hit or miss result
 		self.HitCount = 0
 		self.MissCount = 0
 		# LoopCount helps to preserve while loop not break after 1st iteration 
 		self.LoopCount = 0
+		# Progress Bar Event counter - helps to visualize progress bar
+		self.PBCounter = 0
+		# Global variable of previous hash
+		self.PrevActHash = None
+		# Hashes which where integrity has not been approved are stored here and eventually printed at the end of the process
 		self.HashSet = {}
 
 
@@ -64,50 +69,18 @@ class Integrity:
 			return msg['count']
 
 
-	# Open a file with key
-	def open_keyfile(self, key_path):
-		# Check if the key path is set
-		private_key = None
-		if key_path == '' or key_path is None:
-			private_key = None
-		else:
-			with open(key_path, 'r') as file:
-				private_key = file.read()
-		return private_key
-
-
 	# Check for hash
-	def object_check(self, JSONobject, private_key, algorithm):
-		if 'hash' in JSONobject:
-			decode = jwt.decode(JSONobject["hash"], private_key, algorithm=algorithm)
-			self.compare(JSONobject, decode)
+	# act_prev_hash: previous hash of actual event is assigned to this variable
+	# self.PrevActHash: hash of actual event is assigned to this global variable, initially set to None
+	def object_check(self, JSONobject):
+		act_prev_hash = JSONobject["_source"]['previous_hash']
+		# Comparison between previous hash of actual event and hash of previous event
+		if act_prev_hash == self.PrevActHash:
+			self.HitCount += 1
 		else:
-			for key in JSONobject:
-				if type(JSONobject[key]) is dict:
-					self.object_check(JSONobject[key], private_key, algorithm)
-
-
-	# Compare data
-	def compare(self, original_data, decoded_data):
-		# Removing hash from the decoded data if there is any
-		previous_hash = decoded_data.pop("hash", None)
-		# And appending it with recent hash to the HashSet dictionary
-		if 'hash' in original_data:
-			self.Counter += 1
-			self.HashSet.update({str(self.Counter): {"hash": original_data["hash"], "prev_hash": previous_hash}})
-
-		for key in original_data:
-			# Avoiding comparison on hash key to prevent incomparability
-			if str(key) != 'hash':
-				# Recursive iteration through nested dictionaries
-				if type(original_data[key]) is dict:
-					self.compare(original_data[key], decoded_data[key])
-				else:
-					# Counting successful and unsuccessful hits on items
-					if original_data[key] == decoded_data[key]:
-						self.HitCount += 1
-					else:
-						self.MissCount += 1
+			self.MissCount +=1
+			self.HashSet.update({str(self.MissCount): {"ActualPrevious": act_prev_hash, "PreviousActual": self.PrevActHash}})
+		self.PrevActHash = JSONobject["_source"]["hash"]
 
 
 	# Progress bar
@@ -122,21 +95,28 @@ class Integrity:
 
 
 	# On command method
-	def COMMAND_check(self, URL, index, key_path, algorithm, items_size, scroll_time):
+	def COMMAND_check(self, URL, index, items_size, hash_name, prev_hash_name, hash_id):
 		count = self.get_items_count_in_index(URL, index)
-		private_key = self.open_keyfile(key_path)
-		url = URL + '/{}/_search?scroll={}m'.format(index, scroll_time)
-		if algorithm == '' or algorithm is None:
-			algorithm = 'HS256'
+		url = URL + '/{}/_search'.format(index)
+		# Initialize hash
+		if hash_name == '' or hash_name is None:
+			hash_name = "hash"
+		if prev_hash_name == '' or prev_hash_name is None:
+			prev_hash_name = "previous_hash"
+		if hash_id == '' or hash_id is None:
+			hash_id = "hash_id"
+		# Exit app when number of indices in ES is None
 		if count is None:
 			return
 		if count > 0:
 			self.LoopCount = count
 			self.progress_bar(0, count, prefix='Progress:', suffix='Complete', length=50)
+			# Initialize search_after value
+			search_after = 0
 			while True:
 				if not self.LoopCount <= 0:
 					r = requests.post(url, 
-						json={"size":items_size,'query': {'bool': {'must': {'match_all': {}}}}}, 
+						json={"size":items_size,"search_after":[search_after],"sort":[{hash_id:{"order":"asc"}}],'query': {'bool': {'must': {'match_all': {}}}}}, 
 						headers={'Content-Type': 'application/json'})
 					
 					if r.status_code != 200:
@@ -149,21 +129,27 @@ class Integrity:
 						break
 
 					# Decoding hashes by object
-					if private_key is None:
-						break
-					else:
-						for JSONobject in hits:
-							self.object_check(JSONobject, private_key, algorithm)
+					for JSONobject in hits:
+						self.PBCounter += 1
+						self.object_check(JSONobject)
+
 					self.LoopCount -= int(items_size)
 
 					time.sleep(0.1)
 			    	# Update Progress Bar
-					self.progress_bar(self.Counter, count, prefix='Progress:', suffix='Complete', length=50)
+					self.progress_bar(self.PBCounter, count, prefix='Progress:', suffix='Complete', length=50)
+
+					# Creating cursor to ES using "search_after"
+					# In while loop, it search for another n events in ES 
+					# after request get response from ES
+					# "search_after" is based on items_size 
+					search_after += int(items_size)
 				else:
 					break
 
-		print(self.HashSet)
-		print('\n')
+		if not self.HashSet == {}:
+			print(self.HashSet)
+			print('\n')
 		print('Integrity has been approved on {} items\n'.format(str(self.HitCount)))
 		print('Integrity has not been enthroned on {} items\n'.format(str(self.MissCount)))
 		  
@@ -176,24 +162,8 @@ def parse_cmdline():
 		formatter_class=argparse.RawDescriptionHelpFormatter,
 		description='''
 		Check integrity on ElasticSearch hashes.\n
-
 		-----------------------------------------------------
-
-		Supported algorithms for cryptographic signing, default is HS256
-
-
-		HS256 - HMAC using SHA-256 hash algorithm (default)
-		HS384 - HMAC using SHA-384 hash algorithm
-		HS512 - HMAC using SHA-512 hash algorithm
-		ES256 - ECDSA signature algorithm using SHA-256 hash algorithm
-		ES384 - ECDSA signature algorithm using SHA-384 hash algorithm
-		ES512 - ECDSA signature algorithm using SHA-512 hash algorithm
-		RS256 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-256 hash algorithm
-		RS384 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-384 hash algorithm
-		RS512 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-512 hash algorithm
-		PS256 - RSASSA-PSS signature using SHA-256 and MGF1 padding with SHA-256
-		PS384 - RSASSA-PSS signature using SHA-384 and MGF1 padding with SHA-384
-		PS512 - RSASSA-PSS signature using SHA-512 and MGF1 padding with SHA-512''')
+		''')
 
 	subparsers = parser.add_subparsers(help='commands')
 
@@ -202,10 +172,10 @@ def parse_cmdline():
 	check_parser = subparsers.add_parser('check', help='check on integrity of hashed events')
 	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL, e.g. http://localhost:9200')
 	check_parser.add_argument('index', action='store', help='a ElasticSearch index, e.g. my_index-01')
-	check_parser.add_argument('key_path', action='store', help='a Path to a file with key, e.g. ../path/to/my_ec_key')
-	check_parser.add_argument('algorithm', action='store', help='a Algorithms to use for decoding. More in bsintegrity --help')
 	check_parser.add_argument('items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. 50')
-	check_parser.add_argument('scroll_time', action='store', help='a ES Scroll time (in minutes), e.g. 1')
+	check_parser.add_argument('--hash_name', action='store', help='a Optional argument Hash key name, e.g. hash')
+	check_parser.add_argument('--prev_hash_name', action='store', help='a Optional argument Previous hash key name, e.g. previous_hash')
+	check_parser.add_argument('--hash_id', action='store', help='a Optional argument Hash ID key name, e.g. hash_id')
 	check_parser.set_defaults(COMMAND='check')
 
 	return parser.parse_args()
@@ -222,8 +192,8 @@ def main():
 		return 1
 
 	if args.COMMAND == 'check':
-		return Integrity().COMMAND_check(args.URL, args.index, args.key_path, args.algorithm, 
-			args.items_size, args.scroll_time)
+		return Integrity().COMMAND_check(args.URL, args.index, args.items_size, 
+			args.hash_name, args.prev_hash_name, args.hash_id)
 
 
 if __name__ == '__main__':
