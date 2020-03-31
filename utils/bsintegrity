@@ -52,6 +52,7 @@ class Integrity:
 		self.PrevActHash = None
 		# Hashes which where integrity has not been approved are stored here and eventually printed at the end of the process
 		self.HashSet = {}
+		self.PreviousHashSet = {}
 
 
 	# Return count of all items for given index
@@ -71,15 +72,15 @@ class Integrity:
 	# Signature comparison
 	# act_prev_hash: previous hash of actual event is assigned to this variable
 	# self.PrevActHash: hash of actual event is assigned to this global variable, initially set to None
-	def signature_comparison(self, JSONobject, hash_name, prev_hash_name):
-		act_prev_hash = JSONobject["_source"][str(prev_hash_name)]
-		# Comparison between previous hash of actual event and hash of previous event
-		if act_prev_hash == self.PrevActHash:
-			self.HitCount += 1
-		else:
-			self.MissCount +=1
-			self.HashSet.update({str(self.MissCount): {"ActualPrevious": act_prev_hash, "PreviousActual": self.PrevActHash}})
-		self.PrevActHash = JSONobject["_source"][str(hash_name)]
+	# def signature_comparison(self, JSONobject, hash_name, prev_hash_name):
+	# 	act_prev_hash = JSONobject["_source"][str(prev_hash_name)]
+	# 	# Comparison between previous hash of actual event and hash of previous event
+	# 	if act_prev_hash == self.PrevActHash:
+	# 		self.HitCount += 1
+	# 	else:
+	# 		self.MissCount +=1
+	# 		self.HashSet.update({str(self.MissCount): {"ActualPrevious": act_prev_hash, "PreviousActual": self.PrevActHash}})
+	# 	self.PrevActHash = JSONobject["_source"][str(hash_name)]
 
 
 	# Progress bar
@@ -93,63 +94,108 @@ class Integrity:
 	        print()
 
 
-	# On command method
-	def COMMAND_check(self, URL, index, items_size, hash_name, prev_hash_name, hash_id):
+	# # On command method
+	# def COMMAND_check(self, URL, index, items_size, hash_name, prev_hash_name, hash_id):
+	# 	print('ahoj2')
+	# 	count = self.get_items_count_in_index(URL, index)
+	# 	scroll_id = None
+	# 	print('ahoj')
+	# 	while True:
+	# 		if scroll_id is None:
+	# 			url = URL + '/{}/_search?scroll=1m'.format(index)
+	# 			query = {"size":items_size}
+	# 		else:
+	# 			url = URL + "_search/scroll"
+	# 			query = {"scroll":"1m","scroll_id": scroll_id}
+
+	# 		r = requests.post(url, json=query)
+	# 		if r.status_code != 200:
+	# 			print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
+	# 			break
+
+	# 		msg = r.json()
+
+	# 		scroll_id = msg['_scroll_id']
+
+	# 		hits = msg['hits']['hits']
+	# 		if len(hits) == 0:
+	# 			break
+
+	# 		print(len(hits))
+
+		 #    Update Progress Bar
+			# time.sleep(0.1)
+			# self.progress_bar(self.PBCounter, count, prefix='Progress:', suffix='Complete', length=50)
+
+
+	def get_items(self, URL, index, items_size, hash_name ,prev_hash_name):
 		count = self.get_items_count_in_index(URL, index)
-		url = URL + '/{}/_search'.format(index)
+		scroll_id = None
+		print('Getting data from ElasticSearch')
+		self.progress_bar(0, count, prefix='Download:', suffix='Complete', length=50)
+		DBCounter = 0
+		while True:
+			if scroll_id is None:
+				url = URL + '/{}/_search?scroll=1m'.format(index)
+				query = {"size":items_size}
+			else:
+				url = URL + "/_search/scroll"
+				query = {"scroll":"1m","scroll_id": scroll_id}
+
+			r = requests.post(url, json=query)
+			if r.status_code != 200:
+				print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
+				break
+
+			msg = r.json()
+
+			scroll_id = msg['_scroll_id']
+
+			hits = msg['hits']['hits']
+			if len(hits) == 0:
+				break
+
+			for JSONobject in hits:
+				DBCounter += 1
+				self.HashSet[JSONobject["_source"][hash_name]] = JSONobject["_id"]
+				self.PreviousHashSet[JSONobject["_source"][prev_hash_name]] = JSONobject["_id"] 
+
+
+	     	# Update Progress Bar
+			self.progress_bar(DBCounter, count, prefix='Download:', suffix='Complete', length=50)
+ 
+
+	def COMMAND_check(self, URL, index, items_size, hash_name, prev_hash_name):
 		# Initialize hash
 		if hash_name == '' or hash_name is None:
 			hash_name = "hash"
 		if prev_hash_name == '' or prev_hash_name is None:
 			prev_hash_name = "previous_hash"
-		if hash_id == '' or hash_id is None:
-			hash_id = "hash_id"
-		# Exit app when number of indices in ES is None
-		if count is None:
-			return
-		if count > 0:
-			self.progress_bar(0, count, prefix='Progress:', suffix='Complete', length=50)
-			# Initialize search_after value
-			search_after = 0
-			while True:
-				r = requests.post(url, 
-					json={"size":items_size,
-					"search_after":[search_after],
-					"sort":[{hash_id:{"order":"asc"}}],
-					'query': {'bool': {'must': {'match_all': {}}}}}, 
-					headers={'Content-Type': 'application/json'})
-				
-				if r.status_code != 200:
-					print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
-					break
-
-				msg = r.json()
-				hits = msg['hits']['hits']
-				if len(hits) == 0:
-					break
-
-				# Checking hashes by object
-				for JSONobject in hits:
-					self.PBCounter += 1
-					self.signature_comparison(JSONobject, hash_name, prev_hash_name)
-
-				# Creating cursor to ES using "search_after"
-				# In while loop, it search for another n items in ES 
-				# after request get response from ES
-				# "search_after" is based on items_size 
-				search_after += int(items_size)
-
-		    	# Update Progress Bar
-				time.sleep(0.1)
-				self.progress_bar(self.PBCounter, count, prefix='Progress:', suffix='Complete', length=50)
-
-
-		if not self.HashSet == {}:
-			print(self.HashSet)
-		print('\n')
-		print('Integrity has been approved on {} items\n'.format(str(self.HitCount)))
-		print('Integrity has not been enthroned on {} items\n'.format(str(self.MissCount)))
-		  
+		self.get_items(URL, index, items_size, hash_name, prev_hash_name)
+		PBCounter = 0
+		PBlen = len(self.PreviousHashSet)
+		print('Checking for integrity')
+		self.progress_bar(0, PBlen, prefix='Progress:', suffix='Complete', length=50)
+		# Removing initial previous hash (set to None in enricher)
+		A = self.PreviousHashSet.pop(None, None)
+		self.HitCount += 1
+		for key, value in self.HashSet.items():
+			PBCounter += 1
+			A = self.PreviousHashSet.pop(key, None)
+			if A is not None:
+				self.HitCount += 1
+			else:
+				self.MissCount += 1
+			# Update Progress Bar
+			self.progress_bar(PBCounter, PBlen, prefix='Progress:', suffix='Complete', length=50)
+		
+		if len(self.PreviousHashSet) > 0:
+			print(self.PreviousHashSet)
+			print('Integrity has not been ensured.')
+			print('Number of items where integrity has not been ensured: {}\n'.format(str(self.MissCount)))
+		else:
+			print('Integrity has been ensured.')
+			print('Number of items where integrity has been ensured: {}\n'.format(str(self.HitCount)))
 
 
 def parse_cmdline():
@@ -172,7 +218,6 @@ def parse_cmdline():
 	check_parser.add_argument('items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. 50')
 	check_parser.add_argument('--hash_name', action='store', help='a Hash key name, e.g. --hash_name=hash')
 	check_parser.add_argument('--prev_hash_name', action='store', help='a Previous hash key name, e.g. --prev_hash_name=previous_hash')
-	check_parser.add_argument('--hash_id', action='store', help='a Hash ID key name, e.g. --hash_id=hash_id')
 	check_parser.set_defaults(COMMAND='check')
 
 	return parser.parse_args()
@@ -190,7 +235,7 @@ def main():
 
 	if args.COMMAND == 'check':
 		return Integrity().COMMAND_check(args.URL, args.index, args.items_size, 
-			args.hash_name, args.prev_hash_name, args.hash_id)
+			args.hash_name, args.prev_hash_name)
 
 
 if __name__ == '__main__':
