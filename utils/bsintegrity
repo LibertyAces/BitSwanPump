@@ -76,7 +76,7 @@ class Integrity:
 	        print()
 
 
-	def get_items(self, URL, index, items_size, hash_name ,prev_hash_name):
+	def get_items(self, URL, index, items_size, scroll, hash_name ,prev_hash_name):
 		# Call method returning count of items in index
 		count = self.get_items_count_in_index(URL, index)
 		scroll_id = None
@@ -86,11 +86,11 @@ class Integrity:
 		while True:
 			# Make cursor to ES and get data by items size
 			if scroll_id is None:
-				url = URL + '/{}/_search?scroll=1m'.format(index)
+				url = URL + '/{}/_search?scroll={}m'.format(index, scroll)
 				query = {"size":items_size}
 			else:
 				url = URL + "/_search/scroll"
-				query = {"scroll":"1m","scroll_id": scroll_id}
+				query = {"scroll":"{}m".format(scroll),"scroll_id": scroll_id}
 
 			r = requests.post(url, json=query)
 			if r.status_code != 200:
@@ -115,14 +115,17 @@ class Integrity:
 			self.progress_bar(downloadbar_counter, count, prefix='Download:', suffix='Complete', length=50)
  
 
-	def COMMAND_check(self, URL, index, items_size, hash_name, prev_hash_name):
+	def COMMAND_check(self, URL, index, items_size, scroll, hash_name, prev_hash_name):
+		# Initialize scroll number
+		if scroll == '' or scroll is None:
+			scroll = "1"
 		# Initialize hash and previous hash names
 		if hash_name == '' or hash_name is None:
 			hash_name = "hash"
 		if prev_hash_name == '' or prev_hash_name is None:
 			prev_hash_name = "previous_hash"
 		# Call method which get the data from ES
-		self.get_items(URL, index, items_size, hash_name, prev_hash_name)
+		self.get_items(URL, index, items_size, scroll, hash_name, prev_hash_name)
 		# Set inital values for progress bar
 		progressbar_counter = 0
 		progressbar_len = len(self.PreviousHashSet)
@@ -175,6 +178,7 @@ def parse_cmdline():
 	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL, e.g. http://localhost:9200')
 	check_parser.add_argument('index', action='store', help='a ElasticSearch index, e.g. my_index-01')
 	check_parser.add_argument('items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. 50')
+	check_parser.add_argument('--scroll', action='store', help='a ES scroll, e.g. --scroll=2')
 	check_parser.add_argument('--hash_name', action='store', help='a Hash key name, e.g. --hash_name=hash')
 	check_parser.add_argument('--prev_hash_name', action='store', help='a Previous hash key name, e.g. --prev_hash_name=previous_hash')
 	check_parser.set_defaults(COMMAND='check')
@@ -193,7 +197,7 @@ def main():
 		return 1
 
 	if args.COMMAND == 'check':
-		return Integrity().COMMAND_check(args.URL, args.index, args.items_size, 
+		return Integrity().COMMAND_check(args.URL, args.index, args.items_size, args.scroll,
 			args.hash_name, args.prev_hash_name)
 
 
