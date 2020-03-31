@@ -40,8 +40,7 @@ class IntegrityEnricher(bspump.Processor):
 		'key_path': '',
 		'algorithm': 'HS256',
 		'hash_name': 'hash',
-		'prev_hash_name': 'previous_hash',
-		'hash_id_name': 'hash_id'
+		'prev_hash_name': 'previous_hash'
 	}
 
 
@@ -51,10 +50,8 @@ class IntegrityEnricher(bspump.Processor):
 		self.Algorithm = self.Config['algorithm']
 		self.HashKey = self.Config['hash_name']
 		self.PrevHashKey = self.Config['prev_hash_name']
-		self.HashIdKey = self.Config['hash_id_name']
 
 		self.PreviousHash = None
-		self.HashId = 0
 
 		# Check if the key path is set
 		self.JWTPrivateKey = None
@@ -76,17 +73,10 @@ class IntegrityEnricher(bspump.Processor):
 		# Check if hash / previous hash already present in event and if so, delete it from event
 		event.pop(self.HashKey, None)
 		event.pop(self.PrevHashKey, None)
-		event.pop(self.HashIdKey, None)
 		# Hash event
 		event[self.HashKey] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
 		# Set previous hash
 		event[self.PrevHashKey] = self.PreviousHash
 		# Actuall hash will become previous hash in the next iteration
 		self.PreviousHash = event[self.HashKey]
-		self.HashId += 1
-		# Enrich event by hash ID to faster event comparison in integrity checker
-		# Hashed events are sorted by HashId on request to ES from bsintegrity
-		# It is a prevention of proceeding comparison on unsorted events. Comparison on
-		# unsorted events can produce odd results
-		event[self.HashIdKey] = self.HashId
 		return event
