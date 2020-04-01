@@ -60,7 +60,7 @@ class VegetableCounterPipeline(bspump.Pipeline):
 							"source": "event.id",
 							"default": 0
 						},
-						# It was a fruitful year! If there is more then two radishes, add extra 10!
+						# It was a fruitful year! If there is more than two radishes, add extra 10!
 						{
 							"class": "IF",
 							"if": {
