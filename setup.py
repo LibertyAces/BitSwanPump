@@ -85,6 +85,7 @@ setup(
 		# 'pyarrow>=0.13.0,<1.0',  # `pip install pyarrow` fails on Apline Linux
 		'pytz>=2019.1,<2020.0',
 		'requests>=2.21.0,<3.0',
+		'netaddr>=0.6.0,<10.0',
 	],
 	scripts=[
 		'utils/bselastic',
