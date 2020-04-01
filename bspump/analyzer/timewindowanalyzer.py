@@ -64,11 +64,13 @@ class TimeWindowAnalyzer(Analyzer):
 		columns=15, analyze_on_clock=False, resolution=60,
 		start_time=None, clock_driven=False, id=None, config=None
 	):
+		print(id)
 
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
 			matrix_id = self.Id + "Matrix"
+			print(matrix_id)
 			self.TimeWindow = TimeWindowMatrix(
 				app,
 				dtype=dtype,
