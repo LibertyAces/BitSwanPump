@@ -54,6 +54,7 @@ __all__ = [
 	"NOT",
 	"OR",
 	"JOIN",
+	"UPDATE",
 	"FIELD",
 	"TOKEN",
 	"LOOKUP",
