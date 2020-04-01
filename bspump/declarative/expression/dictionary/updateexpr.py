@@ -1,15 +1,13 @@
-import functools
-
 from ..abc import Expression
 from ..builder import ExpressionBuilder
 
 
-class OR(Expression):
+class UPDATE(Expression):
 	"""
-	Checks if at least one of the expressions is true:
+	Updates dictionary with multiple dictionaries:
 
 		{
-			"class": "OR",
+			"class": "UPDATE",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""
@@ -21,7 +19,7 @@ class OR(Expression):
 			self.Items.append(ExpressionBuilder.build(app, expression_class_registry, item))
 
 	def __call__(self, context, event, *args, **kwargs):
-		return functools.reduce(
-			lambda x, y: x(context, event, *args, **kwargs) or y(context, event, *args, **kwargs) if isinstance(x, Expression) else x or y(context, event, *args, **kwargs),
-			self.Items
-		)
+		updated_dict = {}
+		for item in self.Items:
+			updated_dict.update(item(context, event, *args, **kwargs))
+		return updated_dict

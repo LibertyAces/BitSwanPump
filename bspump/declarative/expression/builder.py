@@ -1,15 +1,16 @@
-import importlib
-
 from .value.tokenexpr import TOKEN
 
 
 class ExpressionBuilder(object):
+	"""
+	Builds an expression from configuration.
+	If the expression is not a dictionary, TOKEN expression is instantiated.
+	"""
 
 	@classmethod
-	def build(cls, app, expression, module_name="bspump.declarative.expression"):
+	def build(cls, app, expression_class_registry, expression):
 		if isinstance(expression, dict):
-			_module = importlib.import_module(module_name)
-			_class = getattr(_module, expression["class"])
-			return _class(app, expression)
+			_class = expression_class_registry.get_class(expression["class"])
+			return _class(app, expression_class_registry, expression)
 		else:
-			return TOKEN(app, {"token": expression})
+			return TOKEN(app, expression_class_registry, {"token": expression})

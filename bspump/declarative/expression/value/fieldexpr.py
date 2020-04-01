@@ -2,9 +2,19 @@ from ..abc import Expression
 
 
 class FIELD(Expression):
+	"""
+	Obtains value of "field" from "source" (event/context):
 
-	def __init__(self, app, expression: dict):
-		super().__init__(app, expression)
+		{
+			"class": "FIELD",
+			"source": "event/context",
+			"field": "field",
+			"default": "None" (optional)
+		}
+	"""
+
+	def __init__(self, app, expression_class_registry, expression: dict):
+		super().__init__(app, expression_class_registry, expression)
 		self.Source = expression.get("source", "event")
 		self.Field = expression["field"]
 		self.Default = expression.get("default")

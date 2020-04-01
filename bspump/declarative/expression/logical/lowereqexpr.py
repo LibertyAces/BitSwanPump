@@ -5,12 +5,20 @@ from ..builder import ExpressionBuilder
 
 
 class LOWEREQ(Expression):
+	"""
+	Checks if all expressions are lower or equal to following one:
 
-	def __init__(self, app, expression: dict):
-		super().__init__(app, expression)
+		{
+			"class": "LOWEREQ",
+			"items": [<EXPRESSION>, <EXPRESSION>...]
+		}
+	"""
+
+	def __init__(self, app, expression_class_registry, expression: dict):
+		super().__init__(app, expression_class_registry, expression)
 		self.Items = []
 		for item in expression.get("items", []):
-			self.Items.append(ExpressionBuilder.build(app, item))
+			self.Items.append(ExpressionBuilder.build(app, expression_class_registry, item))
 
 	def __call__(self, context, event, *args, **kwargs):
 		return functools.reduce(

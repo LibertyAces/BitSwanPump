@@ -1,3 +1,4 @@
+from .registry import ExpressionClassRegistry
 from .builder import ExpressionBuilder
 from .abc import Expression
 
@@ -24,6 +25,9 @@ from .logical.orexpr import OR
 # String
 from .string.joinexpr import JOIN
 
+# Dictionary
+from .dictionary.updateexpr import UPDATE
+
 # Value
 from .value.fieldexpr import FIELD
 from .value.tokenexpr import TOKEN
@@ -32,6 +36,7 @@ from .value.tokenexpr import TOKEN
 from .lookup.lookupexpr import LOOKUP
 
 __all__ = [
+	"ExpressionClassRegistry",
 	"ExpressionBuilder",
 	"Expression",
 	"ADD",
