@@ -46,9 +46,8 @@ class Integrity:
 		# Hit and Miss count to see how many items (objects) were checked and with hit or miss result
 		self.HitCount = 0
 		self.MissCount = 0
-		# Hashes which where integrity has not been approved are stored here and eventually printed at the end of the process
+		# Hashes where integrity has not been approved are stored here and eventually printed at the end of the process
 		self.HashSet = {}
-		self.PreviousHashSet = {}
 
 
 	# Return count of all items for given index
@@ -76,7 +75,7 @@ class Integrity:
 	        print()
 
 
-	def get_items(self, URL, index, items_size, scroll, hash_name ,prev_hash_name):
+	def fetch_items(self, URL, index, items_size, scroll, hash_name ,prev_hash_name):
 		# Call method returning count of items in index
 		count = self.get_items_count_in_index(URL, index)
 		scroll_id = None
@@ -108,8 +107,7 @@ class Integrity:
 			# Store sets of actual and previous hash to global dictionary
 			for JSONobject in hits:
 				downloadbar_counter += 1
-				self.HashSet[JSONobject["_source"][hash_name]] = JSONobject["_id"]
-				self.PreviousHashSet[JSONobject["_source"][prev_hash_name]] = JSONobject["_id"] 
+				self.HashSet[JSONobject["_source"][prev_hash_name]] = JSONobject["_source"][hash_name]
 
 	     	# Update Progress Bar
 			self.progress_bar(downloadbar_counter, count, prefix='Download:', suffix='Complete', length=50)
@@ -125,32 +123,31 @@ class Integrity:
 		if prev_hash_name == '' or prev_hash_name is None:
 			prev_hash_name = "previous_hash"
 		# Call method which get the data from ES
-		self.get_items(URL, index, items_size, scroll, hash_name, prev_hash_name)
+		self.fetch_items(URL, index, items_size, scroll, hash_name, prev_hash_name)
 		# Set inital values for progress bar
 		progressbar_counter = 0
-		progressbar_len = len(self.PreviousHashSet)
+		progressbar_len = len(self.HashSet)
 		print('Checking for integrity')
 		self.progress_bar(0, progressbar_len, prefix='Progress:', suffix='Complete', length=50)
 		# Remove initial previous hash (it is set to None in enricher)
-		self.PreviousHashSet.pop(None, None)
+		actual_hash = self.HashSet.pop(None, None)
 		self.HitCount += 1
-		for key, value in self.HashSet.items():
-			# Remove previous hash from dictionary if key is present in it
-			previous_hash_value = self.PreviousHashSet.pop(key, None)
-			if previous_hash_value is not None:
+		progressbar_counter += 1
+		for i in range(len(self.HashSet)):
+			previous_hash = self.HashSet.pop(actual_hash, None)
+			if previous_hash is not None:
 				self.HitCount += 1
 			else:
 				self.MissCount += 1
-
+			actual_hash = previous_hash
 			progressbar_counter += 1
-
 			# Update Progress Bar
 			self.progress_bar(progressbar_counter, progressbar_len, prefix='Progress:', suffix='Complete', length=50)
-		
+
 		# Check whether integrity has been ensured
-		if len(self.PreviousHashSet) > 0:
+		if len(self.HashSet) > 0:
 			print('\n')
-			print(self.PreviousHashSet)
+			print(self.HashSet)
 			print('\n')
 			print('Integrity has not been ensured.')
 			print('Number of items where integrity has not been ensured: {}\n'.format(str(self.MissCount)))
