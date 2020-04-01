@@ -3,7 +3,7 @@ import abc
 
 class Expression(abc.ABC):
 
-	def __init__(self, expression: dict):
+	def __init__(self, app, expression: dict):
 		pass
 
 	@abc.abstractmethod

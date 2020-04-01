@@ -6,11 +6,11 @@ from ..builder import ExpressionBuilder
 
 class MULTIPLY(Expression):
 
-	def __init__(self, expression: dict):
-		super().__init__(expression)
+	def __init__(self, app, expression: dict):
+		super().__init__(app, expression)
 		self.Items = []
 		for item in expression.get("items", []):
-			self.Items.append(ExpressionBuilder.build(item))
+			self.Items.append(ExpressionBuilder.build(app, item))
 
 	def __call__(self, context, event, *args, **kwargs):
 		return functools.reduce(

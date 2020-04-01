@@ -3,8 +3,8 @@ from ..abc import Expression
 
 class FIELD(Expression):
 
-	def __init__(self, expression: dict):
-		super().__init__(expression)
+	def __init__(self, app, expression: dict):
+		super().__init__(app, expression)
 		self.Source = expression.get("source", "event")
 		self.Field = expression["field"]
 		self.Default = expression.get("default")

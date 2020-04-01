@@ -4,11 +4,11 @@ from ..builder import ExpressionBuilder
 
 class ASSIGN(Expression):
 
-	def __init__(self, expression: dict):
-		super().__init__(expression)
+	def __init__(self, app, expression: dict):
+		super().__init__(app, expression)
 		self.Target = expression.get("target", "event")
 		self.Field = expression["field"]
-		self.Token = ExpressionBuilder.build(expression["token"])
+		self.Token = ExpressionBuilder.build(app, expression["token"])
 
 	def __call__(self, context, event, *args, **kwargs):
 		if self.Target == "event":

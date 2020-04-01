@@ -28,6 +28,9 @@ from .string.joinexpr import JOIN
 from .value.fieldexpr import FIELD
 from .value.tokenexpr import TOKEN
 
+# Lookup
+from .lookup.lookupexpr import LOOKUP
+
 __all__ = [
 	"ExpressionBuilder",
 	"Expression",
@@ -48,4 +51,5 @@ __all__ = [
 	"JOIN",
 	"FIELD",
 	"TOKEN",
+	"LOOKUP",
 ]
