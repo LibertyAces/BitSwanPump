@@ -49,4 +49,3 @@ __all__ = [
 	"FIELD",
 	"TOKEN",
 ]
-
