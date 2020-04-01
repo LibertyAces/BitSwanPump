@@ -114,6 +114,7 @@ Available technologies
 * ``bspump.socket`` TCP source, UDP source
 * ``bspump.trigger`` Opportunistic, PubSub and Periodic triggers
 * ``bspump.crypto`` Cryptography
+* ``bspump.declarative`` Declarative processors and expressions
 
   * Hashing: SHA224, SHA256, SHA384, SHA512, SHA1, MD5, BLAKE2b, BLAKE2s
   * Symmetric Encryption: AES 128, AES 192, AES 256
