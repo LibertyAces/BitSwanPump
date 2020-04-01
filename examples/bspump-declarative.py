@@ -25,6 +25,7 @@ class VegetableCounterPipeline(bspump.Pipeline):
 	TOKEN -> a predefined value
 	IF -> if clause with then and else expressions
 	HIGHER -> if a number is higher than a given number
+	UPDATE -> updates dictionary with multiple dictionaries
 	"""
 
 	def __init__(self, app, pipeline_id=None):
@@ -36,55 +37,65 @@ class VegetableCounterPipeline(bspump.Pipeline):
 				{"radishes": 20, "carrots": 4, "milk": 10}
 			], config={"number": 5}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
 			bspump.declarative.DeclarativeProcessor(app, self, expression={
-				"class": "ASSIGN",
-				"field": "count",
-				"token": {
-					# Count all available vegetables in events
-					"class": "ADD",
-					"items": [
-						{
-							"class": "FIELD",
-							"field": "potatoes",
-							"source": "event.id",
-							"default": 0
-						},
-						{
-							"class": "FIELD",
-							"field": "carrots",
-							"source": "event.id",
-							"default": 0
-						},
-						{
-							"class": "FIELD",
-							"field": "radishes",
-							"source": "event.id",
-							"default": 0
-						},
-						# It was a fruitful year! If there is more than two radishes, add extra 10!
-						{
-							"class": "IF",
-							"if": {
-								"class": "HIGHER",
-								"items": [
-									{
-										"class": "FIELD",
-										"field": "radishes",
-										"source": "event.id",
-										"default": 0
+				"class": "UPDATE",
+				"items": [
+					{
+						"class": "ASSIGN",
+						"field": "parsed_by_declarative",
+						"token": True
+					},
+					{
+						"class": "ASSIGN",
+						"field": "count",
+						"token": {
+							# Count all available vegetables in events
+							"class": "ADD",
+							"items": [
+								{
+									"class": "FIELD",
+									"field": "potatoes",
+									"source": "event.id",
+									"default": 0
+								},
+								{
+									"class": "FIELD",
+									"field": "carrots",
+									"source": "event.id",
+									"default": 0
+								},
+								{
+									"class": "FIELD",
+									"field": "radishes",
+									"source": "event.id",
+									"default": 0
+								},
+								# It was a fruitful year! If there is more than two radishes, add extra 10!
+								{
+									"class": "IF",
+									"if": {
+										"class": "HIGHER",
+										"items": [
+											{
+												"class": "FIELD",
+												"field": "radishes",
+												"source": "event.id",
+												"default": 0
+											},
+											2
+										]
 									},
-									2
-								]
-							},
-							"then": {
-								"class": "TOKEN",
-								"token": 10
-							},
-							"else": 0,
-						},
-						# BONUS: Add 20 extra salads!
-						20
-					]
-				}
+									"then": {
+										"class": "TOKEN",
+										"token": 10
+									},
+									"else": 0,
+								},
+								# BONUS: Add 20 extra salads!
+								20
+							]
+						}
+					}
+				]
 			}),
 			bspump.common.PPrintSink(app, self)
 		)
