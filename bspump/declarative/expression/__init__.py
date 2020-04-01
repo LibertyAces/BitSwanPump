@@ -35,6 +35,11 @@ from .value.tokenexpr import TOKEN
 # Lookup
 from .lookup.lookupexpr import LOOKUP
 
+# Complex
+from .complex.dateexpr import DATE
+from .complex.listexpr import LIST
+from .complex.subnetexpr import SUBNET
+
 __all__ = [
 	"ExpressionClassRegistry",
 	"ExpressionBuilder",
@@ -58,4 +63,7 @@ __all__ = [
 	"FIELD",
 	"TOKEN",
 	"LOOKUP",
+	"DATE",
+	"LIST",
+	"SUBNET",
 ]
