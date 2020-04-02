@@ -30,13 +30,15 @@ L = logging.getLogger(__name__)
 	[connection:ESConnection]
 	url=http://localhost:9200/
 
-	[connection:ESConnection2]
-	url=http://localhost:9201/
+	# ElasticSearch source
+
+	[pipeline:SamplePipeline:ElasticSearchSource]
+	index=bs
 
 	# ElasticSearch sink
 
 	[pipeline:SamplePipeline:ElasticSearchSink]
-	index_prefix=bs_
+	index_prefix=bs_hashed
 
 """
 
@@ -47,15 +49,13 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.elasticsearch.ElasticSearchSource(
-				app, self, "ESConnection", config={
-					"index": "bs_*"
-				}
+				app, self, "ESConnection"
 			).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
 			bspump.integrity.IntegrityEnricher(app, self, 
 				config={'key_path': './data/test_ec_key',
 						'algorithm': 'HS512',
 				}),
-			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection2")
+			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
 		)
 		
 
@@ -68,8 +68,6 @@ if __name__ == '__main__':
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection", config={
 			"bulk_out_max_size": 100,
 		}))
-	svc.add_connection(
-		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection2"))
 
 	# Construct and register Pipeline
 	pl = SamplePipeline(app, 'SamplePipeline')
