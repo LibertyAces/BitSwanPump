@@ -1,5 +1,7 @@
 import bspump
 import logging
+import random
+import string
 # The library is called pyjwt when installing package via pip (pip install pyjwt)
 import jwt
 
@@ -73,6 +75,8 @@ class IntegrityEnricher(bspump.Processor):
 		# Check if hash / previous hash already present in event and if so, delete it from event
 		event.pop(self.HashKey, None)
 		event.pop(self.PrevHashKey, None)
+		# Salt event - to ensure that events are not going to be the same after hash
+		event["salt"] = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase, k=3))
 		# Hash event
 		event[self.HashKey] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
 		# Set previous hash
