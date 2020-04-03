@@ -1,5 +1,3 @@
-import functools
-
 from ..abc import Expression
 from ..builder import ExpressionBuilder
 
