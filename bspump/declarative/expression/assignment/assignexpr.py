@@ -4,13 +4,13 @@ from ..builder import ExpressionBuilder
 
 class ASSIGN(Expression):
 	"""
-	Assigns a token to a configured "field" in event/context:
+	Assigns a value to a configured "field" in event/context:
 
 		{
-			"class": "ASSIGN",
+			"function": "ASSIGN",
 			"target": "event/context",
 			"field": "my_field",
-			"token": <EXPRESSION>
+			"value": <EXPRESSION>
 		}
 	"""
 
@@ -18,11 +18,11 @@ class ASSIGN(Expression):
 		super().__init__(app, expression_class_registry, expression)
 		self.Target = expression.get("target", "event")
 		self.Field = expression["field"]
-		self.Token = ExpressionBuilder.build(app, expression_class_registry, expression["token"])
+		self.Value = ExpressionBuilder.build(app, expression_class_registry, expression["value"])
 
 	def __call__(self, context, event, *args, **kwargs):
 		if self.Target == "event":
-			event[self.Field] = self.Token(context, event, *args, **kwargs)
+			event[self.Field] = self.Value(context, event, *args, **kwargs)
 		elif self.Target == "context":
-			context[self.Field] = self.Token(context, event, *args, **kwargs)
+			context[self.Field] = self.Value(context, event, *args, **kwargs)
 		return event

@@ -9,7 +9,7 @@ class DIVIDE(Expression):
 	Divides values in expressions:
 
 		{
-			"class": "DIVIDE",
+			"function": "DIVIDE",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

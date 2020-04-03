@@ -9,8 +9,8 @@ class JOIN(Expression):
 	Joins strings in "items" using "char":
 
 		{
-			"class": "JOIN",
-			"items": [<EXPRESSION>, <EXPRESSION>...]
+			"function": "JOIN",
+			"items": [<EXPRESSION>, <EXPRESSION>...],
 			"char": "-" (optional)
 		}
 	"""

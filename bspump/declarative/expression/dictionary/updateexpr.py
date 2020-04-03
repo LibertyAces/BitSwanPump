@@ -7,7 +7,7 @@ class UPDATE(Expression):
 	Updates dictionary with multiple dictionaries:
 
 		{
-			"class": "UPDATE",
+			"function": "UPDATE",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

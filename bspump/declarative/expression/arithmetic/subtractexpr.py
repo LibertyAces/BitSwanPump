@@ -9,7 +9,7 @@ class SUBTRACT(Expression):
 	Subtracts values in expressions:
 
 		{
-			"class": "SUBTRACT",
+			"function": "SUBTRACT",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

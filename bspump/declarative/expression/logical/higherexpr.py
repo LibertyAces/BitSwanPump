@@ -9,7 +9,7 @@ class HIGHER(Expression):
 	Checks if all expressions are higher to following one:
 
 		{
-			"class": "HIGHER",
+			"function": "HIGHER",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

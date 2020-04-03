@@ -9,7 +9,7 @@ class LOWER(Expression):
 	Checks if all expressions are lower to following one:
 
 		{
-			"class": "LOWER",
+			"function": "LOWER",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

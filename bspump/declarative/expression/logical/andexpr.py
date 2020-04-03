@@ -9,7 +9,7 @@ class AND(Expression):
 	Checks if all expressions are true:
 
 		{
-			"class": "AND",
+			"function": "AND",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

@@ -9,7 +9,7 @@ class MULTIPLY(Expression):
 	Multiplies values in expressions:
 
 		{
-			"class": "MULTIPLY",
+			"function": "MULTIPLY",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""
