@@ -23,22 +23,25 @@ from .logical.notexpr import NOT
 from .logical.orexpr import OR
 
 # String
+from .string.endswith import ENDSWITH
 from .string.joinexpr import JOIN
+from .string.regex import REGEX
+from .string.startswith import STARTSWITH
 
 # Dictionary
 from .dictionary.updateexpr import UPDATE
 
 # Value
 from .value.fieldexpr import FIELD
-from .value.tokenexpr import TOKEN
+from .value.valueexpr import VALUE
 
 # Lookup
 from .lookup.lookupexpr import LOOKUP
 
 # Complex
-from .complex.dateexpr import DATE
-from .complex.listexpr import LIST
-from .complex.subnetexpr import SUBNET
+from .complex.indateexpr import INDATE
+from .complex.inlistexpr import INLIST
+from .complex.insubnetexpr import INSUBNET
 
 __all__ = [
 	"ExpressionClassRegistry",
@@ -58,12 +61,15 @@ __all__ = [
 	"LOWER",
 	"NOT",
 	"OR",
+	"ENDSWITH",
 	"JOIN",
 	"UPDATE",
+	"REGEX",
+	"STARTSWITH",
 	"FIELD",
-	"TOKEN",
+	"VALUE",
 	"LOOKUP",
-	"DATE",
-	"LIST",
-	"SUBNET",
+	"INDATE",
+	"INLIST",
+	"INSUBNET",
 ]
