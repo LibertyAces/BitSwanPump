@@ -9,7 +9,7 @@ class LOWEREQ(Expression):
 	Checks if all expressions are lower or equal to following one:
 
 		{
-			"class": "LOWEREQ",
+			"function": "LOWEREQ",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

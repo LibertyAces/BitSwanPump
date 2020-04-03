@@ -4,23 +4,23 @@ from ..abc import Expression
 from ..builder import ExpressionBuilder
 
 
-class DATE(Expression):
+class INDATE(Expression):
 	"""
 	Checks if expression is of given date:
 
 		{
-			"class": "DATE",
+			"function": "INDATE",
 			"hours": [],
-			"token": <EXPRESSION>
+			"value": <EXPRESSION>
 		}
 	"""
 
 	def __init__(self, app, expression_class_registry, expression: dict):
 		super().__init__(app, expression_class_registry, expression)
 		self.Hours = expression["hours"]
-		self.Token = ExpressionBuilder.build(app, expression_class_registry, expression["token"])
+		self.Value = ExpressionBuilder.build(app, expression_class_registry, expression["value"])
 
 	def __call__(self, context, event, *args, **kwargs):
-		timestamp = self.Token(context, event, *args, **kwargs)
+		timestamp = self.Value(context, event, *args, **kwargs)
 		date_time = datetime.utcfromtimestamp(timestamp)
 		return date_time.hour in self.Hours

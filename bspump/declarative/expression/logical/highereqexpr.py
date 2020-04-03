@@ -9,7 +9,7 @@ class HIGHEREQ(Expression):
 	Checks if all expressions are higher or equal to following one:
 
 		{
-			"class": "HIGHEREQ",
+			"function": "HIGHEREQ",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

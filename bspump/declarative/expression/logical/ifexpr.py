@@ -7,7 +7,7 @@ class IF(Expression):
 	Checks "if" condition passes - if so, proceeds with "then" expression, otherwise with "else":
 
 		{
-			"class": "IF",
+			"function": "IF",
 			"if": <EXPRESSION>,
 			"then": <EXPRESSION>,
 			"else": <EXPRESSION>

@@ -86,6 +86,7 @@ setup(
 		'pytz>=2019.1,<2020.0',
 		'requests>=2.21.0,<3.0',
 		'netaddr>=0.6.0,<10.0',
+		'pyyml>=0.0.0,<10.0.0',
 	],
 	scripts=[
 		'utils/bselastic',

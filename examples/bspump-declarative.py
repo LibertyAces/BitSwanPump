@@ -22,7 +22,6 @@ class VegetableCounterPipeline(bspump.Pipeline):
 	FIELD -> obtains field from the event
 	ASSIGN -> inserts field into the event
 	ADD -> adds values of item expressions
-	TOKEN -> a predefined value
 	IF -> if clause with then and else expressions
 	HIGHER -> if a number is higher than a given number
 	UPDATE -> updates dictionary with multiple dictionaries
@@ -37,57 +36,66 @@ class VegetableCounterPipeline(bspump.Pipeline):
 				{"radishes": 20, "carrots": 4, "milk": 10}
 			], config={"number": 5}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
 			bspump.declarative.DeclarativeProcessor(app, self, expression={
-				"class": "UPDATE",
+				"function": "UPDATE",
 				"items": [
 					{
-						"class": "ASSIGN",
+						"function": "ASSIGN",
 						"field": "parsed_by_declarative",
-						"token": True
+						"value": True
 					},
 					{
-						"class": "ASSIGN",
+						"function": "ASSIGN",
 						"field": "count",
-						"token": {
+						"value": {
 							# Count all available vegetables in events
-							"class": "ADD",
+							"function": "ADD",
 							"items": [
 								{
-									"class": "FIELD",
+									"function": "FIELD",
 									"field": "potatoes",
-									"source": "event.id",
+									"source": {
+										"function": "FIELD",
+										"field": "id"
+									},
 									"default": 0
 								},
 								{
-									"class": "FIELD",
+									"function": "FIELD",
 									"field": "carrots",
-									"source": "event.id",
+									"source": {
+										"function": "FIELD",
+										"field": "id"
+									},
 									"default": 0
 								},
 								{
-									"class": "FIELD",
+									"function": "FIELD",
 									"field": "radishes",
-									"source": "event.id",
+									"source": {
+										"function": "FIELD",
+										"field": "id"
+									},
 									"default": 0
 								},
 								# It was a fruitful year! If there is more than two radishes, add extra 10!
 								{
-									"class": "IF",
+									"function": "IF",
 									"if": {
-										"class": "HIGHER",
+										"function": "HIGHER",
 										"items": [
 											{
-												"class": "FIELD",
+												"function": "FIELD",
 												"field": "radishes",
-												"source": "event.id",
+												"source": {
+													"function": "FIELD",
+													"field": "id"
+												},
 												"default": 0
 											},
 											2
 										]
 									},
-									"then": {
-										"class": "TOKEN",
-										"token": 10
-									},
+									"then": 10,
 									"else": 0,
 								},
 								# BONUS: Add 20 extra salads!

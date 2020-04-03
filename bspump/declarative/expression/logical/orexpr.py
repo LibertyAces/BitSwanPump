@@ -9,7 +9,7 @@ class OR(Expression):
 	Checks if at least one of the expressions is true:
 
 		{
-			"class": "OR",
+			"function": "OR",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

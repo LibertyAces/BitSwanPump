@@ -9,7 +9,7 @@ class ADD(Expression):
 	Adds values from expressions:
 
 		{
-			"class": "ADD",
+			"function": "ADD",
 			"items": [<EXPRESSION>, <EXPRESSION>...]
 		}
 	"""

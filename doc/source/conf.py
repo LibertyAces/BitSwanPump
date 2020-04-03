@@ -26,11 +26,13 @@ import bspump
 import bspump.kafka
 import bspump.influxdb
 import bspump.elasticsearch
+import bspump.declarative
+import bspump.declarative.expression
 
 # -- Project information -----------------------------------------------------
 
 project = 'BSPump Reference'
-copyright = '2019, TeskaLabs'
+copyright = '2020, TeskaLabs'
 author = 'TeskaLabs'
 
 # The short X.Y version
