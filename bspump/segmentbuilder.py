@@ -18,7 +18,7 @@ L = logging.getLogger(__name__)
 asab.Config.add_defaults(
 	{
 		"SegmentBuilder": {
-			"path": "./etc/processors/*.json",
+			"path": "./etc/processors/*",
 		},
 	}
 )
