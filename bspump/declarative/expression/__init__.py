@@ -26,6 +26,7 @@ from .logical.orexpr import OR
 from .string.endswith import ENDSWITH
 from .string.joinexpr import JOIN
 from .string.regex import REGEX
+from .string.regex import REGEX_PARSE
 from .string.startswith import STARTSWITH
 
 # Dictionary
@@ -34,6 +35,7 @@ from .dictionary.updateexpr import UPDATE
 # Value
 from .value.fieldexpr import FIELD
 from .value.valueexpr import VALUE
+from .value.eventexpr import EVENT
 
 # Lookup
 from .lookup.lookupexpr import LOOKUP
@@ -65,9 +67,11 @@ __all__ = [
 	"JOIN",
 	"UPDATE",
 	"REGEX",
+	"REGEX_PARSE",
 	"STARTSWITH",
 	"FIELD",
 	"VALUE",
+	"EVENT",
 	"LOOKUP",
 	"INDATE",
 	"INLIST",

@@ -10,7 +10,9 @@ class ExpressionBuilder(object):
 	@classmethod
 	def build(cls, app, expression_class_registry, expression):
 		if isinstance(expression, dict):
-			_class = expression_class_registry.get_class(expression["function"])
-			return _class(app, expression_class_registry, expression)
+			fnctclass = expression_class_registry.get_class(expression["function"])
+			return fnctclass(app, expression_class_registry, expression)
+		
 		else:
+			# Shortcuts goes here
 			return VALUE(app, expression_class_registry, {"value": expression})
