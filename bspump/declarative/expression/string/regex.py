@@ -6,7 +6,7 @@ from ..builder import ExpressionBuilder
 
 class REGEX(Expression):
 	"""
-	Checks if "string" matches with the "regex", returns True/False
+	Checks if `value` matches with the `regex`, returns `hit` / `miss` respectively.
 
 		{
 			"function": "REGEX",
@@ -42,12 +42,16 @@ class REGEX(Expression):
 
 class REGEX_PARSE(Expression):
 	"""
-	Checks if "string" matches with the "regex", returns True/False
+	Search `value` forr `regex` with regular expressions groups.
+	If nothing is found `miss` is returned.
+	Otherwise, groups are returned in as a list.
+
+	If `fields` are provided, the groups are mapped to provided fields.
 
 		{
 			"function": "REGEX_PARSE",
 			"regex": "<REGULAR EXPRESSION>"
-			"fields": ["<FIELD NAME>", "<FIELD NAME>", ...]
+			"fields": ["<FIELD NAME>", "<FIELD NAME>", ...] | None
 			"value": <EXPRESSION>,
 			"miss": <EXPRESSION> | None, // Optional, default is 'None'
 		}
