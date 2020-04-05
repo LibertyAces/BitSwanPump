@@ -3,7 +3,7 @@ import functools
 from ...abc import Expression
 
 
-#TODO: This ...
+# TODO: This ...
 class JOIN(Expression):
 	"""
 	Joins strings in "items" using "char":
@@ -19,8 +19,6 @@ class JOIN(Expression):
 		super().__init__(app, expression_class_registry, expression)
 		self.Char = expression.get("char", "-")
 		self.Items = []
-		for item in expression.get("items", []):
-			self.Items.append(ExpressionBuilder.build(app, expression_class_registry, item))
 
 	def __call__(self, context, event, *args, **kwargs):
 		return functools.reduce(

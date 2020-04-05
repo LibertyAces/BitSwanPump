@@ -57,7 +57,7 @@ __all__ = [
 	"OR",
 	"ENDSWITH",
 	"JOIN",
-	"UPDATE",
+	"DICT",
 	"REGEX",
 	"REGEX_PARSE",
 	"STARTSWITH",

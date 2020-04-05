@@ -1,7 +1,7 @@
 from ...abc import Expression
 
 
-#TODO: This ...
+# TODO: This ...
 class INLIST(Expression):
 	"""
 	Checks if expression is of given list:

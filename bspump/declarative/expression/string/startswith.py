@@ -1,5 +1,6 @@
 from ...abc import Expression
 
+
 class STARTSWITH(Expression):
 	"""
 	Checks if "string" starts with "startswith"

@@ -1,5 +1,6 @@
 from ...abc import Expression
 
+
 class ENDSWITH(Expression):
 	"""
 	Checks if "string" ends with "endswith"

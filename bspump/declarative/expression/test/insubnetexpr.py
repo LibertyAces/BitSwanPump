@@ -3,7 +3,7 @@ from netaddr import IPNetwork, IPAddress
 from ...abc import Expression
 
 
-#TODO: This ...
+# TODO: This ...
 class INSUBNET(Expression):
 	"""
 	Checks if expression is of given subnet:
