@@ -11,7 +11,7 @@ class RandomSource(TriggerSource):
 	'''
 		`RandomSource` is mostly meant for testing. It
 		generates n (specified in `Config` as `number`, default is 1000) events per trigger fire.
-		
+
 		There can be 2 options of usage:
 		a) User provides `choice` as an array of values to choice randomly and assigned to field;
 		b) The random integer between `Config['lower_bound']` and `Config['upper_bound']`

@@ -1,6 +1,7 @@
 import datetime
 from ...abc import Expression
 
+
 class NOW(Expression):
 
 	def __init__(self, app, *, value):
