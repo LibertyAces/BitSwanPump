@@ -26,7 +26,6 @@ class ExpressionBuilder(object):
 		self.register_module(expression)
 
 
-	# Expression registry
 	def register_module(self, module):
 		for name, expression_class in inspect.getmembers(module, inspect.isclass):
 			self.ExpressionClasses[name] = expression_class
@@ -35,7 +34,6 @@ class ExpressionBuilder(object):
 		self.ExpressionClasses[class_name] = expression_class
 
 
-	# Parser
 	def parse(self, declaration):
 		loader = yaml.Loader(declaration)
 
