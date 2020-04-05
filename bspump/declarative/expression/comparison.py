@@ -20,6 +20,7 @@ class LE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.le, context, event, *args, **kwargs)
 
+
 class EQ(SequenceExpression):
 	'''
 	Operator '=='
@@ -27,6 +28,7 @@ class EQ(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.eq, context, event, *args, **kwargs)
+
 
 class NE(SequenceExpression):
 	'''
@@ -36,6 +38,7 @@ class NE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.ne, context, event, *args, **kwargs)
 
+
 class GE(SequenceExpression):
 	"""
 	Operator '>='
@@ -43,6 +46,7 @@ class GE(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.ge, context, event, *args, **kwargs)
+
 
 class GT(SequenceExpression):
 	"""

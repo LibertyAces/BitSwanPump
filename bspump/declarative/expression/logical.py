@@ -23,6 +23,7 @@ class OR(SequenceExpression):
 			self.Items
 		)
 
+
 class NOT(Expression):
 	"""
 	Returns inverse value of the expression

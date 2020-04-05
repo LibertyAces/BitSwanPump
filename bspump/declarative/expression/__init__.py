@@ -47,9 +47,9 @@ from .test.insubnetexpr import INSUBNET
 from .datetime.nowexpr import NOW
 
 __all__ = [
-	"ADD", "DIV", "MUL", "SUB", # Aritmetics
-	"AND", "OR", "NOT", # Logical
-	"LT", "LE", "EQ", "NE", "GE", "GT", # Comparison
+	"ADD", "DIV", "MUL", "SUB",           # Aritmetics
+	"AND", "OR", "NOT",                   # Logical
+	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
 	"IF",
 	"ENDSWITH",
 	"JOIN",
