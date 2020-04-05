@@ -15,7 +15,7 @@ class INLIST(Expression):
 
 	def __init__(self, app, *, arg_list, arg_value):
 		super().__init__(app)
-		self.List =arg_list
+		self.List = arg_list
 		self.Value = arg_value
 
 	def __call__(self, context, event, *args, **kwargs):

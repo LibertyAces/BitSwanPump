@@ -11,6 +11,7 @@ L = logging.getLogger(__name__)
 
 ###
 
+
 class ExpressionBuilder(object):
 	"""
 	Builds an expression from configuration.
@@ -26,7 +27,6 @@ class ExpressionBuilder(object):
 
 
 	# Expression registry
-
 	def register_module(self, module):
 		for name, expression_class in inspect.getmembers(module, inspect.isclass):
 			self.ExpressionClasses[name] = expression_class
@@ -36,7 +36,6 @@ class ExpressionBuilder(object):
 
 
 	# Parser
-
 	def parse(self, declaration):
 		loader = yaml.Loader(declaration)
 
@@ -48,7 +47,7 @@ class ExpressionBuilder(object):
 			expression = loader.get_single_data()
 		finally:
 			loader.dispose()
-		
+
 		return expression
 
 
@@ -67,10 +66,10 @@ class ExpressionBuilder(object):
 
 			elif isinstance(node, yaml.MappingNode):
 				value = loader.construct_mapping(node)
-				return xclass(self.App, **dict(('arg_'+k, v)for k, v in value.items()))
+				return xclass(self.App, **dict(('arg_' + k, v)for k, v in value.items()))
 
-		except:
+		except Exception:
 			L.exception("Error when constructing '{}'".format(xclass))
 			raise
-		
+
 		raise RuntimeError("Unsupported type '{}'".format(node))
