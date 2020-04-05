@@ -21,19 +21,20 @@ class ITEM(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 
-		value = _DefaultValue
-
 		if self.FieldType == "event":
 			value = event.get(self.FieldName, _DefaultValue)
 
 		elif self.FieldType == "context":
 			value = context.get(self.FieldName, _DefaultValue)
 
+		else:
+			value = _DefaultValue
+
 		if value == _DefaultValue:
 			# This deffers evaluation of the default value to the moment, when it is really needed
 			return self.evaluate(self.Default, context, event, *args, **kwargs)
-		else:
-			return value
+		
+		return value
 
 
 class _DefaultValue:
