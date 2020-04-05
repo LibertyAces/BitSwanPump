@@ -26,7 +26,7 @@ from .string.startswith import STARTSWITH
 from .dictionary.dictexpr import DICT
 
 # Value
-from .value.fieldexpr import ITEM
+from .value.itemexpr import ITEM
 from .value.valueexpr import VALUE
 from .value.eventexpr import EVENT
 

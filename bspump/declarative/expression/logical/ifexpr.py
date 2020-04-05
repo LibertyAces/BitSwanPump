@@ -7,7 +7,7 @@ class IF(Expression):
 	"""
 
 	def __init__(self, app, *, arg_is, arg_then, arg_else):
-		super().__init__(None, None, None)
+		super().__init__(app)
 		self.Test = arg_is
 		self.Then = arg_then
 		self.Else = arg_else

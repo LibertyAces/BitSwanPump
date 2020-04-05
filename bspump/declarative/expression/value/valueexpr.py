@@ -1,5 +1,6 @@
 from ...abc import Expression
 
+
 class VALUE(Expression):
 	"""
 	Returns specified value:

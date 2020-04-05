@@ -9,7 +9,7 @@ class DICT(Expression):
 
 
 	def __init__(self, app, *, arg_add, arg_with=None):
-		super().__init__(None, None, None)
+		super().__init__(app)
 
 		self.With = arg_with
 		assert(self.With in ("event", "context", None))

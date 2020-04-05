@@ -1,5 +1,6 @@
 import abc
 
+
 class Expression(abc.ABC):
 
 
@@ -20,7 +21,6 @@ class Expression(abc.ABC):
 
 
 class SequenceExpression(Expression):
-
 	'''
 	Convenient class that fits onto SequenceNode from Yaml.
 
@@ -34,5 +34,5 @@ class SequenceExpression(Expression):
 	'''
 
 	def __init__(self, app, *, sequence):
-		super().__init__(None, None, None)		
+		super().__init__(app)
 		self.Items = sequence
