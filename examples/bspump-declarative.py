@@ -40,21 +40,25 @@ class VegetableCounterPipeline(bspump.Pipeline):
 
 			bspump.declarative.DeclarativeProcessor(app, self, '''
 --- !DICT
-with: event
+with: !EVENT
 add:
   seen: True
   when: !NOW
   rotten_potatoes:
-    !ITEM event.potatoes
+    !ITEM EVENT potatoes
   count:
     !ADD
-    - !ITEM event.potatoes
-    - !ITEM { name: event.carrots, default: 0 }
+    - !ITEM EVENT potatoes
+    - !ITEM
+      with: !EVENT
+      item: carrots
+      default: 0
     - !IF
       is:
         !GT
         - !ITEM
-          name: event.radishes
+          with: !EVENT
+          item: radishes
           default: 0
         - 2
       then: !!float 10

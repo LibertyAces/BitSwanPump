@@ -29,11 +29,12 @@ from .string.startswith import STARTSWITH
 
 # Dictionary
 from .dictionary.dictexpr import DICT
+from .dictionary.itemexpr import ITEM
 
 # Value
-from .value.itemexpr import ITEM
 from .value.valueexpr import VALUE
 from .value.eventexpr import EVENT
+from .value.eventexpr import CONTEXT
 
 # Lookup
 from .lookup.lookupexpr import LOOKUP
@@ -53,13 +54,12 @@ __all__ = [
 	"IF",
 	"ENDSWITH",
 	"JOIN",
-	"DICT",
+	"DICT", "ITEM",
 	"REGEX",
 	"REGEX_PARSE",
 	"STARTSWITH",
-	"ITEM",
 	"VALUE",
-	"EVENT",
+	"EVENT", "CONTEXT",
 	"LOOKUP",
 	"INDATE",
 	"INLIST",

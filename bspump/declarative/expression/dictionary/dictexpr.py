@@ -3,33 +3,42 @@ from ...abc import Expression
 
 class DICT(Expression):
 	"""
-	Create or update the dictionary.
+Create or update the dictionary.
 
+```
+!DICT
+with: !EVENT
+add:
+  item1: foo
+  item2: bar
+  item3: ...
+```
+
+If `with` is not specified, the new dictionary will be created.
+`add` is also optional.
+
+This is how to create the empty dictionary:
+```
+!DICT {}
+```
 	"""
 
 
-	def __init__(self, app, *, arg_add, arg_with=None):
+	def __init__(self, app, *, arg_add=None, arg_with=None):
 		super().__init__(app)
 
 		self.With = arg_with
-		assert(self.With in ("event", "context", None))
-
 		self.Add = arg_add
 
 
 	def __call__(self, context, event, *args, **kwargs):
 		if self.With is None:
-			updated_dict = {}
-		elif self.With == "event":
-			updated_dict = event
-		elif self.With == "context":
-			updated_dict = context
-		elif isinstance(self.From, Expression):
-			updated_dict = updated_dict(context, event, *args, **kwargs)
+			updated_dict = dict()
 		else:
-			raise RuntimeError("Unknown 'what' provided: '{}'".format(self.What))
+			updated_dict = self.evaluate(self.With, context, event, *args, **kwargs)
 
-		for key, value in self.Add.items():
-			updated_dict[key] = self.evaluate(value, context, event, *args, **kwargs)
+		if self.Add is not None:
+			for key, value in self.Add.items():
+				updated_dict[key] = self.evaluate(value, context, event, *args, **kwargs)
 
 		return updated_dict
