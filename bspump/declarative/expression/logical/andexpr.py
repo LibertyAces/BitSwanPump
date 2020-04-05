@@ -2,6 +2,7 @@ import functools
 
 from ...abc import SequenceExpression
 
+
 class AND(SequenceExpression):
 	"""
 	Checks if all expressions are true

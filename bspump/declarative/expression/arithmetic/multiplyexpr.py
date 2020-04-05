@@ -2,6 +2,7 @@ import functools
 
 from ...abc import SequenceExpression
 
+
 class MULTIPLY(SequenceExpression):
 	"""
 	Multiplies values in expression.

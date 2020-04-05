@@ -2,6 +2,7 @@ import functools
 
 from ...abc import SequenceExpression
 
+
 class DIVIDE(SequenceExpression):
 	"""
 	Divides values in expression

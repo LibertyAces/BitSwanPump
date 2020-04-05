@@ -13,5 +13,5 @@ class LOOKUP(Expression):
 		self.Key = arg_key
 
 	def __call__(self, context, event, *args, **kwargs):
-		#TODO: Not correct
+		# TODO: Not correct
 		return self.Lookup.get(self.Key)

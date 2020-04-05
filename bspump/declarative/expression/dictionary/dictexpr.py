@@ -1,16 +1,11 @@
 from ...abc import Expression
 
+
 class DICT(Expression):
 	"""
 	Create or update the dictionary.
 
-		{
-			"function": "DICT",
-			"update": "event" | "context" | <EXPRESSION> | None
-			"fields": [{FIELD_NAME: EXPRESSION}, {FIELD_NAME: EXPRESSION}, ...]
-		}
 	"""
-
 
 
 	def __init__(self, app, *, arg_add, arg_with=None):

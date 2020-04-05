@@ -2,6 +2,7 @@ import functools
 
 from ...abc import SequenceExpression
 
+
 class SUM(SequenceExpression):
 	"""
 	Sum all values from expressions.

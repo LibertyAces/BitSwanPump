@@ -2,6 +2,7 @@ import functools
 
 from ...abc import SequenceExpression
 
+
 class OR(SequenceExpression):
 	"""
 	Checks if at least one of the expressions is true:
