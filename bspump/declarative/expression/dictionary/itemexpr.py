@@ -30,7 +30,7 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 		if value is not None:
 			# Scalar value provided
 			with_, item = value.split(' ', 2)
-			
+
 			with_ = with_.upper()
 			if with_ == 'EVENT':
 				self.With = EVENT(app, value='')
@@ -45,7 +45,7 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 		else:
 			self.With = arg_with
 			self.Item = arg_item
-			self.Default = arg_default		
+			self.Default = arg_default
 
 
 	def __call__(self, context, event, *args, **kwargs):
