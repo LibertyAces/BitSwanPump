@@ -1,6 +1,7 @@
 import abc
 import functools
 
+
 class Expression(abc.ABC):
 
 

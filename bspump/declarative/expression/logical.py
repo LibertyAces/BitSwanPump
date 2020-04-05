@@ -18,10 +18,7 @@ class OR(SequenceExpression):
 	"""
 
 	def __call__(self, context, event, *args, **kwargs):
-		return functools.reduce(
-			lambda x, y: self.evaluate(x, context, event, *args, **kwargs) or self.evaluate(y, context, event, *args, **kwargs),
-			self.Items
-		)
+		return self.reduce(operator.or_, context, event, *args, **kwargs)
 
 
 class NOT(Expression):
