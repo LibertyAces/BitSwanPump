@@ -47,12 +47,12 @@ add:
   rotten_potatoes:
     !ITEM event.potatoes
   count:
-    !SUM
+    !ADD
     - !ITEM event.potatoes
     - !ITEM { name: event.carrots, default: 0 }
     - !IF
       is:
-        !HIGHER
+        !GT
         - !ITEM
           name: event.radishes
           default: 0

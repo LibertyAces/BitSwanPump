@@ -1,19 +1,24 @@
 # Arithmetic
-from .arithmetic.sumexpr import SUM
-from .arithmetic.divideexpr import DIVIDE
-from .arithmetic.multiplyexpr import MULTIPLY
-from .arithmetic.subtractexpr import SUBTRACT
+from .arithmetic import ADD
+from .arithmetic import DIV
+from .arithmetic import MUL
+from .arithmetic import SUB
 
 # Logical
-from .logical.andexpr import AND
-from .logical.equalsexpr import EQUALS
-from .logical.highereqexpr import HIGHEREQ
-from .logical.higherexpr import HIGHER
-from .logical.ifexpr import IF
-from .logical.lowereqexpr import LOWEREQ
-from .logical.lowerexpr import LOWER
-from .logical.notexpr import NOT
-from .logical.orexpr import OR
+from .logical import AND
+from .logical import OR
+from .logical import NOT
+
+# Comparison
+from .comparison import LT
+from .comparison import LE
+from .comparison import EQ
+from .comparison import NE
+from .comparison import GE
+from .comparison import GT
+
+# Statements
+from .statement.ifexpr import IF
 
 # String
 from .string.endswith import ENDSWITH
@@ -42,19 +47,10 @@ from .test.insubnetexpr import INSUBNET
 from .datetime.nowexpr import NOW
 
 __all__ = [
-	"SUM",
-	"DIVIDE",
-	"MULTIPLY",
-	"SUBTRACT",
-	"AND",
-	"EQUALS",
-	"HIGHEREQ",
-	"HIGHER",
+	"ADD", "DIV", "MUL", "SUB", # Aritmetics
+	"AND", "OR", "NOT", # Logical
+	"LT", "LE", "EQ", "NE", "GE", "GT", # Comparison
 	"IF",
-	"LOWEREQ",
-	"LOWER",
-	"NOT",
-	"OR",
 	"ENDSWITH",
 	"JOIN",
 	"DICT",

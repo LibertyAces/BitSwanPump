@@ -1,5 +1,5 @@
 import abc
-
+import functools
 
 class Expression(abc.ABC):
 
@@ -36,3 +36,8 @@ class SequenceExpression(Expression):
 	def __init__(self, app, *, sequence):
 		super().__init__(app)
 		self.Items = sequence
+
+
+	def reduce(self, operator, context, event, *args, **kwargs):
+		iterator = [self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]
+		return functools.reduce(operator, iterator)
