@@ -8,7 +8,7 @@ class ITEM(Expression):
 
 	def __init__(self, app, *, arg_name=None, arg_default=None, value=None):
 		super().__init__(app)
-		
+
 		field = arg_name if arg_name is not None else value
 		if field is None:
 			raise ValueError("Field name was not provided")
@@ -20,15 +20,15 @@ class ITEM(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		
+
 		value = _DefaultValue
 
 		if self.FieldType == "event":
 			value = event.get(self.FieldName, _DefaultValue)
-		
+
 		elif self.FieldType == "context":
 			value = context.get(self.FieldName, _DefaultValue)
-		
+
 		if value == _DefaultValue:
 			# This deffers evaluation of the default value to the moment, when it is really needed
 			return self.evaluate(self.Default, context, event, *args, **kwargs)
