@@ -33,7 +33,7 @@ class ITEM(Expression):
 		if value == _DefaultValue:
 			# This deffers evaluation of the default value to the moment, when it is really needed
 			return self.evaluate(self.Default, context, event, *args, **kwargs)
-		
+
 		return value
 
 
