@@ -1,20 +1,14 @@
-from ..abc import Expression
-from ..builder import ExpressionBuilder
+from ...abc import Expression
 
 
 class NOT(Expression):
 	"""
-	Returns inverse value of the expression:
-
-		{
-			"function": "NOT",
-			"value": <EXPRESSION>
-		}
+	Returns inverse value of the expression
 	"""
 
-	def __init__(self, app, expression_class_registry, expression: dict):
-		super().__init__(app, expression_class_registry, expression)
-		self.Value = ExpressionBuilder.build(app, expression_class_registry, expression["value"])
+	def __init__(self, app, *, arg_value):
+		super().__init__(app)
+		self.Value = arg_value
 
 	def __call__(self, context, event, *args, **kwargs):
-		return not self.Value
+		return not self.evaluate(self.Value, context, event, *args, **kwargs)

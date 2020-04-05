@@ -1,7 +1,6 @@
 import bspump
 
-from .expression import ExpressionClassRegistry
-from .expression import ExpressionBuilder
+from .builder import ExpressionBuilder
 
 
 class DeclarativeProcessor(bspump.Processor):
@@ -13,9 +12,10 @@ class DeclarativeProcessor(bspump.Processor):
 		expression = definition.get("expression")
 		return cls(app, pipeline, expression=expression, id=_id, config=config)
 
-	def __init__(self, app, pipeline, expression, expression_class_registry=ExpressionClassRegistry(), id=None, config=None):
+	def __init__(self, app, pipeline, declaration, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		self.Expression = ExpressionBuilder.build(app, expression_class_registry, expression)
+		builder = ExpressionBuilder(app)
+		self.Expression = builder.parse(declaration)
 
 	def process(self, context, event):
 		return self.Expression(context, event)

@@ -1,24 +1,17 @@
-from ..abc import Expression
-
-from ..builder import ExpressionBuilder
+from ...abc import Expression
 
 
 class LOOKUP(Expression):
 	"""
-	Obtains value from "lookup_id" using "key":
-
-		{
-			"function": "LOOKUP",
-			"lookup_id": "lookup_id",
-			"key": <EXPRESSION>
-		}
+	Obtains value from "lookup" (id of the lookup) using "key":
 	"""
 
-	def __init__(self, app, expression_class_registry, expression: dict):
-		super().__init__(app, expression_class_registry, expression)
+	def __init__(self, app, *, arg_lookup, arg_key):
+		super().__init__(app)
 		svc = app.get_service("bspump.PumpService")
-		self.Lookup = svc.locate_lookup(expression["lookup_id"])
-		self.Key = ExpressionBuilder.build(app, expression_class_registry, expression["key"])
+		self.Lookup = svc.locate_lookup(arg_lookup)
+		self.Key = arg_key
 
 	def __call__(self, context, event, *args, **kwargs):
+		#TODO: Not correct
 		return self.Lookup.get(self.Key)

@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from ..abc import Expression
-from ..builder import ExpressionBuilder
+from ...abc import Expression
 
 
+#TODO: This ...
 class INDATE(Expression):
 	"""
 	Checks if expression is of given date:

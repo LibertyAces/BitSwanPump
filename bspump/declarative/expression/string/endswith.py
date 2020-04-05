@@ -1,6 +1,4 @@
-from ..abc import Expression
-from ..builder import ExpressionBuilder
-
+from ...abc import Expression
 
 class ENDSWITH(Expression):
 	"""
@@ -13,10 +11,12 @@ class ENDSWITH(Expression):
 		}
 	"""
 
-	def __init__(self, app, expression_class_registry, expression: dict):
-		super().__init__(app, expression_class_registry, expression)
-		self.String = str(ExpressionBuilder.build(app, expression_class_registry, expression["string"]))
-		self.Endswith = str(ExpressionBuilder.build(app, expression_class_registry, expression["endswith"]))
+	def __init__(self, app, *, arg_string, arg_endswith):
+		super().__init__(app)
+		self.String = arg_string
+		self.EndsWith = arg_endswith
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.String.endswith(self.Endswith)
+		string = self.evaluate(self.String, context, event, *args, **kwargs)
+		endswith = self.evaluate(self.EndsWith, context, event, *args, **kwargs)
+		return string.endswith(endswith)

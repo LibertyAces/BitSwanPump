@@ -1,29 +1,18 @@
-from ..abc import Expression
-from ..builder import ExpressionBuilder
-
+from ...abc import Expression
 
 class IF(Expression):
 	"""
-	Checks "if" condition passes - if so, proceeds with "then" expression, otherwise with "else":
-
-		{
-			"function": "IF",
-			"if": <EXPRESSION>,
-			"then": <EXPRESSION>,
-			"else": <EXPRESSION>
-		}
-
-	TODO: IF should be more "tenary" operator
+	Checks "if" condition passes - if so, proceeds with "then" expression, otherwise with "else"
 	"""
 
-	def __init__(self, app, expression_class_registry, expression: dict):
-		super().__init__(app, expression_class_registry, expression)
-		self.IfClause = ExpressionBuilder.build(app, expression_class_registry, expression["if"])
-		self.Then = ExpressionBuilder.build(app, expression_class_registry, expression["then"])
-		self.Else = ExpressionBuilder.build(app, expression_class_registry, expression["else"])
+	def __init__(self, app, *, arg_is, arg_then, arg_else):
+		super().__init__(None, None, None)
+		self.Test = arg_is
+		self.Then = arg_then
+		self.Else = arg_else
 
 	def __call__(self, context, event, *args, **kwargs):
-		if self.IfClause(context, event, *args, **kwargs):
-			return self.Then(context, event, *args, **kwargs)
+		if self.evaluate(self.Test, context, event, *args, **kwargs):
+			return self.evaluate(self.Then, context, event, *args, **kwargs)
 		else:
-			return self.Else(context, event, *args, **kwargs)
+			return self.evaluate(self.Else, context, event, *args, **kwargs)

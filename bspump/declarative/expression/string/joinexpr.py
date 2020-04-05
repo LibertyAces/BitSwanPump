@@ -1,9 +1,9 @@
 import functools
 
-from ..abc import Expression
-from ..builder import ExpressionBuilder
+from ...abc import Expression
 
 
+#TODO: This ...
 class JOIN(Expression):
 	"""
 	Joins strings in "items" using "char":

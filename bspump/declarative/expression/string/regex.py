@@ -1,43 +1,28 @@
 import re
 
-from ..abc import Expression
-from ..builder import ExpressionBuilder
+from ...abc import Expression
 
 
 class REGEX(Expression):
 	"""
 	Checks if `value` matches with the `regex`, returns `hit` / `miss` respectively.
-
-		{
-			"function": "REGEX",
-			"regex": "<REGULAR EXPRESSION>"
-			"value": <EXPRESSION>,
-			"hit": <EXPRESSION> | true, // Optional, default is 'true'
-			"miss": <EXPRESSION> | false, // Optional, default is 'false'
-		}
 	"""
 
-	def __init__(self, app, expression_class_registry, expression: dict):
-		super().__init__(app, expression_class_registry, expression)
-		self.Value = ExpressionBuilder.build(app, expression_class_registry, expression["value"])
-		self.Regex = re.compile(expression["regex"])
-		self.Hit = expression.get("hit", True)
-		self.Miss = expression.get("miss", False)
+	def __init__(self, app, *, arg_regex, arg_value, arg_hit = True, arg_miss = False):
+		super().__init__(app)
+		self.Value = arg_value
+		self.Regex = re.compile(arg_regex)
+		self.Hit = arg_hit
+		self.Miss = arg_miss
 		#TODO: Regex flags
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.Value(context, event, *args, **kwargs)
+		value = self.evaluate(self.Value, context, event, *args, **kwargs)
 		match = re.search(self.Regex, value)
 		if match is None:
-			if isinstance(self.Miss, Expression):
-				return self.Miss(context, event, *args, **kwargs)
-			else:
-				return self.Miss
-		
-		if isinstance(self.Hit, Expression):
-			return self.Hit(context, event, *args, **kwargs)
+			return self.evaluate(self.Miss, event, *args, **kwargs)
 		else:
-			return self.Hit
+			return self.evaluate(self.Hit, event, *args, **kwargs)
 
 
 class REGEX_PARSE(Expression):
@@ -47,36 +32,25 @@ class REGEX_PARSE(Expression):
 	Otherwise, groups are returned in as a list.
 
 	If `fields` are provided, the groups are mapped to provided fields.
-
-		{
-			"function": "REGEX_PARSE",
-			"regex": "<REGULAR EXPRESSION>"
-			"fields": ["<FIELD NAME>", "<FIELD NAME>", ...] | None
-			"value": <EXPRESSION>,
-			"miss": <EXPRESSION> | None, // Optional, default is 'None'
-		}
 	"""
 
-	def __init__(self, app, expression_class_registry, expression: dict):
-		super().__init__(app, expression_class_registry, expression)
-		self.Value = ExpressionBuilder.build(app, expression_class_registry, expression["value"])
-		self.Regex = re.compile(expression["regex"])
-		self.Miss = expression.get("miss", None)
-		self.Fields = expression.get("fields", None)
+	def __init__(self, app, *, arg_regex, arg_items, arg_value, arg_miss = None):
+		super().__init__(app)
+		self.Value = arg_value
+		self.Regex = re.compile(arg_regex)
+		self.Miss = arg_miss
+		self.Items = arg_items
 		#TODO: Regex flags
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.Value(context, event, *args, **kwargs)
+		value = self.evaluate(self.Value, context, event, *args, **kwargs)
 		match = re.search(self.Regex, value)
 		if match is None:
-			if isinstance(self.Miss, Expression):
-				return self.Miss(context, event, *args, **kwargs)
-			else:
-				return self.Miss
+			return self.evaluate(self.Miss, event, *args, **kwargs)
 		
 		groups = match.groups()
-		if self.Fields is None:
+		if self.Items is None:
 			return groups
 
-		return dict(zip(self.Fields, groups))
+		return dict(zip(self.Items, groups))
 

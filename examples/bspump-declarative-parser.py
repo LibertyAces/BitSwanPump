@@ -24,12 +24,13 @@ class DeclarativeParsingPipeline(bspump.Pipeline):
 				"dollar pound frank euro jen"
 			], config={"number": 5}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
 
-			bspump.declarative.DeclarativeProcessor(app, self, expression={
-				"function": "REGEX_PARSE",
-				"regex": r"^(\w+)\s+(\w+)\s+(frank|march)?",
-				"fields": ["A", "B", "C"],
-				"value": { "function": "EVENT" }
-			}),
+			bspump.declarative.DeclarativeProcessor(app, self, declaration='''
+--- !REGEX_PARSE
+regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
+items: [Foo, Bar, Bob]
+value: !EVENT
+'''
+			),
 
 			bspump.common.PPrintSink(app, self)
 		)

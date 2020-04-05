@@ -1,5 +1,4 @@
-from ..abc import Expression
-
+from ...abc import Expression
 
 class VALUE(Expression):
 	"""
@@ -11,9 +10,9 @@ class VALUE(Expression):
 		}
 	"""
 
-	def __init__(self, app, expression_class_registry, expression: dict):
-		super().__init__(app, expression_class_registry, expression)
-		self.Value = expression["value"]
+	def __init__(self, app, *, value):
+		super().__init__(app)
+		self.Value = value
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.Value

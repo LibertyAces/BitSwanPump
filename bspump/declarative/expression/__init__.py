@@ -1,15 +1,8 @@
-from .registry import ExpressionClassRegistry
-from .builder import ExpressionBuilder
-from .abc import Expression
-
 # Arithmetic
-from .arithmetic.addexpr import ADD
+from .arithmetic.sumexpr import SUM
 from .arithmetic.divideexpr import DIVIDE
 from .arithmetic.multiplyexpr import MULTIPLY
 from .arithmetic.subtractexpr import SUBTRACT
-
-# Assignment
-from .assignment.assignexpr import ASSIGN
 
 # Logical
 from .logical.andexpr import AND
@@ -30,10 +23,10 @@ from .string.regex import REGEX_PARSE
 from .string.startswith import STARTSWITH
 
 # Dictionary
-from .dictionary.updateexpr import UPDATE
+from .dictionary.dictexpr import DICT
 
 # Value
-from .value.fieldexpr import FIELD
+from .value.fieldexpr import ITEM
 from .value.valueexpr import VALUE
 from .value.eventexpr import EVENT
 
@@ -45,15 +38,14 @@ from .complex.indateexpr import INDATE
 from .complex.inlistexpr import INLIST
 from .complex.insubnetexpr import INSUBNET
 
+# Date/time
+from .datetime.nowexpr import NOW
+
 __all__ = [
-	"ExpressionClassRegistry",
-	"ExpressionBuilder",
-	"Expression",
-	"ADD",
+	"SUM",
 	"DIVIDE",
 	"MULTIPLY",
 	"SUBTRACT",
-	"ASSIGN",
 	"AND",
 	"EQUALS",
 	"HIGHEREQ",
@@ -69,11 +61,12 @@ __all__ = [
 	"REGEX",
 	"REGEX_PARSE",
 	"STARTSWITH",
-	"FIELD",
+	"ITEM",
 	"VALUE",
 	"EVENT",
 	"LOOKUP",
 	"INDATE",
 	"INLIST",
 	"INSUBNET",
+	"NOW",
 ]

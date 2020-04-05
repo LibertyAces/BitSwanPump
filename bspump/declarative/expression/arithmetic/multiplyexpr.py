@@ -1,27 +1,14 @@
 import functools
 
-from ..abc import Expression
-from ..builder import ExpressionBuilder
+from ...abc import SequenceExpression
 
-
-class MULTIPLY(Expression):
+class MULTIPLY(SequenceExpression):
 	"""
-	Multiplies values in expressions:
-
-		{
-			"function": "MULTIPLY",
-			"items": [<EXPRESSION>, <EXPRESSION>...]
-		}
+	Multiplies values in expression.
 	"""
-
-	def __init__(self, app, expression_class_registry, expression: dict):
-		super().__init__(app, expression_class_registry, expression)
-		self.Items = []
-		for item in expression.get("items", []):
-			self.Items.append(ExpressionBuilder.build(app, expression_class_registry, item))
 
 	def __call__(self, context, event, *args, **kwargs):
 		return functools.reduce(
-			lambda x, y: x(context, event, *args, **kwargs) * y(context, event, *args, **kwargs) if isinstance(x, Expression) else x * y(context, event, *args, **kwargs),
+			lambda x, y: self.evaluate(x, context, event, *args, **kwargs) * self.evaluate(y, context, event, *args, **kwargs),
 			self.Items
 		)

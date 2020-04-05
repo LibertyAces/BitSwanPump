@@ -1,7 +1,6 @@
-from ..abc import Expression
-from ..builder import ExpressionBuilder
+from ...abc import Expression
 
-
+#TODO: This ...
 class INLIST(Expression):
 	"""
 	Checks if expression is of given list:
