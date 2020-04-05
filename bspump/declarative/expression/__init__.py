@@ -34,9 +34,9 @@ from .value.eventexpr import EVENT
 from .lookup.lookupexpr import LOOKUP
 
 # Complex
-from .complex.indateexpr import INDATE
-from .complex.inlistexpr import INLIST
-from .complex.insubnetexpr import INSUBNET
+from .test.indateexpr import INDATE
+from .test.inlistexpr import INLIST
+from .test.insubnetexpr import INSUBNET
 
 # Date/time
 from .datetime.nowexpr import NOW

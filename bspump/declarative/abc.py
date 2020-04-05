@@ -3,10 +3,9 @@ import abc
 class Expression(abc.ABC):
 
 
-	#TODO: After refactoring, change this into 
-	# def __init__(self, app):
-	def __init__(self, app, *args, **kwargs):
+	def __init__(self, app):
 		self.App = app
+
 
 	@abc.abstractmethod
 	def __call__(self, context, event, *args, **kwargs):

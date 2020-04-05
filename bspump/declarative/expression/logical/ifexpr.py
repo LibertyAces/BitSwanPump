@@ -1,5 +1,6 @@
 from ...abc import Expression
 
+
 class IF(Expression):
 	"""
 	Checks "if" condition passes - if so, proceeds with "then" expression, otherwise with "else"
