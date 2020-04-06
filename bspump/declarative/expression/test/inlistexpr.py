@@ -1,16 +1,9 @@
 from ...abc import Expression
 
 
-# TODO: This ...
 class INLIST(Expression):
 	"""
-	Checks if expression is of given list:
-
-		{
-			"function": "INLIST",
-			"list": [],
-			"value": <EXPRESSION>
-		}
+	Checks if expression is of given list.
 	"""
 
 	def __init__(self, app, *, arg_list, arg_value):
@@ -19,4 +12,4 @@ class INLIST(Expression):
 		self.Value = arg_value
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.Value(context, event, *args, **kwargs) in self.List
+		return self.evaluate(self.Value, context, event, *args, **kwargs) in self.evaluate(self.List, context, event, *args, **kwargs)

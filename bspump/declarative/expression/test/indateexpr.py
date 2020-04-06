@@ -3,7 +3,6 @@ from datetime import datetime
 from ...abc import Expression
 
 
-# TODO: This ...
 class INDATE(Expression):
 	"""
 	Checks if expression is of given date
@@ -15,6 +14,6 @@ class INDATE(Expression):
 		self.Value = arg_value
 
 	def __call__(self, context, event, *args, **kwargs):
-		timestamp = self.Value(context, event, *args, **kwargs)
+		timestamp = self.evaluate(self.Value, context, event, *args, **kwargs)
 		date_time = datetime.utcfromtimestamp(timestamp)
-		return date_time.hour in self.Hours
+		return date_time.hour in self.evaluate(self.Hours, context, event, *args, **kwargs)
