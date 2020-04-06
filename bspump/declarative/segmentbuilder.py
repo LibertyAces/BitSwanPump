@@ -54,7 +54,7 @@ class SegmentBuilder(object):
 					else: false
 	"""
 
-	KEYWORDS = {
+	PROCESSORS = {
 		"processor": ("bspump.declarative", "DeclarativeProcessor"),
 		"generator": ("bspump.declarative", "DeclarativeGenerator"),
 		"lookup": ("bspump.mongodb", "MongoDBLookup")
@@ -81,18 +81,18 @@ class SegmentBuilder(object):
 					else:
 						self.DefinitionsProcessors.append(definition)
 
-	def register_keyword(self, keyword, _module, _class):
+	def register_processor(self, processor_keyword, _module, _class):
 		"""
-		Registers custom keywords that are translated to module & class.
+		Registers custom processors that are translated to module & class.
 		The default keywords may also be overriden.
 		"""
-		self.KEYWORDS[keyword] = (_module, _class)
+		self.PROCESSORS[processor_keyword] = (_module, _class)
 
-	def _map_keyword(self, definition):
-		for keyword in self.KEYWORDS:
-			if keyword in definition:
-				_module, _class = self.KEYWORDS[keyword]
-				definition["declaration"] = definition[keyword]
+	def _map_processor(self, definition):
+		for processor_keyword in self.PROCESSORS:
+			if processor_keyword in definition:
+				_module, _class = self.PROCESSORS[processor_keyword]
+				definition["declaration"] = definition[processor_keyword]
 				definition["module"] = _module
 				definition["class"] = _class
 		return definition
@@ -102,13 +102,13 @@ class SegmentBuilder(object):
 
 		# First create lookups
 		for definition in self.DefinitionsLookups:
-			lookup = self.construct_lookup(app, self._map_keyword(definition))
+			lookup = self.construct_lookup(app, self._map_processor(definition))
 			svc.add_lookup(lookup)
 
 		# Then create other processors
 		for definition in self.DefinitionsProcessors:
 			pipeline = svc.locate(definition["pipeline_id"])
-			processor = self.construct_processor(app, pipeline, self._map_keyword(definition))
+			processor = self.construct_processor(app, pipeline, self._map_processor(definition))
 			if processor is not None:
 				sink = pipeline.Processors[-1].pop()
 				pipeline.append_processor(processor)
