@@ -33,13 +33,39 @@ class SegmentBuilder(object):
 
 		self.SegmentBuilder = bspump.declarative.SegmentBuilder()
 		self.SegmentBuilder.construct_segment(self)
+
+	The configuration file:
+
+		pipeline_id: AnalyticsIPPipeline
+		processor: |
+			--- !DICT
+			with: !EVENT
+			add:
+				local_ip:
+					!IF
+					is:
+						!INSUBNET
+						subnet: 192.168.0.0/16
+						value:
+							!ITEM
+							with: !EVENT
+							item: CEF.sourceAddress
+					then: true
+					else: false
 	"""
+
+	PROCESSORS = {
+		"processor": ("bspump.declarative", "DeclarativeProcessor"),
+		"generator": ("bspump.declarative", "DeclarativeGenerator"),
+		"lookup": ("bspump.mongodb", "MongoDBLookup")
+	}
 
 	def __init__(self):
 		self.Path = asab.Config["SegmentBuilder"]["path"]
 		self.DefinitionsLookups = []
 		self.DefinitionsProcessors = []
 		file_list = glob.glob(self.Path, recursive=True)
+		file_list.sort()
 		while len(file_list) > 0:
 			file_name = file_list.pop(0)
 			if os.path.isfile(file_name):
@@ -50,31 +76,46 @@ class SegmentBuilder(object):
 					else:
 						# Read JSON file
 						definition = json.load(file)
-					if definition["class"].endswith("Lookup"):
+					if definition.get("lookup") is not None or definition.get("class", "").endswith("Lookup"):
 						self.DefinitionsLookups.append(definition)
 					else:
 						self.DefinitionsProcessors.append(definition)
+
+	def register_processor(self, processor_keyword, _module, _class):
+		"""
+		Registers custom processors that are translated to module & class.
+		The default keywords may also be overriden.
+		"""
+		self.PROCESSORS[processor_keyword] = (_module, _class)
+
+	def _map_processor(self, definition):
+		for processor_keyword in self.PROCESSORS:
+			if processor_keyword in definition:
+				_module, _class = self.PROCESSORS[processor_keyword]
+				definition["declaration"] = definition[processor_keyword]
+				definition["module"] = _module
+				definition["class"] = _class
+		return definition
 
 	def construct_segment(self, app):
 		svc = app.get_service("bspump.PumpService")
 
 		# First create lookups
 		for definition in self.DefinitionsLookups:
-			pipeline = svc.locate(definition["pipeline_id"])
-			lookup = self.construct_lookup(app, pipeline, definition)
+			lookup = self.construct_lookup(app, self._map_processor(definition))
 			svc.add_lookup(lookup)
 
 		# Then create other processors
 		for definition in self.DefinitionsProcessors:
 			pipeline = svc.locate(definition["pipeline_id"])
-			processor = self.construct_processor(app, pipeline, definition)
+			processor = self.construct_processor(app, pipeline, self._map_processor(definition))
 			if processor is not None:
 				sink = pipeline.Processors[-1].pop()
 				pipeline.append_processor(processor)
 				pipeline.append_processor(sink)
 				self.build_profiling(pipeline, processor)
 
-	def construct_lookup(self, app, pipeline, definition):
+	def construct_lookup(self, app, definition):
 		_module = importlib.import_module(definition["module"])
 		_class = getattr(_module, definition["class"])
 		lookup = _class.construct(app, definition)

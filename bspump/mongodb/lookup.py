@@ -5,7 +5,6 @@ from ..cache import CacheDict
 
 class MongoDBLookup(MappingLookup, AsyncLookupMixin):
 
-
 	"""
 	The lookup that is linked with a MongoDB.
 	It provides a mapping (dictionary-like) interface to pipelines.
@@ -45,13 +44,31 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 
 	"""
 
-
-
 	ConfigDefaults = {
 		'database': '',  # Specify a database if you want to overload the connection setting
 		'collection': '',  # Specify collection name
 		'key': ''  # Specify key name used for search
 	}
+
+	@classmethod
+	def construct(cls, app, definition: dict, connection_id="MongoDBConnection"):
+		"""
+		Usage:
+
+			---
+			lookup: UserPasswordLookup
+			config:
+				database: lookups
+				collection: userpassword
+				key: user
+		"""
+
+		# TODO: Think about declarativity in lookups
+		_id = definition.get("id", definition.get("declaration"))
+		config = definition.get("config")
+		svc = app.get_service("bspump.PumpService")
+		mongodb_connection = svc.locate_connection(connection_id)
+		return cls(app, connection=mongodb_connection, id=_id, config=config)
 
 	def __init__(self, app, connection, id=None, config=None, cache=None):
 		super().__init__(app, id=id, config=config)
@@ -74,14 +91,11 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
 		self.SuccessCounter = metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
-
 	def build_query(self, key):
 		return {self.Key: key}
 
-
 	async def _find_one(self, query):
 		return await (self.Connection.Client[self.Database][self.Collection]).find_one(query)
-
 
 	async def get(self, key):
 		"""
@@ -103,23 +117,17 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 			self.SuccessCounter.add('hit', 1)
 		return value
 
-
-
 	async def _count(self, database):
 		return await database[self.Collection].count_documents({})
-
 
 	async def load(self):
 		return True
 
-
 	def __len__(self):
 		return self.Count
 
-
 	def __getitem__(self, key):
 		raise NotImplementedError()
-
 
 	def __iter__(self):
 		database = self.Connection.Client[self.Database].delegate
