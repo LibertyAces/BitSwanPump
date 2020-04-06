@@ -39,12 +39,11 @@ class SubProcessSource(Source):
 			event = await self._process.stdout.readline()
 			if not event:
 				# If asyncio subprocess does not recognize EOF
-				if file_exist == True:
+				if file_exist is True:
 					break
-				# If tailed file does not exist or it is empty 
+				# If tailed file does not exist or it is empty
 				else:
 					L.error('Processing on non-existent or empty file!')
 					break
 			await self.process(event)
 			file_exist = True
-
