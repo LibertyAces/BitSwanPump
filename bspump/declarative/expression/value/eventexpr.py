@@ -19,7 +19,6 @@ Usage:
 		return event
 
 
-
 class CONTEXT(Expression):
 	"""
 The current context.

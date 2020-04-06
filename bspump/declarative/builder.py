@@ -25,14 +25,12 @@ class ExpressionBuilder(object):
 		# Register the common expression module
 		self.register_module(expression)
 
-
 	def register_module(self, module):
 		for name, expression_class in inspect.getmembers(module, inspect.isclass):
 			self.ExpressionClasses[name] = expression_class
 
 	def register_class(self, class_name, expression_class):
 		self.ExpressionClasses[class_name] = expression_class
-
 
 	def parse(self, declaration):
 		loader = yaml.Loader(declaration)
@@ -47,7 +45,6 @@ class ExpressionBuilder(object):
 			loader.dispose()
 
 		return expression
-
 
 	def _constructor(self, loader, node):
 		assert(node.tag[0] == '!')

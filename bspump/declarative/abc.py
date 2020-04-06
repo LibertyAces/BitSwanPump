@@ -4,15 +4,12 @@ import functools
 
 class Expression(abc.ABC):
 
-
 	def __init__(self, app):
 		self.App = app
-
 
 	@abc.abstractmethod
 	def __call__(self, context, event, *args, **kwargs):
 		pass
-
 
 	def evaluate(self, value, context, event, *args, **kwargs):
 		if isinstance(value, Expression):
@@ -37,7 +34,6 @@ class SequenceExpression(Expression):
 	def __init__(self, app, *, sequence):
 		super().__init__(app)
 		self.Items = sequence
-
 
 	def reduce(self, operator, context, event, *args, **kwargs):
 		iterator = [self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]

@@ -11,6 +11,5 @@ class VALUE(Expression):
 		self.Value = value
 		assert(not isinstance(self.Value, Expression))
 
-
 	def __call__(self, context, event, *args, **kwargs):
 		return self.Value

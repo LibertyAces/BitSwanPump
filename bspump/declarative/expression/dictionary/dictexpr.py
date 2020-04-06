@@ -9,9 +9,9 @@ Create or update the dictionary.
 !DICT
 with: !EVENT
 add:
-  item1: foo
-  item2: bar
-  item3: ...
+	item1: foo
+	item2: bar
+	item3: ...
 ```
 
 If `with` is not specified, the new dictionary will be created.
@@ -21,15 +21,13 @@ This is how to create the empty dictionary:
 ```
 !DICT {}
 ```
-    """
-
+"""
 
 	def __init__(self, app, *, arg_add=None, arg_with=None):
 		super().__init__(app)
 
 		self.With = arg_with
 		self.Add = arg_add
-
 
 	def __call__(self, context, event, *args, **kwargs):
 		if self.With is None:

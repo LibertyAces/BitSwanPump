@@ -47,7 +47,6 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			self.Item = arg_item
 			self.Default = arg_default
 
-
 	def __call__(self, context, event, *args, **kwargs):
 		with_dict = self.evaluate(self.With, context, event, *args, **kwargs)
 		item = self.evaluate(self.Item, context, event, *args, **kwargs)

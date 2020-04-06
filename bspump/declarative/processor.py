@@ -9,8 +9,8 @@ class DeclarativeProcessor(bspump.Processor):
 	def construct(cls, app, pipeline, definition: dict):
 		_id = definition.get("id")
 		config = definition.get("config")
-		expression = definition.get("expression")
-		return cls(app, pipeline, expression=expression, id=_id, config=config)
+		declaration = definition.get("declaration")
+		return cls(app, pipeline, declaration=declaration, id=_id, config=config)
 
 	def __init__(self, app, pipeline, declaration, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
