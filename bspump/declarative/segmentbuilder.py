@@ -33,7 +33,30 @@ class SegmentBuilder(object):
 
 		self.SegmentBuilder = bspump.declarative.SegmentBuilder()
 		self.SegmentBuilder.construct_segment(self)
+
+	The configuration file:
+
+		pipeline_id: AnalyticsIPPipeline
+		processor: |
+			--- !DICT
+			with: !EVENT
+			add:
+				local_ip:
+					!IF
+					is:
+						!INSUBNET
+						subnet: 192.168.0.0/16
+						value:
+							!ITEM
+							with: !EVENT
+							item: CEF.sourceAddress
+					then: true
+					else: false
 	"""
+
+	KEYWORDS = {
+		"processor": ("bspump.declarative", "DeclarativeProcessor")
+	}
 
 	def __init__(self):
 		self.Path = asab.Config["SegmentBuilder"]["path"]
@@ -50,10 +73,22 @@ class SegmentBuilder(object):
 					else:
 						# Read JSON file
 						definition = json.load(file)
-					if definition["class"].endswith("Lookup"):
+					if definition.get("lookup") is not None or definition.get("class", "").endswith("Lookup"):
 						self.DefinitionsLookups.append(definition)
 					else:
 						self.DefinitionsProcessors.append(definition)
+
+	def register_keyword(self, keyword, _module, _class):
+		self.KEYWORDS[keyword] = (_module, _class)
+
+	def map_keyword(self, definition):
+		for keyword in self.KEYWORDS:
+			if keyword in definition:
+				_module, _class = self.KEYWORDS[keyword]
+				definition["declaration"] = definition[keyword]
+				definition["module"] = _module
+				definition["class"] = _class
+		return definition
 
 	def construct_segment(self, app):
 		svc = app.get_service("bspump.PumpService")
@@ -61,13 +96,13 @@ class SegmentBuilder(object):
 		# First create lookups
 		for definition in self.DefinitionsLookups:
 			pipeline = svc.locate(definition["pipeline_id"])
-			lookup = self.construct_lookup(app, pipeline, definition)
+			lookup = self.construct_lookup(app, pipeline, self.map_keyword(definition))
 			svc.add_lookup(lookup)
 
 		# Then create other processors
 		for definition in self.DefinitionsProcessors:
 			pipeline = svc.locate(definition["pipeline_id"])
-			processor = self.construct_processor(app, pipeline, definition)
+			processor = self.construct_processor(app, pipeline, self.map_keyword(definition))
 			if processor is not None:
 				sink = pipeline.Processors[-1].pop()
 				pipeline.append_processor(processor)
