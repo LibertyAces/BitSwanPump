@@ -1,75 +1,68 @@
-from .registry import ExpressionClassRegistry
-from .builder import ExpressionBuilder
-from .abc import Expression
-
 # Arithmetic
-from .arithmetic.addexpr import ADD
-from .arithmetic.divideexpr import DIVIDE
-from .arithmetic.multiplyexpr import MULTIPLY
-from .arithmetic.subtractexpr import SUBTRACT
-
-# Assignment
-from .assignment.assignexpr import ASSIGN
+from .arithmetic import ADD
+from .arithmetic import DIV
+from .arithmetic import MUL
+from .arithmetic import SUB
 
 # Logical
-from .logical.andexpr import AND
-from .logical.equalsexpr import EQUALS
-from .logical.highereqexpr import HIGHEREQ
-from .logical.higherexpr import HIGHER
-from .logical.ifexpr import IF
-from .logical.lowereqexpr import LOWEREQ
-from .logical.lowerexpr import LOWER
-from .logical.notexpr import NOT
-from .logical.orexpr import OR
+from .logical import AND
+from .logical import OR
+from .logical import NOT
+
+# Comparison
+from .comparison import LT
+from .comparison import LE
+from .comparison import EQ
+from .comparison import NE
+from .comparison import GE
+from .comparison import GT
+
+# Statements
+from .statement.ifexpr import IF
 
 # String
 from .string.endswith import ENDSWITH
 from .string.joinexpr import JOIN
 from .string.regex import REGEX
+from .string.regex import REGEX_PARSE
 from .string.startswith import STARTSWITH
 
 # Dictionary
-from .dictionary.updateexpr import UPDATE
+from .dictionary.dictexpr import DICT
+from .dictionary.itemexpr import ITEM
 
 # Value
-from .value.fieldexpr import FIELD
 from .value.valueexpr import VALUE
+from .value.eventexpr import EVENT
+from .value.eventexpr import CONTEXT
 
 # Lookup
 from .lookup.lookupexpr import LOOKUP
 
 # Complex
-from .complex.indateexpr import INDATE
-from .complex.inlistexpr import INLIST
-from .complex.insubnetexpr import INSUBNET
+from .test.indateexpr import INDATE
+from .test.inlistexpr import INLIST
+from .test.insubnetexpr import INSUBNET
+
+# Date/time
+from .datetime.nowexpr import NOW
 
 __all__ = [
-	"ExpressionClassRegistry",
-	"ExpressionBuilder",
-	"Expression",
-	"ADD",
-	"DIVIDE",
-	"MULTIPLY",
-	"SUBTRACT",
-	"ASSIGN",
-	"AND",
-	"EQUALS",
-	"HIGHEREQ",
-	"HIGHER",
+	"ADD", "DIV", "MUL", "SUB",           # Aritmetics
+	"AND", "OR", "NOT",                   # Logical
+	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
 	"IF",
-	"LOWEREQ",
-	"LOWER",
-	"NOT",
-	"OR",
 	"ENDSWITH",
 	"JOIN",
-	"UPDATE",
+	"DICT", "ITEM",
 	"REGEX",
+	"REGEX_PARSE",
 	"STARTSWITH",
-	"FIELD",
 	"VALUE",
+	"EVENT", "CONTEXT",
 	"LOOKUP",
 	"INDATE",
 	"INLIST",
 	"INSUBNET",
+	"NOW",
 ]

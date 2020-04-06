@@ -1,19 +1,15 @@
-from ..abc import Expression
+from ...abc import Expression
 
 
 class VALUE(Expression):
 	"""
-	Returns specified value:
-
-		{
-			"function": "VALUE",
-			"value": "value"
-		}
+	Returns specified **scalar** value
 	"""
 
-	def __init__(self, app, expression_class_registry, expression: dict):
-		super().__init__(app, expression_class_registry, expression)
-		self.Value = expression["value"]
+	def __init__(self, app, *, value):
+		super().__init__(app)
+		self.Value = value
+		assert(not isinstance(self.Value, Expression))
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.Value

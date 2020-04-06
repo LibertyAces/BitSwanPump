@@ -27,84 +27,45 @@ class VegetableCounterPipeline(bspump.Pipeline):
 	UPDATE -> updates dictionary with multiple dictionaries
 	"""
 
+
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 		self.build(
+
 			bspump.random.RandomSource(app, self, choice=[
 				{"eggs": 2, "potatoes": 12, "carrots": 5},
 				{"potatoes": 10, "radishes": 5, "meat": 8},
-				{"radishes": 20, "carrots": 4, "milk": 10}
+				{"radishes": 20, "carrots": 4, "potatoes": 10}
 			], config={"number": 5}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
-			bspump.declarative.DeclarativeProcessor(app, self, expression={
-				"function": "UPDATE",
-				"items": [
-					{
-						"function": "ASSIGN",
-						"field": "parsed_by_declarative",
-						"value": True
-					},
-					{
-						"function": "ASSIGN",
-						"field": "count",
-						"value": {
-							# Count all available vegetables in events
-							"function": "ADD",
-							"items": [
-								{
-									"function": "FIELD",
-									"field": "potatoes",
-									"source": {
-										"function": "FIELD",
-										"field": "id"
-									},
-									"default": 0
-								},
-								{
-									"function": "FIELD",
-									"field": "carrots",
-									"source": {
-										"function": "FIELD",
-										"field": "id"
-									},
-									"default": 0
-								},
-								{
-									"function": "FIELD",
-									"field": "radishes",
-									"source": {
-										"function": "FIELD",
-										"field": "id"
-									},
-									"default": 0
-								},
-								# It was a fruitful year! If there is more than two radishes, add extra 10!
-								{
-									"function": "IF",
-									"if": {
-										"function": "HIGHER",
-										"items": [
-											{
-												"function": "FIELD",
-												"field": "radishes",
-												"source": {
-													"function": "FIELD",
-													"field": "id"
-												},
-												"default": 0
-											},
-											2
-										]
-									},
-									"then": 10,
-									"else": 0,
-								},
-								# BONUS: Add 20 extra salads!
-								20
-							]
-						}
-					}
-				]
-			}),
+
+			bspump.declarative.DeclarativeProcessor(app, self, '''
+--- !DICT
+with: !EVENT
+add:
+  seen: True
+  when: !NOW
+  rotten_potatoes:
+    !ITEM EVENT potatoes
+  count:
+    !ADD
+    - !ITEM EVENT potatoes
+    - !ITEM
+      with: !EVENT
+      item: carrots
+      default: 0
+    - !IF
+      is:
+        !GT
+        - !ITEM
+          with: !EVENT
+          item: radishes
+          default: 0
+        - 2
+      then: !!float 10
+      else: 0
+    - 20
+'''
+),
 			bspump.common.PPrintSink(app, self)
 		)
 
