@@ -33,17 +33,17 @@ class SubProcessSource(Source):
 			stderr=asyncio.subprocess.DEVNULL,
 			limit=self.Config.get("line_len_limit"),
 		)
-		file_exist = False
+		command_exist = False
 		while True:
 			await self.Pipeline.ready()
 			event = await self._process.stdout.readline()
 			if not event:
 				# If asyncio subprocess does not recognize EOF
-				if file_exist is True:
+				if command_exist is True:
 					break
-				# If tailed file does not exist or it is empty
+				# If command does not exist or it is empty
 				else:
-					L.error('Processing on non-existent or empty file!')
+					L.error('Processing on non-existent or empty command!')
 					break
 			await self.process(event)
-			file_exist = True
+			command_exist = True
