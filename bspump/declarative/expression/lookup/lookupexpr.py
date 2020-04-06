@@ -3,7 +3,7 @@ from ...abc import Expression
 
 class LOOKUP(Expression):
 	"""
-	Obtains value from "lookup" (id of the lookup) using "key":
+	Obtains value from "lookup" (id of the lookup) using "key".
 	"""
 
 	def __init__(self, app, *, arg_lookup, arg_key):
