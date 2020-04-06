@@ -31,7 +31,7 @@ class SegmentBuilder(object):
 
 	Usage:
 
-		self.SegmentBuilder = bspump.SegmentBuilder()
+		self.SegmentBuilder = bspump.declarative.SegmentBuilder()
 		self.SegmentBuilder.construct_segment(self)
 	"""
 
@@ -61,12 +61,8 @@ class SegmentBuilder(object):
 		# First create lookups
 		for definition in self.DefinitionsLookups:
 			pipeline = svc.locate(definition["pipeline_id"])
-			enricher = self.construct_enricher_lookup(app, pipeline, definition)
-			if enricher is not None:
-				sink = pipeline.Processors[-1].pop()
-				pipeline.append_processor(enricher)
-				pipeline.append_processor(sink)
-				self.build_profiling(pipeline, enricher)
+			lookup = self.construct_lookup(app, pipeline, definition)
+			svc.add_lookup(lookup)
 
 		# Then create other processors
 		for definition in self.DefinitionsProcessors:
@@ -78,19 +74,11 @@ class SegmentBuilder(object):
 				pipeline.append_processor(sink)
 				self.build_profiling(pipeline, processor)
 
-	def construct_enricher_lookup(self, app, pipeline, definition):
-		svc = app.get_service("bspump.PumpService")
-
-		# Construct the lookup first
+	def construct_lookup(self, app, pipeline, definition):
 		_module = importlib.import_module(definition["module"])
 		_class = getattr(_module, definition["class"])
-		lookup_instance = _class.construct(app, definition)
-		svc.add_lookup(lookup_instance)
-
-		# Construct enricher for newly created lookup
-		_class = getattr(_module, "{}Enricher".format(definition["class"]))
-		enricher_instance = _class.construct(app, pipeline, lookup_instance, definition)
-		return enricher_instance
+		lookup = _class.construct(app, definition)
+		return lookup
 
 	def construct_processor(self, app, pipeline, definition):
 		_module = importlib.import_module(definition["module"])

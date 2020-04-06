@@ -1,7 +1,6 @@
 from .application import BSPumpApplication
 from .pipeline import Pipeline
 from .pumpbuilder import PumpBuilder
-from .segmentbuilder import SegmentBuilder
 from .abc.source import Source
 from .abc.source import TriggerSource
 from .abc.sink import Sink
@@ -24,7 +23,6 @@ __all__ = (
 	"BSPumpApplication",
 	"Pipeline",
 	"PumpBuilder",
-	"SegmentBuilder",
 	"Source",
 	"TriggerSource",
 	"Sink",
