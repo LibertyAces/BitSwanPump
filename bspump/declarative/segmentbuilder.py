@@ -55,7 +55,9 @@ class SegmentBuilder(object):
 	"""
 
 	KEYWORDS = {
-		"processor": ("bspump.declarative", "DeclarativeProcessor")
+		"processor": ("bspump.declarative", "DeclarativeProcessor"),
+		"generator": ("bspump.declarative", "DeclarativeGenerator"),
+		"lookup": ("bspump.mongodb", "MongoDBLookup")
 	}
 
 	def __init__(self):
@@ -79,9 +81,13 @@ class SegmentBuilder(object):
 						self.DefinitionsProcessors.append(definition)
 
 	def register_keyword(self, keyword, _module, _class):
+		"""
+		Registers custom keywords that are translated to module & class.
+		The default keywords may also be overriden.
+		"""
 		self.KEYWORDS[keyword] = (_module, _class)
 
-	def map_keyword(self, definition):
+	def _map_keyword(self, definition):
 		for keyword in self.KEYWORDS:
 			if keyword in definition:
 				_module, _class = self.KEYWORDS[keyword]
@@ -95,21 +101,20 @@ class SegmentBuilder(object):
 
 		# First create lookups
 		for definition in self.DefinitionsLookups:
-			pipeline = svc.locate(definition["pipeline_id"])
-			lookup = self.construct_lookup(app, pipeline, self.map_keyword(definition))
+			lookup = self.construct_lookup(app, self._map_keyword(definition))
 			svc.add_lookup(lookup)
 
 		# Then create other processors
 		for definition in self.DefinitionsProcessors:
 			pipeline = svc.locate(definition["pipeline_id"])
-			processor = self.construct_processor(app, pipeline, self.map_keyword(definition))
+			processor = self.construct_processor(app, pipeline, self._map_keyword(definition))
 			if processor is not None:
 				sink = pipeline.Processors[-1].pop()
 				pipeline.append_processor(processor)
 				pipeline.append_processor(sink)
 				self.build_profiling(pipeline, processor)
 
-	def construct_lookup(self, app, pipeline, definition):
+	def construct_lookup(self, app, definition):
 		_module = importlib.import_module(definition["module"])
 		_class = getattr(_module, definition["class"])
 		lookup = _class.construct(app, definition)
