@@ -65,6 +65,7 @@ class SegmentBuilder(object):
 		self.DefinitionsLookups = []
 		self.DefinitionsProcessors = []
 		file_list = glob.glob(self.Path, recursive=True)
+		file_list.sort()
 		while len(file_list) > 0:
 			file_name = file_list.pop(0)
 			if os.path.isfile(file_name):
