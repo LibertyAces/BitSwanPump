@@ -3,13 +3,7 @@ from ...abc import Expression
 
 class ENDSWITH(Expression):
 	"""
-	Checks if "string" ends with "endswith"
-
-		{
-			"function": "ENDSWITH",
-			"string": <EXPRESSION>,
-			"endswith": <EXPRESSION>
-		}
+	Checks if "string" ends with "endswith".
 	"""
 
 	def __init__(self, app, *, arg_string, arg_endswith):
