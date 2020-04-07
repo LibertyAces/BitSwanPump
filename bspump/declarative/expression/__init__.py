@@ -26,6 +26,8 @@ from .string.joinexpr import JOIN
 from .string.regex import REGEX
 from .string.regex import REGEX_PARSE
 from .string.startswith import STARTSWITH
+from .string.upperexpr import UPPER
+from .string.lowerexpr import LOWER
 
 # Dictionary
 from .dictionary.dictexpr import DICT
@@ -43,6 +45,7 @@ from .lookup.lookupexpr import LOOKUP
 from .test.indateexpr import INDATE
 from .test.inlistexpr import INLIST
 from .test.insubnetexpr import INSUBNET
+from .test.dateexpr import DATE
 
 # Date/time
 from .datetime.nowexpr import NOW
@@ -52,17 +55,19 @@ __all__ = [
 	"AND", "OR", "NOT",                   # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
 	"IF",
+	"DICT", "ITEM",
 	"ENDSWITH",
 	"JOIN",
-	"DICT", "ITEM",
 	"REGEX",
 	"REGEX_PARSE",
 	"STARTSWITH",
+	"UPPER", "LOWER",
 	"VALUE",
 	"EVENT", "CONTEXT",
 	"LOOKUP",
 	"INDATE",
 	"INLIST",
 	"INSUBNET",
+	"DATE",
 	"NOW",
 ]
