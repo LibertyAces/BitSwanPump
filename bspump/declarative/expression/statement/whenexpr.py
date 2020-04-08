@@ -42,3 +42,4 @@ class WHEN(SequenceExpression):
 				return self.evaluate(expr_else, context, event, *args, **kwargs)
 
 		return False
+		
