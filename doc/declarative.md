@@ -166,6 +166,30 @@ then: <...>
 else: <...>
 ```
 
+### `WHEN` statement
+
+It is a `IF` on steroid or also "case/switch". 
+
+Type: _Sequence_.
+
+```
+!WHEN
+- is: <test>
+  then: <...>
+
+- is: <test>
+  then: <...>
+
+- is: <test>
+  then: <...>
+
+- ...
+
+- else: <...>
+```
+
+If `else` is not provided, then `WHEN` returns `False`.
+
 
 ### Dictionary manipulation `DICT`
 
