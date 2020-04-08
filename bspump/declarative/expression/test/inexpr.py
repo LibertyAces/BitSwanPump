@@ -1,7 +1,7 @@
 from ...abc import Expression
 
 
-class INLIST(Expression):
+class IN(Expression):
 	"""
 	Checks if expression is of given list.
 	"""

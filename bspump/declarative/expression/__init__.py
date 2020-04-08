@@ -43,7 +43,7 @@ from .lookup.lookupexpr import LOOKUP
 
 # Complex
 from .test.indateexpr import INDATE
-from .test.inlistexpr import INLIST
+from .test.inexpr import IN
 from .test.insubnetexpr import INSUBNET
 
 # Date/time
@@ -62,6 +62,6 @@ __all__ = [
 	"REGEX", "REGEX_PARSE",
 	"VALUE", "EVENT", "CONTEXT",
 	"LOOKUP",
-	"INDATE", "INLIST", "INSUBNET",
+	"INDATE", "IN", "INSUBNET",
 	"DATEFMT", "NOW",
 ]
