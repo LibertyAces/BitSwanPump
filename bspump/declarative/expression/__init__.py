@@ -45,10 +45,10 @@ from .lookup.lookupexpr import LOOKUP
 from .test.indateexpr import INDATE
 from .test.inlistexpr import INLIST
 from .test.insubnetexpr import INSUBNET
-from .test.dateexpr import DATE
 
 # Date/time
 from .datetime.nowexpr import NOW
+from .datetime.datefmt import DATEFMT
 
 __all__ = [
 	"ADD", "DIV", "MUL", "SUB",           # Aritmetics
@@ -56,18 +56,12 @@ __all__ = [
 	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
 	"IF",
 	"DICT", "ITEM",
-	"ENDSWITH",
-	"JOIN",
-	"REGEX",
-	"REGEX_PARSE",
-	"STARTSWITH",
+	"STARTSWITH", "ENDSWITH",
 	"UPPER", "LOWER",
-	"VALUE",
-	"EVENT", "CONTEXT",
+	"JOIN",
+	"REGEX", "REGEX_PARSE",
+	"VALUE", "EVENT", "CONTEXT",
 	"LOOKUP",
-	"INDATE",
-	"INLIST",
-	"INSUBNET",
-	"DATE",
-	"NOW",
+	"INDATE", "INLIST", "INSUBNET",
+	"DATEFMT", "NOW",
 ]

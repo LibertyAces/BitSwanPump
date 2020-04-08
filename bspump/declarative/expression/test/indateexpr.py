@@ -13,7 +13,8 @@ class INDATE(Expression):
 		self.Hours = arg_hours
 		self.Value = arg_value
 
+	# TODO: This is definitively wrong
 	def __call__(self, context, event, *args, **kwargs):
 		timestamp = self.evaluate(self.Value, context, event, *args, **kwargs)
-		date_time = datetime.utcfromtimestamp(timestamp)
+		date_time = datetime.fromtimestamp(timestamp)
 		return date_time.hour in self.evaluate(self.Hours, context, event, *args, **kwargs)
