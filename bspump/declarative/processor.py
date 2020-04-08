@@ -1,9 +1,8 @@
-import bspump
-
+from ..abc.processor import  Processor
 from .builder import ExpressionBuilder
 
 
-class DeclarativeProcessor(bspump.Processor):
+class DeclarativeProcessor(Processor):
 
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
