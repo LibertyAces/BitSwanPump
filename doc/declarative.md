@@ -34,6 +34,27 @@ Example:
 More at: [YAML specs, 10.1. Sequence Styles](https://yaml.org/spec/1.1/#id931088)
 
 
+
+```
+(a == 1) AND ((b == 2) OR (c == 3))
+```
+
+```
+!AND
+- !EQ
+  - a
+  - 1
+- !OR
+  - !EQ
+    - b
+    - 2
+  - !EQ
+    - c
+    - 3
+```
+
+
+
 ### Mappings
 
 Example:
@@ -49,11 +70,22 @@ add:
 More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 
 
-### Standard YAML tags
+### Types
+
+#### Boolean
+
+* YAML: `!!bool`
+* Values: `True`, `False`
+
+
+#### Integers
+
+* YAML: `!!int`
+* Values: `0`, `-10000`, `-333`, ...
+
 
 ```
 !!null
-!!bool
 !!int	
 !!float
 !!binary
@@ -63,6 +95,12 @@ More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 !!str
 !!seq
 !!map
+```
+
+## Comments
+
+```
+# This is a comment.
 ```
 
 ## Expressions
