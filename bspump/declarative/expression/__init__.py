@@ -19,6 +19,7 @@ from .comparison import GT
 
 # Statements
 from .statement.ifexpr import IF
+from .statement.whenexpr import WHEN
 
 # String
 from .string.endswith import ENDSWITH
@@ -54,7 +55,7 @@ __all__ = [
 	"ADD", "DIV", "MUL", "SUB",           # Aritmetics
 	"AND", "OR", "NOT",                   # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
-	"IF",
+	"IF", "WHEN",
 	"DICT", "ITEM",
 	"STARTSWITH", "ENDSWITH",
 	"UPPER", "LOWER",
