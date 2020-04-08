@@ -15,9 +15,9 @@ class DATEFMT(Expression):
 	def __init__(self, app, *, arg_format, arg_datetime=time.time()):
 		super().__init__(app)
 		self.Format = arg_format
-		self.datetime = arg_datetime
+		self.Datetime = arg_datetime
 
 	def __call__(self, context, event, *args, **kwargs):
 		_format = self.evaluate(self.Format, context, event, *args, **kwargs)
-		timestamp = self.evaluate(self.Timestamp, context, event, *args, **kwargs)
-		return datetime.fromtimestamp(timestamp).strftime(_format)
+		_datetime = self.evaluate(self.Datetime, context, event, *args, **kwargs)
+		return datetime.fromtimestamp(_datetime).strftime(_format)

@@ -48,7 +48,7 @@ from .test.insubnetexpr import INSUBNET
 
 # Date/time
 from .datetime.nowexpr import NOW
-from .datetime.datefmt import DATEFTM
+from .datetime.datefmt import DATEFMT
 
 __all__ = [
 	"ADD", "DIV", "MUL", "SUB",           # Aritmetics
