@@ -305,11 +305,11 @@ Otherwise, groups are returned in as a list.
 If `items ` are provided, the groups are mapped to provided `items` and a dictionary is returned.
 
 
-### Access functions "EVENT", "CONTEXT"
+### Access functions "EVENT", "CONTEXT", "KWARGS"
 
 Type: _Scalar_.
 
-Returns the current event/context dictionary.
+Returns the current event/context/keyword arguments dictionary.
 
 
 ### Tuple "TUPLE"

@@ -1,6 +1,6 @@
 from ...abc import Expression
 
-from ..value.eventexpr import EVENT, CONTEXT
+from ..value.eventexpr import EVENT, CONTEXT, KWARGS
 from ..value.valueexpr import VALUE
 
 
@@ -36,6 +36,8 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 				self.With = EVENT(app, value='')
 			elif with_ == 'CONTEXT':
 				self.With = CONTEXT(app, value='')
+			elif with_ == 'KWARGS':
+				self.With = KWARGS(app, value='')
 			else:
 				raise RuntimeError("Invalid item argument '{}' - must be EVENT or CONTEXT", format(with_))
 
