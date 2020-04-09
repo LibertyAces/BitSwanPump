@@ -1,4 +1,5 @@
 from ...abc import Expression
+from ...abc import SequenceExpression
 
 
 class VALUE(Expression):
@@ -13,3 +14,9 @@ class VALUE(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.Value
+
+
+class TUPLE(SequenceExpression):
+
+	def __call__(self, context, event, *args, **kwargs):
+		return tuple(self.evaluate(item, context, event, *args, **kwargs) for item in self.Items)

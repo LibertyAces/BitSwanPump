@@ -36,6 +36,7 @@ from .dictionary.itemexpr import ITEM
 
 # Value
 from .value.valueexpr import VALUE
+from .value.valueexpr import TUPLE
 from .value.eventexpr import EVENT
 from .value.eventexpr import CONTEXT
 
@@ -61,7 +62,7 @@ __all__ = [
 	"UPPER", "LOWER",
 	"JOIN",
 	"REGEX", "REGEX_PARSE",
-	"VALUE", "EVENT", "CONTEXT",
+	"VALUE", "TUPLE", "EVENT", "CONTEXT",
 	"LOOKUP",
 	"INDATE", "IN", "INSUBNET",
 	"DATEFMT", "NOW",

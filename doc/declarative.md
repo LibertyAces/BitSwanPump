@@ -312,6 +312,14 @@ Type: _Scalar_.
 Returns the current event/context dictionary.
 
 
+### Tuple "TUPLE"
+
+Type: _Sequence_.
+
+Transform input into a Python tuple.
+
+
+
 ### Scalar function "VALUE"
 
 Type: _Scalar_.
