@@ -4,7 +4,6 @@ import os
 import logging
 
 import numpy as np
-
 import asab
 
 ###
@@ -60,10 +59,10 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 	'''
 	ConfigDefaults = {
-		'path_prefix': 'memmap/'
+		'path_prefix': 'examples/mmap/'
 	}
 
-	def __init__(self, app, dtype='float_', id=None, config=None):
+	def __init__(self, app, dtype='float_', fetch=True, id=None, config=None):
 		if not isinstance(dtype, str):
 			dtype = dtype[:]
 		self.Id = id if id is not None else self.__class__.__name__
@@ -74,10 +73,17 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 		self.DType = dtype
 		self.PathPrefix = self.Config['path_prefix']
+		self.ArrayPath = os.path.join(self.PathPrefix, 'array.dat')
+		self.ClosedRowsPath = os.path.join(self.PathPrefix, 'closed_rows.dat')
+		self.ClosedRowsDType = 'i1'
+		
 		if not os.path.exists(self.PathPrefix):
 			os.makedirs(self.PathPrefix)
-		# TODO
-		self.zeros()
+
+		if fetch and os.path.exists(self.ArrayPath):
+			self.prefetch()
+		else:
+			self.zeros()
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Gauge = metrics_service.create_gauge(
@@ -92,12 +98,22 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		)
 
 
+	def prefetch(self):
+		self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='readwrite') #TODO
+		self.ClosedRowsAlias = np.memmap(self.ClosedRowsPath, dtype=self.ClosedRowsDType, mode='readwrite')
+		self.ClosedRows = set()
+		for i in range(len(self.ClosedRowsAlias)):
+			if self.ClosedRowsAlias[i] == 0:
+				self.ClosedRows.add(i)
+
+
 	def zeros(self, rows=0):
 		self.ClosedRows = set([0])
 		array = np.zeros(self.build_shape(1), dtype=self.DType)
-		print(">>>", array.shape)
-		self.Array = np.memmap(self.PathPrefix + 'array.dat',  dtype=self.DType, mode='w+', shape=array.shape)
+		self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
 		self.Array[:] = array[:]
+
+		self.ClosedRowsAlias = np.memmap(self.ClosedRowsPath,  dtype=self.ClosedRowsDType, mode='w+', shape=(array.shape[0],))
 		# TODO
 
 
@@ -111,7 +127,9 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 		self.Array = self.Array.take(saved_indexes)
 		self.ClosedRows = set()
-
+		self.ClosedRowsAlias = np.memmap(self.ClosedRowsPath,  dtype=self.ClosedRowsDType, mode='w+', shape=(self.Array.shape[0],)) #is it ones?
+		self.ClosedRowsAlias[:] = 1
+		
 		self.Gauge.set("rows.closed", 0)
 		self.Gauge.set("rows.active", self.Array.shape[0])
 
@@ -123,8 +141,9 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 		if clear:
 			self.Array[row_index] = np.zeros(1, dtype=self.DType)
+		
 		self.ClosedRows.add(row_index)
-
+		self.ClosedRowsAlias[row_index] = 0
 		crc = len(self.ClosedRows)
 		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
 		self.Gauge.set("rows.closed", crc)
@@ -132,15 +151,19 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 	def add_row(self):
 		try:
-			return self.ClosedRows.pop()
+			index = self.ClosedRows.pop()
+			self.ClosedRowsAlias[index] = 1
+			return index
 		except KeyError:
 			self._grow_rows(max(5, int(0.10 * self.Array.shape[0])))
-			# TODO
-			return self.ClosedRows.pop()
+			index = self.ClosedRows.pop()
+			self.ClosedRowsAlias[index] = 1
+			return index
 		finally:
 			crc = len(self.ClosedRows)
 			self.Gauge.set("rows.active", self.Array.shape[0] - crc)
 			self.Gauge.set("rows.closed", crc)
+			
 
 
 	def build_shape(self, rows=0):
@@ -157,11 +180,16 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		current_rows = self.Array.shape[0]
 		array = np.zeros(self.Array.shape, dtype=self.DType)
 		array[:] = self.Array[:]
+		closed_rows = np.zeros(self.Array.shape[0], dtype=self.ClosedRowsDType)
+		closed_rows[:] = self.ClosedRowsAlias[:]
 		array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
-		self.Array = np.memmap(self.PathPrefix + 'array.dat',  dtype=self.DType, mode='w+', shape=array.shape)
+		closed_rows.resize((current_rows + rows,), refcheck=False)
+		self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
 		self.Array[:] = array[:]
+		
 		self.ClosedRows |= frozenset(range(current_rows, current_rows + rows))
-		# TODO
+		self.ClosedRowsAlias = np.memmap(self.ClosedRowsPath,  dtype=self.ClosedRowsDType, mode='w+', shape=closed_rows.shape) # TODO
+		self.ClosedRowsAlias[:] = closed_rows[:]
 
 
 	def time(self):
@@ -186,14 +214,44 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 class NamedMatrix(Matrix):
 
-	def __init__(self, app, dtype='float_', id=None, config=None):
-		super().__init__(app, dtype=dtype, id=id, config=config)
+	def __init__(self, app, dtype='float_', fetch=False, id=None, config=None):
+		super().__init__(app, dtype=dtype, fetch=fetch, id=id, config=config)
 		self.PubSub = asab.PubSub(app)
+		self.MapPath = os.path.join(self.PathPrefix, 'map.dat')
+		self.MapDType = 'U30'
+
 
 	def zeros(self):
 		super().zeros()
 		self.N2IMap = collections.OrderedDict()
 		self.I2NMap = collections.OrderedDict()
+
+		self.MapAlias = np.memmap(self.PathPrefix + 'map.dat',  dtype='U30', mode='w+', shape=(self.Array.shape[0],)) # TODO
+
+
+	def _grow_rows(self, rows=1):
+		super()._grow_rows(rows)
+		start = self.MapAlias.shape[0]
+		end = self.Array.shape[0]
+
+		map_alias = np.zeros(self.MapAlias.shape[0], dtype='U30')
+		map_alias[:] = self.MapAlias[:]
+
+		map_alias.resize(self.Array.shape[0], refcheck=False)
+		self.MapAlias = np.memmap(self.PathPrefix + 'map.dat',  dtype='U30', mode='w+', shape=map_alias.shape)
+		self.MapAlias[:] = map_alias[:]
+
+
+	def prefetch(self):
+		super().prefetch()
+		self.N2IMap = collections.OrderedDict()
+		self.I2NMap = collections.OrderedDict()
+		self.MapAlias = np.memmap(self.PathPrefix + 'map.dat', dtype='U30', mode='readwrite')
+		for i in range(len(self.MapAlias)):
+			value = self.MapAlias[i]
+			if value != '':
+				self.I2NMap[i] = value
+				self.N2IMap[value] = i
 
 
 	def flush(self):
@@ -217,7 +275,12 @@ class NamedMatrix(Matrix):
 		self.N2IMap = n2imap
 		self.I2NMap = i2nmap
 		self.ClosedRows = set()
+		self.ClosedRowsAlias = np.memmap(self.PathPrefix + 'closed_rows.dat',  dtype=self.ClosedRowsDType, mode='w+', shape=(self.Array.shape[0],)) #TODO
+		self.ClosedRowsAlias[:] = 1
 
+		#TODO map!
+		self.MapAlias = np.memmap(self.PathPrefix + 'map.dat',  dtype='U30', mode='w+', shape=(self.Array.shape[0],)) #TODO
+		self.MapAlias[list(self.I2NMap.keys())] = np.array(list(self.I2NMap.values()), dtype='U30')
 		self.Gauge.set("rows.closed", 0)
 		self.Gauge.set("rows.active", self.Array.shape[0])
 		self.PubSub.publish("Matrix changed!")
@@ -229,6 +292,8 @@ class NamedMatrix(Matrix):
 		row_index = super().add_row()
 		self.N2IMap[row_name] = row_index
 		self.I2NMap[row_index] = row_name
+
+		self.MapAlias[row_index] = row_name
 		self.PubSub.publish("Matrix changed!")
 
 		return row_index
@@ -239,6 +304,7 @@ class NamedMatrix(Matrix):
 
 		row_name = self.I2NMap.pop(row_index)
 		del self.N2IMap[row_name]
+		self.MapAlias[row_index] = ''
 		self.PubSub.publish("Matrix changed!")
 
 
@@ -251,16 +317,18 @@ class NamedMatrix(Matrix):
 
 
 	def serialize(self):
+		# TODO
 		serialized = {}
-		serialized['N2IMap'] = self.N2IMap #dict
-		serialized['I2NMap'] = self.I2NMap #dict
-		serialized['ClosedRows'] = list(self.ClosedRows) #set
-		serialized['DType'] = self.DType #list or string?
-		serialized['Array'] = self.Array.tolist() #np mmap
+		serialized['N2IMap'] = self.N2IMap
+		serialized['I2NMap'] = self.I2NMap
+		serialized['ClosedRows'] = list(self.ClosedRows)
+		serialized['DType'] = self.DType
+		serialized['Array'] = self.Array.tolist()
 		return serialized
 
 
 	def deserialize(self, data):
+		# TODO
 		self.N2IMap = data['N2IMap']
 		self.I2NMap = data['I2NMap']
 		self.ClosedRows = set(data['ClosedRows'])

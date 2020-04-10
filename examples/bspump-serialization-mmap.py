@@ -37,7 +37,7 @@ class MyPipeline(Pipeline):
 			bspump.random.RandomEnricher(app, self, config={'field': '@timestamp', 'lower_bound': lb, 'upper_bound': ub}, id="RE1"),
 			bspump.random.RandomEnricher(app, self, choice=['abc', 'cde', 'efg'], config={'field':'user'}, id="RE2"),
 			MySessionAnalyzer(app, self, dtype=[('user', 'U10'), ('duration', 'i8')], analyze_on_clock=True, 
-				config={'analyze_period': 15, 'path': 'examples/data/session.json'}), 
+				config={'analyze_period': 15, 'path': 'examples/data/session.json', 'path_prefix':'examples/mmap/'}), 
 			# MyTimeWindowAnalyzer(app, self,  clock_driven=False, analyze_on_clock=True, 
 			# 	config={'analyze_period': 20, 'path': 'examples/data/timewindow.json'}),
 			NullSink(app, self)
@@ -68,7 +68,9 @@ class MySessionAnalyzer(SessionAnalyzer):
 
 	
 	def analyze(self): 
-		pass
+		print(">>>>>>>>>", len(self.Sessions.ClosedRows), len(self.Sessions.I2NMap), len(self.Sessions.N2IMap), len(self.Sessions.Array))
+		print("<<<<<<<<<", len(self.Sessions.ClosedRowsAlias), len(self.Sessions.MapAlias))
+		
 		# st = time.time()
 		# data = self.Sessions.serialize()
 		# with open(self.Path, 'w') as f:
