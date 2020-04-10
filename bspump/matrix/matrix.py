@@ -1,5 +1,6 @@
 import abc
 import collections
+import os
 import logging
 
 import numpy as np
@@ -58,7 +59,9 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		`ClosedRows` is a set, where some row ids can be stored before deletion during the matrix rebuild.
 
 	'''
-
+	ConfigDefaults = {
+		'path_prefix': 'memmap/'
+	}
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
 		if not isinstance(dtype, str):
@@ -70,7 +73,10 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		self.Loop = app.Loop
 
 		self.DType = dtype
-
+		self.PathPrefix = self.Config['path_prefix']
+		if not os.path.exists(self.PathPrefix):
+			os.makedirs(self.PathPrefix)
+		# TODO
 		self.zeros()
 
 		metrics_service = app.get_service('asab.MetricsService')
@@ -87,8 +93,12 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 
 	def zeros(self, rows=0):
-		self.ClosedRows = set()
-		self.Array = np.zeros(self.build_shape(rows), dtype=self.DType)
+		self.ClosedRows = set([0])
+		array = np.zeros(self.build_shape(1), dtype=self.DType)
+		print(">>>", array.shape)
+		self.Array = np.memmap(self.PathPrefix + 'array.dat',  dtype=self.DType, mode='w+', shape=array.shape)
+		self.Array[:] = array[:]
+		# TODO
 
 
 	def flush(self):
@@ -125,6 +135,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 			return self.ClosedRows.pop()
 		except KeyError:
 			self._grow_rows(max(5, int(0.10 * self.Array.shape[0])))
+			# TODO
 			return self.ClosedRows.pop()
 		finally:
 			crc = len(self.ClosedRows)
@@ -144,8 +155,13 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
 		current_rows = self.Array.shape[0]
-		self.Array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
+		array = np.zeros(self.Array.shape, dtype=self.DType)
+		array[:] = self.Array[:]
+		array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
+		self.Array = np.memmap(self.PathPrefix + 'array.dat',  dtype=self.DType, mode='w+', shape=array.shape)
+		self.Array[:] = array[:]
 		self.ClosedRows |= frozenset(range(current_rows, current_rows + rows))
+		# TODO
 
 
 	def time(self):
@@ -236,11 +252,11 @@ class NamedMatrix(Matrix):
 
 	def serialize(self):
 		serialized = {}
-		serialized['N2IMap'] = self.N2IMap
-		serialized['I2NMap'] = self.I2NMap
-		serialized['ClosedRows'] = list(self.ClosedRows)
-		serialized['DType'] = self.DType
-		serialized['Array'] = self.Array.tolist()
+		serialized['N2IMap'] = self.N2IMap #dict
+		serialized['I2NMap'] = self.I2NMap #dict
+		serialized['ClosedRows'] = list(self.ClosedRows) #set
+		serialized['DType'] = self.DType #list or string?
+		serialized['Array'] = self.Array.tolist() #np mmap
 		return serialized
 
 
