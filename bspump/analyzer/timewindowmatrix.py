@@ -43,19 +43,21 @@ class TimeWindowMatrix(NamedMatrix):
 
 	'''
 
-	def __init__(self, app, dtype='float_', start_time=None, resolution=60, columns=15, clock_driven=False, id=None, config=None):
+	def __init__(self, app, dtype='float_', start_time=None, resolution=60, columns=15, clock_driven=False, persistent=False, id=None, config=None):
 		self.Columns = columns
-		super().__init__(app, dtype=dtype, id=id, config=config)
+		super().__init__(app, dtype=dtype, persistent=persistent, id=id, config=config)
 
 		if start_time is None:
 			start_time = time.time()
 
-		self.Resolution = resolution
-		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
+		start = (1 + (start_time // resolution)) * resolution
+		if self.Persistent:
+			path = os.path.join(self.Path, 'time_config.dat')
+			self.TimeConfig = PersistentTimeConfig(path, resolution, columns, start)
+		else:
+			self.TimeConfig = TimeConfig(resolution, columns, start)
 
-		self.End = self.Start - (self.Resolution * self.Array.shape[1])
-
-		self.WarmingUpCount = np.zeros(self.Array.shape[0], dtype='int_')
+		self.WarmingUpCount = np.zeros(self.Array.shape[0], dtype='int_') #TODO
 
 		if clock_driven:
 			advance_period = resolution / 4
@@ -78,12 +80,6 @@ class TimeWindowMatrix(NamedMatrix):
 			}
 		)
 
-	def zeros(self):
-		self.ClosedRows = set()
-		self.N2IMap = collections.OrderedDict()
-		self.I2NMap = collections.OrderedDict()
-		self.Array = np.zeros((0, self.Columns), dtype=self.DType)
-
 
 	def add_column(self):
 		'''
@@ -91,22 +87,25 @@ class TimeWindowMatrix(NamedMatrix):
 			the time flow. `Start` and `End` attributes are advanced as well.
 		'''
 
-		self.Start += self.Resolution
-		self.End += self.Resolution
+		self.TimeConfig.add_start(self.TimeConfig.get_resolution())
+		self.TimeConfig.add_end(self.TimeConfig.get_resolution())
+		# self.Start += self.Resolution #TODO
+		# self.End += self.Resolution #TODO
 
 		if self.Array.shape[0] == 0:
 			return
 
-		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:])
-		time_window = np.hstack((self.Array, column))
-		time_window = np.delete(time_window, 0, axis=1)
+		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:]) #TODO
+		time_window = np.hstack((self.Array, column)) #TODO
+		time_window = np.delete(time_window, 0, axis=1) #TODO
 
-		self.Array = time_window
-		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows)
-		self.WarmingUpCount[open_rows] -= 1
+		self.Array = time_window #TODO
+		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows.get_rows()) #TODO
+		self.WarmingUpCount[open_rows] -= 1 #TODO
 
 		# Overflow prevention
-		self.WarmingUpCount[self.WarmingUpCount < 0] = 0
+		self.WarmingUpCount[self.WarmingUpCount < 0] = 0 #TODO
+		# TODO# TODO# TODO# TODO# TODO# TODO
 
 
 	def add_row(self, row_name):
@@ -115,14 +114,14 @@ class TimeWindowMatrix(NamedMatrix):
 		'''
 
 		row_index = super().add_row(row_name)
-		if self.Array.shape[0] != self.WarmingUpCount.shape[0]:
-			start = self.WarmingUpCount.shape[0]
-			end = self.Array.shape[0]
-			self.WarmingUpCount.resize(self.Array.shape[0], refcheck=False)
-			self.WarmingUpCount[start:end] = self.Array.shape[1]
+		if self.Array.shape[0] != self.WarmingUpCount.shape[0]: #TODO
+			start = self.WarmingUpCount.shape[0] #TODO
+			end = self.Array.shape[0]#TODO
+			self.WarmingUpCount.resize(self.Array.shape[0], refcheck=False)#TODO
+			self.WarmingUpCount[start:end] = self.Array.shape[1]#TODO
 		else:
-			self.WarmingUpCount[row_index] = self.Array.shape[1]
-
+			self.WarmingUpCount[row_index] = self.Array.shape[1]#TODO
+		# TODO
 		return row_index
 
 
@@ -142,7 +141,8 @@ class TimeWindowMatrix(NamedMatrix):
 			self.Counters.add('events.early', 1)
 			return None
 
-		column_idx = int((event_timestamp - self.End) // self.Resolution)
+		# column_idx = int((event_timestamp - self.End) // self.Resolution)
+		column_idx = int((event_timestamp - self.TimeConfig.get_end()) // self.TimeConfig.get_resolution())
 
 		# assert(column_idx >= 0)
 		# assert(column_idx < self.Array.shape[1])
@@ -181,10 +181,11 @@ class TimeWindowMatrix(NamedMatrix):
 		'''
 		added = 0
 		while True:
-			dt = (self.Start - target_ts) / self.Resolution
+			# dt = (self.Start - target_ts) / self.Resolution #TODO
+			dt = (self.TimeConfig.get_start() - target_ts) / self.TimeConfig.get_resolution()
 			if dt > 0.25:
 				break
-			self.add_column()
+			self.add_column() #TODO
 			added += 1
 
 		return added
@@ -192,7 +193,7 @@ class TimeWindowMatrix(NamedMatrix):
 
 	def close_row(self, row_index, clear=True):
 		super().close_row(row_index, clear=clear)
-		self.WarmingUpCount[row_index] = self.Array.shape[1]
+		self.WarmingUpCount[row_index] = self.Array.shape[1] #TODO
 
 
 	async def on_clock_tick(self):
@@ -203,12 +204,3 @@ class TimeWindowMatrix(NamedMatrix):
 		target_ts = time.time()
 		self.advance(target_ts)
 
-
-	# def close_row(self, row_id):
-	# 	'''
-	# 		Puts the `row_id` to the `ClosedRows`.
-	# 	'''
-
-	# 	row_counter = self.RowMap.get(row_id)
-	# 	if row_counter is not None:
-	# 		self.ClosedRows.add(row_counter)
