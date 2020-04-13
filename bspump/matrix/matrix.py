@@ -61,6 +61,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 	ConfigDefaults = {
 		'path': '',
+		'max_closed_rows_capacity': 0.2,
 	}
 
 	def __init__(self, app, dtype='float_', persistent=False, id=None, config=None):
@@ -83,6 +84,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		
 		self.DType = dtype
 		self.Persistent = persistent
+		self.MaxClosedRowsCapacity = float(self.Config['max_closed_rows_capacity'])
 		self.zeros()
 		
 		metrics_service = app.get_service('asab.MetricsService')
@@ -128,7 +130,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 		self.Gauge.set("rows.closed", 0)
 		self.Gauge.set("rows.active", self.Array.shape[0])
-		return closed_indexes
+		return closed_indexes, saved_indexes
 
 
 	def close_row(self, row_index, clear=True):
@@ -139,12 +141,19 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		if clear:
 			self.Array[row_index] = np.zeros(1, dtype=self.DType)
 		
-		# TODO try
 		self.ClosedRows.add(row_index)
 
 		crc = len(self.ClosedRows)
 		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
 		self.Gauge.set("rows.closed", crc)
+
+
+	def close_rows(self, indexes, clear=True):
+		for index in indexes:
+			self.close_row(index, clear=clear)
+
+		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
+			self.flush()
 
 
 	def add_row(self):
@@ -226,7 +235,7 @@ class NamedMatrix(Matrix):
 		'''
 		closed_indexes = super().flush()
 		self.Index.clean(closed_indexes)
-		return closed_indexes
+		return closed_indexes, saved_indexes
 
 
 	def add_row(self, row_name: str):

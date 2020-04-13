@@ -113,5 +113,6 @@ class PersistentIndex(Index):
 	def clean(self, closed_indexes):
 		saved_indexes = super().clean(closed_indexes)
 		self.Map = self.Map.take(saved_indexes, axis=0)
+		return saved_indexes
 
 

@@ -54,10 +54,10 @@ class TimeWindowMatrix(NamedMatrix):
 		if self.Persistent:
 			path = os.path.join(self.Path, 'time_config.dat')
 			self.TimeConfig = PersistentTimeConfig(path, resolution, columns, start)
+			self.WarmingUpCount = PersistentWarmingUpCount(path, self.Array.shape[0])
 		else:
 			self.TimeConfig = TimeConfig(resolution, columns, start)
-
-		self.WarmingUpCount = np.zeros(self.Array.shape[0], dtype='int_') #TODO
+			self.WarmingUpCount = WarmingUpCount(self.Array.shape[0])
 
 		if clock_driven:
 			advance_period = resolution / 4
@@ -89,23 +89,28 @@ class TimeWindowMatrix(NamedMatrix):
 
 		self.TimeConfig.add_start(self.TimeConfig.get_resolution())
 		self.TimeConfig.add_end(self.TimeConfig.get_resolution())
-		# self.Start += self.Resolution #TODO
-		# self.End += self.Resolution #TODO
 
 		if self.Array.shape[0] == 0:
 			return
 
-		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:]) #TODO
-		time_window = np.hstack((self.Array, column)) #TODO
-		time_window = np.delete(time_window, 0, axis=1) #TODO
+		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:])
+		if self.Persistent:
+			array = np.zeros(self.Array.shape, dtype=self.DType)
+			array[:] = self.Array[:]
+		else:
+			array = self.Array
 
-		self.Array = time_window #TODO
+		array = np.hstack((array, column))
+		array = np.delete(array, 0, axis=1)
+
+		if self.Persistent:
+			self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
+			self.Array[:] = array[:]
+		else:
+			self.Array = array
+
 		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows.get_rows()) #TODO
-		self.WarmingUpCount[open_rows] -= 1 #TODO
-
-		# Overflow prevention
-		self.WarmingUpCount[self.WarmingUpCount < 0] = 0 #TODO
-		# TODO# TODO# TODO# TODO# TODO# TODO
+		self.WarmingUpCount.decrease(open_rows)
 
 
 	def add_row(self, row_name):
@@ -114,14 +119,11 @@ class TimeWindowMatrix(NamedMatrix):
 		'''
 
 		row_index = super().add_row(row_name)
-		if self.Array.shape[0] != self.WarmingUpCount.shape[0]: #TODO
-			start = self.WarmingUpCount.shape[0] #TODO
-			end = self.Array.shape[0]#TODO
-			self.WarmingUpCount.resize(self.Array.shape[0], refcheck=False)#TODO
-			self.WarmingUpCount[start:end] = self.Array.shape[1]#TODO
+		if self.Array.shape[0] != len(self.WarmingUpCount):
+			self.WarmingUpCount.extend(self.Array.shape[0], self.Array.shape[1])
 		else:
-			self.WarmingUpCount[row_index] = self.Array.shape[1]#TODO
-		# TODO
+			self.WarmingUpCount.assign(row_index, self.Array.shape[1])
+
 		return row_index
 
 
@@ -141,23 +143,21 @@ class TimeWindowMatrix(NamedMatrix):
 			self.Counters.add('events.early', 1)
 			return None
 
-		# column_idx = int((event_timestamp - self.End) // self.Resolution)
 		column_idx = int((event_timestamp - self.TimeConfig.get_end()) // self.TimeConfig.get_resolution())
-
-		# assert(column_idx >= 0)
-		# assert(column_idx < self.Array.shape[1])
 
 		# These are temporal debug lines
 		if column_idx < 0:
 			L.exception(
 				"The column index {} is less then 0, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(
-					column_idx, event_timestamp, self.Start, self.End, self.Resolution, self.Array.shape[1]))
+					column_idx, event_timestamp, self.TimeConfig.get_start(), 
+					self.TimeConfig.get_end(), self.TimeConfig.get_resolution(), self.Array.shape[1])) #TODO
 			raise
 
 		if column_idx >= self.Array.shape[1]:
 			L.exception(
 				"The column index {} is more then columns number, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(
-					column_idx, event_timestamp, self.Start, self.End, self.Resolution, self.Array.shape[1]))
+					column_idx, event_timestamp, self.TimeConfig.get_start(), 
+					self.TimeConfig.get_end(), self.TimeConfig.get_resolution(), self.Array.shape[1])) #TDODO
 			raise
 
 		return column_idx
@@ -181,11 +181,10 @@ class TimeWindowMatrix(NamedMatrix):
 		'''
 		added = 0
 		while True:
-			# dt = (self.Start - target_ts) / self.Resolution #TODO
 			dt = (self.TimeConfig.get_start() - target_ts) / self.TimeConfig.get_resolution()
 			if dt > 0.25:
 				break
-			self.add_column() #TODO
+			self.add_column()
 			added += 1
 
 		return added
@@ -193,7 +192,7 @@ class TimeWindowMatrix(NamedMatrix):
 
 	def close_row(self, row_index, clear=True):
 		super().close_row(row_index, clear=clear)
-		self.WarmingUpCount[row_index] = self.Array.shape[1] #TODO
+		self.WarmingUpCount.assign(row_index, self.Array.shape[1])
 
 
 	async def on_clock_tick(self):
