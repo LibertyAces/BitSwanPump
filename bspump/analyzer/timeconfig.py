@@ -7,8 +7,8 @@ class TimeConfig(object):
 		self.DType = [
 			('resolution', 'f8'),
 			('columns', 'i8'),
-			('start', 'i8'),
-			('end', 'i8'),
+			('start', 'f8'),
+			('end', 'f8'),
 		] 
 		self.TC = np.zeros(1, dtype=self.DType)
 		self.TC['resolution'] = resolution

@@ -27,19 +27,19 @@ class MyApplication(BSPumpApplication):
 class MyPipeline(Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
-		ub = int(time.time()) + 10
-		lb = ub - 1000
+		ub = int(time.time()) + 2
+		lb = ub - 22
 		self.build(
 			bspump.random.RandomStructuredSource(app, self,
-				config={'number': 30, 'upper_bound': 10, 'field': 'id', 'prefix': ''}
+				config={'number': 30, 'upper_bound': 7, 'field': 'id', 'prefix': ''}
 				).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
 			bspump.random.RandomEnricher(app, self, config={'field':'duration', 'lower_bound':1, 'upper_bound': 5}, id="RE0"),
 			bspump.random.RandomEnricher(app, self, config={'field': '@timestamp', 'lower_bound': lb, 'upper_bound': ub}, id="RE1"),
 			bspump.random.RandomEnricher(app, self, choice=['abc', 'cde', 'efg'], config={'field':'user'}, id="RE2"),
-			MySessionAnalyzer(app, self, dtype=[('user', 'U10'), ('duration', 'i8')], analyze_on_clock=True, persistent=True,
-				config={'analyze_period': 15, 'path':'examples/mmap/sessions'}), 
-			# MyTimeWindowAnalyzer(app, self,  clock_driven=False, analyze_on_clock=True, 
-			# 	config={'analyze_period': 20, 'path': 'examples/data/timewindow.json'}),
+			# MySessionAnalyzer(app, self, dtype=[('user', 'U10'), ('duration', 'i8')], analyze_on_clock=True, persistent=True,
+			# 	config={'analyze_period': 15, 'path':'examples/mmap/sessions'}), 
+			MyTimeWindowAnalyzer(app, self, columns=10, resolution=2, clock_driven=False, analyze_on_clock=True, persistent=False,
+				config={'analyze_period': 10, 'path': 'examples/mmap/timewindow'}),
 			NullSink(app, self)
 		)
 
@@ -80,15 +80,7 @@ class MySessionAnalyzer(SessionAnalyzer):
 		
 
 
-class MyTimeWindowAnalyzer(TimeWindowAnalyzer):
-	ConfigDefaults = {
-		'path' : '',
-	}
-	def __init__(self, app, pipeline, dtype='float_', clock_driven=False, analyze_on_clock=False, id=None, config=None):
-		super().__init__(app, pipeline, dtype=dtype, clock_driven=clock_driven, analyze_on_clock=analyze_on_clock, id=id, config=config)
-
-
-	
+class MyTimeWindowAnalyzer(TimeWindowAnalyzer):	
 	def evaluate(self, context, event):
 		id_ = event["id"]
 		timestamp = event['@timestamp']
@@ -104,47 +96,22 @@ class MyTimeWindowAnalyzer(TimeWindowAnalyzer):
 
 	
 	def analyze(self):
-		st = time.time()
-		data = self.TimeWindow.serialize()
-		with open(self.Path, 'w') as f:
-			json.dump(data, f)
-		end = time.time()
-		L.warning("TW serialization to json took {} seconds".format(end - st))
-		st = time.time()
-		self.TimeWindow.deserialize(data)
-		with open(self.Path, 'r') as f:
-			data = json.load(f)
-		end = time.time()
-		L.warning("TW deserialization from json took {} seconds".format(end - st))
-
-
-	def serialize(self):
-		serialized = self.TimeWindow.serialize()
-		serialized['WarmingUpCount'] = self.TimeWindow.WarmingUpCount.tolist()
-		serialized['Columns'] = self.TimeWindow.Columns
-		serialized['Resolution'] = self.TimeWindow.Resolution
-		serialized['Start'] = self.TimeWindow.Start
-		serialized['End'] = self.TimeWindow.End
-		serialized['ClockDriven'] = self.TimeWindow.ClockDriven
-		return serialized
-
-
-	def deserialize(self, data):
-		try:
-			self.TimeWindow.deserialize(data)
-			self.TimeWindow.WarmingUpCount = np.array(data['WarmingUpCount'])
-			self.TimeWindow.Resolution = data['Resolution']
-			self.TimeWindow.Columns = data['Columns']
-			self.TimeWindow.ClockDriven = data['ClockDriven']
-			start = data['Start']
-			end = data['End']
-			if self.TimeWindow.ClockDriven:
-				self.TimeWindow.advance(start)
-			else:
-				self.TimeWindow.Start = start
-				self.TimeWindow.End = end
-		except TypeError as e:
-			L.exception(str(e))
+		print("BEFORE")
+		print("???", self.TimeWindow.Array)
+		print("!!", self.TimeWindow.Index.serialize())
+		print("77&7", self.TimeWindow.ClosedRows.serialize())
+		self.TimeWindow.close_row(2)
+		self.TimeWindow.close_row(5)
+		print("AFTER (0)")
+		print("???", self.TimeWindow.Array)
+		print("!!", self.TimeWindow.Index.serialize())
+		print("77&7", self.TimeWindow.ClosedRows.serialize())
+		
+		self.TimeWindow.close_rows([4, 2, 6])
+		print("AFTER(1)")
+		print("???", self.TimeWindow.Array)
+		print("!!", self.TimeWindow.Index.serialize())
+		print("77&7", self.TimeWindow.ClosedRows.serialize())
 
 
 if __name__ == '__main__':

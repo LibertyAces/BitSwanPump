@@ -73,7 +73,6 @@ class TimeWindowMatrix(NamedMatrix):
 			self.Timer = None
 
 		self.ClockDriven = clock_driven
-
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
 			"EarlyLateEventCounter",
@@ -85,6 +84,13 @@ class TimeWindowMatrix(NamedMatrix):
 				'events.late': 0,
 			}
 		)
+
+
+	def build_shape(self, rows=0):
+		'''
+		Override this method to have a control over the shape of the matrix.
+		'''
+		return (rows, self.Columns,)
 
 
 	def add_column(self):
@@ -141,11 +147,11 @@ class TimeWindowMatrix(NamedMatrix):
 		'''
 
 
-		if event_timestamp <= self.End:
+		if event_timestamp <= self.TimeConfig.get_end():
 			self.Counters.add('events.late', 1)
 			return None
 
-		if event_timestamp >= self.Start:
+		if event_timestamp >= self.TimeConfig.get_start():
 			self.Counters.add('events.early', 1)
 			return None
 
