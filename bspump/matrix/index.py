@@ -24,7 +24,7 @@ class Index(object):
 
 	def add_row(self, name, index):
 		self.N2IMap[name] = index
-		self.I2NMap[index] = index
+		self.I2NMap[index] = name
 
 
 	def clean(self, indexes):
@@ -79,8 +79,8 @@ class PersistentIndex(Index):
 		self.Path = path
 		
 		if os.path.exists(self.Path):
-			self.MapAlias = np.memmap(self.Path, dtype=self.DType, mode='readwrite')
-			for i in range(len(self.MapAlias)):
+			self.Map = np.memmap(self.Path, dtype=self.DType, mode='readwrite')
+			for i in range(len(self.Map)):
 				value = self.Map[i]
 				if value != '':
 					self.I2NMap[i] = value
@@ -99,7 +99,7 @@ class PersistentIndex(Index):
 
 	def add_row(self, name, index):
 		super().add_row(name, index)
-		self.MapAlias[index] = name
+		self.Map[index] = name
 
 
 	def extend(self, size): 
@@ -114,5 +114,4 @@ class PersistentIndex(Index):
 		saved_indexes = super().clean(closed_indexes)
 		self.Map = self.Map.take(saved_indexes, axis=0)
 		return saved_indexes
-
 

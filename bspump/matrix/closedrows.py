@@ -44,8 +44,8 @@ class ClosedRows(object):
 		return len(self.CR)
 
 
-	def extend(self, size): 
-		self.CR |= frozenset(range(len(self.CR), size))
+	def extend(self, start, stop): 
+		self.CR |= frozenset(range(start, stop)) #NO!
 		if len(self.CR) >= self.MaxLen:
 			raise RuntimeError("Maximum size exceeded")
 
@@ -67,7 +67,7 @@ class PersistentClosedRows(ClosedRows):
 		else:
 			if size is None:
 				raise RuntimeError("The size should correspond to array size")
-			
+			self.CR.add(0)
 			self.ones(size)
 
 
@@ -82,13 +82,13 @@ class PersistentClosedRows(ClosedRows):
 		self.CRBit[element] = 0
 
 
-	def extend(self, size):
+	def extend(self, start, stop):
 		cr_ = np.zeros(self.CRBit.shape[0], dtype=self.DType)
 		cr_[:] = self.CRBit[:]
-		cr_.resize(size, refcheck=False)
+		cr_.resize(stop, refcheck=False)
 		self.CRBit = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=cr_.shape)
 		self.CRBit[:] = cr_[:]
-		super().extend(size)
+		super().extend(start, stop)
 
 
 	def reset(self, size):

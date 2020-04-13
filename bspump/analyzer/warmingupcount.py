@@ -28,7 +28,7 @@ class WarmingUpCount(object):
 		return self.WUC.shape[0]
 
 
-class PersistentWarmingUpCount(TimeConfig):
+class PersistentWarmingUpCount(WarmingUpCount):
 	def __init__(self, path, size):
 		super().__init__(size)
 		self.Path = path

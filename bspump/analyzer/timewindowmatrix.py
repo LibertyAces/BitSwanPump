@@ -6,7 +6,11 @@ import numpy as np
 import asab
 import collections
 
+import os
+
 from ..matrix.matrix import NamedMatrix
+from .timeconfig import TimeConfig, PersistentTimeConfig
+from .warmingupcount import WarmingUpCount, PersistentWarmingUpCount
 
 ###
 
@@ -63,6 +67,8 @@ class TimeWindowMatrix(NamedMatrix):
 			advance_period = resolution / 4
 			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True)
 			self.Timer.start(advance_period)
+			if self.TimeConfig.get_start() != start:
+				self.advance(start)
 		else:
 			self.Timer = None
 
