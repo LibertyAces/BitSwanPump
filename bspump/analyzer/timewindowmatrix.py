@@ -58,6 +58,7 @@ class TimeWindowMatrix(NamedMatrix):
 		if self.Persistent:
 			path = os.path.join(self.Path, 'time_config.dat')
 			self.TimeConfig = PersistentTimeConfig(path, resolution, columns, start)
+			path = os.path.join(self.Path, 'warming_up_count.dat')
 			self.WarmingUpCount = PersistentWarmingUpCount(path, self.Array.shape[0])
 		else:
 			self.TimeConfig = TimeConfig(resolution, columns, start)
@@ -146,7 +147,6 @@ class TimeWindowMatrix(NamedMatrix):
 			The timestamp should be provided in seconds.
 		'''
 
-
 		if event_timestamp <= self.TimeConfig.get_end():
 			self.Counters.add('events.late', 1)
 			return None
@@ -154,7 +154,7 @@ class TimeWindowMatrix(NamedMatrix):
 		if event_timestamp >= self.TimeConfig.get_start():
 			self.Counters.add('events.early', 1)
 			return None
-
+			
 		column_idx = int((event_timestamp - self.TimeConfig.get_end()) // self.TimeConfig.get_resolution())
 
 		# These are temporal debug lines

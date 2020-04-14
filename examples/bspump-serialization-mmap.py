@@ -38,7 +38,7 @@ class MyPipeline(Pipeline):
 			bspump.random.RandomEnricher(app, self, choice=['abc', 'cde', 'efg'], config={'field':'user'}, id="RE2"),
 			# MySessionAnalyzer(app, self, dtype=[('user', 'U10'), ('duration', 'i8')], analyze_on_clock=True, persistent=True,
 			# 	config={'analyze_period': 15, 'path':'examples/mmap/sessions'}), 
-			MyTimeWindowAnalyzer(app, self, columns=10, resolution=2, clock_driven=False, analyze_on_clock=True, persistent=False,
+			MyTimeWindowAnalyzer(app, self, columns=10, resolution=2, clock_driven=True, analyze_on_clock=True, persistent=True,
 				config={'analyze_period': 10, 'path': 'examples/mmap/timewindow'}),
 			NullSink(app, self)
 		)
@@ -65,18 +65,19 @@ class MySessionAnalyzer(SessionAnalyzer):
 		print("???", self.Sessions.Array)
 		print("!!", self.Sessions.Index.serialize())
 		print("77&7", self.Sessions.ClosedRows.serialize())
-		self.Sessions.close_row(2)
-		self.Sessions.close_row(8)
-		print("AFTER (0)")
-		print("???", self.Sessions.Array)
-		print("!!", self.Sessions.Index.serialize())
-		print("77&7", self.Sessions.ClosedRows.serialize())
+
+		# self.Sessions.close_row(2)
+		# self.Sessions.close_row(8)
+		# print("AFTER (0)")
+		# print("???", self.Sessions.Array)
+		# print("!!", self.Sessions.Index.serialize())
+		# print("77&7", self.Sessions.ClosedRows.serialize())
 		
-		self.Sessions.close_rows([4, 2, 7])
-		print("AFTER(1)")
-		print("???", self.Sessions.Array)
-		print("!!", self.Sessions.Index.serialize())
-		print("77&7", self.Sessions.ClosedRows.serialize())
+		# self.Sessions.close_rows([4, 2, 7])
+		# print("AFTER(1)")
+		# print("???", self.Sessions.Array)
+		# print("!!", self.Sessions.Index.serialize())
+		# print("77&7", self.Sessions.ClosedRows.serialize())
 		
 
 
@@ -100,18 +101,20 @@ class MyTimeWindowAnalyzer(TimeWindowAnalyzer):
 		print("???", self.TimeWindow.Array)
 		print("!!", self.TimeWindow.Index.serialize())
 		print("77&7", self.TimeWindow.ClosedRows.serialize())
-		self.TimeWindow.close_row(2)
-		self.TimeWindow.close_row(5)
-		print("AFTER (0)")
-		print("???", self.TimeWindow.Array)
-		print("!!", self.TimeWindow.Index.serialize())
-		print("77&7", self.TimeWindow.ClosedRows.serialize())
+		print("$$$$$$", self.TimeWindow.TimeConfig.TC)
+		print("^^^^^^", self.TimeWindow.WarmingUpCount.WUC)
+		# self.TimeWindow.close_row(2)
+		# self.TimeWindow.close_row(5)
+		# print("AFTER (0)")
+		# print("???", self.TimeWindow.Array)
+		# print("!!", self.TimeWindow.Index.serialize())
+		# print("77&7", self.TimeWindow.ClosedRows.serialize())
 		
-		self.TimeWindow.close_rows([4, 2, 6])
-		print("AFTER(1)")
-		print("???", self.TimeWindow.Array)
-		print("!!", self.TimeWindow.Index.serialize())
-		print("77&7", self.TimeWindow.ClosedRows.serialize())
+		# self.TimeWindow.close_rows([4, 2, 6])
+		# print("AFTER(1)")
+		# print("???", self.TimeWindow.Array)
+		# print("!!", self.TimeWindow.Index.serialize())
+		# print("77&7", self.TimeWindow.ClosedRows.serialize())
 
 
 if __name__ == '__main__':

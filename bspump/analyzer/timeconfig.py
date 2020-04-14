@@ -11,38 +11,38 @@ class TimeConfig(object):
 			('end', 'f8'),
 		] 
 		self.TC = np.zeros(1, dtype=self.DType)
-		self.TC['resolution'] = resolution
-		self.TC['columns'] = columns
-		self.TC['start'] = start
-		self.TC['end'] = start - (resolution * columns)
+		self.TC['resolution'][0] = resolution
+		self.TC['columns'][0] = columns
+		self.TC['start'][0] = start
+		self.TC['end'][0] = start - (resolution * columns)
 
 
 	def get_resolution(self):
-		return self.TC['resolution']
+		return self.TC['resolution'][0]
 
 	def get_columns(self):
-		return self.TC['columns']
+		return self.TC['columns'][0]
 
 	def get_start(self):
-		return self.TC['start']
+		return self.TC['start'][0]
 
 	def get_end(self):
-		return self.TC['end']
+		return self.TC['end'][0]
 
 	def set_resolution(self, resolution):
-		self.TC['resolution'] = resolution
+		self.TC['resolution'][0] = resolution
 
 	def set_start(self, start):
-		self.TC['start'] = start
+		self.TC['start'][0] = start
 
 	def set_end(self, end):
-		self.TC['end'] = end
+		self.TC['end'][0] = end
 
 	def add_start(self, time):
-		self.TC['start'] += time
+		self.TC['start'][0] += time
 
 	def add_end(self, time):
-		self.TC['end'] += time
+		self.TC['end'][0] += time
 
 
 class PersistentTimeConfig(TimeConfig):
