@@ -21,6 +21,8 @@ from .comparison import GT
 from .statement.ifexpr import IF
 from .statement.whenexpr import WHEN
 
+from .statement.debugexpr import DEBUG
+
 # String
 from .string.endswith import ENDSWITH
 from .string.joinexpr import JOIN
@@ -64,6 +66,7 @@ __all__ = [
 	"AND", "OR", "NOT",                   # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
 	"IF", "WHEN",
+	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
 	"STARTSWITH", "ENDSWITH",
 	"UPPER", "LOWER",
