@@ -30,13 +30,16 @@ from .string.startswith import STARTSWITH
 from .string.upperexpr import UPPER
 from .string.lowerexpr import LOWER
 
-# Dictionary
-from .dictionary.dictexpr import DICT
-from .dictionary.itemexpr import ITEM
+# Data structures
+from .datastructs.dictexpr import DICT
+from .datastructs.tupleexpr import TUPLE
+from .datastructs.listexpr import LIST
+
+from .datastructs.itemexpr import ITEM
+
 
 # Value
 from .value.valueexpr import VALUE
-from .value.valueexpr import TUPLE
 from .value.eventexpr import EVENT
 from .value.eventexpr import CONTEXT
 
@@ -57,7 +60,7 @@ __all__ = [
 	"AND", "OR", "NOT",                   # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
 	"IF", "WHEN",
-	"DICT", "ITEM",
+	"DICT", "LIST", "TUPLE", "ITEM",
 	"STARTSWITH", "ENDSWITH",
 	"UPPER", "LOWER",
 	"JOIN",
