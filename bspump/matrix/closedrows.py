@@ -54,6 +54,8 @@ class ClosedRows(object):
 		self.CR = set()
 
 
+
+
 class PersistentClosedRows(ClosedRows):
 	def __init__(self, path, size=None, max_len=None):
 		super().__init__(max_len=max_len)

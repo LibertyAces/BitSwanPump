@@ -107,6 +107,10 @@ class Matrix(abc.ABC, asab.ConfigObject):
 			path = os.path.join(self.Path, 'closed_rows.dat')
 			if os.path.exists(self.ArrayPath):
 				self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='readwrite')
+				self.Array = self.Array.reshape(self.reshape(self.Array.shape))
+				array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=self.Array.shape)
+				array[:] = self.Array[:]
+				self.Array = array
 			else:
 				array = np.zeros(self.build_shape(rows), dtype=self.DType)
 				self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
@@ -127,10 +131,13 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		closed_indexes |= self.ClosedRows.get_rows()
 		saved_indexes = list(indexes - closed_indexes)
 		saved_indexes.sort()
-
 		self.Array = self.Array.take(saved_indexes, axis=0)
-		self.ClosedRows.reset(self.Array.shape[0])
+		if self.Persistent:
+			array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=self.Array.shape)
+			array[:] = self.Array[:]
+			self.Array = array
 
+		self.ClosedRows.reset(self.Array.shape[0])
 		self.Gauge.set("rows.closed", 0)
 		self.Gauge.set("rows.active", self.Array.shape[0])
 		return closed_indexes, saved_indexes
@@ -177,6 +184,10 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		Override this method to have a control over the shape of the matrix.
 		'''
 		return rows,
+
+
+	def reshape(self, shape):
+		return shape
 
 
 	def _grow_rows(self, rows=1):

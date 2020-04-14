@@ -69,7 +69,7 @@ class TimeWindowMatrix(NamedMatrix):
 			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True)
 			self.Timer.start(advance_period)
 			if self.TimeConfig.get_start() != start:
-				self.advance(start)
+				added = self.advance(start)
 		else:
 			self.Timer = None
 
@@ -92,6 +92,10 @@ class TimeWindowMatrix(NamedMatrix):
 		Override this method to have a control over the shape of the matrix.
 		'''
 		return (rows, self.Columns,)
+
+
+	def reshape(self, shape):
+		return (int(shape[0] / self.Columns), self.Columns, )
 
 
 	def add_column(self):
@@ -154,7 +158,7 @@ class TimeWindowMatrix(NamedMatrix):
 		if event_timestamp >= self.TimeConfig.get_start():
 			self.Counters.add('events.early', 1)
 			return None
-			
+
 		column_idx = int((event_timestamp - self.TimeConfig.get_end()) // self.TimeConfig.get_resolution())
 
 		# These are temporal debug lines
@@ -205,6 +209,15 @@ class TimeWindowMatrix(NamedMatrix):
 	def close_row(self, row_index, clear=True):
 		super().close_row(row_index, clear=clear)
 		self.WarmingUpCount.assign(row_index, self.Array.shape[1])
+
+
+	def flush(self):
+		'''
+		The matrix will be recreated without rows from `ClosedRows`.
+		'''
+		closed_indexes, saved_indexes = super().flush()
+		self.WarmingUpCount.take(saved_indexes)
+		return closed_indexes, saved_indexes
 
 
 	async def on_clock_tick(self):

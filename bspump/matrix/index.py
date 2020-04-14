@@ -36,7 +36,7 @@ class Index(object):
 			if row_index not in indexes:
 				n2imap[row_name] = i
 				i2nmap[i] = row_name
-				saved_indexes.append(i)
+				saved_indexes.append(row_index)
 				i += 1
 
 		self.N2IMap = n2imap
@@ -89,7 +89,7 @@ class PersistentIndex(Index):
 			if size is None:
 				raise RuntimeError("The size should correspond to array size")
 			
-		self.Map = np.memmap(self.Path,  dtype=self.DType, mode='w+', shape=(size,))
+			self.Map = np.memmap(self.Path,  dtype=self.DType, mode='w+', shape=(size,))
 
 
 	def pop_index(self, index):
@@ -113,5 +113,8 @@ class PersistentIndex(Index):
 	def clean(self, closed_indexes):
 		saved_indexes = super().clean(closed_indexes)
 		self.Map = self.Map.take(saved_indexes, axis=0)
+		map_ = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=self.Map.shape)
+		map_[:] = self.Map[:]
+		self.Map = map_
 		return saved_indexes
 

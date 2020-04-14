@@ -24,6 +24,10 @@ class WarmingUpCount(object):
 		self.WUC[index] = value
 
 
+	def take(self, indexes):
+		self.WUC = self.WUC.take(indexes, axis=0)
+
+
 	def __len__(self):
 		return self.WUC.shape[0]
 
@@ -49,3 +53,10 @@ class PersistentWarmingUpCount(WarmingUpCount):
 		self.WUC = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=wuc.shape)
 		self.WUC[:] = wuc[:]
 		self.WUC[start:end] = value
+
+
+	def take(self, indexes):
+		super().take(indexes)
+		wuc = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=self.WUC.shape)
+		wuc[:] = self.WUC[:]
+		self.WUC = wuc
