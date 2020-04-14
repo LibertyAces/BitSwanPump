@@ -1,9 +1,10 @@
 import logging
+import datetime
 
 import bspump
 import bspump.common
 import bspump.declarative
-import bspump.random
+import bspump.file
 import bspump.trigger
 
 ##
@@ -12,94 +13,54 @@ L = logging.getLogger(__name__)
 
 ##
 
-
-class VegetableCounterPipeline(bspump.Pipeline):
-	"""
-	The VegetableCounter example illustrates usage of BSPump declarative expression inside the DeclarativeProcessor.
-	The expression consists of nested expressions, which together calculate count of vegetables inside the event,
-	while adding extra radishes if the number of radishes is higher than two.
-
-	FIELD -> obtains field from the event
-	ASSIGN -> inserts field into the event
-	ADD -> adds values of item expressions
-	IF -> if clause with then and else expressions
-	HIGHER -> if a number is higher than a given number
-	UPDATE -> updates dictionary with multiple dictionaries
-	"""
-
+class Covid19Pipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
+
 		self.build(
 
-			bspump.random.RandomSource(app, self, choice=[
-				{"eggs": 2, "potatoes": 12, "carrots": 5},
-				{"potatoes": 10, "radishes": 5, "meat": 8},
-				{"radishes": 20, "carrots": 4, "potatoes": 5}
-			], config={"number": 5}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
+			bspump.file.FileCSVSource(app, self, config={'path':'./data/covid19-cases-head.csv','post':'noop'}
+			).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
+			Covid19Enricher(app, self),
 
-			bspump.declarative.DeclarativeTimeWindowAnalyzer(app, self, '''
----
-config:
-  key:
-  - "Customer Name"
-  - "Destination Address"
-  - "Destination User Name"
-  columns:
-    resolution: 60 # seconds
-    count: 15 
-  dtype: int
+			bspump.declarative.DeclarativeTimeWindowAnalyzer(app, self,
+				open("./bspump-declarative-twa.yaml").read()
+			),
 
-
-predicate:
-  !WHEN
-  - is:
-      !EQ
-      - !ITEM EVENT eggs
-      - 2
-    then: evaluate_eggs
-
-  - is:
-      !LT
-      - 9
-      - !ITEM EVENT potatoes
-      - 11
-    then: [evaluate_eggs, evaluate_potatoes]
-
-  - else:
-      Nah
-
-
-evaluate_eggs:
-  !EVENT
-
-evaluate_potatoes:
-  !EVENT
-
-#  !DICT
-#    row:
-#    - !ITEM EVENT "Customer Name"
-#    - !ITEM EVENT "Destination Address"
-#    - !ITEM EVENT "Destination User Name"
-#    col:
-#    - !ITEM EVENT Timestamp
-#    do:
-#      !!null
-
-'''
-),
-			bspump.common.PPrintSink(app, self)
+			bspump.common.NullSink(app, self)
 		)
 
 
-class VegetableCounterApplication(bspump.BSPumpApplication):
+class Covid19Enricher(bspump.Processor):
+	def process(self, context, event):
+		return {
+			'timestamp': datetime.datetime.strptime(event['Date'], "%m/%d/%Y"),
+			'Case_type': event['\ufeffCase_Type'],
+			'Cases': int(event['Cases']),
+			'Country_Region': event['Country_Region'],
+			'Province_State': event['Province_State']
+		}
+
+
+class MyApplication(bspump.BSPumpApplication):
 
 	def __init__(self):
 		super().__init__()
 		svc = self.get_service("bspump.PumpService")
-		svc.add_pipeline(VegetableCounterPipeline(self))
+		self.PrimaryPipeline = Covid19Pipeline(self)
+		svc.add_pipeline(self.PrimaryPipeline)
+
+		self.PubSub.subscribe("Application.run!", self.on_run)
+		self.PrimaryPipeline.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_end)
+
+	def on_run(self, event_name):
+		self.PrimaryPipeline.PubSub.publish("go!")
+
+	def on_end(self, event_name, pipeline):
+		self.stop()
 
 
 if __name__ == '__main__':
-	app = VegetableCounterApplication()
+	app = MyApplication()
 	app.run()
