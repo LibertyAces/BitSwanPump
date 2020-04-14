@@ -42,6 +42,10 @@ from .datastructs.itemexpr import ITEM
 from .value.valueexpr import VALUE
 from .value.eventexpr import EVENT
 from .value.eventexpr import CONTEXT
+from .value.eventexpr import KWARGS
+from .value.eventexpr import KWARG
+from .value.eventexpr import ARGS
+from .value.eventexpr import ARG
 
 # Lookup
 from .lookup.lookupexpr import LOOKUP
@@ -65,7 +69,10 @@ __all__ = [
 	"UPPER", "LOWER",
 	"JOIN",
 	"REGEX", "REGEX_PARSE",
-	"VALUE", "TUPLE", "EVENT", "CONTEXT",
+	"VALUE",
+	"EVENT", "CONTEXT",
+	"ARGS", "ARG",
+	"KWARGS", "KWARG",
 	"LOOKUP",
 	"INDATE", "IN", "INSUBNET",
 	"DATEFMT", "NOW",

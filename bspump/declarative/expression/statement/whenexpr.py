@@ -26,10 +26,10 @@ class WHEN(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		for branch in self.Items:
-			expr_is = branch.get('is')
-			if expr_is is not None:
+			expr_test = branch.get('test')
+			if expr_test is not None:
 
-				res = self.evaluate(expr_is, context, event, *args, **kwargs)
+				res = self.evaluate(expr_test, context, event, *args, **kwargs)
 				if res:
 					expr_then = branch.get('then', True)
 					return self.evaluate(expr_then, context, event, *args, **kwargs)
