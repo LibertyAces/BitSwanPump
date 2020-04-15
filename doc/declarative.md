@@ -100,7 +100,7 @@ More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 ## Comments
 
 ```
-# This is a comment.
+	# This is a comment.
 ```
 
 ## Expressions
@@ -132,7 +132,7 @@ Type: _Sequence_.
 ```
 
 
-### Comparisons `LT`, `LE`, `EQ`, `NE`, `GE`, `GT`
+### Comparisons `LT`, `LE`, `EQ`, `NE`, `GE`, `GT`, `IS`, `ISNOT`
 
 Type: _Sequence_.
 
@@ -152,6 +152,15 @@ Example of a range `2 < Event.count < 5` check:
 - 2
 - !ITEM EVENT count
 - 5
+```
+
+Example of is `Event.user1 is Event.user2 is Event.user3` check:
+
+```
+!IS
+- !ITEM EVENT user1
+- !ITEM EVENT user2
+- !ITEM EVENT user3
 ```
 
 
@@ -267,7 +276,7 @@ Short form:
 ```
 
 
-### String tests "STARTSWITH", "ENDSWITH"
+### String tests "STARTSWITH", "ENDSWITH", "CONTAINS"
 
 Type: _Mapping_.
 
@@ -278,12 +287,18 @@ prefix: <...>
 ```
 
 ```
-! ENDSWITH
+!ENDSWITH
 value: <...>
 postfix: <...>
 ```
 
-### String transformations "LOWER", "UPPER"
+```
+!CONTAINS
+string: <...>
+contains: <...>
+```
+
+### String transformations "LOWER", "UPPER", "JOIN", "SUBSTRING"
 
 Changes the string case.
 
@@ -291,12 +306,27 @@ Type: _Mapping_.
 
 ```
 !LOWER
-string: <...>
+value: <...>
 ```
 
 ```
-! UPPER
-string: <...>
+!UPPER
+value: <...>
+```
+
+```
+!JOIN
+items:
+	-<...>
+	-<...>
+char: - (default is space " ")
+```
+
+```
+!SUBSTRING
+value: <...>
+from: (int, default 0)
+to: (int, default -1)
 ```
 
 ### Regular expression "REGEX"
@@ -314,7 +344,6 @@ miss: <...|default False>
 ```
 Note: Uses Python regular expression.
 
-
 ### Regular expression "REGEX_PARSE"
 
 Search `value` forr `regex` with regular expressions groups.
@@ -325,6 +354,22 @@ Type: _Mapping_.
 !REGEX_PARSE
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 items: [Foo, Bar,  <...>]
+value: <...>
+```
+
+If nothing is found `miss` is returned.
+Otherwise, groups are returned in as a list.
+
+If `items ` are provided, the groups are mapped to provided `items` and a dictionary is returned.
+
+### Regular expression "REGEX_REPLACE"
+
+Searches for `regex_search` in `value` and replaces leftmost occurrence with `regex_replace`.
+
+```
+!REGEX_REPLACE
+regex_search: '^(\w+)\s+(\w+)\s+(frank|march)?'
+regex_replace: '^(\w+)\s+(\w+)\s+(frank|march)?'
 value: <...>
 ```
 
@@ -361,6 +406,34 @@ lookup: <...>
 key: <...>
 ```
 
+### Utility
+
+#### Utility "MAP"
+
+Checks if `value` exists in the provided key-value map. If so, it returns the mapped value, otherwise
+returns default value specified in the `else` branch.
+
+```
+!MAP
+value: !ITEM EVENT potatoes
+map:
+	7: only seven
+	20: twenty
+	12: twelve
+	10: enough to join the potato throwing competition
+else:
+	no right amount of potatoes found
+```
+
+#### Utility "CAST"
+
+Casts specified `value` to `type`, which can be int, float, str, list and dict.
+
+```
+!CAST
+value: !ITEM EVENT carrots
+type: int
+```
 
 ### Test "IN"
 
