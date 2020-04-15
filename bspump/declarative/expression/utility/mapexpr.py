@@ -28,6 +28,6 @@ class MAP(Expression):
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)
 		try:
 			item = self.Map[value]
-			return self.evaluate(item, context, event, *args, **kwargs)
 		except KeyError:
 			return self.evaluate(self.Default, context, event, *args, **kwargs)
+		return self.evaluate(item, context, event, *args, **kwargs)
