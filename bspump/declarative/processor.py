@@ -1,4 +1,4 @@
-from ..abc.processor import  Processor
+from ..abc.processor import Processor
 from .builder import ExpressionBuilder
 
 

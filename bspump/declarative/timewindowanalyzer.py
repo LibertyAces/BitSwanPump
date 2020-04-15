@@ -5,14 +5,12 @@ from .abc import Expression
 
 class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 
-
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
 		_id = definition.get("id")
 		config = definition.get("config")
 		declaration = definition.get("declaration")
 		return cls(app, pipeline, declaration=declaration, id=_id, config=config)
-
 
 	def __init__(self, app, pipeline, declaration, id=None, config=None):
 
@@ -45,20 +43,20 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 		if self.Trigger is not None:
 			assert(isinstance(self.Trigger, list))
 
-
-		super().__init__(app, pipeline, id=id, config=config,
+		# TODO: matrix_id
+		# TODO: analyze_on_clock
+		# TODO: start_time
+		# TODO: clock_driven
+		super().__init__(
+			app, pipeline, id=id, config=config,
 			dtype=dtype,  columns=columns_count, resolution=columns_resolution,
-			# TODO: matrix_id
-			# TODO: analyze_on_clock
-			# TODO: start_time
-			# TODO: clock_driven
 		)
-
 
 	def process(self, context, event):
 		x = self.Predicate(context, event)
 		if x:
-			if x == True: x = 'evaluate'
+			if x:
+				x = 'evaluate'
 			if isinstance(x, list):
 				for i in x:
 					self.evaluate(self.Evaluates[i], context, event)
@@ -66,7 +64,6 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 				self.evaluate(self.Evaluates[x], context, event)
 
 		return event
-
 
 	def evaluate(self, evalobj, context, event):
 
@@ -98,7 +95,6 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 		self.TimeWindow.Array[row, column] = ret
 		self.trigger(context, event, 'primary', ret, row, column)
 
-
 	def trigger(self, context, event, matrix, cell, row, column):
 		for t in self.Trigger:
 			matrix = t[matrix]
@@ -112,5 +108,3 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 
 			if result:
 				print(">>> trigger", event, row, column)
-
-
