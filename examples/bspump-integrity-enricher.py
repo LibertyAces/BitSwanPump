@@ -1,5 +1,4 @@
 import logging
-import time
 
 import bspump
 import bspump.common
@@ -51,13 +50,10 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.elasticsearch.ElasticSearchSource(
 				app, self, "ESConnection"
 			).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
-			bspump.integrity.IntegrityEnricher(app, self, 
-				config={'key_path': './data/test_ec_key',
-						'algorithm': 'HS512',
-				}),
+			bspump.integrity.IntegrityEnricher(app, self),
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
 		)
-		
+
 
 if __name__ == '__main__':
 	app = bspump.BSPumpApplication()
@@ -76,4 +72,3 @@ if __name__ == '__main__':
 	pl.PubSub.publish("go!")
 
 	app.run()
-
