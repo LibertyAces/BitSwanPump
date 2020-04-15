@@ -46,7 +46,6 @@ class IntegrityEnricher(Processor):
 
 		# Check if hash / previous hash already present in event and if so, delete it from event
 		event.pop(self.HashKey, None)
-		event.pop(self.PrevHashKey, None)
 
 		# Salt event - to ensure that events are not going to be the same after hash
 		event["_s"] = secrets.token_urlsafe(self.SaltLength)
@@ -54,6 +53,8 @@ class IntegrityEnricher(Processor):
 		# Set previous hash
 		if self.PreviousHash is not None:
 			event[self.PrevHashKey] = self.PreviousHash
+		else:
+			event.pop(self.PrevHashKey, None)
 
 		# Hash event using key, value, key, value ... sequence
 		_hash = hashlib.new(self.Algorithm)
