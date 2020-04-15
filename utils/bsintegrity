@@ -117,6 +117,9 @@ class Integrity:
 		# Initialize scroll number
 		if scroll == '' or scroll is None:
 			scroll = "1"
+		# Initialize items size
+		if items_size == '' or items_size is None:
+			items_size = 100
 		# Initialize hash and previous hash names
 		if hash_name == '' or hash_name is None:
 			hash_name = "hash"
@@ -174,7 +177,7 @@ def parse_cmdline():
 	check_parser = subparsers.add_parser('check', help='check on integrity of hashed events')
 	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL, e.g. http://localhost:9200')
 	check_parser.add_argument('index', action='store', help='a ElasticSearch index, e.g. my_index-01')
-	check_parser.add_argument('items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. 50')
+	check_parser.add_argument('--items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. --items_size=50')
 	check_parser.add_argument('--scroll', action='store', help='a ElasticSearch scroll, e.g. --scroll=2')
 	check_parser.add_argument('--hash_name', action='store', help='a Hash key name, e.g. --hash_name=hash')
 	check_parser.add_argument('--prev_hash_name', action='store', help='a Previous hash key name, e.g. --prev_hash_name=previous_hash')
