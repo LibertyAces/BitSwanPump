@@ -27,8 +27,7 @@ class IntegrityEnricher(Processor):
 	ConfigDefaults = {
 		'algorithm': 'SHA256',
 		'encoding': 'utf-8',
-		'hash_target': 'context',  # f. e. used by ElasticSearchSink
-		'hash_key': 'es_id',
+		'hash_key': '_id',
 		'prev_hash_key': '_prev_id'
 	}
 
@@ -36,7 +35,6 @@ class IntegrityEnricher(Processor):
 		super().__init__(app, pipeline, id, config)
 		self.Algorithm = self.Config['algorithm']
 		self.Encoding = self.Config['encoding']
-		self.HashTarget = self.Config['hash_target']
 		self.HashKey = self.Config['hash_key']
 		self.PrevHashKey = self.Config['prev_hash_key']
 		self.PreviousHash = None
@@ -68,10 +66,7 @@ class IntegrityEnricher(Processor):
 		hash_base64 = base64.b64encode(_hash.digest()).decode(self.Encoding)
 
 		# Store the hash as base64 string
-		if self.HashTarget == "context":
-			context[self.HashKey] = hash_base64
-		else:
-			event[self.HashKey] = hash_base64
+		event[self.HashKey] = hash_base64
 
 		# Actual hash will become previous hash in the next iteration
 		self.PreviousHash = hash_base64
