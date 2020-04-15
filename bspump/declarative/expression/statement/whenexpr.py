@@ -2,8 +2,8 @@ from ...abc import SequenceExpression
 
 
 class WHEN(SequenceExpression):
-	"""
-	Checks "if" condition passes - it is an `if` on steroids ;-)
+    """
+    Checks "if" condition passes - it is an `if` on steroids ;-)
 
   !WHEN
   - is:
@@ -22,7 +22,7 @@ class WHEN(SequenceExpression):
   - else:
       Nah
 
-	"""
+    """
 
 	def __call__(self, context, event, *args, **kwargs):
 		for branch in self.Items:
