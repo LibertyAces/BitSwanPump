@@ -65,9 +65,7 @@ class ElasticSearchSink(Sink):
 
 		# Obtain index from context and ID from event
 		_index = context.get("es_index")
-		_id = None
-		if "_id" in event:
-			_id = event.pop("_id")
+		_id = event.pop("_id", None)
 
 		# Header
 		data = '{{"index": {{ "_index": "{}", "_type": "{}"'.format(
