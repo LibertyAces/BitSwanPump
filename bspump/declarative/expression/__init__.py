@@ -44,7 +44,6 @@ from .datastructs.listexpr import LIST
 
 from .datastructs.itemexpr import ITEM
 
-
 # Value
 from .value.valueexpr import VALUE
 from .value.eventexpr import EVENT
@@ -61,8 +60,10 @@ from .lookup.lookupexpr import LOOKUP
 from .test.indateexpr import INDATE
 from .test.inexpr import IN
 from .test.insubnetexpr import INSUBNET
-from .test.castexpr import CAST
-from .test.mapexpr import MAP
+
+# Utility
+from .utility.castexpr import CAST
+from .utility.mapexpr import MAP
 
 # Date/time
 from .datetime.nowexpr import NOW
@@ -84,6 +85,7 @@ __all__ = [
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
 	"LOOKUP",
-	"INDATE", "IN", "INSUBNET", "CAST", "MAP",
+	"INDATE", "IN", "INSUBNET",
+	"CAST", "MAP",
 	"DATEFMT", "NOW",
 ]

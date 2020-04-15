@@ -1,4 +1,4 @@
-from ...abc import Expression
+from bspump.declarative.abc import Expression
 
 
 class MAP(Expression):
@@ -14,16 +14,20 @@ class MAP(Expression):
 		20: twenty
 		12: twelve
 		10: enough
+	else:
+		nothing found
 	"""
 
-	def __init__(self, app, *, arg_value, arg_map):
+	def __init__(self, app, *, arg_value, arg_map, arg_else=None):
 		super().__init__(app)
 		self.Value = arg_value
+		self.Default = arg_else
 		self.Map = arg_map
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		for map_key, map_value in self.Map.items():
-			if value == map_key:
-				return self.evaluate(map_value, context, event, *args, **kwargs)
-		return None
+		try:
+			item = self.Map[value]
+			return self.evaluate(item, context, event, *args, **kwargs)
+		except KeyError:
+			return self.evaluate(self.Default, context, event, *args, **kwargs)
