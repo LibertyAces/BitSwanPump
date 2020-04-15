@@ -3,7 +3,6 @@ from ...abc import Expression
 
 class ENDSWITH(Expression):
 
-
 	def __init__(self, app, *, arg_value, arg_postfix):
 		super().__init__(app)
 		self.Value = arg_value
