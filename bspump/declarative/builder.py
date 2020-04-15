@@ -61,7 +61,7 @@ class ExpressionBuilder(object):
 
 			elif isinstance(node, yaml.MappingNode):
 				value = loader.construct_mapping(node)
-				return xclass(self.App, **dict(('arg_' + k, v)for k, v in value.items()))
+				return xclass(self.App, **dict(('arg_' + k, v) for k, v in value.items()))
 
 		except Exception:
 			L.exception("Error when constructing '{}'".format(xclass))

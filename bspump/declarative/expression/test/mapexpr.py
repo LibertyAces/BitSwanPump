@@ -8,24 +8,22 @@ class MAP(Expression):
 	Usage:
 
 	!MAP
-	map:
-		-
-			- 7
-			- found seven
-		-
-			- 8
-			- found eight
 	value: !ITEM EVENT potatoes
+	map:
+		7: only seven
+		20: twenty
+		12: twelve
+		10: enough
 	"""
 
-	def __init__(self, app, *, arg_map, arg_value):
+	def __init__(self, app, *, arg_value, arg_map):
 		super().__init__(app)
 		self.Value = arg_value
-		self.Items = arg_map
+		self.Map = arg_map
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		for item in self.Items:
-			if value == self.evaluate(item[0], context, event, *args, **kwargs):
-				return self.evaluate(item[1], context, event, *args, **kwargs)
+		for map_key, map_value in self.Map.items():
+			if value == map_key:
+				return self.evaluate(map_value, context, event, *args, **kwargs)
 		return None

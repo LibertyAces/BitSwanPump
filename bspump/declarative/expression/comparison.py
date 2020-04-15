@@ -55,3 +55,21 @@ class GT(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.gt, context, event, *args, **kwargs)
+
+
+class IS(SequenceExpression):
+	"""
+	Operator 'is'
+	"""
+
+	def __call__(self, context, event, *args, **kwargs):
+		return self.reduce(operator.is_, context, event, *args, **kwargs)
+
+
+class ISNOT(SequenceExpression):
+	"""
+	Operator 'is not'
+	"""
+
+	def __call__(self, context, event, *args, **kwargs):
+		return self.reduce(operator.is_not, context, event, *args, **kwargs)

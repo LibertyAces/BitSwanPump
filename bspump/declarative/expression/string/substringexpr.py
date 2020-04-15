@@ -3,7 +3,7 @@ from ...abc import Expression
 
 class SUBSTRING(Expression):
 
-	def __init__(self, app, *, arg_value, arg_from, arg_to):
+	def __init__(self, app, *, arg_value, arg_from=0, arg_to=-1):
 		super().__init__(app)
 		self.Value = arg_value
 		self.From = arg_from

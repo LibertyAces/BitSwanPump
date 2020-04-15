@@ -17,6 +17,8 @@ from .comparison import EQ
 from .comparison import NE
 from .comparison import GE
 from .comparison import GT
+from .comparison import IS
+from .comparison import ISNOT
 
 # Statements
 from .statement.ifexpr import IF
@@ -59,7 +61,6 @@ from .lookup.lookupexpr import LOOKUP
 from .test.indateexpr import INDATE
 from .test.inexpr import IN
 from .test.insubnetexpr import INSUBNET
-from .test.isnoneexpr import ISNONE
 from .test.castexpr import CAST
 from .test.mapexpr import MAP
 
@@ -68,9 +69,9 @@ from .datetime.nowexpr import NOW
 from .datetime.datefmt import DATEFMT
 
 __all__ = [
-	"ADD", "DIV", "MUL", "SUB", "MOD",    # Aritmetics
-	"AND", "OR", "NOT",                   # Logical
-	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
+	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
+	"AND", "OR", "NOT",                                  # Logical
+	"LT", "LE", "EQ", "NE", "GE", "GT", "IS", "ISNOT",   # Comparison
 	"IF", "WHEN",
 	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
@@ -83,6 +84,6 @@ __all__ = [
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
 	"LOOKUP",
-	"INDATE", "IN", "INSUBNET", "ISNONE", "CAST", "MAP",
+	"INDATE", "IN", "INSUBNET", "CAST", "MAP",
 	"DATEFMT", "NOW",
 ]
