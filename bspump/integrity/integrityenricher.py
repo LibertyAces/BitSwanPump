@@ -29,7 +29,7 @@ class IntegrityEnricher(Processor):
 		'encoding': 'utf-8',
 		'hash_target': 'context',  # f. e. used by ElasticSearchSink
 		'hash_key': 'es_id',
-		'prev_hash_key': 'prev'
+		'prev_hash_key': '_prev_id'
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
