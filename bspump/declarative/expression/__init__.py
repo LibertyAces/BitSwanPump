@@ -21,6 +21,8 @@ from .comparison import GT
 from .statement.ifexpr import IF
 from .statement.whenexpr import WHEN
 
+from .statement.debugexpr import DEBUG
+
 # String
 from .string.endswith import ENDSWITH
 from .string.joinexpr import JOIN
@@ -30,14 +32,22 @@ from .string.startswith import STARTSWITH
 from .string.upperexpr import UPPER
 from .string.lowerexpr import LOWER
 
-# Dictionary
-from .dictionary.dictexpr import DICT
-from .dictionary.itemexpr import ITEM
+# Data structures
+from .datastructs.dictexpr import DICT
+from .datastructs.tupleexpr import TUPLE
+from .datastructs.listexpr import LIST
+
+from .datastructs.itemexpr import ITEM
+
 
 # Value
 from .value.valueexpr import VALUE
 from .value.eventexpr import EVENT
 from .value.eventexpr import CONTEXT
+from .value.eventexpr import KWARGS
+from .value.eventexpr import KWARG
+from .value.eventexpr import ARGS
+from .value.eventexpr import ARG
 
 # Lookup
 from .lookup.lookupexpr import LOOKUP
@@ -56,12 +66,16 @@ __all__ = [
 	"AND", "OR", "NOT",                   # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
 	"IF", "WHEN",
-	"DICT", "ITEM",
+	"DEBUG",
+	"DICT", "LIST", "TUPLE", "ITEM",
 	"STARTSWITH", "ENDSWITH",
 	"UPPER", "LOWER",
 	"JOIN",
 	"REGEX", "REGEX_PARSE",
-	"VALUE", "EVENT", "CONTEXT",
+	"VALUE",
+	"EVENT", "CONTEXT",
+	"ARGS", "ARG",
+	"KWARGS", "KWARG",
 	"LOOKUP",
 	"INDATE", "IN", "INSUBNET",
 	"DATEFMT", "NOW",

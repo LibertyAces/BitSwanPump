@@ -1,4 +1,5 @@
 import time
+import datetime
 import logging
 
 import numpy as np
@@ -49,6 +50,9 @@ class TimeWindowMatrix(NamedMatrix):
 
 		if start_time is None:
 			start_time = time.time()
+		elif isinstance(start_time, datetime.datetime):
+			start_time = start_time.timestamp()
+
 
 		self.Resolution = resolution
 		self.Start = (1 + (start_time // self.Resolution)) * self.Resolution
@@ -133,6 +137,8 @@ class TimeWindowMatrix(NamedMatrix):
 			The timestamp should be provided in seconds.
 		'''
 
+		if isinstance(event_timestamp, datetime.datetime):
+			event_timestamp = event_timestamp.timestamp()
 
 		if event_timestamp <= self.End:
 			self.Counters.add('events.late', 1)

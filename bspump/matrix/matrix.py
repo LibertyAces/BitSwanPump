@@ -61,8 +61,6 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
-		if not isinstance(dtype, str):
-			dtype = dtype[:]
 		self.Id = id if id is not None else self.__class__.__name__
 		super().__init__("matrix:{}".format(self.Id), config=config)
 
