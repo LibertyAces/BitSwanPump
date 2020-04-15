@@ -9,11 +9,11 @@ Create or update the dictionary.
 !DICT
 with: !EVENT
 set:
-  item1: foo
-  item2: bar
-  item3: ...
+	item1: foo
+	item2: bar
+	item3: ...
 del:
-  - item4
+	- item4
 
 ```
 
@@ -25,7 +25,6 @@ This is how to create the empty dictionary:
 !DICT {}
 ```
 """
-
 
 	def __init__(self, app, *, arg_with=None, arg_set=None, arg_del=None, arg_add=None):
 		super().__init__(app)
@@ -44,13 +43,12 @@ This is how to create the empty dictionary:
 			assert(isinstance(arg_del, list))
 		self.Del = arg_del
 
-
 	def __call__(self, context, event, *args, **kwargs):
 		if self.With is None:
 			with_dict = dict()
 		else:
 			with_dict = self.evaluate(self.With, context, event, *args, **kwargs)
-			#TODO: Must be usable as a dictionary
+			# TODO: Must be usable as a dictionary
 
 		if self.Set is not None:
 			for key, value in self.Set.items():

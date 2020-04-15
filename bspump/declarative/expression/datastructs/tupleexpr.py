@@ -1,5 +1,6 @@
 from ...abc import SequenceExpression
 
+
 class TUPLE(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):

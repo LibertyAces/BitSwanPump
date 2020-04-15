@@ -5,22 +5,22 @@ class WHEN(SequenceExpression):
 	"""
 	Checks "if" condition passes - it is an `if` on steroids ;-)
 
-  !WHEN
-  - is:
-      !EQ
-      - !ITEM EVENT eggs
-      - 2
-    then: eggs
+	!WHEN
+	- is:
+		!EQ
+		- !ITEM EVENT eggs
+		- 2
+	then: eggs
 
-  - is:
-      !LT
-      - 9
-      - !ITEM EVENT potatoes
-      - 11
-    then: potatoes
+	- is:
+		!LT
+		- 9
+		- !ITEM EVENT potatoes
+		- 11
+	then: potatoes
 
-  - else:
-      Nah
+	- else:
+		Nah
 
 	"""
 
@@ -42,4 +42,3 @@ class WHEN(SequenceExpression):
 				return self.evaluate(expr_else, context, event, *args, **kwargs)
 
 		return False
-		

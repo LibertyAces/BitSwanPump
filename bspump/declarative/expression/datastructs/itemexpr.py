@@ -61,7 +61,8 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			if self.Default is None: raise
 			return self.evaluate(self.Default, context, event, *args, **kwargs)
 		except IndexError:
-			if self.Default is None: raise
+			if self.Default is None:
+				raise
 			return self.evaluate(self.Default, context, event, *args, **kwargs)
 
 		return value
