@@ -63,9 +63,9 @@ class ElasticSearchSink(Sink):
 	def process(self, context, event):
 		assert self._rollover_mechanism.Index is not None
 
+		# Obtain index from context and ID from event
 		_index = context.get("es_index")
-		_id = context.get("es_id")
-		_version = context.get("es_version")
+		_id = event.get("_id")
 
 		# Header
 		data = '{{"index": {{ "_index": "{}", "_type": "{}"'.format(
@@ -75,10 +75,6 @@ class ElasticSearchSink(Sink):
 		# ID
 		if _id is not None:
 			data += ', "_id": "{}"'.format(_id)
-
-		# Version
-		if _version is not None:
-			data += ', "version_type": "external_gte", "version": {}'.format(_version)
 
 		# Event/Ending
 		data += ' }}\n{}\n'.format(json.dumps(event))
