@@ -1,11 +1,10 @@
 import logging
-import random
-import string
 
+import secrets
 import hashlib
 import base64
 
-import bspump
+from ..abc.processor import Processor
 
 ###
 
@@ -14,7 +13,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class IntegrityEnricher(bspump.Processor):
+class IntegrityEnricher(Processor):
 	"""
 	IntegrityEnricher is a enricher processor, which enriches JSON data
 	by hashed events.
@@ -30,7 +29,6 @@ class IntegrityEnricher(bspump.Processor):
 		'encoding': 'utf-8',
 		'hash_target': 'context',  # f. e. used by ElasticSearchSink
 		'hash_key': 'es_id',
-		'prev_hash_target': 'event',
 		'prev_hash_key': 'prev'
 	}
 
@@ -40,7 +38,6 @@ class IntegrityEnricher(bspump.Processor):
 		self.Encoding = self.Config['encoding']
 		self.HashTarget = self.Config['hash_target']
 		self.HashKey = self.Config['hash_key']
-		self.PrevHashTarget = self.Config['prev_hash_target']
 		self.PrevHashKey = self.Config['prev_hash_key']
 		self.PreviousHash = None
 
@@ -57,14 +54,17 @@ class IntegrityEnricher(bspump.Processor):
 		event.pop(self.PrevHashKey, None)
 
 		# Salt event - to ensure that events are not going to be the same after hash
-		event["sgs"] = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase, k=6))
+		event["_s"] = secrets.token_urlsafe(3)
+
+		# Set previous hash
+		if self.PreviousHash is not None:
+			event[self.PrevHashKey] = self.PreviousHash
 
 		# Hash event using key, value, key, value ... sequence
 		_hash = hashlib.new(self.Algorithm)
 		for key in sorted(event.keys()):
 			_hash.update(self._encode_for_hash(key))
 			_hash.update(self._encode_for_hash(event[key]))
-		_hash.update(self._encode_for_hash(event["sgs"]))
 		hash_base64 = base64.b64encode(_hash.digest()).decode(self.Encoding)
 
 		# Store the hash as base64 string
@@ -72,12 +72,6 @@ class IntegrityEnricher(bspump.Processor):
 			context[self.HashKey] = hash_base64
 		else:
 			event[self.HashKey] = hash_base64
-
-		# Set previous hash
-		if self.PrevHashTarget == "context":
-			context[self.PrevHashKey] = self.PreviousHash
-		else:
-			event[self.PrevHashKey] = self.PreviousHash
 
 		# Actual hash will become previous hash in the next iteration
 		self.PreviousHash = hash_base64
