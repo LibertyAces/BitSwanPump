@@ -37,3 +37,12 @@ class SUB(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.sub, context, event, *args, **kwargs)
+
+
+class MOD(SequenceExpression):
+	"""
+	Modules values in expression.
+	"""
+
+	def __call__(self, context, event, *args, **kwargs):
+		return self.reduce(operator.mod, context, event, *args, **kwargs)

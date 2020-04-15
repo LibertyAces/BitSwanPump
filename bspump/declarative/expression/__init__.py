@@ -3,6 +3,7 @@ from .arithmetic import ADD
 from .arithmetic import DIV
 from .arithmetic import MUL
 from .arithmetic import SUB
+from .arithmetic import MOD
 
 # Logical
 from .logical import AND
@@ -16,6 +17,8 @@ from .comparison import EQ
 from .comparison import NE
 from .comparison import GE
 from .comparison import GT
+from .comparison import IS
+from .comparison import ISNOT
 
 # Statements
 from .statement.ifexpr import IF
@@ -28,9 +31,11 @@ from .string.endswith import ENDSWITH
 from .string.joinexpr import JOIN
 from .string.regex import REGEX
 from .string.regex import REGEX_PARSE
+from .string.regex import REGEX_REPLACE
 from .string.startswith import STARTSWITH
 from .string.upperexpr import UPPER
 from .string.lowerexpr import LOWER
+from .string.substringexpr import SUBSTRING
 
 # Data structures
 from .datastructs.dictexpr import DICT
@@ -38,7 +43,6 @@ from .datastructs.tupleexpr import TUPLE
 from .datastructs.listexpr import LIST
 
 from .datastructs.itemexpr import ITEM
-
 
 # Value
 from .value.valueexpr import VALUE
@@ -57,26 +61,31 @@ from .test.indateexpr import INDATE
 from .test.inexpr import IN
 from .test.insubnetexpr import INSUBNET
 
+# Utility
+from .utility.castexpr import CAST
+from .utility.mapexpr import MAP
+
 # Date/time
 from .datetime.nowexpr import NOW
 from .datetime.datefmt import DATEFMT
 
 __all__ = [
-	"ADD", "DIV", "MUL", "SUB",           # Aritmetics
-	"AND", "OR", "NOT",                   # Logical
-	"LT", "LE", "EQ", "NE", "GE", "GT",   # Comparison
+	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
+	"AND", "OR", "NOT",                                  # Logical
+	"LT", "LE", "EQ", "NE", "GE", "GT", "IS", "ISNOT",   # Comparison
 	"IF", "WHEN",
 	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
-	"STARTSWITH", "ENDSWITH",
+	"STARTSWITH", "ENDSWITH", "SUBSTRING",
 	"UPPER", "LOWER",
 	"JOIN",
-	"REGEX", "REGEX_PARSE",
+	"REGEX", "REGEX_PARSE", "REGEX_REPLACE",
 	"VALUE",
 	"EVENT", "CONTEXT",
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
 	"LOOKUP",
 	"INDATE", "IN", "INSUBNET",
+	"CAST", "MAP",
 	"DATEFMT", "NOW",
 ]

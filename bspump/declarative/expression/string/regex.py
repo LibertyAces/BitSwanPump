@@ -20,9 +20,9 @@ class REGEX(Expression):
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)
 		match = re.search(self.Regex, value)
 		if match is None:
-			return self.evaluate(self.Miss, event, *args, **kwargs)
+			return self.evaluate(self.Miss, context, event, *args, **kwargs)
 		else:
-			return self.evaluate(self.Hit, event, *args, **kwargs)
+			return self.evaluate(self.Hit, context, event, *args, **kwargs)
 
 
 class REGEX_PARSE(Expression):
@@ -53,3 +53,19 @@ class REGEX_PARSE(Expression):
 			return groups
 
 		return dict(zip(self.Items, groups))
+
+
+class REGEX_REPLACE(Expression):
+	"""
+	Search `regex_search` in `value` and replace with `regex_replace`.
+	"""
+
+	def __init__(self, app, *, arg_regex_search, arg_regex_replace, arg_value):
+		super().__init__(app)
+		self.Value = arg_value
+		self.RegexSearch = re.compile(arg_regex_search)
+		self.RegexReplace = re.compile(arg_regex_replace)
+
+	def __call__(self, context, event, *args, **kwargs):
+		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		return re.sub(self.RegexSearch, self.RegexReplace, value)

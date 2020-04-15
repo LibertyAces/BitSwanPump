@@ -6,9 +6,9 @@ class JOIN(Expression):
 	Joins strings in "items" using "char".
 	"""
 
-	def __init__(self, app, *, sequence, arg_char="-"):
+	def __init__(self, app, *, arg_items, arg_char=" "):
 		super().__init__(app)
-		self.Items = sequence
+		self.Items = arg_items
 		self.Char = arg_char
 
 	def __call__(self, context, event, *args, **kwargs):
