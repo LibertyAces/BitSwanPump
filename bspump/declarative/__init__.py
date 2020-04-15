@@ -8,6 +8,7 @@ from. segmentbuilder import SegmentBuilder
 __all__ = [
 	"DeclarativeProcessor",
 	"DeclarativeGenerator",
+	"DeclarativeTimeWindowAnalyzer",
 
 	"ExpressionBuilder",
 	"SegmentBuilder",

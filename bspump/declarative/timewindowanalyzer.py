@@ -38,7 +38,6 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 		self.Dimension = define.pop('dimension')
 		assert(isinstance(self.Dimension, list) or isinstance(self.Dimension, str))
 
-
 		self.Trigger = decl.pop('trigger', None)
 		if self.Trigger is not None:
 			assert(isinstance(self.Trigger, list))
@@ -49,7 +48,7 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 		# TODO: clock_driven
 		super().__init__(
 			app, pipeline, id=id, config=config,
-			dtype=dtype,  columns=columns_count, resolution=columns_resolution,
+			dtype=dtype, columns=columns_count, resolution=columns_resolution,
 		)
 
 	def process(self, context, event):
