@@ -1,11 +1,16 @@
 import argparse
 import os
 import json
-import pprint
 import re
+import pprint
+
 import datetime
 import time
+
 import requests
+
+import hashlib
+import base64
 
 '''
 
@@ -45,7 +50,8 @@ class Integrity:
 	def __init__(self):
 		# Hit and Miss count to see how many items (objects) were checked and with hit or miss result
 		self.HitCount = 0
-		self.MissCount = 0
+		self.ChainMissCount = 0
+		self.EventMissCount = 0
 		# Hashes where integrity has not been approved are stored here and eventually printed at the end of the process
 		self.HashSet = {}
 
@@ -64,17 +70,16 @@ class Integrity:
 
 	# Progress bar
 	def progress_bar(self, iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
-	    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-	    filledLength = int(length * iteration // total)
-	    bar = fill * filledLength + '-' * (length - filledLength)
-	    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
-	    # Print new line after the end of iteration
-	    if iteration == total: 
-	        print()
-
+		percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+		filledLength = int(length * iteration // total)
+		bar = fill * filledLength + '-' * (length - filledLength)
+		print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
+		# Print new line after the end of iteration
+		if iteration == total:
+			print()
 
 	# Fetch data from ES
-	def fetch_items(self, URL, index, items_size, scroll, hash_name ,prev_hash_name):
+	def fetch_items(self, URL, index, items_size, scroll, algorithm, prev_hash_key):
 		# Call method returning count of items in index
 		count = self.get_items_count_in_index(URL, index)
 		scroll_id = None
@@ -106,32 +111,45 @@ class Integrity:
 			# Store sets of actual and previous hash to global dictionary
 			for JSONobject in hits:
 				downloadbar_counter += 1
-				self.HashSet[JSONobject["_source"][prev_hash_name]] = JSONobject["_source"][hash_name]
+				event = JSONobject["_source"]
+				self.HashSet[event.get(prev_hash_key)] = JSONobject["_id"]
 
-	     	# Update Progress Bar
+				# Check the data integrity inside the event/document
+				_hash = hashlib.new(algorithm)
+				for key in sorted(event.keys()):
+					_hash.update(str(key).encode("ascii"))
+					_hash.update(str(event[key]).encode("ascii"))
+				hash_base64 = base64.b64encode(_hash.digest()).decode("ascii")
+				if hash_base64 != JSONobject["_id"]:
+					self.EventMissCount += 1
+
+			# Update Progress Bar
 			self.progress_bar(downloadbar_counter, count, prefix='Download:', suffix='Complete', length=50)
  
 
 	# Check for integrity
-	def COMMAND_check(self, URL, index, items_size, scroll, hash_name, prev_hash_name):
+	def COMMAND_check(self, URL, index, items_size, scroll, algorithm, prev_hash_key):
 		# Initialize scroll number
 		if scroll == '' or scroll is None:
 			scroll = "1"
 		# Initialize items size
 		if items_size == '' or items_size is None:
 			items_size = 100
+		# Use default hash algorithm
+		if algorithm == '' or algorithm is None:
+			algorithm = "SHA256"
 		# Initialize hash and previous hash names
-		if hash_name == '' or hash_name is None:
-			hash_name = "hash"
-		if prev_hash_name == '' or prev_hash_name is None:
-			prev_hash_name = "previous_hash"
+		if prev_hash_key == '' or prev_hash_key is None:
+			prev_hash_key = "_prev_id"
+
 		# Call method which get the data from ES
-		self.fetch_items(URL, index, items_size, scroll, hash_name, prev_hash_name)
+		self.fetch_items(URL, index, items_size, scroll, algorithm, prev_hash_key)
 		# Set inital values for progress bar
 		progressbar_counter = 0
 		progressbar_len = len(self.HashSet)
 		print('Checking for integrity')
 		self.progress_bar(0, progressbar_len, prefix='Progress:', suffix='Complete', length=50)
+
 		# Remove initial previous hash (it is set to None in enricher)
 		actual_hash = self.HashSet.pop(None, None)
 		self.HitCount += 1
@@ -141,21 +159,26 @@ class Integrity:
 			if previous_hash is not None:
 				self.HitCount += 1
 			else:
-				self.MissCount += 1
+				self.ChainMissCount += 1
 			actual_hash = previous_hash
 			progressbar_counter += 1
 			# Update Progress Bar
 			self.progress_bar(progressbar_counter, progressbar_len, prefix='Progress:', suffix='Complete', length=50)
 
 		# Check whether integrity has been ensured
+
+		print('\n')
+		if self.EventMissCount > 0:
+			print('Data integrity inside events has not been ensured.')
+			print('Number of items where integrity has not been ensured: {}\n'.format(str(self.EventMissCount)))
+
 		if len(self.HashSet) > 0:
-			print('\n')
 			print(self.HashSet)
 			print('\n')
-			print('Integrity has not been ensured.')
-			print('Number of items where integrity has not been ensured: {}\n'.format(str(self.MissCount)))
-		else:
-			print('\n')
+			print('Chain integrity has not been ensured.')
+			print('Number of items where integrity has not been ensured: {}\n'.format(str(self.ChainMissCount)))
+
+		if len(self.HashSet) == 0 and self.EventMissCount == 0:
 			print('Integrity has been ensured.')
 			print('Number of items where integrity has been ensured: {}\n'.format(str(self.HitCount)))
 
@@ -172,15 +195,14 @@ def parse_cmdline():
 
 	subparsers = parser.add_subparsers(help='commands')
 
-
 	# An check command
 	check_parser = subparsers.add_parser('check', help='check on integrity of hashed events')
 	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL, e.g. http://localhost:9200')
 	check_parser.add_argument('index', action='store', help='a ElasticSearch index, e.g. my_index-01')
 	check_parser.add_argument('--items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. --items_size=50; Default items_size=100')
 	check_parser.add_argument('--scroll', action='store', help='a ElasticSearch scroll, e.g. --scroll=2; Default scroll=1')
-	check_parser.add_argument('--hash_name', action='store', help='a Hash key name, e.g. --hash_name=hash')
-	check_parser.add_argument('--prev_hash_name', action='store', help='a Previous hash key name, e.g. --prev_hash_name=previous_hash')
+	check_parser.add_argument('--algorithm', action='store', help='a Previous hash key name, e.g. --algorithm=SHA256')
+	check_parser.add_argument('--prev_hash_key', action='store', help='a Previous hash key name, e.g. --prev_hash_key=_prev_id')
 	check_parser.set_defaults(COMMAND='check')
 
 	return parser.parse_args()
@@ -197,8 +219,7 @@ def main():
 		return 1
 
 	if args.COMMAND == 'check':
-		return Integrity().COMMAND_check(args.URL, args.index, args.items_size, args.scroll,
-			args.hash_name, args.prev_hash_name)
+		return Integrity().COMMAND_check(args.URL, args.index, args.items_size, args.scroll, args.algorithm, args.prev_hash_key)
 
 
 if __name__ == '__main__':
