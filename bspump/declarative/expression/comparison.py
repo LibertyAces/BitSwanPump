@@ -55,12 +55,3 @@ class GT(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.gt, context, event, *args, **kwargs)
-
-
-class GT(SequenceExpression):
-	"""
-	Operator '>'
-	"""
-
-	def __call__(self, context, event, *args, **kwargs):
-		return self.reduce(operator.gt, context, event, *args, **kwargs)
