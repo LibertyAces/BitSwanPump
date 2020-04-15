@@ -161,9 +161,9 @@ Type: _Mapping_.
 
 ```
 !IF
-is: <test>
-then: <...>
-else: <...>
+test: <expression>
+then: <expression>
+else: <expression>
 ```
 
 ### `WHEN` statement
@@ -174,24 +174,24 @@ Type: _Sequence_.
 
 ```
 !WHEN
-- is: <test>
-  then: <...>
+- test: <expression>
+  then: <expression>
 
-- is: <test>
-  then: <...>
+- test: <expression>
+  then: <expression>
 
-- is: <test>
-  then: <...>
+- test: <expression>
+  then: <expression>
 
 - ...
 
-- else: <...>
+- else: <expression>
 ```
 
 If `else` is not provided, then `WHEN` returns `False`.
 
 
-### Dictionary manipulation `DICT`
+### Data Structure: Dictionary `DICT`
 
 Type: _Mapping_.
 
@@ -200,16 +200,25 @@ Create or update the dictionary.
 ```
 !DICT
 with: !EVENT
-add:
+set:
 	item1: foo
 	item2: bar
 	item3: ...
+del:
+  - item4
+  - item5
+add:
+  item6: 1
 ```
 
 
 If `with` is not specified, the new dictionary will be created.  
 
-Argument `add` (optional) specifies items to be added into the dictionary.
+Argument `set` (optional) specifies items to be set (added, updated) to the dictionary.
+
+Argument `del` (optional) specifies items to be removed from a dictionary.
+
+Argument `add` (optional) is similar to `set` but the operator `+=` is applied. The item must exist.
 
 This is how to create the empty dictionary:
 
@@ -220,13 +229,13 @@ This is how to create the empty dictionary:
 
 ### Dictionary `ITEM`
 
-Get the item from a dictionary.
+Get the item from a dictionary, tuple, list, etc.
 
 Type: _Mapping_ or _Scalar_.
 
 ```
 !ITEM
-with: !EVENT
+with: <expression>
 item: foo
 default: 0
 ```
@@ -238,20 +247,40 @@ default: 0
 _Note: Scalar form has some limitations (e.g no default value) but it is more compact._
 
 
+### Data Structure: Tuple `TUPLE`
+
+Type: _Sequence_.
+
+Create the tuple.
+
+```
+!TUPLE
+- first
+- second
+- third
+```
+
+Short form:
+
+```
+!TUPLE [first, second, third]
+```
+
+
 ### String tests "STARTSWITH", "ENDSWITH"
 
 Type: _Mapping_.
 
 ```
 !STARTSWITH
-string: <...>
-startswith: <...>
+value: <...>
+prefix: <...>
 ```
 
 ```
 ! ENDSWITH
-string: <...>
-endswith: <...>
+value: <...>
+postfix: <...>
 ```
 
 ### String transformations "LOWER", "UPPER"
@@ -305,11 +334,11 @@ Otherwise, groups are returned in as a list.
 If `items ` are provided, the groups are mapped to provided `items` and a dictionary is returned.
 
 
-### Access functions "EVENT", "CONTEXT"
+### Access functions "EVENT", "CONTEXT", "KWARGS"
 
 Type: _Scalar_.
 
-Returns the current event/context dictionary.
+Returns the current event/context/keyword arguments dictionary.
 
 
 ### Scalar function "VALUE"
@@ -333,17 +362,18 @@ key: <...>
 ```
 
 
-### Test "INLIST"
+### Test "IN"
 
-Checks if value is in the list.
+Checks if `expression` (list, tuple, dictionary, etc.) contains the result `is` expression. 
 
 Type: _Mapping_.
 
 ```
-!INLIST
-value <...>
-list: <...>
+!IN
+expr: <...>
+is: <...>
 ```
+
 
 ### Test "INSUBNET"
 
@@ -385,4 +415,11 @@ The date is specified by `datetime`, which by default is current UTC time.
 Format example: "%Y-%m-%d %H:%M:%S"
 
 
+### Debug output `DEBUG`
 
+Print the content of the `arg` onto console and pass that unchanged.
+
+```
+!DEBUG
+arg: !ITEM EVENT potatoes
+```

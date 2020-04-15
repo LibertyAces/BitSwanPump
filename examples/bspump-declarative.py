@@ -18,13 +18,6 @@ class VegetableCounterPipeline(bspump.Pipeline):
 	The VegetableCounter example illustrates usage of BSPump declarative expression inside the DeclarativeProcessor.
 	The expression consists of nested expressions, which together calculate count of vegetables inside the event,
 	while adding extra radishes if the number of radishes is higher than two.
-
-	FIELD -> obtains field from the event
-	ASSIGN -> inserts field into the event
-	ADD -> adds values of item expressions
-	IF -> if clause with then and else expressions
-	HIGHER -> if a number is higher than a given number
-	UPDATE -> updates dictionary with multiple dictionaries
 	"""
 
 
@@ -33,7 +26,7 @@ class VegetableCounterPipeline(bspump.Pipeline):
 		self.build(
 
 			bspump.random.RandomSource(app, self, choice=[
-				{"eggs": 2, "potatoes": 12, "carrots": 5},
+				{"eggs": 2, "potatoes": 12, "carrots": 5, "garbage": "to be removed"},
 				{"potatoes": 10, "radishes": 5, "meat": 8},
 				{"radishes": 20, "carrots": 4, "potatoes": 10}
 			], config={"number": 5}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
@@ -41,7 +34,7 @@ class VegetableCounterPipeline(bspump.Pipeline):
 			bspump.declarative.DeclarativeProcessor(app, self, '''
 --- !DICT
 with: !EVENT
-add:
+set:
   seen: True
   when: !NOW
   rotten_potatoes:
@@ -54,7 +47,7 @@ add:
       item: carrots
       default: 0
     - !IF
-      is:
+      test:
         !GT
         - !ITEM
           with: !EVENT
@@ -64,8 +57,11 @@ add:
       then: !!float 10
       else: 0
     - 20
+del:
+  - garbage
 '''
-),
+			),
+
 			bspump.common.PPrintSink(app, self)
 		)
 

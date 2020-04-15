@@ -2,16 +2,13 @@ from ...abc import Expression
 
 
 class STARTSWITH(Expression):
-	"""
-	Checks if "string" starts with "startswith"
-	"""
 
-	def __init__(self, app, *, arg_string, arg_startswith):
+	def __init__(self, app, *, arg_value, arg_prefix):
 		super().__init__(app)
-		self.String = arg_string
-		self.StartsWith = arg_startswith
+		self.Value = arg_value
+		self.Prefix = arg_prefix
 
 	def __call__(self, context, event, *args, **kwargs):
-		string = self.evaluate(self.String, context, event, *args, **kwargs)
-		startswith = self.evaluate(self.StartsWith, context, event, *args, **kwargs)
-		return string.startswith(startswith)
+		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		prefix = self.evaluate(self.Prefix, context, event, *args, **kwargs)
+		return value.startswith(prefix)
