@@ -26,21 +26,18 @@ class IntegrityEnricher(Processor):
 
 	ConfigDefaults = {
 		'algorithm': 'SHA256',
-		'encoding': 'utf-8',
 		'hash_key': '_id',
-		'prev_hash_key': '_prev_id'
+		'prev_hash_key': '_prev_id',
+		'salt_length': 3,
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 		self.Algorithm = self.Config['algorithm']
-		self.Encoding = self.Config['encoding']
 		self.HashKey = self.Config['hash_key']
 		self.PrevHashKey = self.Config['prev_hash_key']
+		self.SaltLength = int(self.Config['salt_length'])
 		self.PreviousHash = None
-
-	def _encode_for_hash(self, value):
-		return str(value).encode(self.Encoding)
 
 	def process(self, context, event):
 
@@ -52,7 +49,7 @@ class IntegrityEnricher(Processor):
 		event.pop(self.PrevHashKey, None)
 
 		# Salt event - to ensure that events are not going to be the same after hash
-		event["_s"] = secrets.token_urlsafe(3)
+		event["_s"] = secrets.token_urlsafe(self.SaltLength)
 
 		# Set previous hash
 		if self.PreviousHash is not None:
@@ -61,9 +58,9 @@ class IntegrityEnricher(Processor):
 		# Hash event using key, value, key, value ... sequence
 		_hash = hashlib.new(self.Algorithm)
 		for key in sorted(event.keys()):
-			_hash.update(self._encode_for_hash(key))
-			_hash.update(self._encode_for_hash(event[key]))
-		hash_base64 = base64.b64encode(_hash.digest()).decode(self.Encoding)
+			_hash.update(str(key).encode("ascii"))
+			_hash.update(str(event[key]).encode("ascii"))
+		hash_base64 = base64.b64encode(_hash.digest()).decode("ascii")
 
 		# Store the hash as base64 string
 		event[self.HashKey] = hash_base64
