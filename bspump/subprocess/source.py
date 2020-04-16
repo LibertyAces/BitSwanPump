@@ -48,4 +48,3 @@ class SubProcessSource(Source):
 				# Print error, wait a bit and retry again
 				L.error("Command {} has exited with return code: {}".format(self.Command, self._process.returncode))
 				await asyncio.sleep(5)
-		
