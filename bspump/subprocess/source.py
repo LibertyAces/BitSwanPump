@@ -19,6 +19,7 @@ class SubProcessSource(Source):
 		'ok_return_codes': '0',
 	}
 
+
 	def __init__(self, app, pipeline, *, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
@@ -27,6 +28,7 @@ class SubProcessSource(Source):
 		self._process = None
 		# Get the list of OK return codes
 		self.OKReturnCodes = [int(i) for i in self.Config["ok_return_codes"].split(',')]
+
 
 	async def main(self):
 		self._process = await asyncio.create_subprocess_shell(
