@@ -1,7 +1,7 @@
 import logging
 
 from .analyzer import Analyzer
-from .sessionmatrix import SessionMatrix
+from ..matrix.sessionmatrix import SessionMatrix, PersistentSessionMatrix
 
 ###
 
@@ -54,7 +54,11 @@ class SessionAnalyzer(Analyzer):
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
 			s_id = self.Id + "Matrix"
-			self.Sessions = SessionMatrix(app, dtype, persistent=persistent, id=s_id, config=config)
+			if persistent:
+				self.Sessions = PersistentSessionMatrix(app, dtype, id=s_id, config=config)
+			else:
+				self.Sessions = SessionMatrix(app, dtype, id=s_id, config=config)
+			
 			svc.add_matrix(self.Sessions)
 		else:
 			self.Sessions = svc.locate_matrix(matrix_id)

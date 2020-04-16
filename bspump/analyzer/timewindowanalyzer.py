@@ -1,7 +1,7 @@
 import logging
 
 from .analyzer import Analyzer
-from .timewindowmatrix import TimeWindowMatrix
+from ..matrix.timewindowmatrix import TimeWindowMatrix, PersistentTimeWindowMatrix
 
 ###
 
@@ -69,17 +69,28 @@ class TimeWindowAnalyzer(Analyzer):
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
 			matrix_id = self.Id + "Matrix"
-			self.TimeWindow = TimeWindowMatrix(
-				app,
-				dtype=dtype,
-				columns=columns,
-				resolution=resolution,
-				clock_driven=clock_driven,
-				start_time=start_time,
-				persistent=persistent,
-				id=matrix_id,
-				config=config,
-			)
+			if persistent:
+				self.TimeWindow = PersistentTimeWindowMatrix(
+					app,
+					dtype=dtype,
+					columns=columns,
+					resolution=resolution,
+					clock_driven=clock_driven,
+					start_time=start_time,
+					id=matrix_id,
+					config=config,
+				)
+			else:
+				self.TimeWindow = TimeWindowMatrix(
+					app,
+					dtype=dtype,
+					columns=columns,
+					resolution=resolution,
+					clock_driven=clock_driven,
+					start_time=start_time,
+					id=matrix_id,
+					config=config,
+				)
 			svc.add_matrix(self.TimeWindow)
 		else:
 			# locate

@@ -5,8 +5,7 @@ import os
 import numpy as np
 
 import asab
-from .index import Index, PersistentIndex
-from .closedrows import ClosedRows, PersistentClosedRows
+from .utils.closedrows import ClosedRows, PersistentClosedRows
 
 ###
 
@@ -62,7 +61,6 @@ class Matrix(abc.ABC, asab.ConfigObject):
 	'''
 
 	ConfigDefaults = {
-		'path': '',
 		'max_closed_rows_capacity': 0.2,
 	}
 
@@ -75,17 +73,8 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 		self.App = app
 		self.Loop = app.Loop
-		self.Path = self.Config['path']
-		if persistent:
-			if not os.path.exists(self.Path):
-				os.makedirs(self.Path)
-		
-			self.ArrayPath = os.path.join(self.Path, 'array.dat')
-		else:
-			self.ArrayPath = None
 		
 		self.DType = dtype
-		self.Persistent = persistent
 		self.MaxClosedRowsCapacity = float(self.Config['max_closed_rows_capacity'])
 		self.zeros()
 		
@@ -103,23 +92,9 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 
 	def zeros(self, rows=1):
-		if self.Persistent:
-			path = os.path.join(self.Path, 'closed_rows.dat')
-			if os.path.exists(self.ArrayPath):
-				self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='readwrite')
-				self.Array = self.Array.reshape(self.reshape(self.Array.shape))
-				array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=self.Array.shape)
-				array[:] = self.Array[:]
-				self.Array = array
-			else:
-				array = np.zeros(self.build_shape(rows), dtype=self.DType)
-				self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
-
-			self.ClosedRows = PersistentClosedRows(path, size=self.Array.shape[0])
-		else:
-			self.Array = np.zeros(self.build_shape(rows), dtype=self.DType)
-			self.ClosedRows = ClosedRows()
-			self.ClosedRows.add(0)
+		self.Array = np.zeros(self.build_shape(rows), dtype=self.DType)
+		self.ClosedRows = ClosedRows()
+		self.ClosedRows.add(0)
 
 
 	def flush(self):
@@ -132,39 +107,34 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		saved_indexes = list(indexes - closed_indexes)
 		saved_indexes.sort()
 		self.Array = self.Array.take(saved_indexes, axis=0)
-		if self.Persistent:
-			array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=self.Array.shape)
-			array[:] = self.Array[:]
-			self.Array = array
-
-		self.ClosedRows.reset(self.Array.shape[0])
+		self.ClosedRows.flush(self.Array.shape[0])
 		self.Gauge.set("rows.closed", 0)
 		self.Gauge.set("rows.active", self.Array.shape[0])
 		return closed_indexes, saved_indexes
 
 
-	def close_row(self, row_index, clear=True):
-		assert(row_index < self.Array.shape[0])
+	def close_row(self, row_name, clear=True):
+		row_index = self.Index.get_row_index(row_name)
 		if row_index in self.ClosedRows:
 			return False
 
 		if clear:
-			self.Array[row_index] = np.zeros(1, dtype=self.DType)
+			self.Array[row_index] = np.zeros(1, dtype=self.DType) #might be TODO
 		
 		self.ClosedRows.add(row_index)
 
+		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
+			self.flush()
+		
 		crc = len(self.ClosedRows)
 		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
 		self.Gauge.set("rows.closed", crc)
 		return True
 
 
-	def close_rows(self, indexes, clear=True):
-		for index in indexes:
-			self.close_row(index, clear=clear)
-
-		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
-			self.flush()
+	def close_rows(self, row_names, clear=True):
+		for name in row_names:
+			self.close_row(name, clear=clear)
 
 
 	def add_row(self):
@@ -194,21 +164,9 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		'''
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
-		current_rows = self.Array.shape[0]
-		if self.Persistent:		
-			self.persistent_resize(current_rows, rows)
-		else:
-			self.Array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
-
+		current_rows = self.Array.shape[0]	
+		self.Array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False) # TODO
 		self.ClosedRows.extend(current_rows, self.Array.shape[0])
-
-
-	def persistent_resize(self, current_rows, rows):
-		array = np.zeros(self.Array.shape, dtype=self.DType)
-		array[:] = self.Array[:]
-		array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
-		self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
-		self.Array[:] = array[:]
 
 
 	def time(self):
@@ -231,91 +189,125 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		pass
 
 
-class NamedMatrix(Matrix):
 
-	def __init__(self, app, dtype='float_', persistent=False, id=None, config=None):
-		super().__init__(app, dtype=dtype, persistent=persistent, id=id, config=config)
-		self.PubSub = asab.PubSub(app)
+class PersistentMatrix(Matrix):
 
 
-	def zeros(self):
-		super().zeros()
-		if self.Persistent:
-			path  = os.path.join(self.Path, 'map.dat')
-			self.Index = PersistentIndex(path, self.Array.shape[0])
+	ConfigDefaults = {
+		'path': '',
+	}
+
+	def __init__(self, app, dtype='float_', id=None, config=None):
+		# TODO super
+		self.Path = self.Config['path']
+		if not os.path.exists(self.Path):
+			os.makedirs(self.Path)
+	
+		self.ArrayPath = os.path.join(self.Path, 'array.dat')
+
+
+	def zeros(self, rows=1):
+		if os.path.exists(self.ArrayPath):
+			self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='readwrite')
+			self.Array = self.Array.reshape(self.reshape(self.Array.shape))
+			array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=self.Array.shape)
+			array[:] = self.Array[:]
+			self.Array = array
+			#TODO
 		else:
-			self.Index = Index()
+			array = np.zeros(self.build_shape(rows), dtype=self.DType)
+			self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
+			#TODO
 
-
-	def _grow_rows(self, rows=1):
-		super()._grow_rows(rows)
-		self.Index.extend(self.Array.shape[0])
+		path = os.path.join(self.Path, 'closed_rows.dat')
+		self.ClosedRows = PersistentClosedRows(path, size=self.Array.shape[0])
 
 
 	def flush(self):
 		'''
 		The matrix will be recreated without rows from `ClosedRows`.
 		'''
-		closed_indexes, saved_indexes = super().flush()
-		self.Index.clean(closed_indexes)
+		indexes = set(range(self.Array.shape[0]))
+		closed_indexes = set()
+		closed_indexes |= self.ClosedRows.get_rows()
+		saved_indexes = list(indexes - closed_indexes)
+		saved_indexes.sort()
+		self.Array = self.Array.take(saved_indexes, axis=0)
+		array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=self.Array.shape)
+		array[:] = self.Array[:]
+		self.Array = array
+		# TODO
+
+		self.ClosedRows.flush(self.Array.shape[0])
+		self.Gauge.set("rows.closed", 0)
+		self.Gauge.set("rows.active", self.Array.shape[0])
 		return closed_indexes, saved_indexes
 
 
-	def add_row(self, row_name: str):
-		assert(row_name is not None)
+	def close_rows(self, row_names, clear=True):
+		for name in row_names:
+			self.close_row(name, clear=clear)
 
-		row_index = super().add_row()
-		self.Index.add_row(row_name, row_index)
-		self.PubSub.publish("Matrix changed!")
-		return row_index
+
+	def add_row(self):
+		try:
+			return self.ClosedRows.pop()
+		except KeyError:
+			self._grow_rows(max(5, int(0.10 * self.Array.shape[0])))
+			return self.ClosedRows.pop()
+		finally:
+			crc = len(self.ClosedRows)
+			self.Gauge.set("rows.active", self.Array.shape[0] - crc)
+			self.Gauge.set("rows.closed", crc)
 
 
 	def close_row(self, row_index, clear=True):
-		closed = super().close_row(row_index, clear=clear)
-		if closed:
-			self.Index.pop_index(row_index)
-			self.PubSub.publish("Matrix changed!")
-			return True
+		assert(row_index < self.Array.shape[0])
+		if row_index in self.ClosedRows:
+			return False
+
+		if clear:
+			self.Array[row_index] = np.zeros(1, dtype=self.DType) #might be TODO
 		
-		return False
-
-
-	def get_row_index(self, row_name: str):
-		return self.Index.get_row_index(row_name)
-
-
-	def get_row_name(self, row_index: int):
-		return self.Index.get_row_name(row_index)
-
-
-	def serialize(self):
-		if self.Persistent:
-			raise RuntimeError("Not Implemented")
+		self.ClosedRows.add(row_index)
 		
-		serialized = {}
-		serialized['Index'] = self.Index.serialize()
-		serialized['ClosedRows'] =self.ClosedRows.serialize()
-		serialized['DType'] = self.DType
-		serialized['Array'] = self.Array.tolist()
-		return serialized
+		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
+			self.flush()
+
+		crc = len(self.ClosedRows)
+		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
+		self.Gauge.set("rows.closed", crc)
+		return True
 
 
-	def deserialize(self, data):
-		if self.Persistent:
-			raise RuntimeError("Not Implemented")
+	def _grow_rows(self, rows=1):
+		'''
+		Override this method to gain control on how a new closed rows are added to the matrix
+		'''
+		current_rows = self.Array.shape[0]
+		array = np.zeros(self.Array.shape, dtype=self.DType)
+		array[:] = self.Array[:]
+		array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
+		self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
+		self.Array[:] = array[:]
+		self.ClosedRows.extend(current_rows, self.Array.shape[0])
 
-		self.Index.deserialize(data['Index'])
-		self.ClosedRows.deserialize(data['ClosedRows'])
 
-		if isinstance(data['DType'], str):
-			self.DType = data['DType']
-		else:
-			self.DType = []
-			for member in data['DType']:
-				self.DType.append(tuple(member))
+	def time(self):
+		return self.App.time()
 
-		array = []
-		for member in data['Array']:
-			array.append(tuple(member))
 
-		self.Array = np.array(array, dtype=self.DType)
+	async def analyze(self):
+		'''
+			The `Matrix` itself can run the `analyze()`.
+			It is not recommended to iterate through the matrix row by row (or cell by cell).
+			Instead use numpy fuctions. Examples:
+			1. You have a vector with n rows. You need only those row indeces, where the cell content is more than 10.
+			Use `np.where(vector > 10)`.
+			2. You have a matrix with n rows and m columns. You need to find out which rows
+			fully consist of zeros. use `np.where(np.all(matrix == 0, axis=1))` to get those row indexes.
+			Instead `np.all()` you can use `np.any()` to get all row indexes, where there is at least one zero.
+			3. Use `np.mean(matrix, axis=1)` to get means for all rows.
+			4. Usefull numpy functions: `np.unique()`, `np.sum()`, `np.argmin()`, `np.argmax()`.
+		'''
+		pass
