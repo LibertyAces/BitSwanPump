@@ -110,9 +110,13 @@ class SegmentBuilder(object):
 			pipeline = svc.locate(definition["pipeline_id"])
 			processor = self.construct_processor(app, pipeline, self._map_processor(definition))
 			if processor is not None:
-				sink = pipeline.Processors[-1].pop()
-				pipeline.append_processor(processor)
-				pipeline.append_processor(sink)
+				insert_before = definition.get("insert_before")
+				if insert_before is not None:
+					pipeline.insert_before(id=insert_before, processor=processor)
+				else:
+					sink = pipeline.Processors[-1].pop()
+					pipeline.append_processor(processor)
+					pipeline.append_processor(sink)
 				self.build_profiling(pipeline, processor)
 
 	def construct_lookup(self, app, definition):
