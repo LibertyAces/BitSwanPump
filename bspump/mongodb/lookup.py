@@ -1,6 +1,7 @@
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
+import asyncio
 
 
 class MongoDBLookup(MappingLookup, AsyncLookupMixin):
@@ -116,6 +117,21 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		else:
 			self.SuccessCounter.add('hit', 1)
 		return value
+
+	async def get_changestream(self):
+		await self.Pipeline.ready()
+		db = self.Connection.Client[self.Database]
+		if self.Collection is None:
+			stream = db.watch()
+		else:
+			stream = db[self.Collection].watch()
+
+		while stream.alive:
+			change = await stream.try_next()
+			if change is not None:
+				continue
+			await asyncio.sleep(5)
+		return change
 
 	async def _count(self, database):
 		return await database[self.Collection].count_documents({})
