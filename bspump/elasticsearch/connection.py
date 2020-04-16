@@ -100,6 +100,15 @@ class ElasticSearchConnection(Connection):
 			for i in range(self._loader_per_url):
 				self._futures.append((url + '_bulk', None))
 
+		# Initialize metrics
+		metrics_service = app.get_service('asab.MetricsService')
+		self.BulkInsertReturnCodesCounter = metrics_service.create_counter("esconnection.bulkinsert.returncodes", init_values={
+			"400": 0,
+			"404": 0,
+			"409": 0,
+			"500": 0,
+			"unknown": 0,
+		})
 
 	def get_url(self):
 		return random.choice(self.node_urls)
@@ -197,7 +206,10 @@ class ElasticSearchConnection(Connection):
 						if respj.get('errors', True) is not False:
 							error_level = 0
 							for item in respj['items']:
-								# TODO: item['index']['status']: add metrics counter for status code
+								try:
+									self.BulkInsertReturnCodesCounter.add(item['index']['status'], 1)
+								except KeyError:
+									self.BulkInsertReturnCodesCounter.add("unknown", 1)
 								if item['index']['status'] not in self.AllowedBulkResponseCodes:
 									if error_level == 0:
 										L.error("Failed to insert bulk into ElasticSearch status: {}".format(resp.status))
