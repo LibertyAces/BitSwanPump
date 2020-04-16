@@ -16,7 +16,7 @@ class SubProcessSource(Source):
 	ConfigDefaults = {
 		'command': '',
 		'line_len_limit': 2 ** 20,
-		'ok_return_codes': '0', # Multiple codes must be separated by commas, e.g. 'ok_return_codes': '0,1,2',
+		'ok_return_codes': '0',  # Multiple codes must be separated by commas, e.g. 'ok_return_codes': '0,1,2',
 	}
 
 
