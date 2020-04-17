@@ -5,6 +5,7 @@ import asyncio
 
 
 class MongoDBLookup(MappingLookup, AsyncLookupMixin):
+
 	"""
 	The lookup that is linked with a MongoDB.
 	It provides a mapping (dictionary-like) interface to pipelines.
@@ -48,7 +49,7 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		'database': '',  # Specify a database if you want to overload the connection setting
 		'collection': '',  # Specify collection name
 		'key': '',  # Specify key name used for search
-		'changestream': False
+		'changestream': True
 	}
 
 	@classmethod
@@ -83,6 +84,13 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		if len(self.Database) == 0:
 			self.Database = self.Connection.Database
 
+		if self.Changestream:
+			self.Loop = app.Loop
+			self._conn_future = asyncio.ensure_future(
+				self._changestream(),
+				loop=self.Loop,
+			)
+
 		self.Count = -1
 		if cache is None:
 			self.Cache = CacheDict()
@@ -93,6 +101,12 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
 		self.SuccessCounter = \
 			metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
+		app.PubSub.subscribe("Application.exit!", self._on_exit)
+
+	async def _on_exit(self, message_type):
+		# On application exit, we first await completion of all tasks in the queue.
+		if self._conn_future is not None:
+			await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED, loop=self.Loop)
 
 	def build_query(self, key):
 		return {self.Key: key}
@@ -100,17 +114,13 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 	async def _find_one(self, query):
 		return await (self.Connection.Client[self.Database][self.Collection]).find_one(query)
 
-	async def _changestream(self, pipeline):
+	async def _changestream(self):
 		# Need to define the pipeline
 		print("iorbpqier")
-		# pipeline = [{'$match': {'operationType': 'insert'}}]
+		pipeline = [{'$match': {'operationType': 'insert'}}]
 		running = True
-		db = self.Connection.Client[self.Database]
-		if self.Collection is None:
-			stream = db.watch(pipeline)
-		else:
-			stream = db[self.Collection].watch(pipeline)
-
+		self.Cache.clear()
+		stream = self.Connection.Client[self.Database][self.Collection].watch(pipeline)
 		while True:
 			if not running:
 				await stream.close()
@@ -125,34 +135,27 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 
 			except asyncio.CancelledError:
 				running = False
+			self.Cache = change
 			await asyncio.sleep(5)
-		return change
 
 	async def get(self, key):
 		"""
 		Obtain the value from lookup asynchronously.
-		If using changestream, pass pipeline instead of a key, for instance: [{'$match': {'operationType': 'insert'}}]
 		"""
-		print("jbvqeppq")
-		if self.Changestream:
-			self.Cache = None
-			value = await self._changestream(key)
+		try:
+			value = self.Cache[key]
+			self.CacheCounter.add('hit', 1)
+		except KeyError:
+			query = self.build_query(key)
+			value = await self._find_one(query)
+			if value is not None:
+				self.Cache[key] = value
+				self.CacheCounter.add('miss', 1)
 
+		if value is None:
+			self.SuccessCounter.add('miss', 1)
 		else:
-			try:
-				value = self.Cache[key]
-				self.CacheCounter.add('hit', 1)
-			except KeyError:
-				query = self.build_query(key)
-				value = await self._find_one(query)
-				if value is not None:
-					self.Cache[key] = value
-					self.CacheCounter.add('miss', 1)
-
-			if value is None:
-				self.SuccessCounter.add('miss', 1)
-			else:
-				self.SuccessCounter.add('hit', 1)
+			self.SuccessCounter.add('hit', 1)
 		return value
 
 	async def _count(self, database):
