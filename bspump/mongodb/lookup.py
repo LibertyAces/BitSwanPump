@@ -119,7 +119,6 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		print("iorbpqier")
 		pipeline = [{'$match': {'operationType': 'insert'}}]
 		running = True
-		self.Cache.clear()
 		stream = self.Connection.Client[self.Database][self.Collection].watch(pipeline)
 		while True:
 			if not running:
@@ -128,6 +127,7 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 			try:
 				change = await stream.try_next()
 				if change is not None:
+					self.Cache = None
 					print("Change document: %r" % (change,))
 					continue
 				elif change is None:
@@ -135,7 +135,6 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 
 			except asyncio.CancelledError:
 				running = False
-			self.Cache = change
 			await asyncio.sleep(5)
 
 	async def get(self, key):
@@ -156,6 +155,7 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 			self.SuccessCounter.add('miss', 1)
 		else:
 			self.SuccessCounter.add('hit', 1)
+		print(f"The value now is {value}")
 		return value
 
 	async def _count(self, database):
