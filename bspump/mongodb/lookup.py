@@ -5,7 +5,6 @@ import asyncio
 
 
 class MongoDBLookup(MappingLookup, AsyncLookupMixin):
-
 	"""
 	The lookup that is linked with a MongoDB.
 	It provides a mapping (dictionary-like) interface to pipelines.
@@ -48,7 +47,8 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 	ConfigDefaults = {
 		'database': '',  # Specify a database if you want to overload the connection setting
 		'collection': '',  # Specify collection name
-		'key': ''  # Specify key name used for search
+		'key': '',  # Specify key name used for search
+		'changestream': False
 	}
 
 	@classmethod
@@ -74,10 +74,11 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 	def __init__(self, app, connection, id=None, config=None, cache=None):
 		super().__init__(app, id=id, config=config)
 		self.Connection = connection
-
+		print("building lookup")
 		self.Database = self.Config['database']
 		self.Collection = self.Config['collection']
 		self.Key = self.Config['key']
+		self.Changestream = self.Config.getboolean("changestream")
 
 		if len(self.Database) == 0:
 			self.Database = self.Connection.Database
@@ -90,7 +91,8 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
-		self.SuccessCounter = metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.SuccessCounter = metrics_service.create_counter("mysql.lookup.success", tags={},
+		                                                     init_values={'hit': 0, 'miss': 0})
 
 	def build_query(self, key):
 		return {self.Key: key}
@@ -98,40 +100,60 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 	async def _find_one(self, query):
 		return await (self.Connection.Client[self.Database][self.Collection]).find_one(query)
 
+	async def _changestream(self, pipeline):
+		# Need to define the pipeline
+		print("iorbpqier")
+		# pipeline = [{'$match': {'operationType': 'insert'}}]
+		running = True
+		db = self.Connection.Client[self.Database]
+		if self.Collection is None:
+			stream = db.watch(pipeline)
+		else:
+			stream = db[self.Collection].watch(pipeline)
+
+		while True:
+			if not running:
+				await stream.close()
+				break
+			try:
+				change = await stream.try_next()
+				if change is not None:
+					print("Change document: %r" % (change,))
+					continue
+				elif change is None:
+					print("changenone")
+
+			except asyncio.CancelledError:
+				running = False
+			await asyncio.sleep(5)
+		return change
+
 	async def get(self, key):
 		"""
 		Obtain the value from lookup asynchronously.
+		If using changestream, pass pipeline instead of a key, for instance: [{'$match': {'operationType': 'insert'}}]
 		"""
-		try:
-			value = self.Cache[key]
-			self.CacheCounter.add('hit', 1)
-		except KeyError:
-			query = self.build_query(key)
-			value = await self._find_one(query)
-			if value is not None:
-				self.Cache[key] = value
-				self.CacheCounter.add('miss', 1)
+		print("jbvqeppq")
+		if self.Changestream:
+			self.Cache = None
+			value = await self._changestream(key)
 
-		if value is None:
-			self.SuccessCounter.add('miss', 1)
 		else:
-			self.SuccessCounter.add('hit', 1)
+			try:
+				value = self.Cache[key]
+				self.CacheCounter.add('hit', 1)
+			except KeyError:
+				query = self.build_query(key)
+				value = await self._find_one(query)
+				if value is not None:
+					self.Cache[key] = value
+					self.CacheCounter.add('miss', 1)
+
+			if value is None:
+				self.SuccessCounter.add('miss', 1)
+			else:
+				self.SuccessCounter.add('hit', 1)
 		return value
-
-	async def get_changestream(self):
-		await self.Pipeline.ready()
-		db = self.Connection.Client[self.Database]
-		if self.Collection is None:
-			stream = db.watch()
-		else:
-			stream = db[self.Collection].watch()
-
-		while stream.alive:
-			change = await stream.try_next()
-			if change is not None:
-				continue
-			await asyncio.sleep(5)
-		return change
 
 	async def _count(self, database):
 		return await database[self.Collection].count_documents({})
