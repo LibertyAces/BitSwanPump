@@ -8,7 +8,7 @@ L = logging.getLogger(__name__)
 #
 
 
-class GeoMatrixMixIn(Matrix):
+class GeoMatrixMixin(Matrix):
 	def is_in_boundaries(self, lat, lon):
 		'''
 		Check, if coordinates are within the bbox coordinates.
@@ -76,7 +76,7 @@ class GeoMatrixMixIn(Matrix):
 		return lat, lon	
 
 
-class GeoMatrix(GeoMatrixMixIn, Matrix):
+class GeoMatrix(GeoMatrixMixin):
 	'''
 		Matrix, specific for `GeoAnalyzer`.
 		`bbox` is the dictionary with `max_lat`, `min_lat`, `max_lon` and `min_lon`
@@ -112,7 +112,7 @@ class GeoMatrix(GeoMatrixMixIn, Matrix):
 		self.Array = np.zeros([self.MapHeight, self.MapWidth], dtype=self.DType)
 
 
-class PersistentGeoMatrix(GeoMatrixMixIn, PersistentMatrix):
+class PersistentGeoMatrix(PersistentMatrix, GeoMatrixMixin):
 	'''
 		Matrix, specific for `GeoAnalyzer`.
 		`bbox` is the dictionary with `max_lat`, `min_lat`, `max_lon` and `min_lon`
@@ -146,11 +146,7 @@ class PersistentGeoMatrix(GeoMatrixMixIn, PersistentMatrix):
 
 
 	def zeros(self):
-		self.Path = self.Config['path']
-		if not os.path.exists(self.Path):
-			os.makedirs(self.Path)
-
-		self.ArrayPath = os.path.join(self.Path, 'array.dat') # TODO
+		self.create_path()
 		if os.path.exists(self.ArrayPath):
 			self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='readwrite')
 			self.Array = self.Array.reshape(self.reshape(self.Array.shape))

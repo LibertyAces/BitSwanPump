@@ -13,18 +13,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-
-class NamedMatrix(Matrix):
-
-	def __init__(self, app, dtype='float_', id=None, config=None):
-		super().__init__(app, dtype=dtype, id=id, config=config)
-		self.PubSub = asab.PubSub(app)
-
-
-	def zeros(self):
-		super().zeros()
-		self.Index = Index()
-
+class NamedMatrixMixin(Matrix):
 
 	def _grow_rows(self, rows=1):
 		super()._grow_rows(rows)
@@ -48,14 +37,13 @@ class NamedMatrix(Matrix):
 		self.PubSub.publish("Matrix changed!")
 		return row_index
 
-
-	def close_row(self, row_index, clear=True):
-		closed = super().close_row(row_index, clear=clear)
+	def close_row(self, row_name, clear=True):
+		closed = super().close_row(row_name, clear=clear)
 		if closed:
+			row_index = self.Index.get_row_index(row_name)
 			self.Index.pop_index(row_index)
 			self.PubSub.publish("Matrix changed!")
 			return True
-		
 		return False
 
 
@@ -65,6 +53,18 @@ class NamedMatrix(Matrix):
 
 	def get_row_name(self, row_index: int):
 		return self.Index.get_row_name(row_index)
+
+
+class NamedMatrix(NamedMatrixMixin):
+
+	def __init__(self, app, dtype='float_', id=None, config=None):
+		super().__init__(app, dtype=dtype, id=id, config=config)
+		self.PubSub = asab.PubSub(app)
+
+
+	def zeros(self):
+		super().zeros()
+		self.Index = Index()
 
 
 	def serialize(self):		
@@ -94,55 +94,10 @@ class NamedMatrix(Matrix):
 		self.Array = np.array(array, dtype=self.DType)
 
 
-class NamedMatrixMixin(Matrix):
-	pass
+class PersistentNamedMatrix(NamedMatrixMixin, PersistentMatrix):
 
-	
-class PersistentNamedMatrix(PersistentMatrix, NamedMatrixMixin):
 	def zeros(self):
 		super().zeros()
 		path  = os.path.join(self.Path, 'map.dat')
 		self.Index = PersistentIndex(path, self.Array.shape[0])
-
-
-	def _grow_rows(self, rows=1):
-		super()._grow_rows(rows)
-		self.Index.extend(self.Array.shape[0])
-
-
-	def flush(self):
-		'''
-		The matrix will be recreated without rows from `ClosedRows`.
-		'''
-		closed_indexes, saved_indexes = super().flush()
-		self.Index.flush(closed_indexes)
-		return closed_indexes, saved_indexes
-
-
-	def add_row(self, row_name: str):
-		assert(row_name is not None)
-
-		row_index = super().add_row()
-		self.Index.add_row(row_name, row_index)
-		self.PubSub.publish("Matrix changed!")
-		return row_index
-
-
-	def close_row(self, row_index, clear=True):
-		closed = super().close_row(row_index, clear=clear)
-		if closed:
-			self.Index.pop_index(row_index)
-			self.PubSub.publish("Matrix changed!")
-			return True
-		
-		return False
-
-
-	def get_row_index(self, row_name: str):
-		return self.Index.get_row_index(row_name)
-
-
-	def get_row_name(self, row_index: int):
-		return self.Index.get_row_name(row_index)
-
 

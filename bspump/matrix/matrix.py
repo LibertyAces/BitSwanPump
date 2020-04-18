@@ -191,8 +191,6 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 
 class PersistentMatrix(Matrix):
-
-
 	ConfigDefaults = {
 		'path': '',
 	}
@@ -200,20 +198,24 @@ class PersistentMatrix(Matrix):
 	def __init__(self, app, dtype='float_', id=None, config=None):
 		# TODO super
 		super().__init__(app, dtype=dtype, id=id, config=config)
-	
-		
 
-	def zeros(self, rows=1):
+	
+	def create_path(self):
 		self.Path = self.Config['path']
 		if not os.path.exists(self.Path):
 			os.makedirs(self.Path)
+
 		self.ArrayPath = os.path.join(self.Path, 'array.dat')
+
+
+	def zeros(self, rows=1):
+		self.create_path()
 		if os.path.exists(self.ArrayPath):
 			self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='readwrite')
 			self.Array = self.Array.reshape(self.reshape(self.Array.shape))
-			array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=self.Array.shape)
-			array[:] = self.Array[:]
-			self.Array = array
+			# array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=self.Array.shape)
+			# array[:] = self.Array[:]
+			# self.Array = array
 			#TODO
 		else:
 			array = np.zeros(self.build_shape(rows), dtype=self.DType)
@@ -245,36 +247,19 @@ class PersistentMatrix(Matrix):
 		return closed_indexes, saved_indexes
 
 
-	def close_rows(self, row_names, clear=True):
-		for name in row_names:
-			self.close_row(name, clear=clear)
-
-
-	def add_row(self):
-		try:
-			return self.ClosedRows.pop()
-		except KeyError:
-			self._grow_rows(max(5, int(0.10 * self.Array.shape[0])))
-			return self.ClosedRows.pop()
-		finally:
-			crc = len(self.ClosedRows)
-			self.Gauge.set("rows.active", self.Array.shape[0] - crc)
-			self.Gauge.set("rows.closed", crc)
-
-
-	def close_row(self, row_index, clear=True):
-		assert(row_index < self.Array.shape[0])
-		if row_index in self.ClosedRows:
+	def close_row(self, row_name, clear=True):
+		row_index = self.Index.get_row_index(row_name)
+		if (row_index in self.ClosedRows) or (row_index is None):
 			return False
 
 		if clear:
 			self.Array[row_index] = np.zeros(1, dtype=self.DType) #might be TODO
 		
 		self.ClosedRows.add(row_index)
-		
+
 		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
 			self.flush()
-
+		
 		crc = len(self.ClosedRows)
 		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
 		self.Gauge.set("rows.closed", crc)
@@ -292,23 +277,3 @@ class PersistentMatrix(Matrix):
 		self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
 		self.Array[:] = array[:]
 		self.ClosedRows.extend(current_rows, self.Array.shape[0])
-
-
-	def time(self):
-		return self.App.time()
-
-
-	async def analyze(self):
-		'''
-			The `Matrix` itself can run the `analyze()`.
-			It is not recommended to iterate through the matrix row by row (or cell by cell).
-			Instead use numpy fuctions. Examples:
-			1. You have a vector with n rows. You need only those row indeces, where the cell content is more than 10.
-			Use `np.where(vector > 10)`.
-			2. You have a matrix with n rows and m columns. You need to find out which rows
-			fully consist of zeros. use `np.where(np.all(matrix == 0, axis=1))` to get those row indexes.
-			Instead `np.all()` you can use `np.any()` to get all row indexes, where there is at least one zero.
-			3. Use `np.mean(matrix, axis=1)` to get means for all rows.
-			4. Usefull numpy functions: `np.unique()`, `np.sum()`, `np.argmin()`, `np.argmax()`.
-		'''
-		pass

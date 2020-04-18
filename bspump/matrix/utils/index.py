@@ -10,8 +10,11 @@ class Index(object):
 
 
 	def pop_index(self, index):
-		row_name = self.I2NMap.pop(index)
-		del self.N2IMap[row_name]
+		if index in self.I2NMap:
+			row_name = self.I2NMap.pop(index)
+			del self.N2IMap[row_name]
+			return True
+		return False
 
 
 	def get_row_index(self, row_name):
@@ -93,8 +96,10 @@ class PersistentIndex(Index):
 
 
 	def pop_index(self, index):
-		super().pop_index(index)
-		self.Map[index] = ''
+		if super().pop_index(index):
+			self.Map[index] = ''
+			return True
+		return False
 
 
 	def add_row(self, name, index):

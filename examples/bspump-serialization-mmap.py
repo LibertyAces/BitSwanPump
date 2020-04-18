@@ -38,12 +38,12 @@ class MyPipeline(Pipeline):
 			bspump.random.RandomEnricher(app, self, config={'field': '@timestamp', 'lower_bound': lb, 'upper_bound': ub}, id="RE1"),
 			bspump.random.RandomEnricher(app, self, choice=['abc', 'cde', 'efg'], config={'field':'user'}, id="RE2"),
 			bspump.random.RandomEnricher(app, self, choice=[{'lat': 50, 'lon': 14}, {'lat':52, 'lon': 13}, {'lat': 48, 'lon': 17}], config={'field':'L'}, id="RE3"),
-			# MySessionAnalyzer(app, self, dtype=[('user', 'U10'), ('duration', 'i8')], analyze_on_clock=True, persistent=True,
-			# 	config={'analyze_period': 15, 'path':'examples/mmap/sessions'}), 
+			MySessionAnalyzer(app, self, dtype=[('user', 'U10'), ('duration', 'i8')], analyze_on_clock=True, persistent=True,
+				config={'analyze_period': 5, 'path':'examples/mmap/sessions'}), 
 			# MyTimeWindowAnalyzer(app, self, columns=10, resolution=2, clock_driven=True, analyze_on_clock=True, persistent=True,
 			# 	config={'analyze_period': 10, 'path': 'examples/mmap/timewindow'}),
-			MyGeoAnalyzer(app, self, resolution=10, analyze_on_clock=True, persistent=True,
-				config={'analyze_period': 5, 'path': 'examples/mmap/geo'}),
+			# MyGeoAnalyzer(app, self, resolution=10, analyze_on_clock=True, persistent=True,
+			# 	config={'analyze_period': 5, 'path': 'examples/mmap/geo'}),
 			NullSink(app, self)
 		)
 
@@ -66,14 +66,15 @@ class MySessionAnalyzer(SessionAnalyzer):
 		print("!!", self.Sessions.Index.serialize())
 		print("77&7", self.Sessions.ClosedRows.serialize())
 
-		# self.Sessions.close_row(2)
-		# self.Sessions.close_row(8)
-		# print("AFTER (0)")
-		# print("???", self.Sessions.Array)
-		# print("!!", self.Sessions.Index.serialize())
-		# print("77&7", self.Sessions.ClosedRows.serialize())
-		
-		# self.Sessions.close_rows([4, 2, 7])
+		self.Sessions.close_row('2')
+		print("???", self.Sessions.Array)
+		self.Sessions.close_row('8')
+		print("AFTER (0)")
+		print("???", self.Sessions.Array)
+		print("!!", self.Sessions.Index.serialize())
+		print("77&7", self.Sessions.ClosedRows.serialize())
+		# self.App.stop()
+		# self.Sessions.close_rows(['4', '2', '7'])
 		# print("AFTER(1)")
 		# print("???", self.Sessions.Array)
 		# print("!!", self.Sessions.Index.serialize())
@@ -104,8 +105,8 @@ class MyTimeWindowAnalyzer(TimeWindowAnalyzer):
 		print("---", self.TimeWindow.ClosedRows.CRBit)
 		print("$$$$$$", self.TimeWindow.TimeConfig.TC)
 		print("^^^^^^", self.TimeWindow.WarmingUpCount.WUC)
-		self.TimeWindow.close_row(2)
-		self.TimeWindow.close_row(5)
+		self.TimeWindow.close_row('2')
+		self.TimeWindow.close_row('5')
 		print("AFTER (0)")
 		print("???", self.TimeWindow.Array)
 		print("!!", self.TimeWindow.Index.serialize())
@@ -115,7 +116,7 @@ class MyTimeWindowAnalyzer(TimeWindowAnalyzer):
 		print("$$$$$$", self.TimeWindow.TimeConfig.TC)
 		print("^^^^^^", self.TimeWindow.WarmingUpCount.WUC)
 		
-		self.TimeWindow.close_rows([4, 2, 6])
+		self.TimeWindow.close_rows(['4', '2', '6'])
 		print("AFTER(1)")
 		print("???", self.TimeWindow.Array)
 		print("!!", self.TimeWindow.Index.serialize())
