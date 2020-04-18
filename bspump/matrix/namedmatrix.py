@@ -94,7 +94,10 @@ class NamedMatrix(Matrix):
 		self.Array = np.array(array, dtype=self.DType)
 
 
+class NamedMatrixMixin(Matrix):
+	pass
 
+	
 class PersistentNamedMatrix(PersistentMatrix, NamedMatrixMixin):
 	def zeros(self):
 		super().zeros()
@@ -143,6 +146,3 @@ class PersistentNamedMatrix(PersistentMatrix, NamedMatrixMixin):
 		return self.Index.get_row_name(row_index)
 
 
-
-class NamedMatrixMixin(Matrix):
-	pass

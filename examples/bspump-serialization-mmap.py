@@ -2,7 +2,7 @@ import bspump
 from bspump.trigger import OpportunisticTrigger
 from bspump.common import PPrintSink, NullSink
 from bspump import BSPumpApplication, Pipeline, Processor
-from bspump.analyzer import SessionAnalyzer, TimeWindowAnalyzer
+from bspump.analyzer import SessionAnalyzer, TimeWindowAnalyzer, GeoAnalyzer
 import bspump.random
 
 import logging
@@ -10,6 +10,7 @@ import time
 
 import asab
 import json
+import numpy as np
 
 ##
 L = logging.getLogger(__name__)
@@ -36,19 +37,18 @@ class MyPipeline(Pipeline):
 			bspump.random.RandomEnricher(app, self, config={'field':'duration', 'lower_bound':1, 'upper_bound': 5}, id="RE0"),
 			bspump.random.RandomEnricher(app, self, config={'field': '@timestamp', 'lower_bound': lb, 'upper_bound': ub}, id="RE1"),
 			bspump.random.RandomEnricher(app, self, choice=['abc', 'cde', 'efg'], config={'field':'user'}, id="RE2"),
+			bspump.random.RandomEnricher(app, self, choice=[{'lat': 50, 'lon': 14}, {'lat':52, 'lon': 13}, {'lat': 48, 'lon': 17}], config={'field':'L'}, id="RE3"),
 			# MySessionAnalyzer(app, self, dtype=[('user', 'U10'), ('duration', 'i8')], analyze_on_clock=True, persistent=True,
 			# 	config={'analyze_period': 15, 'path':'examples/mmap/sessions'}), 
-			MyTimeWindowAnalyzer(app, self, columns=10, resolution=2, clock_driven=True, analyze_on_clock=True, persistent=True,
-				config={'analyze_period': 10, 'path': 'examples/mmap/timewindow'}),
+			# MyTimeWindowAnalyzer(app, self, columns=10, resolution=2, clock_driven=True, analyze_on_clock=True, persistent=True,
+			# 	config={'analyze_period': 10, 'path': 'examples/mmap/timewindow'}),
+			MyGeoAnalyzer(app, self, resolution=10, analyze_on_clock=True, persistent=True,
+				config={'analyze_period': 5, 'path': 'examples/mmap/geo'}),
 			NullSink(app, self)
 		)
 
 
-class MySessionAnalyzer(SessionAnalyzer):
-	def __init__(self, app, pipeline, dtype='float_', analyze_on_clock=False, persistent=False, id=None, config=None):
-		super().__init__(app, pipeline, dtype=dtype, analyze_on_clock=analyze_on_clock, persistent=persistent, id=id, config=config)
-
-	
+class MySessionAnalyzer(SessionAnalyzer):	
 	def evaluate(self, context, event):
 		id_ = event["id"]
 		user = event["user"]
@@ -78,7 +78,6 @@ class MySessionAnalyzer(SessionAnalyzer):
 		# print("???", self.Sessions.Array)
 		# print("!!", self.Sessions.Index.serialize())
 		# print("77&7", self.Sessions.ClosedRows.serialize())
-		
 
 
 class MyTimeWindowAnalyzer(TimeWindowAnalyzer):	
@@ -127,6 +126,23 @@ class MyTimeWindowAnalyzer(TimeWindowAnalyzer):
 		print("^^^^^^", self.TimeWindow.WarmingUpCount.WUC)
 		self.App.stop()
 
+
+class MyGeoAnalyzer(GeoAnalyzer):
+	def evaluate(self, context, event):
+		lat = event['L']['lat']
+		lon = event['L']['lon']
+		x,y = self.GeoMatrix.project_equirectangular(lat, lon)
+		self.GeoMatrix.Array[x, y] += 1
+
+	def analyze(self):
+		print("Hey")
+		coordinates = np.where(self.GeoMatrix.Array != 0)
+		xx = coordinates[0]
+		yy = coordinates[1]
+		for i in range(len(xx)):
+			x = xx[i]
+			y = yy[i]
+			print(self.GeoMatrix.inverse_equirectangular(x, y), self.GeoMatrix.Array[x, y])
 
 if __name__ == '__main__':
 	app = MyApplication()

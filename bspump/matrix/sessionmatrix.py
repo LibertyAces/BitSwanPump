@@ -1,6 +1,6 @@
 import logging
 
-from .matrix import NamedMatrix
+from .namedmatrix import NamedMatrix, PersistentNamedMatrix
 
 ###
 

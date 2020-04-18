@@ -199,14 +199,15 @@ class PersistentMatrix(Matrix):
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
 		# TODO super
+		super().__init__(app, dtype=dtype, id=id, config=config)
+	
+		
+
+	def zeros(self, rows=1):
 		self.Path = self.Config['path']
 		if not os.path.exists(self.Path):
 			os.makedirs(self.Path)
-	
 		self.ArrayPath = os.path.join(self.Path, 'array.dat')
-
-
-	def zeros(self, rows=1):
 		if os.path.exists(self.ArrayPath):
 			self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='readwrite')
 			self.Array = self.Array.reshape(self.reshape(self.Array.shape))

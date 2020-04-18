@@ -8,7 +8,7 @@ import collections
 
 import os
 
-from .matrix import NamedMatrix, PersistentNamedMatrix
+from .namedmatrix import NamedMatrix, PersistentNamedMatrix
 from .utils.timeconfig import TimeConfig, PersistentTimeConfig
 from .utils.warmingupcount import WarmingUpCount, PersistentWarmingUpCount
 
