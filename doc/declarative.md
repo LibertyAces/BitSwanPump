@@ -494,6 +494,28 @@ The date/time is specified by `value`, which by default is current UTC time.
 Format example: "%Y-%m-%d %H:%M:%S"
 
 
+### Date/time parse `DATETIME_PARSE`
+
+Parse the date/time from a string
+
+Type: _Mapping_.
+
+```
+!DATETIME_PARSE
+value: <... of datetime, int or float>
+format: <...>
+````
+
+The date/time is specified by `value`, which by default is current UTC time.  
+`int` or `float` values are considered as a UNIX timestamps.
+
+Format example: "%Y-%m-%d %H:%M:%S"
+
+Special format shortcuts:
+
+ * `RFC3339` Format according to RFC 3339 / Date and Time on the Internet: Timestamps
+
+
 ### Debug output `DEBUG`
 
 Print the content of the `arg` onto console and pass that unchanged.
