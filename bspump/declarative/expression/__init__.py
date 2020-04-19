@@ -23,6 +23,7 @@ from .comparison import ISNOT
 # Statements
 from .statement.ifexpr import IF
 from .statement.whenexpr import WHEN
+from .statement.forexpr import FOR
 
 from .statement.debugexpr import DEBUG
 

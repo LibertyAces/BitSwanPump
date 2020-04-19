@@ -200,6 +200,19 @@ Type: _Sequence_.
 If `else` is not provided, then `WHEN` returns `False`.
 
 
+### `FOR` statement
+
+Apply `do` for each item.
+
+Type: _Sequence_.
+
+```
+!FOR
+  each: !ARG
+  do: <...>
+```
+
+
 ### Data Structure: Dictionary `DICT`
 
 Type: _Mapping_.
