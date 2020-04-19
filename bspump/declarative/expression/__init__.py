@@ -67,7 +67,7 @@ from .utility.mapexpr import MAP
 
 # Date/time
 from .datetime.nowexpr import NOW
-from .datetime.datefmt import DATEFMT
+from .datetime.datefmt import DATETIME_FORMAT
 
 __all__ = [
 	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
@@ -87,5 +87,5 @@ __all__ = [
 	"LOOKUP",
 	"INDATE", "IN", "INSUBNET",
 	"CAST", "MAP",
-	"DATEFMT", "NOW",
+	"DATETIME_FORMAT", "NOW",
 ]

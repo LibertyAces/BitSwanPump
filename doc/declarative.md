@@ -471,14 +471,14 @@ Type: _Mapping_.
 !NOW
 ```
 
-### Date/time to human readable string
+### Date/time to human readable string `DATETIME_FORMAT`
 
 Returns date/time in human readable format.
 
 Type: _Mapping_.
 
 ```
-!DATEFTM
+!DATETIME_FORMAT
 datetime: <...>
 format: <...>
 ````

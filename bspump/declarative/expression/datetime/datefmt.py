@@ -4,7 +4,7 @@ from datetime import datetime
 from ...abc import Expression
 
 
-class DATEFMT(Expression):
+class DATETIME_FORMAT(Expression):
 	"""
 	Returns date/time in human readable format.
 	The date is created from `datetime`, which by default is current UTC time.
