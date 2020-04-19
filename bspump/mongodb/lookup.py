@@ -2,6 +2,13 @@ from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
 import asyncio
+import logging
+
+###
+
+L = logging.getLogger(__name__)
+
+###
 
 
 class MongoDBLookup(MappingLookup, AsyncLookupMixin):
@@ -102,7 +109,36 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		self.SuccessCounter = \
 			metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
+		app.PubSub.subscribe('Application.tick/5!', self._on_health_check)
 		app.PubSub.subscribe("Application.exit!", self._on_exit)
+
+
+	def _on_health_check(self, message_type):
+		if self._conn_future is not None:
+			# Future exists
+
+			if not self._conn_future.done():
+				# Future didn't result yet
+				# No sanitization needed
+				return
+
+			try:
+				self._conn_future.result()
+			except Exception:
+				# Connection future threw an error
+				L.exception("Unexpected connection future error")
+
+			# Future already resulted (with or without exception)
+			self._conn_future = None
+
+		assert(self._conn_future is None)
+
+		if self.Changestream:
+			self._conn_future = asyncio.ensure_future(
+				self._changestream(),
+				loop=self.Loop,
+			)
+
 
 	async def _on_exit(self, message_type):
 		# On application exit, we first await completion of all tasks in the queue.
@@ -116,21 +152,17 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		return await (self.Connection.Client[self.Database][self.Collection]).find_one(query)
 
 	async def _changestream(self):
-		# Need to define the pipeline
-		running = True
-		stream = self.Connection.Client[self.Database][self.Collection].watch()
-		while True:
-			if not running:
-				await stream.close()
-				break
-			try:
-				change = await stream.try_next()
-				if change is not None:
-					self.Cache.clear()
-					continue
+		try:
+			async with self.Connection.Client[self.Database][self.Collection].watch() as stream:
+				async for change in stream:
+					if change is not None:
+						self.Cache.clear()
 
-			except asyncio.CancelledError:
-				running = False
+		except asyncio.CancelledError:
+			self._output_queue.cancel()
+
+		except Exception as e:
+			L.exception(f"Observed exception: {e}")
 			await asyncio.sleep(5)
 
 	async def get(self, key):
