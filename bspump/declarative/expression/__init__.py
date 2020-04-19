@@ -91,5 +91,5 @@ __all__ = [
 	"LOOKUP",
 	"INDATE", "IN", "INSUBNET",
 	"CAST", "MAP",
-	"DATETIME_FORMAT", "NOW",
+	"DATETIME_FORMAT", "DATETIME_PARSE", "NOW",
 ]

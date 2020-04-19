@@ -6,7 +6,7 @@ class CAST(Expression):
 	Casts "value" to "type"
 	"""
 
-	def __init__(self, app, *, arg_value, arg_type, arg_default = None):
+	def __init__(self, app, *, arg_value, arg_type, arg_default=None):
 		super().__init__(app)
 		self.Value = arg_value
 
@@ -31,5 +31,6 @@ class CAST(Expression):
 		try:
 			return self.Conversion(self.evaluate(self.Value, context, event, *args, **kwargs))
 		except ValueError:
-			if self.Default is None: return None
+			if self.Default is None:
+				return None
 			return self.evaluate(self.Default, context, event, *args, **kwargs)

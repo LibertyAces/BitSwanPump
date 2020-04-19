@@ -1,4 +1,3 @@
-import time
 import datetime
 
 from ...abc import Expression
