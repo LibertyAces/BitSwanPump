@@ -79,11 +79,13 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		self.Key = self.Config['key']
 		self.Changestream = self.Config.getboolean("changestream")
 
+		self.Loop = app.Loop
+		self._conn_future = None
+
 		if len(self.Database) == 0:
 			self.Database = self.Connection.Database
 
 		if self.Changestream:
-			self.Loop = app.Loop
 			self._conn_future = asyncio.ensure_future(
 				self._changestream(),
 				loop=self.Loop,
