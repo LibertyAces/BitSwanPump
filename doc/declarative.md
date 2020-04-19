@@ -31,28 +31,14 @@ Example:
 - 3  
 ```
 
+Short form example:
+
+```
+!ADD  [1, 2, 3]  
+```
+
+
 More at: [YAML specs, 10.1. Sequence Styles](https://yaml.org/spec/1.1/#id931088)
-
-
-
-```
-(a == 1) AND ((b == 2) OR (c == 3))
-```
-
-```
-!AND
-- !EQ
-  - a
-  - 1
-- !OR
-  - !EQ
-    - b
-    - 2
-  - !EQ
-    - c
-    - 3
-```
-
 
 
 ### Mappings
@@ -61,16 +47,28 @@ Example:
 
 ```
 !DICT
-with: {}
-add:
   foo: green
   bar: dog
 ```
+
+Short form example:
+
+```
+!DICT { }
+```
+
 
 More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 
 
 ### Types
+
+
+#### Null
+
+* YAML: `!!null`
+* Value: `None`
+
 
 #### Boolean
 
@@ -78,24 +76,26 @@ More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 * Values: `True`, `False`
 
 
-#### Integers
+#### Integer
 
 * YAML: `!!int`
 * Values: `0`, `-10000`, `-333`, ...
 
+#### Float
 
-```
-!!null
-!!int	
-!!float
-!!binary
-!!timestamp
-!!omap
-!!set
-!!str
-!!seq
-!!map
-```
+* YAML: `!!float`
+* Values: `1.23`, ....
+
+#### Complex types
+
+* `!!binary`
+* `!!timestamp`
+* `!!omap`
+* `!!set`
+* `!!str`
+* `!!seq`
+* `!!map`
+
 
 ## Comments
 
@@ -346,7 +346,7 @@ Note: Uses Python regular expression.
 
 ### Regular expression "REGEX_PARSE"
 
-Search `value` forr `regex` with regular expressions groups.
+Search `value` for `regex` with regular expressions groups.
 
 Type: _Mapping_.
 
