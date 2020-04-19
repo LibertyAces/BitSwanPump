@@ -58,8 +58,8 @@ class PersistentWarmingUpCount(WarmingUpCount):
 
 
 	def flush(self, indexes):
-		super().take(indexes)
-		self.create(self.WUC.shape)
+		super().flush(indexes)
+		self.create(self.WUC.shape[0])
 
 
 	def create(self, size):

@@ -37,14 +37,34 @@ class NamedMatrixMixin(Matrix):
 		self.PubSub.publish("Matrix changed!")
 		return row_index
 
+
 	def close_row(self, row_name, clear=True):
-		closed = super().close_row(row_name, clear=clear)
-		if closed:
-			row_index = self.Index.get_row_index(row_name)
-			self.Index.pop_index(row_index)
-			self.PubSub.publish("Matrix changed!")
-			return True
-		return False
+		row_index = self.Index.get_row_index(row_name)
+		if row_index in self.ClosedRows:
+			return False
+
+		if row_index is None:
+			return False
+		
+		self.Index.pop_index(row_index)
+		self.PubSub.publish("Matrix changed!")
+			
+		if clear:
+			self.Array[row_index] = np.zeros(1, dtype=self.DType) #might be TODO
+
+		self.ClosedRows.add(row_index)
+		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
+			self.flush()
+		
+		crc = len(self.ClosedRows)
+		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
+		self.Gauge.set("rows.closed", crc)
+		return True
+
+
+	def close_rows(self, row_names, clear=True):
+		for name in row_names:
+			self.close_row(name, clear=clear)
 
 
 	def get_row_index(self, row_name: str):

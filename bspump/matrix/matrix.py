@@ -114,15 +114,16 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 
 	def close_row(self, row_name, clear=True):
-		row_index = self.Index.get_row_index(row_name)
+		print("*", self.ClosedRows.CR)
+		row_index = self.Index.get_row_index(row_name) #????????????????????????????
 		if row_index in self.ClosedRows:
 			return False
 
 		if clear:
 			self.Array[row_index] = np.zeros(1, dtype=self.DType) #might be TODO
-		
+		print("**", self.ClosedRows.CR)
 		self.ClosedRows.add(row_index)
-
+		print("***", self.ClosedRows.CR)
 		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
 			self.flush()
 		
@@ -132,7 +133,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		return True
 
 
-	def close_rows(self, row_names, clear=True):
+	def close_rows(self, row_names, clear=True): #nononononononoononnononon
 		for name in row_names:
 			self.close_row(name, clear=clear)
 
