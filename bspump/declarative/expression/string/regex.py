@@ -44,15 +44,28 @@ class REGEX_PARSE(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		match = re.search(self.Regex, value)
+		try:
+			match = re.search(self.Regex, value)
+		except TypeError:
+			match = None
 		if match is None:
-			return self.evaluate(self.Miss, event, *args, **kwargs)
+			return self.evaluate(self.Miss, context, event, *args, **kwargs)
 
 		groups = match.groups()
 		if self.Items is None:
 			return groups
 
-		return dict(zip(self.Items, groups))
+		ret = dict()
+		for item, group in zip(self.Items, groups):
+			if isinstance(item, Expression):
+				result = item.evaluate(item, context, event, group, *args, **kwargs)
+				if result is None:
+					return self.evaluate(self.Miss, context, event, *args, **kwargs)
+				ret.update(result)
+			else:
+				ret[item] = group
+
+		return ret
 
 
 class REGEX_REPLACE(Expression):
