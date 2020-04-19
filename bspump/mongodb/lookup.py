@@ -148,7 +148,6 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 			self.SuccessCounter.add('miss', 1)
 		else:
 			self.SuccessCounter.add('hit', 1)
-		print(f"The value now is {value}")
 		return value
 
 	async def _count(self, database):
