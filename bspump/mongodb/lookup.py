@@ -107,7 +107,7 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
 		self.SuccessCounter = \
-			metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
+			metrics_service.create_counter("mongodb.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
 		app.PubSub.subscribe('Application.tick/5!', self._on_health_check)
 		app.PubSub.subscribe("Application.exit!", self._on_exit)
