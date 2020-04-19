@@ -479,11 +479,12 @@ Type: _Mapping_.
 
 ```
 !DATETIME_FORMAT
-datetime: <...>
+value: <... of datetime, int or float>
 format: <...>
 ````
 
-The date is specified by `datetime`, which by default is current UTC time.
+The date/time is specified by `value`, which by default is current UTC time.  
+`int` or `float` values are considered as a UNIX timestamps.
 
 Format example: "%Y-%m-%d %H:%M:%S"
 
