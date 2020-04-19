@@ -6,7 +6,7 @@ class CAST(Expression):
 	Casts "value" to "type"
 	"""
 
-	def __init__(self, app, *, arg_value, arg_type):
+	def __init__(self, app, *, arg_value, arg_type, arg_default = None):
 		super().__init__(app)
 		self.Value = arg_value
 
@@ -24,5 +24,12 @@ class CAST(Expression):
 		else:
 			raise RuntimeError("Unsupported type '{}' found in CAST expression.".format(arg_type))
 
+		self.Default = arg_default
+
+
 	def __call__(self, context, event, *args, **kwargs):
-		return self.Conversion(self.evaluate(self.Value, context, event, *args, **kwargs))
+		try:
+			return self.Conversion(self.evaluate(self.Value, context, event, *args, **kwargs))
+		except ValueError:
+			if self.Default is None: return None
+			return self.evaluate(self.Default, context, event, *args, **kwargs)

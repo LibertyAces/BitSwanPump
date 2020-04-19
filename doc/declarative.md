@@ -433,7 +433,12 @@ Casts specified `value` to `type`, which can be int, float, str, list and dict.
 !CAST
 value: !ITEM EVENT carrots
 type: int
+default: 0
 ```
+
+`default` is returned when cast fails, it is optional, with default value of `None`.
+
+
 
 ### Test "IN"
 
