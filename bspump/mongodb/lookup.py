@@ -5,7 +5,6 @@ import asyncio
 
 
 class MongoDBLookup(MappingLookup, AsyncLookupMixin):
-
 	"""
 	The lookup that is linked with a MongoDB.
 	It provides a mapping (dictionary-like) interface to pipelines.
@@ -49,7 +48,7 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		'database': '',  # Specify a database if you want to overload the connection setting
 		'collection': '',  # Specify collection name
 		'key': '',  # Specify key name used for search
-		'changestream': True
+		'changestream': False
 	}
 
 	@classmethod
@@ -75,7 +74,6 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 	def __init__(self, app, connection, id=None, config=None, cache=None):
 		super().__init__(app, id=id, config=config)
 		self.Connection = connection
-		print("building lookup")
 		self.Database = self.Config['database']
 		self.Collection = self.Config['collection']
 		self.Key = self.Config['key']
@@ -116,10 +114,8 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 
 	async def _changestream(self):
 		# Need to define the pipeline
-		print("iorbpqier")
-		pipeline = [{'$match': {'operationType': 'insert'}}]
 		running = True
-		stream = self.Connection.Client[self.Database][self.Collection].watch(pipeline)
+		stream = self.Connection.Client[self.Database][self.Collection].watch()
 		while True:
 			if not running:
 				await stream.close()
@@ -127,11 +123,8 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 			try:
 				change = await stream.try_next()
 				if change is not None:
-					self.Cache = None
-					print("Change document: %r" % (change,))
+					self.Cache.clear()
 					continue
-				elif change is None:
-					print("changenone")
 
 			except asyncio.CancelledError:
 				running = False
