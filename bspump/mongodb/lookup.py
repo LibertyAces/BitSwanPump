@@ -99,6 +99,7 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
 		self.SuccessCounter = \
 			metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
+
 		app.PubSub.subscribe("Application.exit!", self._on_exit)
 
 	async def _on_exit(self, message_type):
