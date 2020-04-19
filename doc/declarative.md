@@ -357,6 +357,7 @@ miss: <...|default False>
 ```
 Note: Uses Python regular expression.
 
+
 ### Regular expression "REGEX_PARSE"
 
 Search `value` for `regex` with regular expressions groups.
@@ -375,21 +376,38 @@ Otherwise, groups are returned in as a list.
 
 If `items ` are provided, the groups are mapped to provided `items` and a dictionary is returned.
 
+
 ### Regular expression "REGEX_REPLACE"
 
-Searches for `regex_search` in `value` and replaces leftmost occurrence with `regex_replace`.
+Searches for `regex` in `value` and replaces leftmost occurrence with `replace`.
+
+Type: _Mapping_.
+
+
+See Python documentation of `re.sub()` for more details.
 
 ```
 !REGEX_REPLACE
-regex_search: '^(\w+)\s+(\w+)\s+(frank|march)?'
-regex_replace: '^(\w+)\s+(\w+)\s+(frank|march)?'
-value: <...>
+regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
+replace: <... of type string>
+value: <... of type string>
 ```
 
-If nothing is found `miss` is returned.
-Otherwise, groups are returned in as a list.
 
-If `items ` are provided, the groups are mapped to provided `items` and a dictionary is returned.
+### Regular expression "REGEX_SPLIT"
+
+Split `value` by `regex`.
+
+Type: _Mapping_.
+
+```
+!REGEX_SPLIT
+regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
+value: <...>
+max: 2
+```
+
+Optinal value `max` specifies maximum splits, by default there is no maximum limit.
 
 
 ### Access functions "EVENT", "CONTEXT", "KWARGS"

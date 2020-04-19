@@ -33,6 +33,8 @@ from .string.joinexpr import JOIN
 from .string.regex import REGEX
 from .string.regex import REGEX_PARSE
 from .string.regex import REGEX_REPLACE
+from .string.regex import REGEX_SPLIT
+from .string.regex import REGEX_FINDALL
 from .string.startswith import STARTSWITH
 from .string.upperexpr import UPPER
 from .string.lowerexpr import LOWER
@@ -75,13 +77,13 @@ __all__ = [
 	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
 	"AND", "OR", "NOT",                                  # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT", "IS", "ISNOT",   # Comparison
-	"IF", "WHEN",
+	"IF", "WHEN", "FOR",
 	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
 	"STARTSWITH", "ENDSWITH", "SUBSTRING",
 	"UPPER", "LOWER",
 	"JOIN",
-	"REGEX", "REGEX_PARSE", "REGEX_REPLACE",
+	"REGEX", "REGEX_PARSE", "REGEX_REPLACE", "REGEX_SPLIT", "REGEX_FINDALL",
 	"VALUE",
 	"EVENT", "CONTEXT",
 	"ARGS", "ARG",
