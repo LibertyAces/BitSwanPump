@@ -53,7 +53,7 @@ class NamedMatrixMixin(Matrix):
 			self.Array[row_index] = np.zeros(1, dtype=self.DType) #might be TODO
 
 		self.ClosedRows.add(row_index)
-		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
+		if (len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]):
 			self.flush()
 		
 		crc = len(self.ClosedRows)

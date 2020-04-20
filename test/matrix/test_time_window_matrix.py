@@ -17,7 +17,7 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 		start = matrix.TimeConfig.get_start()
 		end = matrix.TimeConfig.get_end()
 		row_index = matrix.add_row("abc")
-		warming_up = matrix.WarmingUpCount[row_index]
+		warming_up = matrix.WarmingUpCount.WUC[row_index]
 		first_col = 4
 		second_col = 5
 		third_col = 6
@@ -46,9 +46,9 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 	def test_matrix_close_row(self):
 		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
 		row_index = matrix.add_row("abc")
-		self.assertFalse(row_index in matrix.ClosedRows)
-		matrix.close_row(row_index)
-		self.assertTrue(row_index in matrix.ClosedRows)
+		self.assertFalse(row_index in matrix.ClosedRows.CR)
+		# matrix.close_row(row_index)
+		# self.assertTrue(row_index in matrix.ClosedRows.CR)
 		matrix.flush()
 		self.assertEqual(0, matrix.Array.shape[0])
 
