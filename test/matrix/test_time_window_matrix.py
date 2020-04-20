@@ -38,13 +38,13 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 
 
 	def test_matrix_add_row(self):
-		matrix = bspump.analyzer.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
+		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
 		row_index = matrix.add_row("abc")
 		self.assertEqual(matrix.Array.shape[0], matrix.WarmingUpCount.shape[0])
 
 
 	def test_matrix_close_row(self):
-		matrix = bspump.analyzer.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
+		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
 		row_index = matrix.add_row("abc")
 		self.assertFalse(row_index in matrix.ClosedRows)
 		matrix.close_row(row_index)
@@ -55,7 +55,7 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 	
 	def test_matrix_get_column(self):
 		columns = 10
-		matrix = bspump.analyzer.TimeWindowMatrix(app=self.App, resolution=1, columns=columns, clock_driven=False)
+		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, resolution=1, columns=columns, clock_driven=False)
 		cur_time = int(time.time())
 		for i in range(columns):
 			time_ = cur_time - i
@@ -66,7 +66,7 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 	def test_matrix_advance(self):
 		columns = 10
 		cur_time = int(time.time())
-		matrix = bspump.analyzer.TimeWindowMatrix(app=self.App, start_time=cur_time, resolution=1, columns=columns, clock_driven=False)
+		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, start_time=cur_time, resolution=1, columns=columns, clock_driven=False)
 		row_index = matrix.add_row("abc")
 		
 
