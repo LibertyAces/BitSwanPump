@@ -66,4 +66,3 @@ class PersistentWarmingUpCount(WarmingUpCount):
 		wuc = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=(size,))
 		wuc[:] = self.WUC[:]
 		self.WUC = wuc
-

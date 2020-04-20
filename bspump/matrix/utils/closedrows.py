@@ -100,7 +100,4 @@ class PersistentClosedRows(ClosedRows):
 
 	def ones(self, size):
 		self.CRBit = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=(size,))
-		self.CRBit[:] = 1 #TODO
-
-
-
+		self.CRBit[:] = 1

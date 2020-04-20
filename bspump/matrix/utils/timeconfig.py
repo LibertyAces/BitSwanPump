@@ -9,7 +9,7 @@ class TimeConfig(object):
 			('columns', 'i8'),
 			('start', 'f8'),
 			('end', 'f8'),
-		] 
+		]
 		self.TC = np.zeros(1, dtype=self.DType)
 		self.TC['resolution'][0] = resolution
 		self.TC['columns'][0] = columns
@@ -55,4 +55,3 @@ class PersistentTimeConfig(TimeConfig):
 			tc = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=(1,))
 			tc[:] = self.TC[:]
 			self.TC = tc
-

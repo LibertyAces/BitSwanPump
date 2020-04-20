@@ -58,7 +58,6 @@ class SessionAnalyzer(Analyzer):
 				self.Sessions = PersistentSessionMatrix(app, dtype, id=s_id, config=config)
 			else:
 				self.Sessions = SessionMatrix(app, dtype, id=s_id, config=config)
-			
 			svc.add_matrix(self.Sessions)
 		else:
 			self.Sessions = svc.locate_matrix(matrix_id)
