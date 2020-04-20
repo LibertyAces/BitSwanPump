@@ -220,7 +220,7 @@ class TimeWindowMatrix(TimeWindowMixIn):
 		array = np.delete(array, 0, axis=1)
 		self.Array = array
 
-		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows.get_rows()) #TODO
+		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows.get_rows())
 		self.WarmingUpCount.decrease(open_rows)
 
 

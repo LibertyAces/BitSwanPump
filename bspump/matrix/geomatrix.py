@@ -73,7 +73,7 @@ class GeoMatrixMixin(Matrix):
 		lat = -((row / (self.MapHeight - 1) * (self.Bbox['max_lat'] - self.Bbox['min_lat'])) - self.Bbox['max_lat'])
 		lon = column * (self.Bbox['max_lon'] - self.Bbox['min_lon']) / (self.MapWidth - 1) + self.Bbox['min_lon']
 
-		return lat, lon	
+		return lat, lon
 
 
 class GeoMatrix(GeoMatrixMixin):
@@ -152,7 +152,7 @@ class PersistentGeoMatrix(PersistentMatrix, GeoMatrixMixin):
 			self.Array = self.Array.reshape(self.reshape(self.Array.shape))
 		else:
 			array = np.zeros([self.MapHeight, self.MapWidth], dtype=self.DType)
-			self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
+			self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=array.shape)
 
 
 	def reshape(self, shape):

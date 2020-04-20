@@ -8,6 +8,7 @@ L = logging.getLogger(__name__)
 
 ###
 
+
 class SessionMatrixMixin(NamedMatrix):
 	def store(self, row_name: str, event):
 		'''
@@ -71,7 +72,7 @@ class PersistentSessionMatrix(PersistentNamedMatrix, SessionMatrixMixin):
 	ConfigDefaults = {
 		'primary_name': 'id'
 	}
-	
+
 	def __init__(self, app, dtype='float_', id=None, config=None):
 		if not isinstance(dtype, str):
 			dtype = dtype[:]

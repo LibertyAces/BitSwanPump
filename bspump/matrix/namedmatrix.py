@@ -45,17 +45,17 @@ class NamedMatrixMixin(Matrix):
 
 		if row_index is None:
 			return False
-		
+
 		self.Index.pop_index(row_index)
 		self.PubSub.publish("Matrix changed!")
-			
+
 		if clear:
-			self.Array[row_index] = np.zeros(1, dtype=self.DType) #might be TODO
+			self.Array[row_index] = np.zeros(1, dtype=self.DType)
 
 		self.ClosedRows.add(row_index)
 		if (len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]):
 			self.flush()
-		
+
 		crc = len(self.ClosedRows)
 		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
 		self.Gauge.set("rows.closed", crc)
@@ -87,10 +87,10 @@ class NamedMatrix(NamedMatrixMixin):
 		self.Index = Index()
 
 
-	def serialize(self):		
+	def serialize(self):
 		serialized = {}
 		serialized['Index'] = self.Index.serialize()
-		serialized['ClosedRows'] =self.ClosedRows.serialize()
+		serialized['ClosedRows'] = self.ClosedRows.serialize()
 		serialized['DType'] = self.DType
 		serialized['Array'] = self.Array.tolist()
 		return serialized
@@ -118,6 +118,5 @@ class PersistentNamedMatrix(NamedMatrixMixin, PersistentMatrix):
 
 	def zeros(self):
 		super().zeros()
-		path  = os.path.join(self.Path, 'map.dat')
+		path = os.path.join(self.Path, 'map.dat')
 		self.Index = PersistentIndex(path, self.Array.shape[0])
-

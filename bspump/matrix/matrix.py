@@ -183,7 +183,7 @@ class PersistentMatrix(Matrix):
 		# TODO super
 		super().__init__(app, dtype=dtype, id=id, config=config)
 
-	
+
 	def create_path(self):
 		self.Path = self.Config['path']
 		if not os.path.exists(self.Path):
@@ -197,14 +197,9 @@ class PersistentMatrix(Matrix):
 		if os.path.exists(self.ArrayPath):
 			self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='readwrite')
 			self.Array = self.Array.reshape(self.reshape(self.Array.shape))
-			# array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=self.Array.shape)
-			# array[:] = self.Array[:]
-			# self.Array = array
-			#TODO
 		else:
 			array = np.zeros(self.build_shape(rows), dtype=self.DType)
 			self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
-			#TODO
 
 		path = os.path.join(self.Path, 'closed_rows.dat')
 		self.ClosedRows = PersistentClosedRows(path, size=self.Array.shape[0])
@@ -223,7 +218,6 @@ class PersistentMatrix(Matrix):
 		array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=self.Array.shape)
 		array[:] = self.Array[:]
 		self.Array = array
-		# TODO
 
 		self.ClosedRows.flush(self.Array.shape[0])
 		self.Gauge.set("rows.closed", 0)
