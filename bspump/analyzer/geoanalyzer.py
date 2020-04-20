@@ -22,12 +22,11 @@ class GeoAnalyzer(Analyzer):
 		"max_lon": 40.6,
 	}
 
-	def __init__(
-			self, app, pipeline, matrix_id=None,
-			dtype="float_", analyze_on_clock=False,
-			bbox=None, resolution=5, persistent=False,
-			id=None, config=None
-		):
+	def __init__(self, app, pipeline, matrix_id=None,
+		dtype="float_", analyze_on_clock=False,
+		bbox=None, resolution=5, persistent=False,
+		id=None, config=None):
+
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:

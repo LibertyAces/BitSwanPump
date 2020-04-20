@@ -1,5 +1,4 @@
 import abc
-import collections
 import logging
 import os
 import numpy as np
@@ -67,17 +66,17 @@ class Matrix(abc.ABC, asab.ConfigObject):
 	def __init__(self, app, dtype='float_', persistent=False, id=None, config=None):
 		if not isinstance(dtype, str):
 			dtype = dtype[:]
-		
+
 		self.Id = id if id is not None else self.__class__.__name__
 		super().__init__("matrix:{}".format(self.Id), config=config)
 
 		self.App = app
 		self.Loop = app.Loop
-		
+
 		self.DType = dtype
 		self.MaxClosedRowsCapacity = float(self.Config['max_closed_rows_capacity'])
 		self.zeros()
-		
+
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Gauge = metrics_service.create_gauge(
 			"RowCounter",
@@ -148,8 +147,8 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		'''
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
-		current_rows = self.Array.shape[0]	
-		self.Array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False) # TODO
+		current_rows = self.Array.shape[0]
+		self.Array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
 		self.ClosedRows.extend(current_rows, self.Array.shape[0])
 
 
@@ -199,7 +198,7 @@ class PersistentMatrix(Matrix):
 			self.Array = self.Array.reshape(self.reshape(self.Array.shape))
 		else:
 			array = np.zeros(self.build_shape(rows), dtype=self.DType)
-			self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
+			self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=array.shape)
 
 		path = os.path.join(self.Path, 'closed_rows.dat')
 		self.ClosedRows = PersistentClosedRows(path, size=self.Array.shape[0])
