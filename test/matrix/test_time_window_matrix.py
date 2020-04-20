@@ -8,12 +8,12 @@ import bspump.unittest
 class TestTimeWindowMatrix(bspump.unittest.TestCase):
 
 	def test_matrix(self):
-		matrix = bspump.analyzer.TimeWindowMatrix(app=self.App, clock_driven=False)
-		self.assertEqual(matrix.Array.shape, (0, 15))
+		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, clock_driven=False)
+		self.assertEqual(matrix.Array.shape, (1, 15))
 		
 
 	def test_matrix_add_column(self):
-		matrix = bspump.analyzer.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
+		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
 		start = matrix.Start
 		end = matrix.End
 		row_index = matrix.add_row("abc")

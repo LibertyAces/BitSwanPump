@@ -232,7 +232,6 @@ class PersistentTimeWindowMatrix(PersistentNamedMatrix, TimeWindowMixIn):
 		self.TimeConfig = PersistentTimeConfig(path, self.Resolution, self.Columns, self.Start)
 		path = os.path.join(self.Path, 'warming_up_count.dat')
 		self.WarmingUpCount = PersistentWarmingUpCount(path, self.Array.shape[0])
-
 		if self.TimeConfig.get_start() != self.Start:
 			added = self.advance(self.Start)
 

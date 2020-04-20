@@ -48,7 +48,7 @@ class TestMatrix(bspump.unittest.TestCase):
 
 		matrix.zeros()
 
-		self.assertEqual(matrix.Array.shape, (0,))
+		self.assertEqual(matrix.Array.shape, (1,))
 
 
 	def test_matrix_flush(self):
