@@ -31,28 +31,14 @@ Example:
 - 3  
 ```
 
+Short form example:
+
+```
+!ADD  [1, 2, 3]  
+```
+
+
 More at: [YAML specs, 10.1. Sequence Styles](https://yaml.org/spec/1.1/#id931088)
-
-
-
-```
-(a == 1) AND ((b == 2) OR (c == 3))
-```
-
-```
-!AND
-- !EQ
-  - a
-  - 1
-- !OR
-  - !EQ
-    - b
-    - 2
-  - !EQ
-    - c
-    - 3
-```
-
 
 
 ### Mappings
@@ -61,16 +47,28 @@ Example:
 
 ```
 !DICT
-with: {}
-add:
   foo: green
   bar: dog
 ```
+
+Short form example:
+
+```
+!DICT { }
+```
+
 
 More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 
 
 ### Types
+
+
+#### Null
+
+* YAML: `!!null`
+* Value: `None`
+
 
 #### Boolean
 
@@ -78,24 +76,26 @@ More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 * Values: `True`, `False`
 
 
-#### Integers
+#### Integer
 
 * YAML: `!!int`
 * Values: `0`, `-10000`, `-333`, ...
 
+#### Float
 
-```
-!!null
-!!int	
-!!float
-!!binary
-!!timestamp
-!!omap
-!!set
-!!str
-!!seq
-!!map
-```
+* YAML: `!!float`
+* Values: `1.23`, ....
+
+#### Complex types
+
+* `!!binary`
+* `!!timestamp`
+* `!!omap`
+* `!!set`
+* `!!str`
+* `!!seq`
+* `!!map`
+
 
 ## Comments
 
@@ -198,6 +198,19 @@ Type: _Sequence_.
 ```
 
 If `else` is not provided, then `WHEN` returns `False`.
+
+
+### `FOR` statement
+
+Apply `do` for each item.
+
+Type: _Sequence_.
+
+```
+!FOR
+  each: !ARG
+  do: <...>
+```
 
 
 ### Data Structure: Dictionary `DICT`
@@ -344,9 +357,10 @@ miss: <...|default False>
 ```
 Note: Uses Python regular expression.
 
+
 ### Regular expression "REGEX_PARSE"
 
-Search `value` forr `regex` with regular expressions groups.
+Search `value` for `regex` with regular expressions groups.
 
 Type: _Mapping_.
 
@@ -362,21 +376,38 @@ Otherwise, groups are returned in as a list.
 
 If `items ` are provided, the groups are mapped to provided `items` and a dictionary is returned.
 
+
 ### Regular expression "REGEX_REPLACE"
 
-Searches for `regex_search` in `value` and replaces leftmost occurrence with `regex_replace`.
+Searches for `regex` in `value` and replaces leftmost occurrence with `replace`.
+
+Type: _Mapping_.
+
+
+See Python documentation of `re.sub()` for more details.
 
 ```
 !REGEX_REPLACE
-regex_search: '^(\w+)\s+(\w+)\s+(frank|march)?'
-regex_replace: '^(\w+)\s+(\w+)\s+(frank|march)?'
-value: <...>
+regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
+replace: <... of type string>
+value: <... of type string>
 ```
 
-If nothing is found `miss` is returned.
-Otherwise, groups are returned in as a list.
 
-If `items ` are provided, the groups are mapped to provided `items` and a dictionary is returned.
+### Regular expression "REGEX_SPLIT"
+
+Split `value` by `regex`.
+
+Type: _Mapping_.
+
+```
+!REGEX_SPLIT
+regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
+value: <...>
+max: 2
+```
+
+Optinal value `max` specifies maximum splits, by default there is no maximum limit.
 
 
 ### Access functions "EVENT", "CONTEXT", "KWARGS"
@@ -433,7 +464,12 @@ Casts specified `value` to `type`, which can be int, float, str, list and dict.
 !CAST
 value: !ITEM EVENT carrots
 type: int
+default: 0
 ```
+
+`default` is returned when cast fails, it is optional, with default value of `None`.
+
+
 
 ### Test "IN"
 
@@ -471,21 +507,44 @@ Type: _Mapping_.
 !NOW
 ```
 
-### Date/time to human readable string
+### Date/time to human readable string `DATETIME_FORMAT`
 
 Returns date/time in human readable format.
 
 Type: _Mapping_.
 
 ```
-!DATEFTM
-datetime: <...>
+!DATETIME_FORMAT
+value: <... of datetime, int or float>
 format: <...>
 ````
 
-The date is specified by `datetime`, which by default is current UTC time.
+The date/time is specified by `value`, which by default is current UTC time.  
+`int` or `float` values are considered as a UNIX timestamps.
 
 Format example: "%Y-%m-%d %H:%M:%S"
+
+
+### Date/time parse `DATETIME_PARSE`
+
+Parse the date/time from a string
+
+Type: _Mapping_.
+
+```
+!DATETIME_PARSE
+value: <... of datetime, int or float>
+format: <...>
+````
+
+The date/time is specified by `value`, which by default is current UTC time.  
+`int` or `float` values are considered as a UNIX timestamps.
+
+Format example: "%Y-%m-%d %H:%M:%S"
+
+Special format shortcuts:
+
+ * `RFC3339` Format according to RFC 3339 / Date and Time on the Internet: Timestamps
 
 
 ### Debug output `DEBUG`

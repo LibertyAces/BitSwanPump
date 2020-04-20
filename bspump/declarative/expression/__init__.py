@@ -23,6 +23,7 @@ from .comparison import ISNOT
 # Statements
 from .statement.ifexpr import IF
 from .statement.whenexpr import WHEN
+from .statement.forexpr import FOR
 
 from .statement.debugexpr import DEBUG
 
@@ -32,6 +33,8 @@ from .string.joinexpr import JOIN
 from .string.regex import REGEX
 from .string.regex import REGEX_PARSE
 from .string.regex import REGEX_REPLACE
+from .string.regex import REGEX_SPLIT
+from .string.regex import REGEX_FINDALL
 from .string.startswith import STARTSWITH
 from .string.upperexpr import UPPER
 from .string.lowerexpr import LOWER
@@ -67,19 +70,20 @@ from .utility.mapexpr import MAP
 
 # Date/time
 from .datetime.nowexpr import NOW
-from .datetime.datefmt import DATEFMT
+from .datetime.dtformat import DATETIME_FORMAT
+from .datetime.dtparse import DATETIME_PARSE
 
 __all__ = [
 	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
 	"AND", "OR", "NOT",                                  # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT", "IS", "ISNOT",   # Comparison
-	"IF", "WHEN",
+	"IF", "WHEN", "FOR",
 	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
 	"STARTSWITH", "ENDSWITH", "SUBSTRING",
 	"UPPER", "LOWER",
 	"JOIN",
-	"REGEX", "REGEX_PARSE", "REGEX_REPLACE",
+	"REGEX", "REGEX_PARSE", "REGEX_REPLACE", "REGEX_SPLIT", "REGEX_FINDALL",
 	"VALUE",
 	"EVENT", "CONTEXT",
 	"ARGS", "ARG",
@@ -87,5 +91,5 @@ __all__ = [
 	"LOOKUP",
 	"INDATE", "IN", "INSUBNET",
 	"CAST", "MAP",
-	"DATEFMT", "NOW",
+	"DATETIME_FORMAT", "DATETIME_PARSE", "NOW",
 ]

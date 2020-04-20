@@ -34,7 +34,7 @@ class REGEX_PARSE(Expression):
 	If `fields` are provided, the groups are mapped to provided fields.
 	"""
 
-	def __init__(self, app, *, arg_regex, arg_items, arg_value, arg_miss=None):
+	def __init__(self, app, *, arg_regex, arg_value, arg_items=None, arg_miss=None):
 		super().__init__(app)
 		self.Value = arg_value
 		self.Regex = re.compile(arg_regex)
@@ -44,28 +44,77 @@ class REGEX_PARSE(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		match = re.search(self.Regex, value)
+		try:
+			match = re.search(self.Regex, value)
+		except TypeError:
+			match = None
 		if match is None:
-			return self.evaluate(self.Miss, event, *args, **kwargs)
+			return self.evaluate(self.Miss, context, event, *args, **kwargs)
 
 		groups = match.groups()
 		if self.Items is None:
 			return groups
 
-		return dict(zip(self.Items, groups))
+		ret = dict()
+		for item, group in zip(self.Items, groups):
+			if isinstance(item, Expression):
+				result = item.evaluate(item, context, event, group, *args, **kwargs)
+				if result is None:
+					return self.evaluate(self.Miss, context, event, *args, **kwargs)
+				ret.update(result)
+			elif isinstance(item, dict):
+				if group is None:
+					continue
+				assert(len(item) == 1)
+				key, value = next(iter(item.items()))
+				assert(isinstance(value, Expression))
+				ret[key] = value.evaluate(value, context, event, group, *args, **kwargs)
+			else:
+				ret[item] = group
+
+		return ret
 
 
 class REGEX_REPLACE(Expression):
 	"""
-	Search `regex_search` in `value` and replace with `regex_replace`.
+	Search `regex` in `value` and replace with `replace`.
+
+	See Python documentation of `re.sub()` for more details.
 	"""
 
-	def __init__(self, app, *, arg_regex_search, arg_regex_replace, arg_value):
+	def __init__(self, app, *, arg_regex, arg_replace, arg_value):
 		super().__init__(app)
 		self.Value = arg_value
-		self.RegexSearch = re.compile(arg_regex_search)
-		self.RegexReplace = re.compile(arg_regex_replace)
+		self.Regex = re.compile(arg_regex)
+		self.Replace = arg_replace
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		return re.sub(self.RegexSearch, self.RegexReplace, value)
+		repl = self.evaluate(self.Replace, context, event, *args, **kwargs)
+		return self.Regex.sub(repl, value)
+
+
+class REGEX_SPLIT(Expression):
+
+	def __init__(self, app, *, arg_regex, arg_value, arg_max=0):
+		super().__init__(app)
+		self.Value = arg_value
+		self.Regex = re.compile(arg_regex)
+		self.Max = arg_max
+
+	def __call__(self, context, event, *args, **kwargs):
+		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		maxsplit = self.evaluate(self.Max, context, event, *args, **kwargs)
+		return self.Regex.split(value, maxsplit=maxsplit)
+
+
+class REGEX_FINDALL(Expression):
+
+	def __init__(self, app, *, arg_regex, arg_value):
+		super().__init__(app)
+		self.Value = arg_value
+		self.Regex = re.compile(arg_regex)
+
+	def __call__(self, context, event, *args, **kwargs):
+		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		return self.Regex.findall(value)
