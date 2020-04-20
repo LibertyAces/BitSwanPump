@@ -66,7 +66,7 @@ class Index(object):
 	def __contains__(self, row_name):
 		if row_name in self.N2IMap:
 			return True
-		
+
 		return False
 
 
@@ -80,7 +80,7 @@ class PersistentIndex(Index):
 		super().__init__()
 		self.DType = 'U30'
 		self.Path = path
-		
+
 		if os.path.exists(self.Path):
 			self.Map = np.memmap(self.Path, dtype=self.DType, mode='readwrite')
 			for i in range(len(self.Map)):
@@ -91,7 +91,7 @@ class PersistentIndex(Index):
 		else:
 			if size is None:
 				raise RuntimeError("The size should correspond to array size")
-			
+
 			self.Map = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=(size,))
 
 

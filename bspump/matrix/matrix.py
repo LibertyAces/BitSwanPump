@@ -237,13 +237,13 @@ class PersistentMatrix(Matrix):
 			return False
 
 		if clear:
-			self.Array[row_index] = np.zeros(1, dtype=self.DType) #might be TODO
-		
+			self.Array[row_index] = np.zeros(1, dtype=self.DType)
+
 		self.ClosedRows.add(row_index)
 
 		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
 			self.flush()
-		
+
 		crc = len(self.ClosedRows)
 		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
 		self.Gauge.set("rows.closed", crc)
@@ -258,6 +258,6 @@ class PersistentMatrix(Matrix):
 		array = np.zeros(self.Array.shape, dtype=self.DType)
 		array[:] = self.Array[:]
 		array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
-		self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
+		self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=array.shape)
 		self.Array[:] = array[:]
 		self.ClosedRows.extend(current_rows, self.Array.shape[0])
