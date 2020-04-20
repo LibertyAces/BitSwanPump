@@ -44,15 +44,14 @@ class ClosedRows(object):
 		return len(self.CR)
 
 
-	def extend(self, start, stop): 
-		self.CR |= frozenset(range(start, stop)) #NO!
+	def extend(self, start, stop):
+		self.CR |= frozenset(range(start, stop))
 		if len(self.CR) >= self.MaxLen:
 			raise RuntimeError("Maximum size exceeded")
 
 
 	def flush(self, size=None):
 		self.CR = set()
-
 
 
 

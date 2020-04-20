@@ -92,7 +92,7 @@ class PersistentIndex(Index):
 			if size is None:
 				raise RuntimeError("The size should correspond to array size")
 			
-			self.Map = np.memmap(self.Path,  dtype=self.DType, mode='w+', shape=(size,))
+			self.Map = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=(size,))
 
 
 	def pop_index(self, index):
@@ -107,11 +107,11 @@ class PersistentIndex(Index):
 		self.Map[index] = name
 
 
-	def extend(self, size): 
+	def extend(self, size):
 		map_ = np.zeros(self.Map.shape[0], dtype=self.DType)
 		map_[:] = self.Map[:]
 		map_.resize(size, refcheck=False)
-		self.Map = np.memmap(self.Path,  dtype=self.DType, mode='w+', shape=map_.shape)
+		self.Map = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=map_.shape)
 		self.Map[:] = map_[:]
 
 
@@ -122,4 +122,3 @@ class PersistentIndex(Index):
 		map_[:] = self.Map[:]
 		self.Map = map_
 		return saved_indexes
-
