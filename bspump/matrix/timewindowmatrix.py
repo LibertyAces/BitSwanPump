@@ -4,7 +4,6 @@ import logging
 import numpy as np
 
 import asab
-import collections
 
 import os
 
@@ -17,6 +16,7 @@ from .utils.warmingupcount import WarmingUpCount, PersistentWarmingUpCount
 L = logging.getLogger(__name__)
 
 ###
+
 
 class TimeWindowMixIn(NamedMatrix):
 	def __init__(self, app, dtype='float_', start_time=None, resolution=60, columns=15, clock_driven=False, id=None, config=None):
@@ -35,7 +35,7 @@ class TimeWindowMixIn(NamedMatrix):
 			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True)
 			self.Timer.start(advance_period)
 			if self.TimeConfig.get_start() != start:
-				added = self.advance(start)
+				self.advance(start)
 		else:
 			self.Timer = None
 
@@ -99,15 +99,15 @@ class TimeWindowMixIn(NamedMatrix):
 		if column_idx < 0:
 			L.exception(
 				"The column index {} is less then 0, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(
-					column_idx, event_timestamp, self.TimeConfig.get_start(), 
-					self.TimeConfig.get_end(), self.TimeConfig.get_resolution(), self.Array.shape[1])) #TODO
+					column_idx, event_timestamp, self.TimeConfig.get_start(),
+					self.TimeConfig.get_end(), self.TimeConfig.get_resolution(), self.Array.shape[1]))
 			raise
 
 		if column_idx >= self.Array.shape[1]:
 			L.exception(
 				"The column index {} is more then columns number, {} event timestamp, {} start time, {} end time, {} resolution, {} num columns".format(
-					column_idx, event_timestamp, self.TimeConfig.get_start(), 
-					self.TimeConfig.get_end(), self.TimeConfig.get_resolution(), self.Array.shape[1])) #TDODO
+					column_idx, event_timestamp, self.TimeConfig.get_start(),
+					self.TimeConfig.get_end(), self.TimeConfig.get_resolution(), self.Array.shape[1]))
 			raise
 
 		return column_idx
@@ -233,7 +233,7 @@ class PersistentTimeWindowMatrix(PersistentNamedMatrix, TimeWindowMixIn):
 		path = os.path.join(self.Path, 'warming_up_count.dat')
 		self.WarmingUpCount = PersistentWarmingUpCount(path, self.Array.shape[0])
 		if self.TimeConfig.get_start() != self.Start:
-			added = self.advance(self.Start)
+			self.advance(self.Start)
 
 
 	def add_column(self):
@@ -255,9 +255,8 @@ class PersistentTimeWindowMatrix(PersistentNamedMatrix, TimeWindowMixIn):
 		array = np.hstack((array, column))
 		array = np.delete(array, 0, axis=1)
 
-		self.Array = np.memmap(self.ArrayPath,  dtype=self.DType, mode='w+', shape=array.shape)
+		self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=array.shape)
 		self.Array[:] = array[:]
 
-		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows.get_rows()) #TODO
+		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows.get_rows())
 		self.WarmingUpCount.decrease(open_rows)
-
