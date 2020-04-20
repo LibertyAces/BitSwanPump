@@ -14,8 +14,8 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 
 	def test_matrix_add_column(self):
 		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
-		start = matrix.Start
-		end = matrix.End
+		start = matrix.TimeConfig.get_start()
+		end = matrix.TimeConfig.get_end()
 		row_index = matrix.add_row("abc")
 		warming_up = matrix.WarmingUpCount[row_index]
 		first_col = 4
@@ -27,9 +27,9 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 		num_columns = matrix.Array.shape[1]
 		matrix.add_column()
 
-		self.assertEqual(matrix.Start, start + matrix.Resolution)
-		self.assertEqual(matrix.End, end + matrix.Resolution)
-		self.assertEqual(matrix.WarmingUpCount[0], warming_up - 1)
+		self.assertEqual(matrix.TimeConfig.get_start(), start + matrix.Resolution)
+		self.assertEqual(matrix.TimeConfig.get_end(), end + matrix.Resolution)
+		self.assertEqual(matrix.WarmingUpCount.WUC[0], warming_up - 1)
 
 		self.assertEqual(matrix.Array[row_index, 0], second_col)
 		self.assertEqual(matrix.Array[row_index, 1], third_col)
@@ -40,7 +40,7 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 	def test_matrix_add_row(self):
 		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, columns=3, clock_driven=False)
 		row_index = matrix.add_row("abc")
-		self.assertEqual(matrix.Array.shape[0], matrix.WarmingUpCount.shape[0])
+		self.assertEqual(matrix.Array.shape[0], len(matrix.WarmingUpCount))
 
 
 	def test_matrix_close_row(self):
@@ -69,23 +69,22 @@ class TestTimeWindowMatrix(bspump.unittest.TestCase):
 		matrix = bspump.matrix.TimeWindowMatrix(app=self.App, start_time=cur_time, resolution=1, columns=columns, clock_driven=False)
 		row_index = matrix.add_row("abc")
 		
-
-		target_ts = matrix.Start
+		target_ts = matrix.TimeConfig.get_start()
 		added = matrix.advance(target_ts)
 		self.assertGreater(added, 0)
 
-		target_ts = matrix.Start + matrix.Resolution
+		target_ts = matrix.TimeConfig.get_start() + matrix.Resolution
 		added = matrix.advance(target_ts)
 		self.assertGreater(added, 0)
 
-		target_ts = matrix.Start - matrix.Resolution
+		target_ts = matrix.TimeConfig.get_start() - matrix.Resolution
 		added = matrix.advance(target_ts)
 		self.assertEqual(added, 0)
 
-		target_ts = matrix.Start - 0.5 * matrix.Resolution
+		target_ts = matrix.TimeConfig.get_start() - 0.5 * matrix.Resolution
 		added = matrix.advance(target_ts)
 		self.assertEqual(added, 0)
 
-		target_ts = matrix.Start + 0.5 * matrix.Resolution
+		target_ts = matrix.TimeConfig.get_start() + 0.5 * matrix.Resolution
 		added = matrix.advance(target_ts)
 		self.assertGreater(added, 0)
