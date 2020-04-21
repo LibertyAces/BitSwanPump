@@ -517,7 +517,7 @@ Type: _Mapping_.
 !DATETIME_FORMAT
 value: <... of datetime, int or float>
 format: <...>
-````
+```
 
 The date/time is specified by `value`, which by default is current UTC time.  
 `int` or `float` values are considered as a UNIX timestamps.
@@ -535,7 +535,7 @@ Type: _Mapping_.
 !DATETIME_PARSE
 value: <... of datetime, int or float>
 format: <...>
-````
+```
 
 The date/time is specified by `value`, which by default is current UTC time.  
 `int` or `float` values are considered as a UNIX timestamps.
