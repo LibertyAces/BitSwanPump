@@ -376,6 +376,33 @@ Otherwise, groups are returned in as a list.
 
 If `items ` are provided, the groups are mapped to provided `items` and a dictionary is returned.
 
+Entries in `items` can have following forms:
+
+ * Simple string entry, then the value of the regex group is used directly
+ * Expression, then the value of the regex group is passed in the expression as `!ARG` and the result of the expression is then used in the dictionary
+ * List of expressions, similar to the previous but the list is iterated till the given expression returns non-None result, then the value is used in the dictionary
+
+ Example of three forms:
+
+ ```
+!REGEX_PARSE
+regex: '^(\w)(\w)(\w)$'
+value: "foo 123 a.b.c.d"
+items:
+  - SimpleEntry
+  - Expression:
+    !CAST
+    value: !ARG
+    type: int
+  - ListOfExpressions:
+    - !REGEX_PARSE
+      regex: '^(\d)$'
+      value: !ARG
+    - !REGEX_PARSE
+      regex: '^(\s\.\s\.\s\.\s)$'
+      value: !ARG
+ ```
+
 
 ### Regular expression "REGEX_REPLACE"
 
@@ -551,7 +578,22 @@ Special format shortcuts:
 
 Print the content of the `arg` onto console and pass that unchanged.
 
+Type: _Mapping_.
+
 ```
 !DEBUG
 arg: !ITEM EVENT potatoes
 ```
+
+
+### Include other declaration `INCLUDE`
+
+Type: _Scalar_.
+
+```
+!INCLUDE declaration_identifier
+```
+
+Include the YAML declaration specified by `declaration_identifier` (which is dependant of the BSPump setup).
+The content of the included YAML is placed in the position of the `!INCLUDE` expression.
+
