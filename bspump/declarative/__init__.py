@@ -3,7 +3,9 @@ from .generator import DeclarativeGenerator
 from .timewindowanalyzer import DeclarativeTimeWindowAnalyzer
 
 from .builder import ExpressionBuilder
-from. segmentbuilder import SegmentBuilder
+from .segmentbuilder import SegmentBuilder
+
+from .abc import Expression
 
 __all__ = [
 	"DeclarativeProcessor",
@@ -12,4 +14,6 @@ __all__ = [
 
 	"ExpressionBuilder",
 	"SegmentBuilder",
+
+	"Expression",
 ]
