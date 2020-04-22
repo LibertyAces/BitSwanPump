@@ -110,11 +110,11 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 
 
 	async def get(self, key):
-		"""
+	    """
 		Obtain the value from lookup asynchronously.
 		"""
         value = None
-		try:
+        try:
 			value = self.Cache[key]
 			self.CacheCounter.add('hit', 1)
 		except KeyError:
