@@ -5,6 +5,10 @@ from .timewindowanalyzer import DeclarativeTimeWindowAnalyzer
 from .builder import ExpressionBuilder
 from .segmentbuilder import SegmentBuilder
 
+from .libraries import DeclarationLibrary
+from .libraries import FileDeclarationLibrary
+from .libraries import MongoDeclarationLibrary
+
 from .abc import Expression
 
 __all__ = [
@@ -14,6 +18,10 @@ __all__ = [
 
 	"ExpressionBuilder",
 	"SegmentBuilder",
+
+	"DeclarationLibrary",
+	"FileDeclarationLibrary",
+	"MongoDeclarationLibrary",
 
 	"Expression",
 ]
