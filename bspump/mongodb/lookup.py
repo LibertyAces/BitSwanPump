@@ -87,13 +87,13 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		self.Changestream = self.Config.getboolean("changestream")
 
 		self.Loop = app.Loop
-		self._conn_future = None
+		self._changestream_future = None
 
 		if len(self.Database) == 0:
 			self.Database = self.Connection.Database
 
 		if self.Changestream:
-			self._conn_future = asyncio.ensure_future(
+			self._changestream_future = asyncio.ensure_future(
 				self._changestream(),
 				loop=self.Loop,
 			)
@@ -107,43 +107,42 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
 		self.SuccessCounter = \
-			metrics_service.create_counter("mongodb.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
+			metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
 
-		app.PubSub.subscribe('Application.tick/5!', self._on_health_check)
+		app.PubSub.subscribe('Application.tick/10!', self._on_health_check)
 		app.PubSub.subscribe("Application.exit!", self._on_exit)
 
 
 	def _on_health_check(self, message_type):
-		if self._conn_future is not None:
+		if self._changestream_future is not None and self.Changestream:
 			# Future exists
 
-			if not self._conn_future.done():
+			if not self._changestream_future.done():
 				# Future didn't result yet
 				# No sanitization needed
 				return
 
 			try:
-				self._conn_future.result()
+				self._changestream_future.result()
 			except Exception:
 				# Connection future threw an error
 				L.exception("Unexpected connection future error")
 
 			# Future already resulted (with or without exception)
-			self._conn_future = None
+			self._changestream_future = None
 
-		assert(self._conn_future is None)
+		assert(self._changestream_future is None)
 
 		if self.Changestream:
-			self._conn_future = asyncio.ensure_future(
+			self._changestream_future = asyncio.ensure_future(
 				self._changestream(),
 				loop=self.Loop,
 			)
 
-
 	async def _on_exit(self, message_type):
-		# On application exit, we first await completion of all tasks in the queue.
-		if self._conn_future is not None:
-			await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED, loop=self.Loop)
+		# On application exit, we cancel the future.
+		if self._changestream_future is not None:
+			self._changestream_future.cancel()
 
 	def build_query(self, key):
 		return {self.Key: key}
@@ -155,11 +154,10 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		try:
 			async with self.Connection.Client[self.Database][self.Collection].watch() as stream:
 				async for change in stream:
-					if change is not None:
-						self.Cache.clear()
+					self.Cache.clear()
 
 		except asyncio.CancelledError:
-			self._output_queue.cancel()
+			return
 
 		except Exception as e:
 			L.exception(f"Observed exception: {e}")
