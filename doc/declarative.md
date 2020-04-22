@@ -574,6 +574,23 @@ Special format shortcuts:
  * `RFC3339` Format according to RFC 3339 / Date and Time on the Internet: Timestamps
 
 
+### Access elements of Date/time  `DATETIME_GET`
+
+Get the value of particular components of the date/time, such month, year or hour.
+
+Type: _Mapping_.
+
+```
+!DATETIME_GET
+value: <... of datetime, int or float>
+timezone: Europe/Prague
+what: [year|month|day|hour|minute|second|microsecond|timestamp|weekday|isoweekday]
+```
+
+`timezone` is optional, if not provided, UTC time is assumed.
+The details about format of timezone can be found at http://pytz.sourceforge.net/
+
+
 ### Debug output `DEBUG`
 
 Print the content of the `arg` onto console and pass that unchanged.
