@@ -5,9 +5,9 @@ from .timewindowanalyzer import DeclarativeTimeWindowAnalyzer
 from .builder import ExpressionBuilder
 from .segmentbuilder import SegmentBuilder
 
-from .ymlsource import YMLSource
-from .ymlsource import FileYMLSource
-from .ymlsource import MongoDBYMLSource
+from .libraries import DeclarationLibrary
+from .libraries import FileDeclarationLibrary
+from .libraries import MongoDeclarationLibrary
 
 from .abc import Expression
 
@@ -19,9 +19,9 @@ __all__ = [
 	"ExpressionBuilder",
 	"SegmentBuilder",
 
-	"YMLSource",
-	"FileYMLSource",
-	"MongoDBYMLSource",
+	"DeclarationLibrary",
+	"FileDeclarationLibrary",
+	"MongoDeclarationLibrary",
 
 	"Expression",
 ]

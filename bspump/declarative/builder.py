@@ -4,7 +4,7 @@ import inspect
 import yaml
 
 from . import expression
-from .ymlsource import FileYMLSource
+from .libraries import FileDeclarationLibrary
 
 
 ###
@@ -19,10 +19,14 @@ class ExpressionBuilder(object):
 	Builds an expression from configuration.
 	"""
 
-	def __init__(self, app, yml_sources=[FileYMLSource()]):
+	def __init__(self, app, libraries=None):
 		self.App = app
 		self.ExpressionClasses = {}
-		self.YMLSources = yml_sources
+
+		if libraries is None:
+			self.Libraries = [FileDeclarationLibrary()]
+		else:
+			self.Libraries = libraries
 
 		# Register the common expression module
 		self.register_module(expression)
@@ -38,9 +42,9 @@ class ExpressionBuilder(object):
 
 	def read(self, identifier):
 
-		# Read declaration from available YML sources
-		for yml_source in self.YMLSources:
-			declaration = yml_source.read(identifier)
+		# Read declaration from available declarations libraries
+		for declaration_library in self.Libraries:
+			declaration = declaration_library.read(identifier)
 			if declaration is not None:
 				return declaration
 
