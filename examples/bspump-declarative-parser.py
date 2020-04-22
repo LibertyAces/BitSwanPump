@@ -17,6 +17,11 @@ class DeclarativeParsingPipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
+
+		# Load the declaration from YML file
+		file = open("./data/declarative-parser-input.yml")
+		declaration = file.read()
+
 		self.build(
 			bspump.random.RandomSource(app, self, choice=[
 				"one two three four five",
@@ -24,13 +29,7 @@ class DeclarativeParsingPipeline(bspump.Pipeline):
 				"dollar pound frank euro jen"
 			], config={"number": 5}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
 
-			bspump.declarative.DeclarativeProcessor(app, self, declaration='''
---- !REGEX_PARSE
-regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
-items: [Foo, Bar, Bob]
-value: !EVENT
-'''
-			),
+			bspump.declarative.DeclarativeProcessor(app, self, declaration=declaration),
 
 			bspump.common.PPrintSink(app, self)
 		)
