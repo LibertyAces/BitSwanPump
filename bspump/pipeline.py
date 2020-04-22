@@ -180,7 +180,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				L.warning("Error on a pipeline is already set!")
 
 			self._error = (context, event, exc, self.App.time())
-			L.warning("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
+			L.exception("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
 
 			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
 			self._evaluate_ready()

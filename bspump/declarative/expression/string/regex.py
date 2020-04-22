@@ -62,13 +62,25 @@ class REGEX_PARSE(Expression):
 				if result is None:
 					return self.evaluate(self.Miss, context, event, *args, **kwargs)
 				ret.update(result)
+
 			elif isinstance(item, dict):
 				if group is None:
 					continue
 				assert(len(item) == 1)
+
 				key, value = next(iter(item.items()))
-				assert(isinstance(value, Expression))
-				ret[key] = value.evaluate(value, context, event, group, *args, **kwargs)
+
+				if isinstance(value, Expression):
+					ret[key] = value.evaluate(value, context, event, group, *args, **kwargs)
+
+				elif isinstance(value, list):
+					for valuei in value:
+						x = valuei.evaluate(valuei, context, event, group, *args, **kwargs)
+						if x is not None:
+							ret[key] = x
+							break
+				else:
+					raise RuntimeError("Unexpected type: '{}'".format(value))
 			else:
 				ret[item] = group
 
