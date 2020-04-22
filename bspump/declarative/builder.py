@@ -1,10 +1,11 @@
 import logging
-import os
 import inspect
 
 import yaml
 
 from . import expression
+from .ymlsource import FileYMLSource
+
 
 ###
 
@@ -18,11 +19,10 @@ class ExpressionBuilder(object):
 	Builds an expression from configuration.
 	"""
 
-	def __init__(self, app, basedir='.'):
+	def __init__(self, app, yml_sources=[FileYMLSource()]):
 		self.App = app
-		self.BaseDir = basedir
-
 		self.ExpressionClasses = {}
+		self.YMLSources = yml_sources
 
 		# Register the common expression module
 		self.register_module(expression)
@@ -38,13 +38,11 @@ class ExpressionBuilder(object):
 
 	def read(self, identifier):
 
-		# TODO: Allow user code to register other sources of the YAML files (eg. MongoDB)
-
-		# Try to load YAML from a disk
-		fname = os.path.join(self.BaseDir, identifier + '.yaml')
-		if os.path.exists(fname):
-			with open(fname, 'r') as f:
-				return f.read()
+		# Read declaration from available YML sources
+		for yml_source in self.YMLSources:
+			declaration = yml_source.read(identifier)
+			if declaration is not None:
+				return declaration
 
 		raise RuntimeError("Cannot read '{}' YAML declaration".format(identifier))
 
@@ -69,7 +67,6 @@ class ExpressionBuilder(object):
 			loader.dispose()
 
 		return expression
-
 
 
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):

@@ -5,6 +5,10 @@ from .timewindowanalyzer import DeclarativeTimeWindowAnalyzer
 from .builder import ExpressionBuilder
 from .segmentbuilder import SegmentBuilder
 
+from .ymlsource import YMLSource
+from .ymlsource import FileYMLSource
+from .ymlsource import MongoDBYMLSource
+
 from .abc import Expression
 
 __all__ = [
@@ -14,6 +18,10 @@ __all__ = [
 
 	"ExpressionBuilder",
 	"SegmentBuilder",
+
+	"YMLSource",
+	"FileYMLSource",
+	"MongoDBYMLSource",
 
 	"Expression",
 ]
