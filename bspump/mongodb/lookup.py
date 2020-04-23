@@ -1,10 +1,17 @@
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
+import asyncio
+import logging
+
+###
+
+L = logging.getLogger(__name__)
+
+###
 
 
 class MongoDBLookup(MappingLookup, AsyncLookupMixin):
-
 	"""
 	The lookup that is linked with a MongoDB.
 	It provides a mapping (dictionary-like) interface to pipelines.
@@ -47,7 +54,8 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 	ConfigDefaults = {
 		'database': '',  # Specify a database if you want to overload the connection setting
 		'collection': '',  # Specify collection name
-		'key': ''  # Specify key name used for search
+		'key': '',  # Specify key name used for search
+		'changestream': False
 	}
 
 	@classmethod
@@ -73,13 +81,22 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 	def __init__(self, app, connection, id=None, config=None, cache=None):
 		super().__init__(app, id=id, config=config)
 		self.Connection = connection
-
 		self.Database = self.Config['database']
 		self.Collection = self.Config['collection']
 		self.Key = self.Config['key']
+		self.Changestream = self.Config.getboolean("changestream")
+
+		self.Loop = app.Loop
+		self._changestream_future = None
 
 		if len(self.Database) == 0:
 			self.Database = self.Connection.Database
+
+		if self.Changestream:
+			self._changestream_future = asyncio.ensure_future(
+				self._changestream(),
+				loop=self.Loop,
+			)
 
 		self.Count = -1
 		if cache is None:
@@ -89,13 +106,62 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 
 		metrics_service = app.get_service('asab.MetricsService')
 		self.CacheCounter = metrics_service.create_counter("mongodb.lookup", tags={}, init_values={'hit': 0, 'miss': 0})
-		self.SuccessCounter = metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
+		self.SuccessCounter = \
+			metrics_service.create_counter("mysql.lookup.success", tags={}, init_values={'hit': 0, 'miss': 0})
+
+		app.PubSub.subscribe('Application.tick/10!', self._on_health_check)
+		app.PubSub.subscribe("Application.exit!", self._on_exit)
+
+
+	def _on_health_check(self, message_type):
+		if self._changestream_future is not None and self.Changestream:
+			# Future exists
+
+			if not self._changestream_future.done():
+				# Future didn't result yet
+				# No sanitization needed
+				return
+
+			try:
+				self._changestream_future.result()
+			except Exception:
+				# Connection future threw an error
+				L.exception("Unexpected connection future error")
+
+			# Future already resulted (with or without exception)
+			self._changestream_future = None
+
+		assert(self._changestream_future is None)
+
+		if self.Changestream:
+			self._changestream_future = asyncio.ensure_future(
+				self._changestream(),
+				loop=self.Loop,
+			)
+
+	async def _on_exit(self, message_type):
+		# On application exit, we cancel the future.
+		if self._changestream_future is not None:
+			self._changestream_future.cancel()
 
 	def build_query(self, key):
 		return {self.Key: key}
 
 	async def _find_one(self, query):
 		return await (self.Connection.Client[self.Database][self.Collection]).find_one(query)
+
+	async def _changestream(self):
+		try:
+			async with self.Connection.Client[self.Database][self.Collection].watch() as stream:
+				async for change in stream:
+					self.Cache.clear()
+
+		except asyncio.CancelledError:
+			return
+
+		except Exception as e:
+			L.exception(f"Observed exception: {e}")
+			await asyncio.sleep(5)
 
 	async def get(self, key):
 		"""
