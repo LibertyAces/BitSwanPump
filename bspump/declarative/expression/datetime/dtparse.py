@@ -20,6 +20,9 @@ class DATETIME_PARSE(Expression):
 		fmt = self.evaluate(self.Format, context, event, *args, **kwargs)
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)
 
+		if isinstance(value, int) or isinstance(value, float):
+			value = datetime.datetime.utcfromtimestamp(value)
+
 		if fmt == 'RFC3339':
 			return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
 		else:

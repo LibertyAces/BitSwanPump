@@ -9,4 +9,4 @@ class NOW(Expression):
 		assert(value == "")
 
 	def __call__(self, context, event, *args, **kwargs):
-		return datetime.datetime.utcnow()
+		return datetime.datetime.utcnow().timestamp()
