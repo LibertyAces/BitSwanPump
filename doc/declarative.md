@@ -520,21 +520,21 @@ Parses string, hex number or decimal number to internal IP address integer repre
 !IP <...>
 ```
 
-### `IPTOSTRING`
+### `IP_PARSE`
 
 Parses IP address (number representation) to its string representation.
 
 ```
-!IPTOSTRING <...>
+!IP_PARSE <...>
 ```
 
 
-### `INSUBNET`
+### `IP_INSUBNET`
 
 Checks if value (IP Address) is inside the given subnet, which may be a provided list.
 
 ```
-!INSUBNET
+!IP_INSUBNET
 value <...>
 subnet: [<...>]
 ```

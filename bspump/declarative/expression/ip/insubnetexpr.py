@@ -3,7 +3,7 @@ from netaddr import IPNetwork, IPAddress
 from bspump.declarative.abc import Expression
 
 
-class INSUBNET(Expression):
+class IP_INSUBNET(Expression):
 	"""
 	Checks if expression is of given subnet.
 	"""

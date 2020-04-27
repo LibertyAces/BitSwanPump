@@ -3,7 +3,7 @@ from netaddr import IPAddress
 from bspump.declarative.abc import Expression
 
 
-class IPTOSTRING(Expression):
+class IP_PARSE(Expression):
 	"""
 	Parses IP address to its string representation.
 	"""

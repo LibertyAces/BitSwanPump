@@ -65,8 +65,8 @@ from .test.inexpr import IN
 
 # IP
 from .ip.ipexpr import IP
-from .ip.iptostringexpr import IPTOSTRING
-from .ip.insubnetexpr import INSUBNET
+from .ip.ipparseexpr import IP_PARSE
+from .ip.insubnetexpr import IP_INSUBNET
 
 # Utility
 from .utility.castexpr import CAST
@@ -95,7 +95,7 @@ __all__ = [
 	"KWARGS", "KWARG",
 	"LOOKUP",
 	"INDATE", "IN",
-	"IP", "IPTOSTRING", "INSUBNET",
+	"IP", "IP_PARSE", "IP_INSUBNET",
 	"CAST", "MAP",
 	"DATETIME_FORMAT", "DATETIME_PARSE", "DATETIME_GET", "NOW",
 ]
