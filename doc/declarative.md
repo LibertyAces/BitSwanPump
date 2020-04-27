@@ -510,15 +510,33 @@ expr: <...>
 is: <...>
 ```
 
+### IP functions
 
-### Test "INSUBNET"
+### `IP`
 
-Checks if value (IP Address) is inside the given subnet.
+Parses string, hex number or decimal number to internal IP address integer representation.
+
+```
+!IP <...>
+```
+
+### `IPTOSTRING`
+
+Parses IP address (number representation) to its string representation.
+
+```
+!IPTOSTRING <...>
+```
+
+
+### `INSUBNET`
+
+Checks if value (IP Address) is inside the given subnet, which may be a provided list.
 
 ```
 !INSUBNET
 value <...>
-subnet: <...>
+subnet: [<...>]
 ```
 
 
