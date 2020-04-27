@@ -525,7 +525,9 @@ Parses string, hex number or decimal number to internal IP address integer repre
 Parses IP address (number representation) to its string representation.
 
 ```
-!IP_FORMAT <...>
+!IP_FORMAT
+value: <...>
+format: ipv4|ipv6
 ```
 
 
