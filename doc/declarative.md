@@ -512,20 +512,20 @@ is: <...>
 
 ### IP functions
 
-### `IP`
+### `IP_PARSE`
 
 Parses string, hex number or decimal number to internal IP address integer representation.
 
 ```
-!IP <...>
+!IP_PARSE <...>
 ```
 
-### `IP_PARSE`
+### `IP_FORMAT`
 
 Parses IP address (number representation) to its string representation.
 
 ```
-!IP_PARSE <...>
+!IP_FORMAT <...>
 ```
 
 

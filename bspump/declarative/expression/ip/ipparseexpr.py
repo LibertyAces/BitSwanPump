@@ -5,7 +5,7 @@ from bspump.declarative.abc import Expression
 
 class IP_PARSE(Expression):
 	"""
-	Parses IP address to its string representation.
+	Parses string, hex number or decimal number to IP address.
 	"""
 
 	def __init__(self, app, *, value):
@@ -14,4 +14,4 @@ class IP_PARSE(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		ip = IPAddress(self.evaluate(self.Value, context, event, *args, **kwargs))
-		return str(ip)
+		return ip.value

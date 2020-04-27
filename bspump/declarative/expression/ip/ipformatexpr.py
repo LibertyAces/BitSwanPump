@@ -3,9 +3,9 @@ from netaddr import IPAddress
 from bspump.declarative.abc import Expression
 
 
-class IP(Expression):
+class IP_FORMAT(Expression):
 	"""
-	Parses string, hex number or decimal number to IP address.
+	Parses IP address to its string representation.
 	"""
 
 	def __init__(self, app, *, value):
@@ -14,4 +14,4 @@ class IP(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		ip = IPAddress(self.evaluate(self.Value, context, event, *args, **kwargs))
-		return ip.value
+		return str(ip)

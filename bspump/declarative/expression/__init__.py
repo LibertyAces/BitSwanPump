@@ -64,8 +64,8 @@ from .test.indateexpr import INDATE
 from .test.inexpr import IN
 
 # IP
-from .ip.ipexpr import IP
 from .ip.ipparseexpr import IP_PARSE
+from .ip.ipformatexpr import IP_FORMAT
 from .ip.insubnetexpr import IP_INSUBNET
 
 # Utility
@@ -95,7 +95,7 @@ __all__ = [
 	"KWARGS", "KWARG",
 	"LOOKUP",
 	"INDATE", "IN",
-	"IP", "IP_PARSE", "IP_INSUBNET",
+	"IP_PARSE", "IP_FORMAT", "IP_INSUBNET",
 	"CAST", "MAP",
 	"DATETIME_FORMAT", "DATETIME_PARSE", "DATETIME_GET", "NOW",
 ]
