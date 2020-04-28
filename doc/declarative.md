@@ -527,7 +527,7 @@ Parses IP address (number representation) to its string representation.
 ```
 !IP_FORMAT
 value: <...>
-format: ipv4|ipv6
+format: auto|ipv4|ipv6
 ```
 
 

@@ -8,7 +8,7 @@ class IP_FORMAT(Expression):
 	Parses IP address to its string representation.
 	"""
 
-	def __init__(self, app, *, arg_value, arg_format="ipv6"):
+	def __init__(self, app, *, arg_value, arg_format="auto"):
 		super().__init__(app)
 		self.Value = arg_value
 		self.Format = arg_format
@@ -20,5 +20,8 @@ class IP_FORMAT(Expression):
 			return str(ip.ipv6())
 		elif self.Format == "ipv4":
 			return str(ip.ipv4())
-		else:
-			return str(ip)
+		else:  # auto
+			if (0xffff00000000 & ip.ipv6().value) == 0xffff00000000:
+				return str(ip.ipv4())
+			else:
+				return str(ip.ipv6())
