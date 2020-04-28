@@ -14,4 +14,4 @@ class IP_PARSE(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		ip = IPAddress(self.evaluate(self.Value, context, event, *args, **kwargs))
-		return ip.value
+		return ip.ipv6().value
