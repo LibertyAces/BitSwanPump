@@ -62,7 +62,11 @@ from .lookup.lookupexpr import LOOKUP
 # Complex
 from .test.indateexpr import INDATE
 from .test.inexpr import IN
-from .test.insubnetexpr import INSUBNET
+
+# IP
+from .ip.ipparseexpr import IP_PARSE
+from .ip.ipformatexpr import IP_FORMAT
+from .ip.insubnetexpr import IP_INSUBNET
 
 # Utility
 from .utility.castexpr import CAST
@@ -90,7 +94,8 @@ __all__ = [
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
 	"LOOKUP",
-	"INDATE", "IN", "INSUBNET",
+	"INDATE", "IN",
+	"IP_PARSE", "IP_FORMAT", "IP_INSUBNET",
 	"CAST", "MAP",
 	"DATETIME_FORMAT", "DATETIME_PARSE", "DATETIME_GET", "NOW",
 ]
