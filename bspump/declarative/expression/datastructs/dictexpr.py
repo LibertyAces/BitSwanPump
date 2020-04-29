@@ -26,7 +26,7 @@ This is how to create the empty dictionary:
 ```
 """
 
-	def __init__(self, app, *, arg_with=None, arg_set=None, arg_del=None, arg_add=None):
+	def __init__(self, app, *, arg_with=None, arg_set=None, arg_update=None, arg_del=None, arg_add=None):
 		super().__init__(app)
 
 		self.With = arg_with
@@ -34,6 +34,10 @@ This is how to create the empty dictionary:
 		if arg_set is not None:
 			assert(isinstance(arg_set, dict))
 		self.Set = arg_set
+
+		if arg_update is not None:
+			assert(isinstance(arg_update, dict))
+		self.Update = arg_update
 
 		if arg_add is not None:
 			assert(isinstance(arg_add, dict))
@@ -52,10 +56,14 @@ This is how to create the empty dictionary:
 
 		if self.Set is not None:
 			for key, value in self.Set.items():
+				with_dict[key] = self.evaluate(value, context, event, *args, **kwargs)
+
+		if self.Update is not None:
+			for key, value in self.Update.items():
 				try:
 					orig = with_dict[key]
 				except KeyError:
-					orig = None
+					continue
 				with_dict[key] = self.evaluate(value, context, event, orig, *args, **kwargs)
 
 		if self.Add is not None:

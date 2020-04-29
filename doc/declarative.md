@@ -231,6 +231,9 @@ del:
   - item5
 add:
   item6: 1
+update:
+	item7:
+	  !LOWER
 ```
 
 
@@ -241,6 +244,9 @@ Argument `set` (optional) specifies items to be set (added, updated) to the dict
 Argument `del` (optional) specifies items to be removed from a dictionary.
 
 Argument `add` (optional) is similar to `set` but the operator `+=` is applied. The item must exist.
+
+Argument `update` (optional) is similar to `set` but the item must exist and it is passed to a subsequent expression as a `!ARG`. It the item doesn't exists, the entry is skipped.
+
 
 This is how to create the empty dictionary:
 
@@ -510,7 +516,7 @@ expr: <...>
 is: <...>
 ```
 
-### IP functions
+### IP Address functions
 
 ### `IP_PARSE`
 
@@ -522,7 +528,7 @@ Parses string, hex number or decimal number to internal IP address integer repre
 
 ### `IP_FORMAT`
 
-Parses IP address (number representation) to its string representation.
+Convert IP address to its string representation.
 
 ```
 !IP_FORMAT
