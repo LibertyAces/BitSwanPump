@@ -24,7 +24,7 @@ class DATETIME_GET(Expression):
 			raise ValueError("Invalid 'what' provided: '{}'".format(arg_what))
 
 		if arg_timezone is None:
-			self.Timezone = pytz.utc
+			self.Timezone = None
 		else:
 			self.Timezone = pytz.timezone(arg_timezone)
 
@@ -35,7 +35,8 @@ class DATETIME_GET(Expression):
 			value = datetime.datetime.utcfromtimestamp(value)
 
 		# Apply the timezone
-		value = self.Timezone.localize(value)
+		if self.Timezone is not None:
+			value = self.Timezone.localize(value)
 
 		if self.Method == 1:
 			try:

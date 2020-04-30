@@ -1,4 +1,5 @@
 import datetime
+import pytz
 
 from ...abc import Expression
 
@@ -11,10 +12,18 @@ class DATETIME_PARSE(Expression):
 	Format example: "%Y-%m-%d %H:%M:%S"
 	"""
 
-	def __init__(self, app, *, arg_value, arg_format):
+	def __init__(self, app, *, arg_value, arg_format, arg_flags='', arg_timezone=None):
 		super().__init__(app)
 		self.Format = arg_format
 		self.Value = arg_value
+
+		self.SetCurrentYear = 'Y' in arg_flags
+
+		if arg_timezone is None:
+			self.Timezone = None
+		else:
+			self.Timezone = pytz.timezone(arg_timezone)
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		fmt = self.evaluate(self.Format, context, event, *args, **kwargs)
@@ -24,6 +33,16 @@ class DATETIME_PARSE(Expression):
 			value = datetime.datetime.utcfromtimestamp(value)
 
 		if fmt == 'RFC3339':
-			return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+			dt = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
 		else:
-			return datetime.datetime.strptime(value, fmt)
+			dt = datetime.datetime.strptime(value, fmt)
+
+		if self.SetCurrentYear:
+			dt = dt.replace(year=datetime.datetime.utcnow().year)
+
+		if self.Timezone is not None:
+			dt = self.Timezone.localize(dt)
+		else:
+			dt = dt.replace(tzinfo=datetime.timezone.utc)
+
+		return dt.timestamp()

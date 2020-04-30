@@ -1,0 +1,5 @@
+---
+!DATETIME_PARSE
+  value: !ARG
+  format: '%b %d %H:%M:%S'
+  flags: Y

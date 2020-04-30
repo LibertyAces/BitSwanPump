@@ -1,0 +1,5 @@
+---
+!DATETIME_PARSE
+  value: "2000-01-01 00:00:00"
+  format: "%Y-%m-%d %H:%M:%S"
+  timezone: Europe/Prague

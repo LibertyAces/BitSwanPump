@@ -588,6 +588,8 @@ Type: _Mapping_.
 !DATETIME_PARSE
 value: <... of datetime, int or float>
 format: <...>
+timezone: Europe/Prague
+flags: Y
 ```
 
 The date/time is specified by `value`, which by default is current UTC time.  
@@ -598,6 +600,13 @@ Format example: "%Y-%m-%d %H:%M:%S"
 Special format shortcuts:
 
  * `RFC3339` Format according to RFC 3339 / Date and Time on the Internet: Timestamps
+
+`timezone` is optional, if not provided, UTC time is assumed.
+The details about format of timezone can be found at http://pytz.sourceforge.net/
+
+String `flags` specifies special conditions to be applied:
+
+* `Y`: Use a current year, suited for parsing incomplete dates such as `17 Mar`.
 
 
 ### Access elements of Date/time  `DATETIME_GET`
