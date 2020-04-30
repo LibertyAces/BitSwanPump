@@ -85,7 +85,4 @@ class ProcessorTestCase(TestCase):
 		self.Pipeline.unittest_start()
 		self.App.run()
 
-		if self.Pipeline.Source.Exception is not None:
-			raise self.Pipeline.Source.Exception
-
 		return self.Pipeline.Sink.Output

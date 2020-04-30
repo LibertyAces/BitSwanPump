@@ -10,13 +10,11 @@ class UnitTestSource(TriggerSource):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Input = []
-		self.Exception = None
 
 
 	async def cycle(self, *args, **kwags):
 		try:
 			for context, event in self.Input:
 				await self.process(event, context=context)
-		except Exception as e:
+		except:
 			L.exception("During unit test")
-			self.Exception = e
