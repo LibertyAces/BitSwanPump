@@ -18,3 +18,4 @@ class UnitTestSource(TriggerSource):
 				await self.process(event, context=context)
 		except:
 			L.exception("During unit test")
+			raise
