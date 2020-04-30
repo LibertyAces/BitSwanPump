@@ -649,3 +649,17 @@ Type: _Scalar_.
 Include the YAML declaration specified by `declaration_identifier` (which is dependant of the BSPump setup).
 The content of the included YAML is placed in the position of the `!INCLUDE` expression.
 
+
+### Get value from a configuration `CONFIG`
+
+Type: _Scalar_.
+
+```
+!CONFIG configuration_key
+```
+
+Get the value from a configuration using `configuration_key`.
+Configuration is a key/value space.
+
+_Note_: Configuration items are resolved during YAML load time.
+

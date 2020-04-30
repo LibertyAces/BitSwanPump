@@ -5,7 +5,7 @@ import bspump.declarative
 import bspump.unittest
 
 
-class TestDeclarative(bspump.unittest.TestCase):
+class TestDeclarativeDateTime(bspump.unittest.TestCase):
 
 	def setUp(self) -> None:
 		super().setUp()

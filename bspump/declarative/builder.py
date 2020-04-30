@@ -23,6 +23,8 @@ class ExpressionBuilder(object):
 		self.App = app
 		self.ExpressionClasses = {}
 
+		self.Config = {}
+
 		if libraries is None:
 			self.Libraries = [FileDeclarationLibrary()]
 		else:
@@ -64,6 +66,7 @@ class ExpressionBuilder(object):
 			loader.add_constructor("!{}".format(name), self._constructor)
 
 		loader.add_constructor("!INCLUDE", self._construct_include)
+		loader.add_constructor("!CONFIG", self._construct_config)
 
 		try:
 			expression = loader.get_single_data()
@@ -79,6 +82,11 @@ class ExpressionBuilder(object):
 		identifier = loader.construct_scalar(node)
 		declaration = self.read(identifier)
 		return yaml.load(declaration)
+
+
+	def _construct_config(self, loader: yaml.Loader, node: yaml.Node):
+		key = loader.construct_scalar(node)
+		return self.Config.get(key)
 
 
 	def _constructor(self, loader, node):
