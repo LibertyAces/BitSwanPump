@@ -16,6 +16,6 @@ class UnitTestSource(TriggerSource):
 		try:
 			for context, event in self.Input:
 				await self.process(event, context=context)
-		except:
+		except Exception as e:
 			L.exception("During unit test")
-			raise
+			raise e
