@@ -377,6 +377,9 @@ Type: _Mapping_.
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 items: [Foo, Bar,  <...>]
 value: <...>
+set:
+	item1: foo
+	item2: bar
 ```
 
 If nothing is found `miss` is returned.
@@ -411,6 +414,7 @@ items:
       value: !ARG
  ```
 
+The argument `add` (optional) allows to add additional items into a result dictionary.
 
 ### Regular expression "REGEX_REPLACE"
 
