@@ -366,14 +366,14 @@ miss: <...|default False>
 Note: Uses Python regular expression.
 
 
-### Regular expression "REGEX_PARSE"
+### Regular expression "REGEX.PARSE"
 
 Search `value` for `regex` with regular expressions groups.
 
 Type: _Mapping_.
 
 ```
-!REGEX_PARSE
+!REGEX.PARSE
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 items: [Foo, Bar,  <...>]
 value: <...>
@@ -396,7 +396,7 @@ Entries in `items` can have following forms:
  Example of three forms:
 
  ```
-!REGEX_PARSE
+!REGEX.PARSE
 regex: '^(\w)(\w)(\w)$'
 value: "foo 123 a.b.c.d"
 items:
@@ -406,17 +406,18 @@ items:
     value: !ARG
     type: int
   - ListOfExpressions:
-    - !REGEX_PARSE
+    - !REGEX.PARSE
       regex: '^(\d)$'
       value: !ARG
-    - !REGEX_PARSE
+    - !REGEX.PARSE
       regex: '^(\s\.\s\.\s\.\s)$'
       value: !ARG
  ```
 
 The argument `add` (optional) allows to add additional items into a result dictionary.
 
-### Regular expression "REGEX_REPLACE"
+
+### Regular expression "REGEX.REPLACE"
 
 Searches for `regex` in `value` and replaces leftmost occurrence with `replace`.
 
@@ -426,21 +427,21 @@ Type: _Mapping_.
 See Python documentation of `re.sub()` for more details.
 
 ```
-!REGEX_REPLACE
+!REGEX.REPLACE
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 replace: <... of type string>
 value: <... of type string>
 ```
 
 
-### Regular expression "REGEX_SPLIT"
+### Regular expression "REGEX.SPLIT"
 
 Split `value` by `regex`.
 
 Type: _Mapping_.
 
 ```
-!REGEX_SPLIT
+!REGEX.SPLIT
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 value: <...>
 max: 2
@@ -524,31 +525,31 @@ is: <...>
 
 ### IP Address functions
 
-### `IP_PARSE`
+### `IP.PARSE`
 
 Parses string, hex number or decimal number to internal IP address integer representation.
 
 ```
-!IP_PARSE <...>
+!IP.PARSE <...>
 ```
 
-### `IP_FORMAT`
+### `IP.FORMAT`
 
 Convert IP address to its string representation.
 
 ```
-!IP_FORMAT
+!IP.FORMAT
 value: <...>
 format: auto|ipv4|ipv6
 ```
 
 
-### `IP_INSUBNET`
+### `IP.INSUBNET`
 
 Checks if value (IP Address) is inside the given subnet, which may be a provided list.
 
 ```
-!IP_INSUBNET
+!IP.INSUBNET
 value <...>
 subnet: [<...>]
 ```
@@ -566,14 +567,14 @@ Type: _Mapping_.
 !NOW
 ```
 
-### Date/time to human readable string `DATETIME_FORMAT`
+### Date/time to human readable string `DATETIME.FORMAT`
 
 Returns date/time in human readable format.
 
 Type: _Mapping_.
 
 ```
-!DATETIME_FORMAT
+!DATETIME.FORMAT
 value: <... of datetime, int or float>
 format: <...>
 ```
@@ -584,14 +585,14 @@ The date/time is specified by `value`, which by default is current UTC time.
 Format example: "%Y-%m-%d %H:%M:%S"
 
 
-### Date/time parse `DATETIME_PARSE`
+### Date/time parse `DATETIME.PARSE`
 
 Parse the date/time from a string
 
 Type: _Mapping_.
 
 ```
-!DATETIME_PARSE
+!DATETIME.PARSE
 value: <... of datetime, int or float>
 format: <...>
 timezone: Europe/Prague
@@ -615,14 +616,14 @@ String `flags` specifies special conditions to be applied:
 * `Y`: Use a current year, suited for parsing incomplete dates such as `17 Mar`.
 
 
-### Access elements of Date/time  `DATETIME_GET`
+### Access elements of Date/time  `DATETIME.GET`
 
 Get the value of particular components of the date/time, such month, year or hour.
 
 Type: _Mapping_.
 
 ```
-!DATETIME_GET
+!DATETIME.GET
 value: <... of datetime, int or float>
 timezone: Europe/Prague
 what: [year|month|day|hour|minute|second|microsecond|timestamp|weekday|isoweekday]
