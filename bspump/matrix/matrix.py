@@ -179,7 +179,6 @@ class PersistentMatrix(Matrix):
 	}
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
-		# TODO super
 		super().__init__(app, dtype=dtype, id=id, config=config)
 
 
