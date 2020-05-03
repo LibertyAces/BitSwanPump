@@ -498,6 +498,8 @@ else:
 
 #### Utility "CAST"
 
+Type: _Mapping_ and _Scalar_.
+
 Casts specified `value` to `type`, which can be int, float, str, list and dict.
 
 ```
@@ -509,6 +511,14 @@ default: 0
 
 `default` is returned when cast fails, it is optional, with default value of `None`.
 
+
+There is also a scalar version:
+
+```
+!CAST int
+```
+
+It only allows to specify the `type` argument, the value is taken from `!ARG`.
 
 
 ### Test "IN"

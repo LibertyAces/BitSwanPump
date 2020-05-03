@@ -1,28 +1,52 @@
 from bspump.declarative.abc import Expression
 
+from ..value.eventexpr import ARG
+
 
 class CAST(Expression):
 	"""
 	Casts "value" to "type"
 	"""
 
-	def __init__(self, app, *, arg_value, arg_type, arg_default=None):
+	def __init__(self, app, *, arg_value=None, arg_type=None, arg_default=None, value=None):
 		super().__init__(app)
-		self.Value = arg_value
 
-		# Detect type cast function
-		if arg_type == "int":
-			self.Conversion = int
-		elif arg_type == "float":
-			self.Conversion = float
-		elif arg_type == "str":
-			self.Conversion = str
-		elif arg_type == "dict":
-			self.Conversion = dict
-		elif arg_type == "list":
-			self.Conversion = list
+		if value is not None:
+			# Scalar variant
+
+			self.Value = ARG(app, value='')
+
+			# Detect type cast function
+			if value == "int":
+				self.Conversion = int
+			elif value == "float":
+				self.Conversion = float
+			elif value == "str":
+				self.Conversion = str
+			elif value == "dict":
+				self.Conversion = dict
+			elif value == "list":
+				self.Conversion = list
+			else:
+				raise RuntimeError("Unsupported type '{}' found in CAST expression.".format(arg_type))
+
+
 		else:
-			raise RuntimeError("Unsupported type '{}' found in CAST expression.".format(arg_type))
+			self.Value = arg_value
+
+			# Detect type cast function
+			if arg_type == "int":
+				self.Conversion = int
+			elif arg_type == "float":
+				self.Conversion = float
+			elif arg_type == "str":
+				self.Conversion = str
+			elif arg_type == "dict":
+				self.Conversion = dict
+			elif arg_type == "list":
+				self.Conversion = list
+			else:
+				raise RuntimeError("Unsupported type '{}' found in CAST expression.".format(arg_type))
 
 		self.Default = arg_default
 
