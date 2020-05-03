@@ -26,7 +26,7 @@ This is how to create the empty dictionary:
 ```
 """
 
-	def __init__(self, app, *, arg_with=None, arg_set=None, arg_update=None, arg_del=None, arg_add=None):
+	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_del=None, arg_add=None, arg_update=None):
 		super().__init__(app)
 
 		self.With = arg_with
@@ -35,9 +35,9 @@ This is how to create the empty dictionary:
 			assert(isinstance(arg_set, dict))
 		self.Set = arg_set
 
-		if arg_update is not None:
-			assert(isinstance(arg_update, dict))
-		self.Update = arg_update
+		if arg_modify is not None:
+			assert(isinstance(arg_modify, dict))
+		self.Modify = arg_modify
 
 		if arg_add is not None:
 			assert(isinstance(arg_add, dict))
@@ -46,6 +46,9 @@ This is how to create the empty dictionary:
 		if arg_del is not None:
 			assert(isinstance(arg_del, list))
 		self.Del = arg_del
+
+		self.Update = arg_update
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		if self.With is None:
@@ -58,8 +61,8 @@ This is how to create the empty dictionary:
 			for key, value in self.Set.items():
 				with_dict[key] = self.evaluate(value, context, event, *args, **kwargs)
 
-		if self.Update is not None:
-			for key, value in self.Update.items():
+		if self.Modify is not None:
+			for key, value in self.Modify.items():
 				try:
 					orig = with_dict[key]
 				except KeyError:
@@ -69,6 +72,11 @@ This is how to create the empty dictionary:
 		if self.Add is not None:
 			for key, value in self.Add.items():
 				with_dict[key] += self.evaluate(value, context, event, *args, **kwargs)
+
+		if self.Update is not None:
+			update_dict = self.Update.evaluate(self.Update, context, event, *args, **kwargs)
+			if update_dict is not None and update_dict is not False:
+				with_dict.update(update_dict)
 
 		if self.Del is not None:
 			for key in self.Del:

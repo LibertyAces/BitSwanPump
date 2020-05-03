@@ -231,11 +231,12 @@ del:
   - item5
 add:
   item6: 1
-update:
+modify:
 	item7:
 	  !LOWER
+update:
+	!DICT
 ```
-
 
 If `with` is not specified, the new dictionary will be created.  
 
@@ -245,8 +246,9 @@ Argument `del` (optional) specifies items to be removed from a dictionary.
 
 Argument `add` (optional) is similar to `set` but the operator `+=` is applied. The item must exist.
 
-Argument `update` (optional) is similar to `set` but the item must exist and it is passed to a subsequent expression as a `!ARG`. It the item doesn't exists, the entry is skipped.
+Argument `modify` (optional) is similar to `set` but the item must exist and it is passed to a subsequent expression as a `!ARG` (to _modify_ it). It the item doesn't exists, the entry is skipped.
 
+Argument `update` (optional) allows to update the dictionary with items from another dictionary.
 
 This is how to create the empty dictionary:
 
