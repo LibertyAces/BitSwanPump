@@ -481,6 +481,8 @@ key: <...>
 
 #### Utility "MAP"
 
+Type: _Mapping_
+
 Checks if `value` exists in the provided key-value map. If so, it returns the mapped value, otherwise
 returns default value specified in the `else` branch.
 
@@ -495,6 +497,24 @@ in:
 else:
 	no right amount of potatoes found
 ```
+
+
+#### Utility "FIRST"
+
+Type: _SEQUENCE_
+
+```
+!FIRST
+- <expression>
+- <expression>
+- <expression>
+...
+```
+
+Iterate thru expression (top down), if the expression return non-null (`None`) result, stop iteration and return that value. Otherwise continue to the next expression.
+
+It returns `None` when end of the list is reached.
+
 
 #### Utility "CAST"
 

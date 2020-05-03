@@ -24,6 +24,7 @@ from .comparison import ISNOT
 from .statement.ifexpr import IF
 from .statement.whenexpr import WHEN
 from .statement.forexpr import FOR
+from .statement.firstexpr import FIRST
 
 from .statement.debugexpr import DEBUG
 
@@ -82,7 +83,7 @@ __all__ = [
 	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
 	"AND", "OR", "NOT",                                  # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT", "IS", "ISNOT",   # Comparison
-	"IF", "WHEN", "FOR",
+	"IF", "WHEN", "FOR", "FIRST",
 	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
 	"STARTSWITH", "ENDSWITH", "SUBSTRING",
