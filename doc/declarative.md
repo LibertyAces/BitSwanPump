@@ -487,7 +487,7 @@ returns default value specified in the `else` branch.
 ```
 !MAP
 value: !ITEM EVENT potatoes
-map:
+in:
 	7: only seven
 	20: twenty
 	12: twelve
