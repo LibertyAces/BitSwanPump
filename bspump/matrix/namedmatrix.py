@@ -14,7 +14,7 @@ L = logging.getLogger(__name__)
 
 
 
-class NamedMatrix(NamedMatrix):
+class NamedMatrix(Matrix):
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
 		super().__init__(app, dtype=dtype, id=id, config=config)
