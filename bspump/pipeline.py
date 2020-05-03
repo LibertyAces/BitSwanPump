@@ -70,7 +70,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self.Sources = []
 		self.Processors = [[]]  # List of lists of processors, the depth is increased by a Generator object
-		self._source_coros = []  # List of source main() coroutines
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
