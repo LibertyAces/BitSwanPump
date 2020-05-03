@@ -52,6 +52,7 @@ class NamedMatrix(NamedMatrix):
 
 		self.Array = np.array(array, dtype=self.DType)
 
+
 	def _grow_rows(self, rows=1):
 		super()._grow_rows(rows)
 		self.Index.extend(self.Array.shape[0])
@@ -123,7 +124,7 @@ class PersistentNamedMatrix(PersistentMatrix):
 		path = os.path.join(self.Path, 'map.dat')
 		self.Index = PersistentIndex(path, self.Array.shape[0])
 
-		def _grow_rows(self, rows=1):
+	def _grow_rows(self, rows=1):
 		super()._grow_rows(rows)
 		self.Index.extend(self.Array.shape[0])
 
