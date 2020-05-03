@@ -369,7 +369,7 @@ class PersistentTimeWindowMatrix(PersistentNamedMatrix):
 		'''
 		target_ts = time.time()
 		self.advance(target_ts)
-	
+
 
 	def zeros(self):
 		super().zeros()

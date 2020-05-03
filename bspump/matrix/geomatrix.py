@@ -43,7 +43,7 @@ class GeoMatrix(Matrix):
 	def zeros(self):
 		self.Array = np.zeros([self.MapHeight, self.MapWidth], dtype=self.DType)
 
-	
+
 	def is_in_boundaries(self, lat, lon):
 		'''
 		Check, if coordinates are within the bbox coordinates.
