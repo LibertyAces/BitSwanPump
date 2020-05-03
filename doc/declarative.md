@@ -319,6 +319,20 @@ string: <...>
 contains: <...>
 ```
 
+### String cut "CUT"
+
+Type: _Mapping_.
+
+```
+!CUT
+value: <...>
+delimiter: ','
+field: 1
+```
+
+Cut the string `value` by `delimiter` and return the piece identified by `field` index (starts with 0).
+
+
 ### String transformations "LOWER", "UPPER", "JOIN", "SUBSTRING"
 
 Changes the string case.

@@ -40,6 +40,7 @@ from .string.startswith import STARTSWITH
 from .string.upperexpr import UPPER
 from .string.lowerexpr import LOWER
 from .string.substringexpr import SUBSTRING
+from .string.cutexpr import CUT
 
 # Data structures
 from .datastructs.dictexpr import DICT
@@ -88,7 +89,7 @@ __all__ = [
 	"DICT", "LIST", "TUPLE", "ITEM",
 	"STARTSWITH", "ENDSWITH", "SUBSTRING",
 	"UPPER", "LOWER",
-	"JOIN",
+	"JOIN", "CUT",
 	"REGEX", "REGEX_PARSE", "REGEX_REPLACE", "REGEX_SPLIT", "REGEX_FINDALL",
 	"VALUE",
 	"EVENT", "CONTEXT",
