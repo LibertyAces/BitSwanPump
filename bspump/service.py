@@ -55,6 +55,9 @@ class BSPumpService(asab.Service):
 		for pipeline in pipelines:
 			self.add_pipeline(pipeline)
 
+	def del_pipeline(self, pipeline):
+		del self.Pipelines[pipeline.Id]
+
 	# Connections
 
 	def add_connection(self, connection):
