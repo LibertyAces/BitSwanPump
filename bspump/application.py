@@ -79,6 +79,7 @@ build: {} [{}]
 	def parse_arguments(self, args=None):
 		args = super().parse_arguments(args=args)
 		self._web_listen = args.web_api
+		return args
 
 
 	async def main(self):
