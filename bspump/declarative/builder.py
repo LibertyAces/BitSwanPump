@@ -35,10 +35,11 @@ class ExpressionBuilder(object):
 
 
 	def register_module(self, module):
-		for name, expression_class in inspect.getmembers(module, inspect.isclass):
-			self.ExpressionClasses[name] = expression_class
+		for class_name, expression_class in inspect.getmembers(module, inspect.isclass):
+			self.register_class(class_name, expression_class)
 
 	def register_class(self, class_name, expression_class):
+		class_name = class_name.replace('_', '.')
 		self.ExpressionClasses[class_name] = expression_class
 
 
@@ -50,7 +51,7 @@ class ExpressionBuilder(object):
 			if declaration is not None:
 				return declaration
 
-		raise RuntimeError("Cannot read '{}' YAML declaration".format(identifier))
+		raise RuntimeError("Cannot find '{}' YAML declaration in libraries".format(identifier))
 
 
 	def parse(self, declaration):

@@ -34,12 +34,17 @@ class REGEX_PARSE(Expression):
 	If `fields` are provided, the groups are mapped to provided fields.
 	"""
 
-	def __init__(self, app, *, arg_regex, arg_value, arg_items=None, arg_miss=None):
+	def __init__(self, app, *, arg_regex, arg_value, arg_items=None, arg_miss=None, arg_set=None):
 		super().__init__(app)
 		self.Value = arg_value
 		self.Regex = re.compile(arg_regex)
 		self.Miss = arg_miss
 		self.Items = arg_items
+
+		if arg_set is not None:
+			assert(isinstance(arg_set, dict))
+		self.Set = arg_set
+
 		# TODO: Regex flags
 
 	def __call__(self, context, event, *args, **kwargs):
@@ -83,6 +88,10 @@ class REGEX_PARSE(Expression):
 					raise RuntimeError("Unexpected type: '{}'".format(value))
 			else:
 				ret[item] = group
+
+		if self.Set is not None:
+			for key, value in self.Set.items():
+				ret[key] = self.evaluate(value, context, event, *args, **kwargs)
 
 		return ret
 

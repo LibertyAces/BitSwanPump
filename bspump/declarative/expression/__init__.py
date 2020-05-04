@@ -24,6 +24,7 @@ from .comparison import ISNOT
 from .statement.ifexpr import IF
 from .statement.whenexpr import WHEN
 from .statement.forexpr import FOR
+from .statement.firstexpr import FIRST
 
 from .statement.debugexpr import DEBUG
 
@@ -39,6 +40,7 @@ from .string.startswith import STARTSWITH
 from .string.upperexpr import UPPER
 from .string.lowerexpr import LOWER
 from .string.substringexpr import SUBSTRING
+from .string.cutexpr import CUT
 
 # Data structures
 from .datastructs.dictexpr import DICT
@@ -82,12 +84,12 @@ __all__ = [
 	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
 	"AND", "OR", "NOT",                                  # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT", "IS", "ISNOT",   # Comparison
-	"IF", "WHEN", "FOR",
+	"IF", "WHEN", "FOR", "FIRST",
 	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
 	"STARTSWITH", "ENDSWITH", "SUBSTRING",
 	"UPPER", "LOWER",
-	"JOIN",
+	"JOIN", "CUT",
 	"REGEX", "REGEX_PARSE", "REGEX_REPLACE", "REGEX_SPLIT", "REGEX_FINDALL",
 	"VALUE",
 	"EVENT", "CONTEXT",
