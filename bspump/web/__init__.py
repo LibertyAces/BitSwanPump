@@ -205,11 +205,12 @@ def _initialize_web(app, listen="0.0.0.0:8080"):
 	# container = asab.web.WebContainer(websvc, 'asab:web', config={"listen": listen})
 
 	# Add web app
-	asab.web.StaticDirProvider(
-		container.WebApp,
-		root='/',
-		path=os.path.join(os.path.dirname(__file__), "static"),
-		index="app.html")
+	# TODO: The following app should be reviewed
+	# asab.web.StaticDirProvider(
+	# 	container.WebApp,
+	# 	root='/',
+	# 	path=os.path.join(os.path.dirname(__file__), "static"),
+	# 	index="app.html")
 
 	# Add routes
 	# LEGACY
