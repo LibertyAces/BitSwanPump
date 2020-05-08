@@ -101,7 +101,7 @@ class TimeWindowMatrix(NamedMatrix):
 		if self.Array.shape[0] == 0:
 			return
 
-		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:])
+		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:], dtype=self.Array.dtype)
 		time_window = np.hstack((self.Array, column))
 		time_window = np.delete(time_window, 0, axis=1)
 
