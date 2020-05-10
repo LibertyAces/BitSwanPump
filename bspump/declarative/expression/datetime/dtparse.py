@@ -12,10 +12,10 @@ class DATETIME_PARSE(Expression):
 	Format example: "%Y-%m-%d %H:%M:%S"
 	"""
 
-	def __init__(self, app, *, arg_value, arg_format, arg_flags='', arg_timezone=None):
+	def __init__(self, app, *, arg_what, arg_format, arg_flags='', arg_timezone=None):
 		super().__init__(app)
 		self.Format = arg_format
-		self.Value = arg_value
+		self.Value = arg_what
 
 		self.SetCurrentYear = 'Y' in arg_flags
 

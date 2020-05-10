@@ -61,8 +61,7 @@ from .value.eventexpr import ARG
 # Lookup
 from .lookup.lookupexpr import LOOKUP
 
-# Complex
-from .test.indateexpr import INDATE
+# Test
 from .test.inexpr import IN
 
 # IP
@@ -96,7 +95,7 @@ __all__ = [
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
 	"LOOKUP",
-	"INDATE", "IN",
+	"IN",
 	"IP_PARSE", "IP_FORMAT", "IP_INSUBNET",
 	"CAST", "MAP",
 	"DATETIME_FORMAT", "DATETIME_PARSE", "DATETIME_GET", "NOW",

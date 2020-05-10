@@ -18,11 +18,13 @@ class MAP(Expression):
 		nothing found
 	"""
 
-	def __init__(self, app, *, arg_value, arg_in, arg_else=None):
+
+	def __init__(self, app, *, arg_what, arg_in, arg_else=None):
 		super().__init__(app)
-		self.Value = arg_value
+		self.Value = arg_what
 		self.Default = arg_else
 		self.Map = arg_in
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)

@@ -3,9 +3,9 @@ from ...abc import Expression
 
 class STARTSWITH(Expression):
 
-	def __init__(self, app, *, arg_value, arg_prefix):
+	def __init__(self, app, *, arg_what, arg_prefix):
 		super().__init__(app)
-		self.Value = arg_value
+		self.Value = arg_what
 		self.Prefix = arg_prefix
 
 	def __call__(self, context, event, *args, **kwargs):

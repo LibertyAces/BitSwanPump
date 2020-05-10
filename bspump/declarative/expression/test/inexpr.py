@@ -6,10 +6,12 @@ class IN(Expression):
 	Checks if expression is of given list.
 	"""
 
-	def __init__(self, app, *, arg_expr, arg_is):
+
+	def __init__(self, app, *, arg_what, arg_where):
 		super().__init__(app)
-		self.Expr = arg_expr
-		self.Is = arg_is
+		self.Where = arg_where
+		self.What = arg_what
+
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.evaluate(self.Is, context, event, *args, **kwargs) in self.evaluate(self.Expr, context, event, *args, **kwargs)
+		return self.evaluate(self.What, context, event, *args, **kwargs) in self.evaluate(self.Where, context, event, *args, **kwargs)

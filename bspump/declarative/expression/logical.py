@@ -26,9 +26,9 @@ class NOT(Expression):
 	Returns inverse value of the expression
 	"""
 
-	def __init__(self, app, *, arg_value):
+	def __init__(self, app, *, arg_what):
 		super().__init__(app)
-		self.Value = arg_value
+		self.Value = arg_what
 
 	def __call__(self, context, event, *args, **kwargs):
 		return not self.evaluate(self.Value, context, event, *args, **kwargs)

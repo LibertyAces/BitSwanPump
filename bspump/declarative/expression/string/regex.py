@@ -8,9 +8,9 @@ class REGEX(Expression):
 	Checks if `value` matches with the `regex`, returns `hit` / `miss` respectively.
 	"""
 
-	def __init__(self, app, *, arg_regex, arg_value, arg_hit=True, arg_miss=False):
+	def __init__(self, app, *, arg_regex, arg_what, arg_hit=True, arg_miss=False):
 		super().__init__(app)
-		self.Value = arg_value
+		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
 		self.Hit = arg_hit
 		self.Miss = arg_miss
@@ -34,9 +34,9 @@ class REGEX_PARSE(Expression):
 	If `fields` are provided, the groups are mapped to provided fields.
 	"""
 
-	def __init__(self, app, *, arg_regex, arg_value, arg_items=None, arg_miss=None, arg_set=None):
+	def __init__(self, app, *, arg_regex, arg_what, arg_items=None, arg_miss=None, arg_set=None):
 		super().__init__(app)
-		self.Value = arg_value
+		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
 		self.Miss = arg_miss
 		self.Items = arg_items
@@ -103,9 +103,9 @@ class REGEX_REPLACE(Expression):
 	See Python documentation of `re.sub()` for more details.
 	"""
 
-	def __init__(self, app, *, arg_regex, arg_replace, arg_value):
+	def __init__(self, app, *, arg_regex, arg_replace, arg_what):
 		super().__init__(app)
-		self.Value = arg_value
+		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
 		self.Replace = arg_replace
 
@@ -117,9 +117,9 @@ class REGEX_REPLACE(Expression):
 
 class REGEX_SPLIT(Expression):
 
-	def __init__(self, app, *, arg_regex, arg_value, arg_max=0):
+	def __init__(self, app, *, arg_regex, arg_what, arg_max=0):
 		super().__init__(app)
-		self.Value = arg_value
+		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
 		self.Max = arg_max
 
@@ -131,9 +131,9 @@ class REGEX_SPLIT(Expression):
 
 class REGEX_FINDALL(Expression):
 
-	def __init__(self, app, *, arg_regex, arg_value):
+	def __init__(self, app, *, arg_regex, arg_what):
 		super().__init__(app)
-		self.Value = arg_value
+		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
 
 	def __call__(self, context, event, *args, **kwargs):

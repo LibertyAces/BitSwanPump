@@ -119,7 +119,7 @@ Type: _Sequence_.
 ```
 
 
-### Logicals `AND`, `OR`, `NOT`
+### Logicals `AND`, `OR`
 
 Type: _Sequence_.
 
@@ -129,6 +129,16 @@ Type: _Sequence_.
 - !ITEM EVENT isLocal
 - !ITEM EVENT isRemote
 - !ITEM EVENT isDangerous
+```
+
+### Logical negation `NOT`
+
+Type: _Mapping_.
+
+```
+---
+!NOT
+what: <expression>
 ```
 
 
@@ -303,20 +313,20 @@ Type: _Mapping_.
 
 ```
 !STARTSWITH
-value: <...>
+what: <...>
 prefix: <...>
 ```
 
 ```
 !ENDSWITH
-value: <...>
+what: <...>
 postfix: <...>
 ```
 
 ```
 !CONTAINS
-string: <...>
-contains: <...>
+what: <...>
+substring: <...>
 ```
 
 ### String cut "CUT"
@@ -325,12 +335,12 @@ Type: _Mapping_.
 
 ```
 !CUT
-value: <...>
+what: <...>
 delimiter: ','
 field: 1
 ```
 
-Cut the string `value` by `delimiter` and return the piece identified by `field` index (starts with 0).
+Cut the `what` string by a `delimiter` and return the piece identified by `field` index (starts with 0).
 
 
 ### String transformations "LOWER", "UPPER", "JOIN", "SUBSTRING"
@@ -341,7 +351,7 @@ Type: _Mapping_.
 
 ```
 !LOWER
-value: <...>
+what: <...>
 ```
 
 ```
@@ -354,26 +364,29 @@ value: <...>
 items:
 	-<...>
 	-<...>
-char: - (default is space " ")
+delimiter: '-'
 ```
+
+Default `delimiter` is space (" ").
+
 
 ```
 !SUBSTRING
-value: <...>
+what: <...>
 from: (int, default 0)
 to: (int, default -1)
 ```
 
 ### Regular expression "REGEX"
 
-Checks if `value` matches with the `regex`, returns `hit` / `miss` respectively.
+Checks if `what` matches with the `regex`, returns `hit` / `miss` respectively.
 
 Type: _Mapping_.
 
 ```
 !REGEX
+what: <...>
 regex: <...>
-value: <...>
 hit: <...|default True>
 miss: <...|default False>
 ```
@@ -382,15 +395,15 @@ Note: Uses Python regular expression.
 
 ### Regular expression "REGEX.PARSE"
 
-Search `value` for `regex` with regular expressions groups.
+Search `what` for `regex` with regular expressions groups.
 
 Type: _Mapping_.
 
 ```
 !REGEX.PARSE
+what: <...>
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 items: [Foo, Bar,  <...>]
-value: <...>
 set:
 	item1: foo
 	item2: bar
@@ -411,8 +424,8 @@ Entries in `items` can have following forms:
 
  ```
 !REGEX.PARSE
+what: "foo 123 a.b.c.d"
 regex: '^(\w)(\w)(\w)$'
-value: "foo 123 a.b.c.d"
 items:
   - SimpleEntry
   - Expression:
@@ -433,7 +446,7 @@ The argument `add` (optional) allows to add additional items into a result dicti
 
 ### Regular expression "REGEX.REPLACE"
 
-Searches for `regex` in `value` and replaces leftmost occurrence with `replace`.
+Searches for `regex` in `what` and replaces leftmost occurrence with `replace`.
 
 Type: _Mapping_.
 
@@ -442,26 +455,26 @@ See Python documentation of `re.sub()` for more details.
 
 ```
 !REGEX.REPLACE
+what: <... of type string>
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 replace: <... of type string>
-value: <... of type string>
 ```
 
 
 ### Regular expression "REGEX.SPLIT"
 
-Split `value` by `regex`.
+Split `what` by `regex`.
 
 Type: _Mapping_.
 
 ```
 !REGEX.SPLIT
+what: <...>
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
-value: <...>
 max: 2
 ```
 
-Optinal value `max` specifies maximum splits, by default there is no maximum limit.
+Optional value `max` specifies maximum splits, by default there is no maximum limit.
 
 
 ### Access functions "EVENT", "CONTEXT", "KWARGS"
@@ -481,14 +494,14 @@ The usage of this expression is typically advanced or internal.
 
 ### Lookup "LOOKUP"
 
-Obtains value from `lookup` (id of the lookup) using `key`.
+Obtains value from a lookup specified by `in` (id of the lookup) using `what` as a key.
 
 Type: _Mapping_.
 
 ```
 !LOOKUP
-lookup: <...>
-key: <...>
+what: <...>
+in: <...>
 ```
 
 ### Utility
@@ -497,12 +510,11 @@ key: <...>
 
 Type: _Mapping_
 
-Checks if `value` exists in the provided key-value map. If so, it returns the mapped value, otherwise
-returns default value specified in the `else` branch.
+Checks if `what` exists in the provided key-value map. If so, it returns the mapped value, otherwise returns default value specified in the `else` branch.
 
 ```
 !MAP
-value: !ITEM EVENT potatoes
+what: !ITEM EVENT potatoes
 in:
 	7: only seven
 	20: twenty
@@ -511,6 +523,8 @@ in:
 else:
 	no right amount of potatoes found
 ```
+
+_Note:_ the `!MAP` expression can be combined with `!INCLUDE` statement for a faster evaluation (based on `what`) and a structured declarations.
 
 
 #### Utility "FIRST"
@@ -534,11 +548,11 @@ It returns `None` when end of the list is reached.
 
 Type: _Mapping_ and _Scalar_.
 
-Casts specified `value` to `type`, which can be int, float, str, list and dict.
+Casts specified `what` to `type`, which can be int, float, str, list and dict.
 
 ```
 !CAST
-value: !ITEM EVENT carrots
+what: !ITEM EVENT carrots
 type: int
 default: 0
 ```
@@ -557,17 +571,20 @@ It only allows to specify the `type` argument, the value is taken from `!ARG`.
 
 ### Test "IN"
 
-Checks if `expression` (list, tuple, dictionary, etc.) contains the result `is` expression. 
+Checks if `where` (list, tuple, dictionary, etc.) contains the result `what` expression. 
 
 Type: _Mapping_.
 
 ```
 !IN
-expr: <...>
-is: <...>
+what: <...>
+where: <...>
 ```
 
 ### IP Address functions
+
+IP address is internally represented as IPv6 128-bit integer.
+IPv4 are mapped into the IPv4 space as prescribed by [RFC 4291 section 2.5.5.2. IPv4-Mapped IPv6 Address](https://tools.ietf.org/html/rfc4291#section-2.5.5.2).
 
 ### `IP.PARSE`
 
@@ -583,7 +600,7 @@ Convert IP address to its string representation.
 
 ```
 !IP.FORMAT
-value: <...>
+what: <...>
 format: auto|ipv4|ipv6
 ```
 
@@ -592,9 +609,11 @@ format: auto|ipv4|ipv6
 
 Checks if value (IP Address) is inside the given subnet, which may be a provided list.
 
+Returns `True` / `False` (boolean).
+
 ```
 !IP.INSUBNET
-value <...>
+what: <...>
 subnet: [<...>]
 ```
 
@@ -619,11 +638,12 @@ Type: _Mapping_.
 
 ```
 !DATETIME.FORMAT
-value: <... of datetime, int or float>
+with: <... of datetime, int or float>
 format: <...>
 ```
 
-The date/time is specified by `value`, which by default is current UTC time.  
+The date/time is specified by `with`, which by default is current UTC time. The default value of the `with` is the current data and time.
+
 `int` or `float` values are considered as a UNIX timestamps.
 
 Format example: "%Y-%m-%d %H:%M:%S"
@@ -637,13 +657,14 @@ Type: _Mapping_.
 
 ```
 !DATETIME.PARSE
-value: <... of datetime, int or float>
+what: <... of datetime, int or float>
 format: <...>
 timezone: Europe/Prague
 flags: Y
 ```
 
-The date/time is specified by `value`, which by default is current UTC time.  
+The date/time is specified by `what`.
+  
 `int` or `float` values are considered as a UNIX timestamps.
 
 Format example: "%Y-%m-%d %H:%M:%S"
@@ -668,9 +689,10 @@ Type: _Mapping_.
 
 ```
 !DATETIME.GET
-value: <... of datetime, int or float>
+with: <... of datetime, int or float>
+what: [year|month|day|hour|minute|second|microsecond|timestamp|
 timezone: Europe/Prague
-what: [year|month|day|hour|minute|second|microsecond|timestamp|weekday|isoweekday]
+weekday|isoweekday]
 ```
 
 `timezone` is optional, if not provided, UTC time is assumed.

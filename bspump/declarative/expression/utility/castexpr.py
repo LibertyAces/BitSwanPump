@@ -8,7 +8,7 @@ class CAST(Expression):
 	Casts "value" to "type"
 	"""
 
-	def __init__(self, app, *, arg_value=None, arg_type=None, arg_default=None, value=None):
+	def __init__(self, app, *, arg_what=None, arg_type=None, arg_default=None, value=None):
 		super().__init__(app)
 
 		if value is not None:
@@ -32,7 +32,7 @@ class CAST(Expression):
 
 
 		else:
-			self.Value = arg_value
+			self.Value = arg_what
 
 			# Detect type cast function
 			if arg_type == "int":
