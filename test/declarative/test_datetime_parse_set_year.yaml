@@ -1,5 +1,5 @@
 ---
 !DATETIME.PARSE
-  value: !ARG
+  what: !ARG
   format: '%b %d %H:%M:%S'
   flags: Y
