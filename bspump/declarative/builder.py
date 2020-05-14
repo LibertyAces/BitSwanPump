@@ -97,7 +97,7 @@ class ExpressionBuilder(object):
 
 		identifier = loader.construct_scalar(node)
 		declaration = self.read(identifier)
-		return self.parse(declaration)
+		return self.parse(declaration, identifier)
 
 
 	def _construct_config(self, loader: yaml.Loader, node: yaml.Node):
