@@ -411,4 +411,3 @@ class PersistentTimeWindowMatrix(PersistentNamedMatrix):
 		self.WarmingUpCount.decrease(open_rows)
 		self.Start = self.TimeConfig.get_start()
 		self.End = self.TimeConfig.get_end()
-
