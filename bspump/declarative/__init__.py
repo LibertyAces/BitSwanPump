@@ -3,6 +3,7 @@ from .generator import DeclarativeGenerator
 from .timewindowanalyzer import DeclarativeTimeWindowAnalyzer
 
 from .builder import ExpressionBuilder
+from .builder import DeclarationError
 from .segmentbuilder import SegmentBuilder
 
 from .libraries import DeclarationLibrary
@@ -17,6 +18,7 @@ __all__ = [
 	"DeclarativeTimeWindowAnalyzer",
 
 	"ExpressionBuilder",
+	"DeclarationError",
 	"SegmentBuilder",
 
 	"DeclarationLibrary",

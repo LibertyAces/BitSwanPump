@@ -14,6 +14,10 @@ L = logging.getLogger(__name__)
 ###
 
 
+class DeclarationError(RuntimeError):
+	pass
+
+
 class ExpressionBuilder(object):
 	"""
 	Builds an expression from configuration.
@@ -54,13 +58,15 @@ class ExpressionBuilder(object):
 		raise RuntimeError("Cannot find '{}' YAML declaration in libraries".format(identifier))
 
 
-	def parse(self, declaration):
+	def parse(self, declaration, source_name=None):
 		if isinstance(declaration, str) and declaration.startswith('---'):
 			pass
 		else:
 			declaration = self.read(declaration)
 
 		loader = yaml.Loader(declaration)
+		if source_name is not None:
+			loader.name = source_name
 
 		# Register the constructor for each registered expression class
 		for name in self.ExpressionClasses:
@@ -71,6 +77,15 @@ class ExpressionBuilder(object):
 
 		try:
 			expression = loader.get_single_data()
+
+		except yaml.scanner.ScannerError as e:
+			raise DeclarationError("Syntax error in declaration: {}".format(e))
+			return None
+
+		except yaml.constructor.ConstructorError as e:
+			raise DeclarationError("Unknown declarative expression: {}".format(e))
+			return None
+
 		finally:
 			loader.dispose()
 
@@ -82,7 +97,7 @@ class ExpressionBuilder(object):
 
 		identifier = loader.construct_scalar(node)
 		declaration = self.read(identifier)
-		return self.parse(declaration)
+		return self.parse(declaration, identifier)
 
 
 	def _construct_config(self, loader: yaml.Loader, node: yaml.Node):
@@ -97,18 +112,26 @@ class ExpressionBuilder(object):
 		try:
 			if isinstance(node, yaml.ScalarNode):
 				value = loader.construct_scalar(node)
-				return xclass(self.App, value=value)
+				obj = xclass(self.App, value=value)
+				obj.Node = node
+				return obj
 
 			elif isinstance(node, yaml.SequenceNode):
 				value = loader.construct_sequence(node)
-				return xclass(self.App, sequence=value)
+				obj = xclass(self.App, sequence=value)
+				obj.Node = node
+				return obj
 
 			elif isinstance(node, yaml.MappingNode):
 				value = loader.construct_mapping(node)
-				return xclass(self.App, **dict(('arg_' + k, v) for k, v in value.items()))
+				obj = xclass(self.App, **dict(('arg_' + k, v) for k, v in value.items()))
+				obj.Node = node
+				return obj
+
+		except TypeError as e:
+			raise DeclarationError("Type error {}\n{}\n".format(e, node.start_mark))
 
 		except Exception:
-			L.exception("Error when constructing '{}'".format(xclass))
-			raise
+			raise DeclarationError("Invalid expression at {}\n".format(node.start_mark))
 
 		raise RuntimeError("Unsupported type '{}'".format(node))

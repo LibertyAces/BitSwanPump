@@ -6,6 +6,7 @@ class Expression(abc.ABC):
 
 	def __init__(self, app):
 		self.App = app
+		self.Node = None  # The YAML node, assigned by a builder during YAML parsing
 
 	@abc.abstractmethod
 	def __call__(self, context, event, *args, **kwargs):
