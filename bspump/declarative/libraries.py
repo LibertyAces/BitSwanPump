@@ -31,7 +31,7 @@ class FileDeclarationLibrary(DeclarationLibrary):
 
 class MongoDeclarationLibrary(DeclarationLibrary):
 
-	def __init__(self, mongodb_host="", mongodb_database="", mongodb_collection="", key_element="_id", data_element="data", _filter=None):
+	def __init__(self, mongodb_host="", mongodb_database="", mongodb_collection="", key_element="identifier", data_element="data", _filter=None):
 		"""
 		:param mongodb_host: specify MongoDB hostname in format: mongodb://mongodb1:27017
 		:param mongodb_database: specify MongoDB database
