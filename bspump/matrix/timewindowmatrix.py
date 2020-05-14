@@ -60,8 +60,6 @@ class TimeWindowMatrix(NamedMatrix):
 			advance_period = resolution / 4
 			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True)
 			self.Timer.start(advance_period)
-			if self.TimeConfig.get_start() != start:
-				self.advance(start)
 		else:
 			self.Timer = None
 
@@ -196,6 +194,7 @@ class TimeWindowMatrix(NamedMatrix):
 	def zeros(self):
 		super().zeros()
 		self.TimeConfig = TimeConfig(self.Resolution, self.Columns, self.Start)
+		self.End = self.TimeConfig.get_end()
 		self.WarmingUpCount = WarmingUpCount(self.Array.shape[0])
 
 
@@ -211,7 +210,7 @@ class TimeWindowMatrix(NamedMatrix):
 		if self.Array.shape[0] == 0:
 			return
 
-		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:])
+		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:], dtype=self.Array.dtype)
 		array = self.Array
 		array = np.hstack((array, column))
 		array = np.delete(array, 0, axis=1)
@@ -219,6 +218,8 @@ class TimeWindowMatrix(NamedMatrix):
 
 		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows.get_rows())
 		self.WarmingUpCount.decrease(open_rows)
+		self.Start = self.TimeConfig.get_start()
+		self.End = self.TimeConfig.get_end()
 
 
 
@@ -244,6 +245,8 @@ class PersistentTimeWindowMatrix(PersistentNamedMatrix):
 			self.Timer = None
 
 		self.ClockDriven = clock_driven
+		self.Start = self.TimeConfig.get_start()
+		self.End = self.TimeConfig.get_end()
 		metrics_service = app.get_service('asab.MetricsService')
 		self.Counters = metrics_service.create_counter(
 			"EarlyLateEventCounter",
@@ -375,6 +378,7 @@ class PersistentTimeWindowMatrix(PersistentNamedMatrix):
 		super().zeros()
 		path = os.path.join(self.Path, 'time_config.dat')
 		self.TimeConfig = PersistentTimeConfig(path, self.Resolution, self.Columns, self.Start)
+		self.End = self.TimeConfig.get_end()
 		path = os.path.join(self.Path, 'warming_up_count.dat')
 		self.WarmingUpCount = PersistentWarmingUpCount(path, self.Array.shape[0])
 		if self.TimeConfig.get_start() != self.Start:
@@ -393,7 +397,7 @@ class PersistentTimeWindowMatrix(PersistentNamedMatrix):
 		if self.Array.shape[0] == 0:
 			return
 
-		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:])
+		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:], dtype=self.Array.dtype)
 		array = np.zeros(self.Array.shape, dtype=self.DType)
 		array[:] = self.Array[:]
 
@@ -405,3 +409,6 @@ class PersistentTimeWindowMatrix(PersistentNamedMatrix):
 
 		open_rows = list(set(range(0, self.Array.shape[0])) - self.ClosedRows.get_rows())
 		self.WarmingUpCount.decrease(open_rows)
+		self.Start = self.TimeConfig.get_start()
+		self.End = self.TimeConfig.get_end()
+

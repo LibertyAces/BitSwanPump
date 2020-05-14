@@ -31,18 +31,18 @@ class MyPipeline(Pipeline):
 		ub = int(time.time()) + 2
 		lb = ub - 22
 		self.build(
-			bspump.random.RandomStructuredSource(app, self,
+			bspump.random.RandomGeneratorSource(app, self,
 				config={'number': 30, 'upper_bound': 1000, 'field': 'id', 'prefix': ''}
 				).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
 			bspump.random.RandomEnricher(app, self, config={'field':'duration', 'lower_bound':1, 'upper_bound': 5}, id="RE0"),
 			bspump.random.RandomEnricher(app, self, config={'field': '@timestamp', 'lower_bound': lb, 'upper_bound': ub}, id="RE1"),
 			bspump.random.RandomEnricher(app, self, choice=['abc', 'cde', 'efg'], config={'field':'user'}, id="RE2"),
 			bspump.random.RandomEnricher(app, self, choice=[{'lat': 50, 'lon': 14}, {'lat':52, 'lon': 13}, {'lat': 48, 'lon': 17}], config={'field':'L'}, id="RE3"),
-			# MySessionAnalyzer(app, self, dtype=[('user', 'U10'), ('duration', 'i8')], analyze_on_clock=True, persistent=False,
+			# MySessionAnalyzer(app, self, dtype=[('user', 'U10'), ('duration', 'i8')], analyze_on_clock=True, persistent=True,
 			# 	config={'analyze_period': 5, 'path':'examples/mmap/sessions'}), 
-			# MyTimeWindowAnalyzer(app, self, columns=10, resolution=2, clock_driven=True, analyze_on_clock=True, persistent=False,
+			# MyTimeWindowAnalyzer(app, self, columns=10, resolution=2, clock_driven=True, analyze_on_clock=True, persistent=True,
 			# 	config={'analyze_period': 5, 'path': 'examples/mmap/timewindow'}),
-			MyGeoAnalyzer(app, self, resolution=10, analyze_on_clock=True, persistent=False,
+			MyGeoAnalyzer(app, self, resolution=10, analyze_on_clock=True, persistent=True,
 				config={'analyze_period': 5, 'path': 'examples/mmap/geo'}),
 			NullSink(app, self)
 		)

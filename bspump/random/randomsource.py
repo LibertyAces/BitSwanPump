@@ -7,7 +7,7 @@ from ..abc.source import TriggerSource
 L = logging.getLogger(__name__)
 
 
-class RandomStructuredSource(TriggerSource):
+class RandomGeneratorSource(TriggerSource):
 	'''
 		`RandomSource` is mostly meant for testing. It
 		generates n (specified in `Config` as `number`, default is 1000) events per trigger fire.
