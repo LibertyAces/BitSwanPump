@@ -1,5 +1,5 @@
 from .closedrows import ClosedRows, PersistentClosedRows
-from .index import Index, PersistenIndex
+from .index import Index, PersistentIndex
 from .timeconfig import TimeConfig, PersistentTimeConfig
 from .warmingupcount import WarmingUpCount, PersistentWarmingUpCount
 
