@@ -5,7 +5,7 @@ import numpy as np
 
 import asab
 from ..abc.lookup import Lookup
-from ..analyzer.sessionmatrix import SessionMatrix
+from ..matrix.sessionmatrix import SessionMatrix
 
 ###
 

@@ -3,8 +3,8 @@ import logging
 import re
 
 from ..abc.generator import Generator
-from ..analyzer.sessionmatrix import SessionMatrix
-from ..analyzer.timewindowmatrix import TimeWindowMatrix
+from ..matrix.sessionmatrix import SessionMatrix
+from ..matrix.timewindowmatrix import TimeWindowMatrix
 
 #
 

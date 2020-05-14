@@ -1,7 +1,7 @@
 import logging
 
 from .analyzer import Analyzer
-from .geomatrix import GeoMatrix
+from ..matrix.geomatrix import GeoMatrix, PersistentGeoMatrix
 
 
 L = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ class GeoAnalyzer(Analyzer):
 		"max_lon": 40.6,
 	}
 
-	def __init__(self, app, pipeline, matrix_id=None, dtype="float_", analyze_on_clock=False, bbox=None, resolution=5, id=None, config=None):
+	def __init__(self, app, pipeline, matrix_id=None, dtype="float_", analyze_on_clock=False, bbox=None, resolution=5, persistent=False, id=None, config=None):
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:
@@ -34,7 +34,10 @@ class GeoAnalyzer(Analyzer):
 					"min_lon": float(self.ConfigDefaults["min_lon"]),
 					"max_lon": float(self.ConfigDefaults["max_lon"]),
 				}
-			self.GeoMatrix = GeoMatrix(app, dtype, bbox=bbox, resolution=resolution, id=g_id)
+			if persistent:
+				self.GeoMatrix = PersistentGeoMatrix(app, dtype, bbox=bbox, resolution=resolution, id=g_id, config=config)
+			else:
+				self.GeoMatrix = GeoMatrix(app, dtype, bbox=bbox, resolution=resolution, id=g_id, config=config)
 			svc.add_matrix(self.GeoMatrix)
 		else:
 			self.GeoMatrix = svc.locate_matrix(matrix_id)

@@ -13,7 +13,8 @@ from .abc.lookup import Lookup
 from .abc.lookup import MappingLookup
 from .abc.lookup import DictionaryLookup
 from .fileloader import load_json_file
-from .matrix.matrix import Matrix, NamedMatrix
+from .matrix.matrix import Matrix, PersistentMatrix
+from .matrix.namedmatrix import NamedMatrix, PersistentNamedMatrix
 
 from .abc.anomaly import Anomaly
 
@@ -36,8 +37,9 @@ __all__ = (
 	"DictionaryLookup",
 	"load_json_file",
 	"Matrix",
+	"PersistentMatrix",
 	"NamedMatrix",
-
+	"PersistentNamedMatrix",
 	"Anomaly",
 
 	"__version__",
