@@ -38,4 +38,4 @@ class TestDeclarativeJoin(bspump.unittest.TestCase):
 		decl = self.load('./test_add_01.yaml')
 
 		res = decl({}, event)
-		self.assertEqual(res, "STRING1:STRING2")
+		self.assertEqual(res, "STRING1STRING2")
