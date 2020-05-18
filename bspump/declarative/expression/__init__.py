@@ -26,8 +26,6 @@ from .statement.whenexpr import WHEN
 from .statement.forexpr import FOR
 from .statement.firstexpr import FIRST
 
-from .statement.debugexpr import DEBUG
-
 # String
 from .string.endswith import ENDSWITH
 from .string.joinexpr import JOIN
@@ -72,6 +70,7 @@ from .ip.insubnetexpr import IP_INSUBNET
 # Utility
 from .utility.castexpr import CAST
 from .utility.mapexpr import MAP
+from .utility.debugexpr import DEBUG
 
 # Date/time
 from .datetime.nowexpr import NOW
