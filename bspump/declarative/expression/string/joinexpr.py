@@ -12,4 +12,7 @@ class JOIN(Expression):
 		self.Char = arg_delimiter
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.Char.join(self.Items)
+		return self.Char.join([
+			str(self.evaluate(item, context, event, *args, **kwargs))
+			for item in self.Items
+		])
