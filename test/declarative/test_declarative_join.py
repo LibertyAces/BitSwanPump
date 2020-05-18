@@ -17,7 +17,7 @@ class TestDeclarativeJoin(bspump.unittest.TestCase):
 			return self.Builder.parse(f.read())
 
 
-	def test_config_01(self):
+	def test_join_01(self):
 		event = {
 			'string': "STRING",
 			'integer': 15,
