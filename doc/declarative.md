@@ -1,3 +1,10 @@
+---
+layout: default
+title: LogMan.io documentation
+header: Declarative Doc
+sidebar: logmanio
+---
+
 # BSPump declarations
 
 
