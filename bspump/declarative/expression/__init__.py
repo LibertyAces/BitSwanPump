@@ -39,6 +39,7 @@ from .string.upperexpr import UPPER
 from .string.lowerexpr import LOWER
 from .string.substringexpr import SUBSTRING
 from .string.cutexpr import CUT
+from .string.contains import CONTAINS
 
 # Data structures
 from .datastructs.dictexpr import DICT
@@ -88,6 +89,7 @@ __all__ = [
 	"STARTSWITH", "ENDSWITH", "SUBSTRING",
 	"UPPER", "LOWER",
 	"JOIN", "CUT",
+	"CONTAINS",
 	"REGEX", "REGEX_PARSE", "REGEX_REPLACE", "REGEX_SPLIT", "REGEX_FINDALL",
 	"VALUE",
 	"EVENT", "CONTEXT",
