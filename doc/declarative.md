@@ -258,6 +258,7 @@ update:
 If `with` is not specified, the new dictionary will be created.  
 
 Argument `set` (optional) specifies items to be set (added, updated) to the dictionary.
+If the value of the item to be set is `None`, then the item is not added/updated to the dictionary.
 
 Argument `del` (optional) specifies items to be removed from a dictionary.
 
