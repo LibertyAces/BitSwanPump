@@ -27,5 +27,4 @@ class TestDeclarativeRegex(bspump.unittest.TestCase):
 			'second': '123',
 			'third': 'bar with postfix',
 			'item1': 'foo',
-			'item2': '123'
 		})

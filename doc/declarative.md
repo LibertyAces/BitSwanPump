@@ -377,6 +377,8 @@ delimiter: '-'
 
 Default `delimiter` is space (" ").
 
+If any of `items` is `None`, the result of the join is `None` too.
+
 
 ```
 !SUBSTRING

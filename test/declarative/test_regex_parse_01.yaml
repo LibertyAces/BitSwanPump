@@ -8,7 +8,12 @@ items:
   - third
 set:
   item1: !ITEM ARG first
-  item2: !ITEM ARG second
+  item2:
+    !JOIN
+    items:
+      - !ITEM ARG second
+      - !ITEM ARG nonexistent
+    delimiter: '-'
   third:
     !ADD
     - !ITEM ARG third
