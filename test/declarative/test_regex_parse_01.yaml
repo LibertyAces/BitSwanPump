@@ -1,0 +1,16 @@
+---
+!REGEX.PARSE
+what: 'foo 123 bar'
+regex: '^(\w+)\s+(\d+)\s+(\w+)$'
+items:
+  - first
+  - second
+  - third
+set:
+  item1: !ITEM ARG first
+  item2: !ITEM ARG second
+  third:
+    !ADD
+    - !ITEM ARG third
+    - ' with postfix'
+  item3: !ITEM ARG nonexistent

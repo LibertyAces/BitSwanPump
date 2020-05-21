@@ -412,6 +412,7 @@ Type: _Mapping_.
 what: <...>
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 items: [Foo, Bar,  <...>]
+miss: Missed :-(
 set:
 	item1: foo
 	item2: bar
@@ -428,12 +429,14 @@ Entries in `items` can have following forms:
  * Expression, then the value of the regex group is passed in the expression as `!ARG` and the result of the expression is then used in the dictionary
  * List of expressions, similar to the previous but the list is iterated till the given expression returns non-None result, then the value is used in the dictionary
 
+ Value `None` is skipped and not set to the dictionary.
+
  Example of three forms:
 
  ```
 !REGEX.PARSE
 what: "foo 123 a.b.c.d"
-regex: '^(\w)(\w)(\w)$'
+regex: '^(\w+)\s+(\d+)\s+([\w.]+)$'
 items:
   - SimpleEntry
   - Expression:
@@ -449,7 +452,25 @@ items:
       value: !ARG
  ```
 
-The argument `add` (optional) allows to add additional items into a result dictionary.
+The argument `set` (optional) allows to add/update additional items into a result dictionary.
+In the `set` part, the intermediate form of the result is available as `ARG`.
+If `None` is returned, the result is not modified.
+
+```
+---
+!REGEX.PARSE
+what: 'foo 123 bar'
+regex: '^(\w+)\s+(\d+)\s+(\w+)$'
+items:
+  - first
+  - second
+  - third
+set:
+  third:
+    !ADD
+    - !ITEM ARG third
+    - ' with postfix'
+```
 
 
 ### Regular expression "REGEX.REPLACE"
