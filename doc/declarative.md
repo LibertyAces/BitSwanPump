@@ -107,7 +107,7 @@ More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 ## Comments
 
 ```
-	# This is a comment.
+# This is a comment.
 ```
 
 ## Expressions
@@ -156,7 +156,7 @@ Type: _Sequence_.
 Example of a `Event.count == 3` check:  
 
 ```
-! EQ
+!EQ
 - !ITEM EVENT count
 - 3
 ```
