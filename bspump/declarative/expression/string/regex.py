@@ -76,14 +76,17 @@ class REGEX_PARSE(Expression):
 				key, value = next(iter(item.items()))
 
 				if isinstance(value, Expression):
-					ret[key] = value.evaluate(value, context, event, group, *args, **kwargs)
+					v = value.evaluate(value, context, event, group, *args, **kwargs)
+					if v is not None:
+						ret[key] = v
 
 				elif isinstance(value, list):
 					for valuei in value:
-						x = valuei.evaluate(valuei, context, event, group, *args, **kwargs)
-						if x is not None:
-							ret[key] = x
+						v = valuei.evaluate(valuei, context, event, group, *args, **kwargs)
+						if v is not None:
+							ret[key] = v
 							break
+
 				else:
 					raise RuntimeError("Unexpected type: '{}'".format(value))
 			else:
@@ -91,7 +94,9 @@ class REGEX_PARSE(Expression):
 
 		if self.Set is not None:
 			for key, value in self.Set.items():
-				ret[key] = self.evaluate(value, context, event, *args, **kwargs)
+				v = self.evaluate(value, context, event, ret, *args, **kwargs)
+				if v is not None:
+					ret[key] = v
 
 		return ret
 

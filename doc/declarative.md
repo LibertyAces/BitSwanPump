@@ -107,7 +107,7 @@ More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 ## Comments
 
 ```
-	# This is a comment.
+# This is a comment.
 ```
 
 ## Expressions
@@ -156,7 +156,7 @@ Type: _Sequence_.
 Example of a `Event.count == 3` check:  
 
 ```
-! EQ
+!EQ
 - !ITEM EVENT count
 - 3
 ```
@@ -258,6 +258,7 @@ update:
 If `with` is not specified, the new dictionary will be created.  
 
 Argument `set` (optional) specifies items to be set (added, updated) to the dictionary.
+If the value of the item to be set is `None`, then the item is not added/updated to the dictionary.
 
 Argument `del` (optional) specifies items to be removed from a dictionary.
 
@@ -376,6 +377,8 @@ delimiter: '-'
 
 Default `delimiter` is space (" ").
 
+If any of `items` is `None`, the result of the join is `None` too.
+
 
 ```
 !SUBSTRING
@@ -411,6 +414,7 @@ Type: _Mapping_.
 what: <...>
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 items: [Foo, Bar,  <...>]
+miss: Missed :-(
 set:
 	item1: foo
 	item2: bar
@@ -427,12 +431,14 @@ Entries in `items` can have following forms:
  * Expression, then the value of the regex group is passed in the expression as `!ARG` and the result of the expression is then used in the dictionary
  * List of expressions, similar to the previous but the list is iterated till the given expression returns non-None result, then the value is used in the dictionary
 
+ Value `None` is skipped and not set to the dictionary.
+
  Example of three forms:
 
  ```
 !REGEX.PARSE
 what: "foo 123 a.b.c.d"
-regex: '^(\w)(\w)(\w)$'
+regex: '^(\w+)\s+(\d+)\s+([\w.]+)$'
 items:
   - SimpleEntry
   - Expression:
@@ -448,7 +454,25 @@ items:
       value: !ARG
  ```
 
-The argument `add` (optional) allows to add additional items into a result dictionary.
+The argument `set` (optional) allows to add/update additional items into a result dictionary.
+In the `set` part, the intermediate form of the result is available as `ARG`.
+If `None` is returned, the result is not modified.
+
+```
+---
+!REGEX.PARSE
+what: 'foo 123 bar'
+regex: '^(\w+)\s+(\d+)\s+(\w+)$'
+items:
+  - first
+  - second
+  - third
+set:
+  third:
+    !ADD
+    - !ITEM ARG third
+    - ' with postfix'
+```
 
 
 ### Regular expression "REGEX.REPLACE"

@@ -4,7 +4,7 @@ import bspump.declarative
 import bspump.unittest
 
 
-class TestDeclarativeJoin(bspump.unittest.TestCase):
+class TestDeclarativeDict(bspump.unittest.TestCase):
 
 	def setUp(self) -> None:
 		super().setUp()
@@ -17,25 +17,13 @@ class TestDeclarativeJoin(bspump.unittest.TestCase):
 			return self.Builder.parse(f.read())
 
 
-	def test_join_01(self):
+	def test_dict_01(self):
 		event = {
 			'string': "STRING",
 			'integer': 15,
 		}
 
-		decl = self.load('./test_join_01.yaml')
+		decl = self.load('./test_dict_01.yaml')
 
 		res = decl({}, event)
-		self.assertEqual(res, None)
-
-
-	def test_add_01(self):
-		event = {
-			'string1': "STRING1",
-			'string2': "STRING2",
-		}
-
-		decl = self.load('./test_add_01.yaml')
-
-		res = decl({}, event)
-		self.assertEqual(res, "STRING1STRING2")
+		self.assertEqual(res, {'item1': 'STRING', 'item2': 15})

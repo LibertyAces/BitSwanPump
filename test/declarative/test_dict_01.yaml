@@ -1,0 +1,6 @@
+---
+!DICT
+set:
+  item1: !ITEM EVENT string
+  item2: !ITEM EVENT integer
+  item3: !ITEM EVENT nonexistent

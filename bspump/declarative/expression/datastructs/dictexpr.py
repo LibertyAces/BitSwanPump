@@ -59,7 +59,9 @@ This is how to create the empty dictionary:
 
 		if self.Set is not None:
 			for key, value in self.Set.items():
-				with_dict[key] = self.evaluate(value, context, event, *args, **kwargs)
+				v = self.evaluate(value, context, event, *args, **kwargs)
+				if v is not None:
+					with_dict[key] = v
 
 		if self.Modify is not None:
 			for key, value in self.Modify.items():
@@ -71,7 +73,9 @@ This is how to create the empty dictionary:
 
 		if self.Add is not None:
 			for key, value in self.Add.items():
-				with_dict[key] += self.evaluate(value, context, event, *args, **kwargs)
+				v = self.evaluate(value, context, event, *args, **kwargs)
+				if v is not None:
+					with_dict[key] += v
 
 		if self.Update is not None:
 			update_dict = self.Update.evaluate(self.Update, context, event, *args, **kwargs)
