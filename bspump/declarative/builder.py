@@ -45,10 +45,10 @@ class ExpressionBuilder(object):
 		class_name = class_name.replace('_', '.')
 		self.ExpressionClasses[class_name] = expression_class
 
-	def add_config_option(self, option, value):
-		self.Config[option] = value
+	def add_config_value(self, key, value):
+		self.Config[key] = value
 
-	def add_config(self, config):
+	def update_config(self, config):
 		self.Config.update(config)
 
 	def read(self, identifier):
