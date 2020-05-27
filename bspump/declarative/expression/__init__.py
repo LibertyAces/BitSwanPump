@@ -51,11 +51,13 @@ from .datastructs.itemexpr import ITEM
 # Value
 from .value.valueexpr import VALUE
 from .value.eventexpr import EVENT
-from .value.eventexpr import CONTEXT
 from .value.eventexpr import KWARGS
 from .value.eventexpr import KWARG
 from .value.eventexpr import ARGS
 from .value.eventexpr import ARG
+
+from .utility.context import CONTEXT
+from .utility.context import CONTEXT_SET
 
 # Lookup
 from .lookup.lookupexpr import LOOKUP
@@ -92,7 +94,8 @@ __all__ = [
 	"CONTAINS",
 	"REGEX", "REGEX_PARSE", "REGEX_REPLACE", "REGEX_SPLIT", "REGEX_FINDALL",
 	"VALUE",
-	"EVENT", "CONTEXT",
+	"EVENT",
+	"CONTEXT", "CONTEXT_SET",
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
 	"LOOKUP",
