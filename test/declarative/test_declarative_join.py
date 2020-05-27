@@ -26,6 +26,19 @@ class TestDeclarativeJoin(bspump.unittest.TestCase):
 		decl = self.load('./test_join_01.yaml')
 
 		res = decl({}, event)
+		self.assertEqual(res, "STRING:15:")
+
+
+
+	def test_join_02(self):
+		event = {
+			'string': "STRING",
+			'integer': 15,
+		}
+
+		decl = self.load('./test_join_02.yaml')
+
+		res = decl({}, event)
 		self.assertEqual(res, None)
 
 
