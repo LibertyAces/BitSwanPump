@@ -767,3 +767,47 @@ Configuration is a key/value space.
 
 _Note_: Configuration items are resolved during YAML load time.
 
+
+
+### Manipulate the context of the event processing `CONTEXT.SET`
+
+Type: _Mapping_.
+
+```
+- !CONTEXT.SET
+  what: <... expression ...>
+  set:
+    target: unparsed
+```
+
+This expression sets items into the `context` of the event (see `!CONTEXT`). The context contains various meta-data about the event processing.
+
+`what` is optional, by default `None`. It will be directly passed to the output of this expression. It means that `!CONTEXT.SET` is no-op with a side effect on the event context.
+
+Example of use in the parsing:
+
+```
+!FIRST
+- !REGEX.PARSE
+what: !EVENT
+regex: '^(one)\s(two)\s(three)$'
+items:
+  - one
+  - two
+  - three
+- !REGEX.PARSE
+what: !EVENT
+regex: '^(uno)\s(duo)\s(tres)$'
+items:
+  - one
+  - two
+  - three
+# This is where the handling of partially parsed event starts
+- !CONTEXT.SET
+set:
+  target: unparsed
+- !DICT
+set:
+  unparsed: !EVENT
+```
+

@@ -1,7 +1,10 @@
 from ...abc import Expression
 
-from ..value.eventexpr import EVENT, CONTEXT, KWARGS, ARG
+from ..value.eventexpr import EVENT
+from ..value.eventexpr import KWARGS
+from ..value.eventexpr import ARG
 from ..value.valueexpr import VALUE
+from ..utility.context import CONTEXT
 
 
 class ITEM(Expression):
