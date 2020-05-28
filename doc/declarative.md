@@ -239,18 +239,24 @@ Create or update the dictionary.
 ```
 !DICT
 with: !EVENT
+
 set:
 	item1: foo
 	item2: bar
 	item3: ...
+
 del:
   - item4
   - item5
+
 add:
   item6: 1
+
 modify:
 	item7:
-	  !LOWER
+	  !LOWER:
+    what: !ARG
+
 update:
 	!DICT
 ```
@@ -364,7 +370,7 @@ what: <...>
 
 ```
 !UPPER
-value: <...>
+what: <...>
 ```
 
 ```
@@ -448,15 +454,15 @@ items:
   - SimpleEntry
   - Expression:
     !CAST
-    value: !ARG
+    what: !ARG
     type: int
   - ListOfExpressions:
     - !REGEX.PARSE
       regex: '^(\d)$'
-      value: !ARG
+      what: !ARG
     - !REGEX.PARSE
       regex: '^(\s\.\s\.\s\.\s)$'
-      value: !ARG
+      what: !ARG
  ```
 
 The argument `set` (optional) allows to add/update additional items into a result dictionary.
@@ -468,10 +474,12 @@ If `None` is returned, the result is not modified.
 !REGEX.PARSE
 what: 'foo 123 bar'
 regex: '^(\w+)\s+(\d+)\s+(\w+)$'
+
 items:
   - first
   - second
   - third
+
 set:
   third:
     !ADD
@@ -551,11 +559,13 @@ Checks if `what` exists in the provided key-value map. If so, it returns the map
 ```
 !MAP
 what: !ITEM EVENT potatoes
+
 in:
 	7: only seven
 	20: twenty
 	12: twelve
 	10: enough to join the potato throwing competition
+
 else:
 	no right amount of potatoes found
 ```
