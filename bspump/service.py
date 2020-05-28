@@ -18,6 +18,7 @@ class BSPumpService(asab.Service):
 		self.Pipelines = dict()
 		self.Connections = dict()
 		self.Lookups = dict()
+		self.LookupFactories = []
 		self.Matrixes = dict()
 
 
@@ -98,7 +99,16 @@ class BSPumpService(asab.Service):
 		try:
 			return self.Lookups[lookup_id]
 		except KeyError:
+			for lookup_factory in self.LookupFactories:
+				lookup = lookup_factory.locate_lookup(lookup_id)
+				if lookup is not None:
+					self.Lookups[lookup_id] = lookup
+					return lookup
 			raise KeyError("Cannot find lookup id '{}' (did you call add_lookup() ?)".format(lookup_id))
+
+	def add_lookup_factory(self, lookup_factory):
+		self.LookupFactories.append(lookup_factory)
+
 
 	# Matrixes
 
