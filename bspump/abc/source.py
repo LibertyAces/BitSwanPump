@@ -120,8 +120,11 @@ It is acomplished by `await self.Pipeline.ready()` call.
 	def construct(cls, app, pipeline, definition: dict):
 		newid = definition.get('id')
 		config = definition.get('config')
-		return cls(app, pipeline, id=newid, config=config)
-
+		args = definition.get('args')
+		if args is not None:
+			return cls(app, pipeline, id=newid, config=config, **args)
+		else:
+			return cls(app, pipeline, id=newid, config=config)
 
 class TriggerSource(Source):
 

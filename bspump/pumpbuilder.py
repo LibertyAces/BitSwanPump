@@ -1,5 +1,6 @@
 import logging
 import json
+import yaml
 import importlib
 
 from .pipeline import Pipeline
@@ -60,7 +61,10 @@ class PumpBuilder(object):
 
 	def __init__(self, definition):
 		with open(definition) as f:
-			self.Definition = json.load(f)
+			if definition.endswith(".yaml"):
+				self.Definition = yaml.load(f)
+			else:
+				self.Definition = json.load(f)
 
 
 	def construct_pump(self, app, svc):
