@@ -133,7 +133,8 @@ class ExpressionBuilder(object):
 		except TypeError as e:
 			raise DeclarationError("Type error {}\n{}\n".format(e, node.start_mark))
 
-		except Exception:
-			raise DeclarationError("Invalid expression at {}\n".format(node.start_mark))
+		except Exception as e:
+			L.exception("Error in expression")
+			raise DeclarationError("Invalid expression at {}\n{}".format(node.start_mark, e))
 
 		raise RuntimeError("Unsupported type '{}'".format(node))
