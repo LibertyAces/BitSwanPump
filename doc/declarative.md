@@ -217,6 +217,46 @@ Type: _Sequence_.
 If `else` is not provided, then `WHEN` returns `False`.
 
 
+Example of `!WHEN` use for exact match, range match and set match:
+
+```
+---
+!WHEN
+
+# Exact value match
+- test:
+    !EQ
+    - !ITEM EVENT key
+    - 34
+  then:
+    "Thirty four"
+
+# Range match
+- test:
+    !LT
+    - 40
+    - !ITEM EVENT key
+    - 50
+  then:
+    "fourty to fifty (exclusive)"
+
+# In-set match
+- test:
+    !IN
+    what: !ITEM EVENT key
+    where:
+      - 75
+      - 77
+      - 79
+  then:
+    "seventy five, seven, nine"
+
+
+- else:
+    "Unknown"
+```
+
+
 ### `FOR` statement
 
 Apply `do` for each item.
