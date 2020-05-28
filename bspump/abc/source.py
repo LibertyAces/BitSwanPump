@@ -126,6 +126,7 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		else:
 			return cls(app, pipeline, id=newid, config=config)
 
+
 class TriggerSource(Source):
 
 	"""
