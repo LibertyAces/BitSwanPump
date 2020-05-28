@@ -351,7 +351,7 @@ field: 1
 Cut the `what` string by a `delimiter` and return the piece identified by `field` index (starts with 0).
 
 
-### String transformations "LOWER", "UPPER", "JOIN", "SUBSTRING"
+### String transformations "LOWER", "UPPER","SUBSTRING"
 
 Changes the string case.
 
@@ -368,24 +368,29 @@ value: <...>
 ```
 
 ```
-!JOIN
-items:
-	-<...>
-	-<...>
-delimiter: '-'
-```
-
-Default `delimiter` is space (" ").
-
-If any of `items` is `None`, the result of the join is `None` too.
-
-
-```
 !SUBSTRING
 what: <...>
 from: (int, default 0)
 to: (int, default -1)
 ```
+
+
+### Join items in a string "!JOIN"
+
+```
+!JOIN
+items:
+  - <...>
+  - <...>
+delimiter: '-'
+miss: ''
+```
+
+Default `delimiter` is space (" ").
+
+If the item is `None`, then the value of `miss` parameter is used, by default it is empty string ''.
+If `miss` is `!!null` (`None`) and  any of `items` is `None`, the result of the whole join is `None`.
+
 
 ### Regular expression "REGEX"
 

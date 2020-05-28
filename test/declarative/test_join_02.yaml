@@ -1,0 +1,10 @@
+---
+!DEBUG
+what:
+  !JOIN
+  items:
+    - !ITEM EVENT string
+    - !ITEM EVENT integer
+    - !ITEM EVENT nonexistent
+  delimiter: ':'
+  miss: !!null # None will be returned if any join item is None 
