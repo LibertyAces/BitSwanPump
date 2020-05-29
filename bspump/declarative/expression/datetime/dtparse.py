@@ -46,6 +46,11 @@ class DATETIME_PARSE(Expression):
 		if self.Timezone is not None:
 			dt = self.Timezone.localize(dt)
 		else:
-			dt = dt.replace(tzinfo=datetime.timezone.utc)
+			if dt.tzinfo is None:
+				# Naive datatime is considered as UTC
+				dt = dt.replace(tzinfo=datetime.timezone.utc)
+			else:
+				# Timezone aware localtime is converted to UTC
+				dt = dt.astimezone(datetime.timezone.utc)
 
 		return dt.timestamp()
