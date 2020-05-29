@@ -1,0 +1,6 @@
+---
+!FIRST
+- !DATETIME.PARSE
+  what: "xyz"
+  format: "%Y-%m-%d %H:%M:%S"
+- "Failed :-("

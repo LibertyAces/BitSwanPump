@@ -32,10 +32,13 @@ class DATETIME_PARSE(Expression):
 		if isinstance(value, int) or isinstance(value, float):
 			value = datetime.datetime.utcfromtimestamp(value)
 
-		if fmt == 'RFC3339':
-			dt = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
-		else:
-			dt = datetime.datetime.strptime(value, fmt)
+		try:
+			if fmt == 'RFC3339':
+				dt = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+			else:
+				dt = datetime.datetime.strptime(value, fmt)
+		except ValueError:
+			return None
 
 		if self.SetCurrentYear:
 			dt = dt.replace(year=datetime.datetime.utcnow().year)

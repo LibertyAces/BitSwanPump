@@ -39,3 +39,10 @@ class TestDeclarativeDateTime(bspump.unittest.TestCase):
 
 		res = decl({}, {})
 		self.assertEqual(res, 2.0)
+
+
+	def test_datetime_parse_failed(self):
+		decl = self.load('./test_datetime_parse_fail.yaml')
+
+		res = decl({}, {})
+		self.assertEqual(res, 'Failed :-(')
