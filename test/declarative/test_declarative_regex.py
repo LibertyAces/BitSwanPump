@@ -28,3 +28,30 @@ class TestDeclarativeRegex(bspump.unittest.TestCase):
 			'third': 'bar with postfix',
 			'item1': 'foo',
 		})
+
+
+	def test_regex_parse_02(self):
+		decl = self.load('./test_regex_parse_02.yaml')
+
+		res = decl({}, {})
+		self.assertEqual(res, {
+			'.tmp14': '6620',
+			'.tmp15': '2388',
+			'.tmp16': '137.124453',
+			'act': 'ACCEPTED',
+			'app': 'https',
+			'cs1': 'FAILED',
+			'cs2': 'EXT-OWA-OK',
+			'deviceExternalId': 'TCPP-888',
+			'dhost': '192.168.24.1',
+			'dpt': 443,
+			'dst': '192.168.24.1',
+			'duser': '<NULL>',
+			'in': 6620,
+			'out': 2388,
+			'proto': 'TCP',
+			'severity': 'I',
+			'shost': '52.125.141.18',
+			'spt': 35822,
+			'src': '52.125.141.18'
+		})

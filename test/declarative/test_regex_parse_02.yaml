@@ -1,0 +1,24 @@
+---
+!REGEX.PARSE
+what: "TCPP-888-I PROXY-EVENT PROTOCOL=TCP CLIENT=52.125.141.18 CLIENT-IP=52.125.141.18 CLIENT-PORT=35822 SERVER=192.168.24.1 SERVER-IP=192.168.24.1 SERVER-PORT=443 SERVER-PORT-NAME='https' USER=<NULL> BYTES-CIN=6620 BYTES-COUT=2388 BYTES-SIN=6620 BYTES-SOUT=2388 DURATION=137.124453 STATUS=ACCEPTED RESULT=FAILED RULE='EXT-OWA-OK'"
+regex: (TCPP-888)-(\w) PROXY-EVENT PROTOCOL\=(\S+) CLIENT\=([^\s]+) CLIENT-IP\=(\d+\.\d+\.\d+\.\d+)? CLIENT-PORT\=(\d+) SERVER\=([^\s]+) SERVER-IP\=(\d+\.\d+\.\d+\.\d+)? SERVER-PORT\=(\d+) SERVER-PORT-NAME\='?([^']*)'? USER\='?([^']*)'? BYTES-CIN\=(\d+) BYTES-COUT\=(\d+) BYTES-SIN\=(\d+) BYTES-SOUT\=(\d+) DURATION\=([^\s]+) STATUS\='?([^']*)'? RESULT\='?([^']*)'? RULE\='?([^']*)'?$
+items:
+  - deviceExternalId
+  - severity
+  - proto
+  - shost
+  - src
+  - spt: !CAST int
+  - dhost
+  - dst
+  - dpt: !CAST int
+  - app
+  - duser
+  - in: !CAST int
+  - out: !CAST int
+  - .tmp14
+  - .tmp15
+  - .tmp16
+  - act
+  - cs1
+  - cs2
