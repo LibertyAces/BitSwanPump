@@ -285,7 +285,7 @@ set:
 	item2: bar
 	item3: ...
 
-del:
+unset:
   - item4
   - item5
 
@@ -306,7 +306,7 @@ If `with` is not specified, the new dictionary will be created.
 Argument `set` (optional) specifies items to be set (added, updated) to the dictionary.
 If the value of the item to be set is `None`, then the item is not added/updated to the dictionary.
 
-Argument `del` (optional) specifies items to be removed from a dictionary.
+Argument `unset` (optional) specifies items to be removed from a dictionary.
 
 Argument `add` (optional) is similar to `set` but the operator `+=` is applied. The item must exist.
 

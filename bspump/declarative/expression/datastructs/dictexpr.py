@@ -26,7 +26,7 @@ This is how to create the empty dictionary:
 ```
 """
 
-	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_del=None, arg_add=None, arg_update=None):
+	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_unset=None, arg_add=None, arg_update=None):
 		super().__init__(app)
 
 		self.With = arg_with
@@ -43,9 +43,9 @@ This is how to create the empty dictionary:
 			assert(isinstance(arg_add, dict))
 		self.Add = arg_add
 
-		if arg_del is not None:
-			assert(isinstance(arg_del, list))
-		self.Del = arg_del
+		if arg_unset is not None:
+			assert(isinstance(arg_unset, list))
+		self.Unset = arg_unset
 
 		self.Update = arg_update
 
@@ -82,8 +82,8 @@ This is how to create the empty dictionary:
 			if update_dict is not None and update_dict is not False:
 				with_dict.update(update_dict)
 
-		if self.Del is not None:
-			for key in self.Del:
+		if self.Unset is not None:
+			for key in self.Unset:
 				with_dict.pop(key, None)
 
 		return with_dict
