@@ -468,7 +468,7 @@ miss: <...|default False>
 Note: Uses Python regular expression.
 
 
-### Regular expression "REGEX.PARSE"
+### Parsing by regular expression "REGEX.PARSE"
 
 Search `what` for `regex` with regular expressions groups.
 
@@ -539,6 +539,41 @@ set:
     !ADD
     - !ITEM ARG third
     - ' with postfix'
+```
+
+`unset` and `update` arguments are also available, see `!DICT` chapter for more details.
+
+More complex parsing:
+
+```
+!REGEX.PARSE
+  what: !EVENT
+  regex: '^(\w+)\s(\w+)\s(.*)$'
+  items:
+    - item1
+    - item2
+    - .body
+
+  update:
+    !MAP
+      what: !ITEM ARG item2
+      in:
+        'sub1': !INCLUDE subparser1
+        'sub2': !INCLUDE subparser2
+
+  unset:
+    - .body
+```
+
+And the `subparser1.yaml` example:
+
+```
+!REGEX.PARSE
+  what: !ITEM ARG .body
+  regex: '^(\w+)\s(.*)$'
+  items:
+        - word1
+        - word2
 ```
 
 

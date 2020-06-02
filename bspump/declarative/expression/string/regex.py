@@ -34,7 +34,7 @@ class REGEX_PARSE(Expression):
 	If `fields` are provided, the groups are mapped to provided fields.
 	"""
 
-	def __init__(self, app, *, arg_regex, arg_what, arg_items=None, arg_miss=None, arg_set=None):
+	def __init__(self, app, *, arg_regex, arg_what, arg_items=None, arg_miss=None, arg_set=None, arg_unset=None, arg_update=None):
 		super().__init__(app)
 		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
@@ -45,7 +45,14 @@ class REGEX_PARSE(Expression):
 			assert(isinstance(arg_set, dict))
 		self.Set = arg_set
 
+		if arg_unset is not None:
+			assert(isinstance(arg_unset, list))
+		self.Unset = arg_unset
+
+		self.Update = arg_update
+
 		# TODO: Regex flags
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.evaluate(self.Value, context, event, *args, **kwargs)
@@ -97,6 +104,15 @@ class REGEX_PARSE(Expression):
 				v = self.evaluate(value, context, event, ret, *args, **kwargs)
 				if v is not None:
 					ret[key] = v
+
+		if self.Update is not None:
+			update_dict = self.Update.evaluate(self.Update, context, event, ret, *args, **kwargs)
+			if update_dict is not None and update_dict is not False:
+				ret.update(update_dict)
+
+		if self.Unset is not None:
+			for key in self.Unset:
+				ret.pop(key, None)
 
 		return ret
 
