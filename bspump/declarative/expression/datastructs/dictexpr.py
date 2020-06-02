@@ -78,7 +78,7 @@ This is how to create the empty dictionary:
 					with_dict[key] += v
 
 		if self.Update is not None:
-			update_dict = self.Update.evaluate(self.Update, context, event, *args, **kwargs)
+			update_dict = self.Update.evaluate(self.Update, context, event, with_dict, *args, **kwargs)
 			if update_dict is not None and update_dict is not False:
 				with_dict.update(update_dict)
 

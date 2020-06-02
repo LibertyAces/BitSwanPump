@@ -313,6 +313,20 @@ Argument `add` (optional) is similar to `set` but the operator `+=` is applied. 
 Argument `modify` (optional) is similar to `set` but the item must exist and it is passed to a subsequent expression as a `!ARG` (to _modify_ it). It the item doesn't exists, the entry is skipped.
 
 Argument `update` (optional) allows to update the dictionary with items from another dictionary.
+The `ARG` contains a current value of the dictionary.
+
+```
+- !DICT
+  set:
+    include: sub1
+
+  update:
+    !MAP
+      what: !ITEM ARG include
+      in:
+        'sub1': !INCLUDE sub1
+        'sub2': !INCLUDE sub2
+```
 
 This is how to create the empty dictionary:
 
