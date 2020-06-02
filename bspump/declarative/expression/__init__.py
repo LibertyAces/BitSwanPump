@@ -60,7 +60,8 @@ from .utility.context import CONTEXT
 from .utility.context import CONTEXT_SET
 
 # Lookup
-from .lookup.lookupexpr import LOOKUP
+from .lookup.lookupexpr import LOOKUP_GET
+from .lookup.lookupexpr import LOOKUP_CONTAINS
 
 # Test
 from .test.inexpr import IN
@@ -98,7 +99,7 @@ __all__ = [
 	"CONTEXT", "CONTEXT_SET",
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
-	"LOOKUP",
+	"LOOKUP_GET", "LOOKUP_CONTAINS",
 	"IN",
 	"IP_PARSE", "IP_FORMAT", "IP_INSUBNET",
 	"CAST", "MAP",

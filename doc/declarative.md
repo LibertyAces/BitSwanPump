@@ -576,17 +576,32 @@ Returns the value of the scalar.
 The usage of this expression is typically advanced or internal.
 
 
-### Lookup "LOOKUP"
+### Lookups
+
+#### Obtain value from a lookup "LOOKUP.GET"
 
 Obtains value from a lookup specified by `in` (id of the lookup) using `what` as a key.
 
 Type: _Mapping_.
 
 ```
-!LOOKUP
+!LOOKUP.GET
 what: <...>
 in: <...>
 ```
+#### Check if a lookup contains the value "LOOKUP.CONTAINS"
+
+Returns `True` is a lookup specified by `in` (id of the lookup) contains a key `what`.
+If not, then `False` is returned. 
+
+Type: _Mapping_.
+
+```
+!LOOKUP.CONTAINS
+what: <...>
+in: <...>
+```
+
 
 ### Utility
 
