@@ -55,6 +55,8 @@ This is how to create the empty dictionary:
 			with_dict = dict()
 		else:
 			with_dict = self.evaluate(self.With, context, event, *args, **kwargs)
+			if with_dict is None:
+				return None
 			# TODO: Must be usable as a dictionary
 
 		if self.Set is not None:
