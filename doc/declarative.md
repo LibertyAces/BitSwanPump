@@ -301,7 +301,9 @@ update:
 	!DICT
 ```
 
-If `with` is not specified, the new dictionary will be created.  
+If `with` is not specified, the new dictionary will be created.
+
+If expression in `with` returns None, then the result of the entire `!DICT` expression is also None.
 
 Argument `set` (optional) specifies items to be set (added, updated) to the dictionary.
 If the value of the item to be set is `None`, then the item is not added/updated to the dictionary.
