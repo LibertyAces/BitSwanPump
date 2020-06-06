@@ -676,6 +676,8 @@ else:
 	no right amount of potatoes found
 ```
 
+For more complex tasks that for example include range check, check also a `!WHEN` expression.
+
 _Note:_ the `!MAP` expression can be combined with `!INCLUDE` statement for a faster evaluation (based on `what`) and a structured declarations.
 
 
