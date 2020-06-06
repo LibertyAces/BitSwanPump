@@ -59,7 +59,12 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 		item = self.evaluate(self.Item, context, event, *args, **kwargs)
 
 		try:
-			value = with_dict[item]
+			if '.' in item:
+				value = with_dict
+				for i in item.split('.'):
+					value = value[i]
+			else:
+				value = with_dict[item]
 		except KeyError:
 			if self.Default is None:
 				return None
