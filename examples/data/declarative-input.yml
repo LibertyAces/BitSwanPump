@@ -23,5 +23,3 @@ set:
       then: !!float 10
       else: 0
     - 20
-del:
-  - garbage
