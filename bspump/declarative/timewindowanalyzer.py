@@ -82,7 +82,7 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 
 		matrix = evalobj.get('primary')
 		if isinstance(matrix, Expression):
-			ret = matrix.evaluate(
+			ret = evaluate(
 				matrix, context, event,
 				cell,
 				row=row,
@@ -98,7 +98,7 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 		for t in self.Trigger:
 			matrix = t[matrix]
 			test = matrix['test']
-			result = test.evaluate(
+			result = evaluate(
 				test, context, event,
 				cell,
 				row=row,

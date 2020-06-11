@@ -63,7 +63,7 @@ class REGEX_PARSE(Expression):
 		ret = dict()
 		for item, group in zip(self.Items, groups):
 			if isinstance(item, Expression):
-				result = item.evaluate(item, context, event, group, *args, **kwargs)
+				result = evaluate(item, context, event, group, *args, **kwargs)
 				if result is None:
 					return evaluate(self.Miss, context, event, *args, **kwargs)
 				ret.update(result)
@@ -76,11 +76,11 @@ class REGEX_PARSE(Expression):
 				key, value = next(iter(item.items()))
 
 				if isinstance(value, Expression):
-					ret[key] = value.evaluate(value, context, event, group, *args, **kwargs)
+					ret[key] = evaluate(value, context, event, group, *args, **kwargs)
 
 				elif isinstance(value, list):
 					for valuei in value:
-						x = valuei.evaluate(valuei, context, event, group, *args, **kwargs)
+						x = evaluate(valuei, context, event, group, *args, **kwargs)
 						if x is not None:
 							ret[key] = x
 							break
