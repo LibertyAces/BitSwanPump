@@ -38,10 +38,10 @@ class Model(abc.ABC, asab.ConfigObject):
 		pass
 
 	@abc.abstractmethod
-	def transform(self, data):
+	def transform(self, *args):
 		raise NotImplementedError()
 
 
 	@abc.abstractmethod
-	def predict(self, data):
+	def predict(self, *args):
 		raise NotImplementedError()
