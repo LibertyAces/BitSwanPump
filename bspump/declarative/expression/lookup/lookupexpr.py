@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class LOOKUP(Expression):
@@ -12,4 +12,4 @@ class LOOKUP(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		# TODO: Not correct
-		return self.Lookup.get(self.evaluate(self.Key, context, event, *args, **kwargs))
+		return self.Lookup.get(evaluate(self.Key, context, event, *args, **kwargs))

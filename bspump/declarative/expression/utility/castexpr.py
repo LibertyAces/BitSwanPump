@@ -1,4 +1,4 @@
-from bspump.declarative.abc import Expression
+from bspump.declarative.abc import Expression, evaluate
 
 from ..value.eventexpr import ARG
 
@@ -53,8 +53,8 @@ class CAST(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		try:
-			return self.Conversion(self.evaluate(self.Value, context, event, *args, **kwargs))
+			return self.Conversion(evaluate(self.Value, context, event, *args, **kwargs))
 		except ValueError:
 			if self.Default is None:
 				return None
-			return self.evaluate(self.Default, context, event, *args, **kwargs)
+			return evaluate(self.Default, context, event, *args, **kwargs)

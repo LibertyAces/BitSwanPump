@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class JOIN(Expression):
@@ -13,6 +13,6 @@ class JOIN(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.Char.join([
-			str(self.evaluate(item, context, event, *args, **kwargs))
+			str(evaluate(item, context, event, *args, **kwargs))
 			for item in self.Items
 		])

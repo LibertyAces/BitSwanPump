@@ -1,6 +1,6 @@
 import re
 
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class REGEX(Expression):
@@ -17,12 +17,12 @@ class REGEX(Expression):
 		# TODO: Regex flags
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		match = re.search(self.Regex, value)
 		if match is None:
-			return self.evaluate(self.Miss, context, event, *args, **kwargs)
+			return evaluate(self.Miss, context, event, *args, **kwargs)
 		else:
-			return self.evaluate(self.Hit, context, event, *args, **kwargs)
+			return evaluate(self.Hit, context, event, *args, **kwargs)
 
 
 class REGEX_PARSE(Expression):
@@ -48,13 +48,13 @@ class REGEX_PARSE(Expression):
 		# TODO: Regex flags
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		try:
 			match = re.search(self.Regex, value)
 		except TypeError:
 			match = None
 		if match is None:
-			return self.evaluate(self.Miss, context, event, *args, **kwargs)
+			return evaluate(self.Miss, context, event, *args, **kwargs)
 
 		groups = match.groups()
 		if self.Items is None:
@@ -65,7 +65,7 @@ class REGEX_PARSE(Expression):
 			if isinstance(item, Expression):
 				result = item.evaluate(item, context, event, group, *args, **kwargs)
 				if result is None:
-					return self.evaluate(self.Miss, context, event, *args, **kwargs)
+					return evaluate(self.Miss, context, event, *args, **kwargs)
 				ret.update(result)
 
 			elif isinstance(item, dict):
@@ -91,7 +91,7 @@ class REGEX_PARSE(Expression):
 
 		if self.Set is not None:
 			for key, value in self.Set.items():
-				ret[key] = self.evaluate(value, context, event, *args, **kwargs)
+				ret[key] = evaluate(value, context, event, *args, **kwargs)
 
 		return ret
 
@@ -110,8 +110,8 @@ class REGEX_REPLACE(Expression):
 		self.Replace = arg_replace
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		repl = self.evaluate(self.Replace, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
+		repl = evaluate(self.Replace, context, event, *args, **kwargs)
 		return self.Regex.sub(repl, value)
 
 
@@ -124,8 +124,8 @@ class REGEX_SPLIT(Expression):
 		self.Max = arg_max
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		maxsplit = self.evaluate(self.Max, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
+		maxsplit = evaluate(self.Max, context, event, *args, **kwargs)
 		return self.Regex.split(value, maxsplit=maxsplit)
 
 
@@ -137,5 +137,5 @@ class REGEX_FINDALL(Expression):
 		self.Regex = re.compile(arg_regex)
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		return self.Regex.findall(value)

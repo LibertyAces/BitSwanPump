@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class FOR(Expression):
@@ -12,6 +12,6 @@ class FOR(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return [
-			self.evaluate(self.Do, context, event, item, *args, **kwargs)
-			for item in self.evaluate(self.Each, context, event, *args, **kwargs)
+			evaluate(self.Do, context, event, item, *args, **kwargs)
+			for item in evaluate(self.Each, context, event, *args, **kwargs)
 		]

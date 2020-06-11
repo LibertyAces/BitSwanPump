@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class ENDSWITH(Expression):
@@ -9,6 +9,6 @@ class ENDSWITH(Expression):
 		self.Postfix = arg_postfix
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.What, context, event, *args, **kwargs)
-		postfix = self.evaluate(self.Postfix, context, event, *args, **kwargs)
+		value = evaluate(self.What, context, event, *args, **kwargs)
+		postfix = evaluate(self.Postfix, context, event, *args, **kwargs)
 		return value.endswith(postfix)

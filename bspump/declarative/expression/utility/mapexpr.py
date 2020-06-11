@@ -1,4 +1,4 @@
-from bspump.declarative.abc import Expression
+from bspump.declarative.abc import Expression, evaluate
 
 
 class MAP(Expression):
@@ -27,9 +27,9 @@ class MAP(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		try:
 			item = self.Map[value]
 		except KeyError:
-			return self.evaluate(self.Default, context, event, *args, **kwargs)
-		return self.evaluate(item, context, event, *args, **kwargs)
+			return evaluate(self.Default, context, event, *args, **kwargs)
+		return evaluate(item, context, event, *args, **kwargs)

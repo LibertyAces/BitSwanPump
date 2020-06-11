@@ -1,6 +1,6 @@
 from netaddr import IPNetwork, IPAddress
 
-from bspump.declarative.abc import Expression
+from bspump.declarative.abc import Expression, evaluate
 
 
 class IP_INSUBNET(Expression):
@@ -14,8 +14,8 @@ class IP_INSUBNET(Expression):
 		self.Value = arg_what
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		subnet = self.evaluate(self.Subnet, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
+		subnet = evaluate(self.Subnet, context, event, *args, **kwargs)
 
 		if isinstance(subnet, list):
 			for element in subnet:

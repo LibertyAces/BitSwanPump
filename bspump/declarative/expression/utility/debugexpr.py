@@ -1,7 +1,7 @@
 import pprint
 import logging
 
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 ###
 
@@ -20,6 +20,6 @@ class DEBUG(Expression):
 		self.What = arg_what
 
 	def __call__(self, context, event, *args, **kwargs):
-		ret = self.evaluate(self.What, context, event, *args, **kwargs)
+		ret = evaluate(self.What, context, event, *args, **kwargs)
 		L.warning(pprint.pformat(ret))
 		return ret

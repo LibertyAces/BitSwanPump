@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class IF(Expression):
@@ -13,7 +13,7 @@ class IF(Expression):
 		self.Else = arg_else
 
 	def __call__(self, context, event, *args, **kwargs):
-		if self.evaluate(self.Test, context, event, *args, **kwargs):
-			return self.evaluate(self.Then, context, event, *args, **kwargs)
+		if evaluate(self.Test, context, event, *args, **kwargs):
+			return evaluate(self.Then, context, event, *args, **kwargs)
 		else:
-			return self.evaluate(self.Else, context, event, *args, **kwargs)
+			return evaluate(self.Else, context, event, *args, **kwargs)

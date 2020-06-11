@@ -1,6 +1,6 @@
 import datetime
 
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class DATETIME_FORMAT(Expression):
@@ -17,8 +17,8 @@ class DATETIME_FORMAT(Expression):
 		self.Value = arg_with if arg_with is not None else datetime.datetime.utcnow()
 
 	def __call__(self, context, event, *args, **kwargs):
-		fmt = self.evaluate(self.Format, context, event, *args, **kwargs)
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		fmt = evaluate(self.Format, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		if isinstance(value, int) or isinstance(value, float):
 			value = datetime.datetime.fromtimestamp(value)
 		return value.strftime(fmt)

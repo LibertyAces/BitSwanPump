@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class SUBSTRING(Expression):
@@ -10,7 +10,7 @@ class SUBSTRING(Expression):
 		self.To = arg_to
 
 	def __call__(self, context, event, *args, **kwargs):
-		_string = self.evaluate(self.Value, context, event, *args, **kwargs)
-		_from = self.evaluate(self.From, context, event, *args, **kwargs)
-		_to = self.evaluate(self.To, context, event, *args, **kwargs)
+		_string = evaluate(self.Value, context, event, *args, **kwargs)
+		_from = evaluate(self.From, context, event, *args, **kwargs)
+		_to = evaluate(self.To, context, event, *args, **kwargs)
 		return _string[_from:_to]

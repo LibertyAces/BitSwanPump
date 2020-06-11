@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class IN(Expression):
@@ -14,4 +14,4 @@ class IN(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.evaluate(self.What, context, event, *args, **kwargs) in self.evaluate(self.Where, context, event, *args, **kwargs)
+		return evaluate(self.What, context, event, *args, **kwargs) in evaluate(self.Where, context, event, *args, **kwargs)

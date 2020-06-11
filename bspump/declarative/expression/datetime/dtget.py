@@ -1,5 +1,5 @@
 import datetime
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 import pytz
 
@@ -30,7 +30,7 @@ class DATETIME_GET(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		if isinstance(value, int) or isinstance(value, float):
 			value = datetime.datetime.utcfromtimestamp(value)
 
