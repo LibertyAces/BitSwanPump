@@ -18,6 +18,7 @@ class MySQLBinaryLogSource(Source):
 		'server_id': 1,
 		'log_file': '',  # name of the first log file
 		'log_pos': 4,
+		'auto_position': False,  # If server supports GTID, scroll to latest replicated position
 		'extract_events':
 			"""
 			DeleteRowsEvent
@@ -99,10 +100,13 @@ class MySQLBinaryLogSource(Source):
 		self.ServerId = int(self.Config['server_id'])
 		self.LogFile = self.Config['log_file']
 		self.LogPos = int(self.Config['log_pos'])
+		self.AutoPosition = self.Config.getboolean('auto_position')
+		self.ResumeStream = True
 
 		if self.LogFile == '':
 			self.LogFile = None
 			self.LogPos = None
+			self.ResumeStream = False
 
 		extract_events = []
 		lines = self.Config["extract_events"].split('\n')
@@ -120,12 +124,27 @@ class MySQLBinaryLogSource(Source):
 
 
 	def stream_data(self):
+		gtid = None
+		if self.AutoPosition:
+			cursor = self._connection.acquire_sync_cursor()
+			cursor.execute("SELECT @@global.gtid_executed as gtid")
+			row = cursor.fetchone()
+			if row.get('gtid'):
+				gtid = row.get('gtid')
+				self.ResumeStream = True
+				if self.LogFile is not None:
+					L.warning("Requested auto_position. Configuration log_file and log_pos is ignored.")
+			else:
+				L.warning("MySQL server is not configured for GTID, auto_position cannot be used.")
+
 		self.Stream = pymysqlreplication.BinLogStreamReader(
 			connection_settings=self.MySQLSettings,
 			server_id=self.ServerId,
 			log_file=self.LogFile,
 			log_pos=self.LogPos,
-			resume_stream=True
+			resume_stream=self.ResumeStream,
+			blocking=True,
+			auto_position=gtid
 		)
 
 		for binlogevent in self.Stream:
@@ -147,10 +166,13 @@ class MySQLBinaryLogSource(Source):
 			event['event_size'] = binlogevent.event_size
 			event['read_bytes'] = binlogevent.packet.read_bytes
 
-			# Specific info
-			if event_type in ['DeleteRowsEvent', 'WriteRowsEvent', 'UpdateRowsEvent']:
+			if isinstance(binlogevent, pymysqlreplication.row_event.RowsEvent):
+				event['table'] = binlogevent.table
+				event['schema'] = binlogevent.schema
+				event['primary_key'] = binlogevent.primary_key
 				event['rows'] = binlogevent.rows
 
+			# Specific info
 			if event_type == 'TableMapEvent':
 				event['table_id'] = binlogevent.table_id
 				event['schema'] = binlogevent.schema

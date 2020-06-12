@@ -1,3 +1,5 @@
+from .aggregator import AggregationStrategy, Aggregator, ListAggregationStrategy, ListEventAggregationStrategy, \
+	StringAggregationStrategy
 from .bytes import BytesToStringParser
 from .bytes import StringToBytesParser
 from .flatten import FlattenDictProcessor
@@ -57,4 +59,9 @@ __all__ = (
 	'TimeZoneNormalizer',
 	'MappingTransformator',
 	'DirectSource',
+	'AggregationStrategy',
+	'Aggregator',
+	'ListAggregationStrategy',
+	'ListEventAggregationStrategy',
+	'StringAggregationStrategy'
 )

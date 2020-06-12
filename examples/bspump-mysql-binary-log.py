@@ -33,7 +33,10 @@ class MyApplication(bspump.BSPumpApplication):
 		--datadir=/var/lib/mysql \
 		--server-id=1 \
 		--log-bin=/var/lib/mysql/mysql-bin.log \
-		--binlog_do_db=sample_db
+		--binlog_do_db=sample_db \
+		--gtid_mode=ON \
+		--log-slave-updates \
+		--enforce-gtid-consistency
 
 	# Insert some sample data in your database
 	```
@@ -68,7 +71,7 @@ class MyPipeline(bspump.Pipeline):
 		self.build(
 			bspump.mysql.binlogsource.MySQLBinaryLogSource(app, self, "MySQLConnection", config={
 				'server_id': 1,
-				'log_file': '/tmp/mysql_datadir/mysql-bin.000001'
+				'auto_position': True,  # If server supports GTID, scroll to latest replicated position
 			}),
 			bspump.common.PPrintSink(app, self)
 		)
