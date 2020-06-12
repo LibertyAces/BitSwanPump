@@ -35,7 +35,7 @@ class SequenceExpression(Expression):
 		return functools.reduce(operator, iterator)
 
 
-def evaluate(self, value, context, event, *args, **kwargs):
+def evaluate(value, context, event, *args, **kwargs):
 	if isinstance(value, Expression):
 		return value(context, event, *args, **kwargs)
 	else:
