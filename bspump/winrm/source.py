@@ -1,5 +1,8 @@
 import logging
 
+import os
+import json
+
 import urllib3
 import urllib3.connectionpool
 
@@ -34,6 +37,8 @@ class WinRMSource(TriggerSource):
 		"command": "wevtutil qe system /c:500 /rd:false",  # The user must be in "Event Log Readers group"
 		"duplicity_check": True,  # Check duplicities
 		"encoding": "utf-8",  # Encoding of the output
+
+		"last_value_storage": "/data/winrm_last_value_storage.json",  # Last value storage
 	}
 
 	EmptyList = []
@@ -68,13 +73,25 @@ class WinRMSource(TriggerSource):
 
 		# Duplicities
 		self.DuplicityCheck = self.Config.getboolean("duplicity_check")
+
+		# Load last value from file storage
 		self.LastValue = None
+		self.LastValueStorage = self.Config["last_value_storage"]
+		if os.path.exists(self.LastValueStorage) and not os.path.isdir(self.LastValueStorage):
+			with open(self.LastValueStorage, "r") as last_value_file:
+				self.LastValue = json.loads(last_value_file.read())["last_value"]
 
 		# Subscribe to exit to close the shell eventually
 		app.PubSub.subscribe("Application.exit!", self._on_exit)
 
 	async def _on_exit(self, event_name):
+		# Close the shell
 		self.Protocol.close_shell(self.ShellId)
+
+		# Save the last value into persistent storage
+		if self.LastValue is not None:
+			with open(self.LastValueStorage, "w") as last_value_file:
+				last_value_file.write(json.dumps({"last_value": self.LastValue}))
 
 	async def cycle(self, *args, **kwags):
 		# Run the command remotely
