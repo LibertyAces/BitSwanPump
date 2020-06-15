@@ -28,7 +28,7 @@ class WinRMSource(TriggerSource):
 		"cert_pem": "",  # File path
 		"cert_key_pem": "",  # File path
 
-		"username": "",  # <DOMAIN>/<USER>
+		"username": "",  # <DOMAIN>\<USER>
 		"password": "",
 
 		"command": "wevtutil qe system /c:500 /rd:false",  # The user must be in "Event Log Readers group"
