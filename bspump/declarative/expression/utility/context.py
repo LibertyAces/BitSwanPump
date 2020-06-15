@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class CONTEXT(Expression):
@@ -30,8 +30,8 @@ class CONTEXT_SET(Expression):
 	def __call__(self, context, event, *args, **kwargs):
 		if self.Set is not None:
 			for key, value in self.Set.items():
-				v = self.evaluate(value, context, event, *args, **kwargs)
+				v = evaluate(value, context, event, *args, **kwargs)
 				if v is not None:
 					context[key] = v
 
-		return self.evaluate(self.What, context, event, *args, **kwargs)
+		return evaluate(self.What, context, event, *args, **kwargs)

@@ -12,9 +12,9 @@ class JOIN(Expression):
 	def __call__(self, context, event, *args, **kwargs):
 		arr = []
 		for item in self.Items:
-			v = self.evaluate(item, context, event, *args, **kwargs)
+			v = evaluate(item, context, event, *args, **kwargs)
 			if v is None:
-				v = self.evaluate(self.Miss, context, event, *args, **kwargs)
+				v = evaluate(self.Miss, context, event, *args, **kwargs)
 				if v is None:
 					return None
 			arr.append(str(v))

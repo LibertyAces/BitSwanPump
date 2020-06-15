@@ -110,7 +110,7 @@ Any `Analyzer` is a processor, it means, it has `process()` function. By default
 ```
 def process(self, context, event):
 	if self.predicate(context, event):
-		self.evaluate(context, event)
+		evaluate(context, event)
 	return event
 ```
 

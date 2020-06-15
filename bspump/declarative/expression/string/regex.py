@@ -83,13 +83,13 @@ class REGEX_PARSE(Expression):
 				key, value = next(iter(item.items()))
 
 				if isinstance(value, Expression):
-					v = value.evaluate(value, context, event, group, *args, **kwargs)
+					v = evaluate(value, context, event, group, *args, **kwargs)
 					if v is not None:
 						ret[key] = v
 
 				elif isinstance(value, list):
 					for valuei in value:
-						v = valuei.evaluate(valuei, context, event, group, *args, **kwargs)
+						v = evaluate(valuei, context, event, group, *args, **kwargs)
 						if v is not None:
 							ret[key] = v
 							break
@@ -101,12 +101,12 @@ class REGEX_PARSE(Expression):
 
 		if self.Set is not None:
 			for key, value in self.Set.items():
-				v = self.evaluate(value, context, event, ret, *args, **kwargs)
+				v = evaluate(value, context, event, ret, *args, **kwargs)
 				if v is not None:
 					ret[key] = v
 
 		if self.Update is not None:
-			update_dict = self.Update.evaluate(self.Update, context, event, ret, *args, **kwargs)
+			update_dict = evaluate(self.Update, context, event, ret, *args, **kwargs)
 			if update_dict is not None and update_dict is not False:
 				ret.update(update_dict)
 
