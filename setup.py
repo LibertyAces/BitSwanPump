@@ -89,6 +89,7 @@ setup(
 		'netaddr>=0.6.0,<10.0',
 		'pyyml>=0.0.0,<10.0.0',
 		'pymongo>=0.0.0,<10.0.0',
+		'pywinrm>=0.0.0',
 	],
 	scripts=[
 		'utils/bselastic',
