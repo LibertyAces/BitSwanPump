@@ -36,7 +36,6 @@ class WinRMSource(TriggerSource):
 		"encoding": "utf-8",  # Encoding of the output
 	}
 
-
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
