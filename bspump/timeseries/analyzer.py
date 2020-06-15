@@ -16,9 +16,10 @@ class TimeSeriesModelAnalyzer(TimeWindowAnalyzer):
 
 	ConfigDefaults = {
 		'path': '',
+		'predicted_attribute': 'predicted'
 	}
 
-	def __init__(self, app, pipeline, model, matrix_id=None, dtype='(2,)f8', columns=15, 
+	def __init__(self, app, pipeline, model, matrix_id=None, dtype='(3,)f8', columns=15, 
 					analyze_on_clock=False, resolution=60, start_time=None, clock_driven=True, 
 					id=None, config=None):
 
@@ -27,27 +28,37 @@ class TimeSeriesModelAnalyzer(TimeWindowAnalyzer):
 				clock_driven=clock_driven, id=id, config=config)
 
 		self.Model = model
+		self.PredictedAttribute = self.Config['predicted_attribute']
 		# TODO add params
 		self.initialize_window()
 
 	def initialize_window(self):
 		pass
 
+	# Override it if needed
+	def preenrich(self, context, event):
+		event[self.PredictedAttribute] = None
+
+	# Override it if needed
+	def enrich(self, predicted, context, event):
+		event[self.PredictedAttribute] = predicted
+
+
 	def process(self, context, event):
 		if self.predicate(context, event):
-			data = self.evaluate(context, event) 
-			# NOTE!
+			sample, column = self.evaluate(context, event)
+		else:
+			return event
 
-		if data is not None:
-			transformed_data = self.Model.transform(data)
-			predicted = self.Model.predict(transformed_data)
+		if sample is not None:
+			transformed_sample = self.Model.transform(sample)
+			predicted = self.Model.predict(transformed_sample)
 			self.enrich(predicted, context, event)
+			self.TimeWindow.Array[0, column, 2] = predicted
+		else:
+			self.preenrich(context, event)
 
 		return event
-
-
-	def enrich(self, predicted, context, event):
-		pass
 
 
 	def alarm(self, *args):

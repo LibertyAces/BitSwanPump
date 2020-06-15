@@ -1,9 +1,12 @@
 import logging
 import time
+
 import bspump
 import bspump.common
+import bspump.file
 import bspump.trigger
 import bspump.analyzer
+
 import numpy as np
 import datetime
 import tensorflow as tf
@@ -29,13 +32,14 @@ class MyPipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id=None):
 		super().__init__(app, pipeline_id)
 
-		model = MyLSTMModel() # TODO
+		model = MyLSTMModel(self, id='MyModel', config={'path_model': 'examples/timeseries/my_model.h5', 
+												'path_parameters': 'examples/timeseries/my_parameters.json'})
 		self.build(
-			bspump.random.RandomSource(app, self, choice=['a', 'b', 'c'], config={ # TODO line source
-				'number': 1000000
-			}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=1)),
+			bspump.file.FileCSVSource(app, self, config={
+				'path':'examples/timeseries/data.csv'
+			}).on(bspump.trigger.PubSubTrigger(app, message_type='go!')),
 			TimestampEnricher(app, self),
-			#MyTimeSeriesPredictor(app, self, model), # TODO
+			MyTimeSeriesPredictor(app, self, model),
 			bspump.common.PPrintSink(app, self)
 		)
 
@@ -49,33 +53,9 @@ class TimeStampEnricher(bspump.Processor):
 
 
 class MyTimeSeriesPredictor(bspump.timeseries.TimeSeriesPredictor):
-	def __init__(self, app, pipeline, id=None, config=None): #TODO
-		super().__init__(app, pipeline, id=id, config=config)# TODO
+	def __init__(self, app, model, resolution=3600, columns=30, id=None, config=None):
+		super().__init__(app, model, resolution=resolution, columns=columns, id=id, config=config)
 
-	# TODO upstream
-	def process(self, context, event):
-		if self.predicate(context, event):
-			sample, column = self.evaluate(context, event)
-		else:
-			return event
-
-		if sample is not None:
-			transformed_sample = self.Model.transform(sample)
-			predicted = self.Model.predict(transformed_sample)
-			self.enrich(predicted, context, event)
-			self.TimeWindow.Array[0, column, 2] = predicted
-		else:
-			self.preenrich(context, event)
-
-		return event
-
-	# TODO upstream
-	def preenrich(self, context, event):
-		event['predicted'] = None
-
-	# TODO: upstream
-	def enrich(self, predicted, context, event):
-		event['predicted'] = predicted
 
 
 	def initialize_window(self):
@@ -107,7 +87,6 @@ class MyTimeSeriesPredictor(bspump.timeseries.TimeSeriesPredictor):
 
 
 	def alarm(self):
-		# TODO mask
 		error = tf.keras.metrics.mean_absolute_error(self.TimeWindow.Array[0, :, 0], self.TimeWindow.Array[0, :, 2]).numpy()
 		print(error)
 		
@@ -119,41 +98,30 @@ class MyTimeSeriesPredictor(bspump.timeseries.TimeSeriesPredictor):
 
 
 class MyLSTSMModel(bspump.model.Model):
-	
-	ConfigDefaults = {
-		'path_model': '',
-		'path_parameters': '',
-	}
 
-	def __init__(self, app, pipeline, id=None, config=None): #TODO
-		super().__init__(app, pipeline, analyze_on_clock=True, dtype="({},)i2".format(self.HLLAggregator.m), id=id, config=config) #TODO
-		self.PathModel = self.Config['path_model']
-		self.PathParameters = self.Config['path_parameters']
-		self.Model = self.load_model_from_file()
+	def __init__(self, app, id=None, config=None):
+		super().__init__(app, id=id, config=config)
+		self.TrainedModel = self.load_model_from_file()
 		self.Parameters = self.load_parameters_from_file()
+		self.WindowSize = self.Parameters['window_size']
 
-	# TODO: upstream
-	def load_parameters_from_file(self):
-		with open(self.PathParameters) as f:
-			self.Parameters = json.load(f)
 
-	# TODO upstream
 	def load_model_from_file(self):
-		self.Model = tf.keras.models.load_model(self.Path)
+		self.TrainedModel = tf.keras.models.load_model(self.Path)
 
-	# TODODODODO
+
 	def transform(self, sample):
 		extended_sample = sample[..., np.newaxis]
 		ds = tf.data.Dataset.from_tensor_slices(extended_sample)
-		# ds = ds.window(self.PathParameters['window_size'], shift=1, drop_remainder=True) #TODO param
-		# ds = ds.flat_map(lambda w: w.batch(self.PathParameters['window_size']))
-		# ds = ds.batch(32).prefetch(1) # TODO?
+		ds = ds.window(self.WindowSize, shift=1, drop_remainder=True)
+		ds = ds.flat_map(lambda w: w.batch(self.WindowSize))
+		ds = ds.batch(1).prefetch(1)
 		return ds
 
 
 	def predict(self, data):
-		forecast = self.Model.predict(data)
-		return forecast[-1, -1, 0] # TODO wat?
+		forecast = self.TrainedModel.predict(data)
+		return forecast[-1, -1, 0]
 	
 
 if __name__ == '__main__':
