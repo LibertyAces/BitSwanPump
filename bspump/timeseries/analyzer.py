@@ -18,16 +18,20 @@ class TimeSeriesModelAnalyzer(TimeWindowAnalyzer):
 		'path': '',
 	}
 
-	def __init__(self, app, pipeline, model, matrix_id=None, dtype='float_', columns=15, 
+	def __init__(self, app, pipeline, model, matrix_id=None, dtype='(2,)f8', columns=15, 
 					analyze_on_clock=False, resolution=60, start_time=None, clock_driven=True, 
 					id=None, config=None):
 
-		super().__init__(app, pipeline, matrix_id=matrix_id, dtype='dtype', columns=columns, 
+		super().__init__(app, pipeline, matrix_id=matrix_id, dtype=dtype, columns=columns, 
 				analyze_on_clock=analyze_on_clock, resolution=resolution, start_time=start_time,
 				clock_driven=clock_driven, id=id, config=config)
 
 		self.Model = model
 		# TODO add params
+		self.initialize_window()
+
+	def initialize_window(self):
+		pass
 
 	def process(self, context, event):
 		if self.predicate(context, event):
