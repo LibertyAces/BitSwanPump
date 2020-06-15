@@ -24,7 +24,7 @@ class WinRMSource(TriggerSource):
 		"transport": "ntlm",  # Using NTLM authentication
 
 		"server_cert_validation": "ignore",  # Skipping certificate validation
-		"#": "legacy_requests",  # See https://github.com/diyan/pywinrm/blob/master/winrm/protocol.py
+		"ca_trust_path": "legacy_requests",  # See https://github.com/diyan/pywinrm/blob/master/winrm/protocol.py
 		"cert_pem": "",  # File path
 		"cert_key_pem": "",  # File path
 
