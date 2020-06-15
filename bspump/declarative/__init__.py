@@ -8,7 +8,7 @@ from .segmentbuilder import SegmentBuilder
 
 from .libraries import DeclarationLibrary
 from .libraries import FileDeclarationLibrary
-from .libraries import MongoDeclarationLibrary
+from .libraries import ZooKeeperDeclarationLibrary
 
 from .abc import Expression
 
@@ -23,7 +23,7 @@ __all__ = [
 
 	"DeclarationLibrary",
 	"FileDeclarationLibrary",
-	"MongoDeclarationLibrary",
+	"ZooKeeperDeclarationLibrary",
 
 	"Expression",
 ]

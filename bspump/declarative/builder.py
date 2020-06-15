@@ -37,7 +37,6 @@ class ExpressionBuilder(object):
 		# Register the common expression module
 		self.register_module(expression)
 
-
 	def register_module(self, module):
 		for class_name, expression_class in inspect.getmembers(module, inspect.isclass):
 			self.register_class(class_name, expression_class)
@@ -46,6 +45,11 @@ class ExpressionBuilder(object):
 		class_name = class_name.replace('_', '.')
 		self.ExpressionClasses[class_name] = expression_class
 
+	def add_config_value(self, key, value):
+		self.Config[key] = value
+
+	def update_config(self, config):
+		self.Config.update(config)
 
 	def read(self, identifier):
 
@@ -80,11 +84,9 @@ class ExpressionBuilder(object):
 
 		except yaml.scanner.ScannerError as e:
 			raise DeclarationError("Syntax error in declaration: {}".format(e))
-			return None
 
 		except yaml.constructor.ConstructorError as e:
 			raise DeclarationError("Unknown declarative expression: {}".format(e))
-			return None
 
 		finally:
 			loader.dispose()
@@ -131,7 +133,8 @@ class ExpressionBuilder(object):
 		except TypeError as e:
 			raise DeclarationError("Type error {}\n{}\n".format(e, node.start_mark))
 
-		except Exception:
-			raise DeclarationError("Invalid expression at {}\n".format(node.start_mark))
+		except Exception as e:
+			L.exception("Error in expression")
+			raise DeclarationError("Invalid expression at {}\n{}".format(node.start_mark, e))
 
 		raise RuntimeError("Unsupported type '{}'".format(node))

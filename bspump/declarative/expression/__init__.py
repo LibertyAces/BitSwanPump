@@ -39,6 +39,7 @@ from .string.upperexpr import UPPER
 from .string.lowerexpr import LOWER
 from .string.substringexpr import SUBSTRING
 from .string.cutexpr import CUT
+from .string.contains import CONTAINS
 
 # Data structures
 from .datastructs.dictexpr import DICT
@@ -50,14 +51,17 @@ from .datastructs.itemexpr import ITEM
 # Value
 from .value.valueexpr import VALUE
 from .value.eventexpr import EVENT
-from .value.eventexpr import CONTEXT
 from .value.eventexpr import KWARGS
 from .value.eventexpr import KWARG
 from .value.eventexpr import ARGS
 from .value.eventexpr import ARG
 
+from .utility.context import CONTEXT
+from .utility.context import CONTEXT_SET
+
 # Lookup
-from .lookup.lookupexpr import LOOKUP
+from .lookup.lookupexpr import LOOKUP_GET
+from .lookup.lookupexpr import LOOKUP_CONTAINS
 
 # Test
 from .test.inexpr import IN
@@ -88,12 +92,14 @@ __all__ = [
 	"STARTSWITH", "ENDSWITH", "SUBSTRING",
 	"UPPER", "LOWER",
 	"JOIN", "CUT",
+	"CONTAINS",
 	"REGEX", "REGEX_PARSE", "REGEX_REPLACE", "REGEX_SPLIT", "REGEX_FINDALL",
 	"VALUE",
-	"EVENT", "CONTEXT",
+	"EVENT",
+	"CONTEXT", "CONTEXT_SET",
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
-	"LOOKUP",
+	"LOOKUP_GET", "LOOKUP_CONTAINS",
 	"IN",
 	"IP_PARSE", "IP_FORMAT", "IP_INSUBNET",
 	"CAST", "MAP",

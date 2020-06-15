@@ -26,7 +26,7 @@ This is how to create the empty dictionary:
 ```
 """
 
-	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_del=None, arg_add=None, arg_update=None):
+	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_unset=None, arg_add=None, arg_update=None):
 		super().__init__(app)
 
 		self.With = arg_with
@@ -43,9 +43,9 @@ This is how to create the empty dictionary:
 			assert(isinstance(arg_add, dict))
 		self.Add = arg_add
 
-		if arg_del is not None:
-			assert(isinstance(arg_del, list))
-		self.Del = arg_del
+		if arg_unset is not None:
+			assert(isinstance(arg_unset, list))
+		self.Unset = arg_unset
 
 		self.Update = arg_update
 
@@ -54,12 +54,16 @@ This is how to create the empty dictionary:
 		if self.With is None:
 			with_dict = dict()
 		else:
-			with_dict = evaluate(self.With, context, event, *args, **kwargs)
+			with_dict = self.evaluate(self.With, context, event, *args, **kwargs)
+			if with_dict is None:
+				return None
 			# TODO: Must be usable as a dictionary
 
 		if self.Set is not None:
 			for key, value in self.Set.items():
-				with_dict[key] = evaluate(value, context, event, *args, **kwargs)
+				v = self.evaluate(value, context, event, *args, **kwargs)
+				if v is not None:
+					with_dict[key] = v
 
 		if self.Modify is not None:
 			for key, value in self.Modify.items():
@@ -71,15 +75,17 @@ This is how to create the empty dictionary:
 
 		if self.Add is not None:
 			for key, value in self.Add.items():
-				with_dict[key] += evaluate(value, context, event, *args, **kwargs)
+				v = self.evaluate(value, context, event, *args, **kwargs)
+				if v is not None:
+					with_dict[key] += v
 
 		if self.Update is not None:
-			update_dict = evaluate(self.Update, context, event, *args, **kwargs)
+			update_dict = self.Update.evaluate(self.Update, context, event, with_dict, *args, **kwargs)
 			if update_dict is not None and update_dict is not False:
 				with_dict.update(update_dict)
 
-		if self.Del is not None:
-			for key in self.Del:
+		if self.Unset is not None:
+			for key in self.Unset:
 				with_dict.pop(key, None)
 
 		return with_dict

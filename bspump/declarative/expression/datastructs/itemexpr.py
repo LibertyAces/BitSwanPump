@@ -1,7 +1,10 @@
 from ...abc import Expression, evaluate
 
-from ..value.eventexpr import EVENT, CONTEXT, KWARGS, ARG
+from ..value.eventexpr import EVENT
+from ..value.eventexpr import KWARGS
+from ..value.eventexpr import ARG
 from ..value.valueexpr import VALUE
+from ..utility.context import CONTEXT
 
 
 class ITEM(Expression):
@@ -56,7 +59,12 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 		item = evaluate(self.Item, context, event, *args, **kwargs)
 
 		try:
-			value = with_dict[item]
+			if '.' in item:
+				value = with_dict
+				for i in item.split('.'):
+					value = value[i]
+			else:
+				value = with_dict[item]
 		except KeyError:
 			if self.Default is None:
 				return None

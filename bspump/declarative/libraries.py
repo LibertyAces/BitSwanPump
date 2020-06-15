@@ -1,6 +1,7 @@
 import abc
 import os
-import pymongo
+
+import aiozk
 
 
 class DeclarationLibrary(abc.ABC):
@@ -29,43 +30,31 @@ class FileDeclarationLibrary(DeclarationLibrary):
 		return None
 
 
-class MongoDeclarationLibrary(DeclarationLibrary):
+class ZooKeeperDeclarationLibrary(DeclarationLibrary):
+	"""
+	Expects a ZooKeeperClient.
+	"""
 
-	def __init__(self, mongodb_host="", mongodb_database="", mongodb_collection="", key_element="identifier", data_element="data", _filter=None):
-		"""
-		:param mongodb_host: specify MongoDB hostname in format: mongodb://mongodb1:27017
-		:param mongodb_database: specify MongoDB database
-		:param mongodb_collection: specify collection (like lookups, parsers etc.)
-		:param key_element: specify the key element to load the declarations by
-		:param data_element: specify the element where the declaration is used inside the MongoDB document
-		:param _filter: specify additional MongoDB filter if needed, f. e. by type or folder
-		"""
+	def __init__(self, zookeeper_client, zookeeper_path, encoding="utf-8"):
 		super().__init__()
-		self.MongoDBHost = mongodb_host
-		self.MongoDBDatabase = mongodb_database
-		self.MongoDBCollection = mongodb_collection
-		self.KeyElement = key_element
-		self.DataElement = data_element
-		self.MongoDBClient = pymongo.MongoClient(self.MongoDBHost)
+		self.ZooKeeperClient = zookeeper_client
+		self.ZooKeeperPath = zookeeper_path
+		self.Encoding = encoding
+		self.ZookeeperData = {}
 
-		if _filter is None:
-			self.Filter = {}
-		else:
-			self.Filter = _filter
+	async def load(self):
+		try:
+			for document in await self.ZooKeeperClient.get_children(self.ZooKeeperPath):
+				self.ZookeeperData[document] = await self.ZooKeeperClient.get_data(
+					"{}/{}".format(self.ZooKeeperPath, document)
+				)
+		except aiozk.exc.NoNode:
+			pass
 
 	def read(self, identifier):
-		_filter = {self.KeyElement: identifier}
-		_filter.update(self.Filter)
-		declaration_yml = self.MongoDBClient[self.MongoDBDatabase][self.MongoDBCollection].find_one(_filter)
-		if declaration_yml is not None:
-			return declaration_yml[self.DataElement]
+		for key, declaration in self.ZookeeperData.items():
+			if key == identifier + '.yaml':
+				if isinstance(declaration, bytes):
+					declaration = declaration.decode(self.Encoding)
+				return declaration
 		return None
-
-	def list(self):
-		"""
-		List all available declarations.
-		:return: declarations
-		"""
-		declarations = self.MongoDBClient[self.MongoDBDatabase][self.MongoDBCollection].find(self.Filter)
-		for declaration_yml in declarations:
-			yield declaration_yml

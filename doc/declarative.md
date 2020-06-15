@@ -107,7 +107,7 @@ More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 ## Comments
 
 ```
-	# This is a comment.
+# This is a comment.
 ```
 
 ## Expressions
@@ -156,7 +156,7 @@ Type: _Sequence_.
 Example of a `Event.count == 3` check:  
 
 ```
-! EQ
+!EQ
 - !ITEM EVENT count
 - 3
 ```
@@ -217,6 +217,46 @@ Type: _Sequence_.
 If `else` is not provided, then `WHEN` returns `False`.
 
 
+Example of `!WHEN` use for exact match, range match and set match:
+
+```
+---
+!WHEN
+
+# Exact value match
+- test:
+    !EQ
+    - !ITEM EVENT key
+    - 34
+  then:
+    "Thirty four"
+
+# Range match
+- test:
+    !LT
+    - 40
+    - !ITEM EVENT key
+    - 50
+  then:
+    "fourty to fifty (exclusive)"
+
+# In-set match
+- test:
+    !IN
+    what: !ITEM EVENT key
+    where:
+      - 75
+      - 77
+      - 79
+  then:
+    "seventy five, seven, nine"
+
+
+- else:
+    "Unknown"
+```
+
+
 ### `FOR` statement
 
 Apply `do` for each item.
@@ -239,33 +279,56 @@ Create or update the dictionary.
 ```
 !DICT
 with: !EVENT
+
 set:
 	item1: foo
 	item2: bar
 	item3: ...
-del:
+
+unset:
   - item4
   - item5
+
 add:
   item6: 1
+
 modify:
 	item7:
-	  !LOWER
+	  !LOWER:
+    what: !ARG
+
 update:
 	!DICT
 ```
 
-If `with` is not specified, the new dictionary will be created.  
+If `with` is not specified, the new dictionary will be created.
+
+If expression in `with` returns None, then the result of the entire `!DICT` expression is also None.
 
 Argument `set` (optional) specifies items to be set (added, updated) to the dictionary.
+If the value of the item to be set is `None`, then the item is not added/updated to the dictionary.
 
-Argument `del` (optional) specifies items to be removed from a dictionary.
+Argument `unset` (optional) specifies items to be removed from a dictionary.
 
 Argument `add` (optional) is similar to `set` but the operator `+=` is applied. The item must exist.
 
 Argument `modify` (optional) is similar to `set` but the item must exist and it is passed to a subsequent expression as a `!ARG` (to _modify_ it). It the item doesn't exists, the entry is skipped.
 
 Argument `update` (optional) allows to update the dictionary with items from another dictionary.
+The `ARG` contains a current value of the dictionary.
+
+```
+- !DICT
+  set:
+    include: sub1
+
+  update:
+    !MAP
+      what: !ITEM ARG include
+      in:
+        'sub1': !INCLUDE sub1
+        'sub2': !INCLUDE sub2
+```
 
 This is how to create the empty dictionary:
 
@@ -350,7 +413,7 @@ field: 1
 Cut the `what` string by a `delimiter` and return the piece identified by `field` index (starts with 0).
 
 
-### String transformations "LOWER", "UPPER", "JOIN", "SUBSTRING"
+### String transformations "LOWER", "UPPER","SUBSTRING"
 
 Changes the string case.
 
@@ -363,19 +426,8 @@ what: <...>
 
 ```
 !UPPER
-value: <...>
+what: <...>
 ```
-
-```
-!JOIN
-items:
-	-<...>
-	-<...>
-delimiter: '-'
-```
-
-Default `delimiter` is space (" ").
-
 
 ```
 !SUBSTRING
@@ -383,6 +435,24 @@ what: <...>
 from: (int, default 0)
 to: (int, default -1)
 ```
+
+
+### Join items in a string "!JOIN"
+
+```
+!JOIN
+items:
+  - <...>
+  - <...>
+delimiter: '-'
+miss: ''
+```
+
+Default `delimiter` is space (" ").
+
+If the item is `None`, then the value of `miss` parameter is used, by default it is empty string ''.
+If `miss` is `!!null` (`None`) and  any of `items` is `None`, the result of the whole join is `None`.
+
 
 ### Regular expression "REGEX"
 
@@ -400,7 +470,7 @@ miss: <...|default False>
 Note: Uses Python regular expression.
 
 
-### Regular expression "REGEX.PARSE"
+### Parsing by regular expression "REGEX.PARSE"
 
 Search `what` for `regex` with regular expressions groups.
 
@@ -411,6 +481,7 @@ Type: _Mapping_.
 what: <...>
 regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
 items: [Foo, Bar,  <...>]
+miss: Missed :-(
 set:
 	item1: foo
 	item2: bar
@@ -427,28 +498,85 @@ Entries in `items` can have following forms:
  * Expression, then the value of the regex group is passed in the expression as `!ARG` and the result of the expression is then used in the dictionary
  * List of expressions, similar to the previous but the list is iterated till the given expression returns non-None result, then the value is used in the dictionary
 
+ Value `None` is skipped and not set to the dictionary.
+
  Example of three forms:
 
  ```
 !REGEX.PARSE
 what: "foo 123 a.b.c.d"
-regex: '^(\w)(\w)(\w)$'
+regex: '^(\w+)\s+(\d+)\s+([\w.]+)$'
 items:
   - SimpleEntry
   - Expression:
     !CAST
-    value: !ARG
+    what: !ARG
     type: int
   - ListOfExpressions:
     - !REGEX.PARSE
       regex: '^(\d)$'
-      value: !ARG
+      what: !ARG
     - !REGEX.PARSE
       regex: '^(\s\.\s\.\s\.\s)$'
-      value: !ARG
+      what: !ARG
  ```
 
-The argument `add` (optional) allows to add additional items into a result dictionary.
+The argument `set` (optional) allows to add/update additional items into a result dictionary.
+In the `set` part, the intermediate form of the result is available as `ARG`.
+If `None` is returned, the result is not modified.
+
+```
+---
+!REGEX.PARSE
+what: 'foo 123 bar'
+regex: '^(\w+)\s+(\d+)\s+(\w+)$'
+
+items:
+  - first
+  - second
+  - third
+
+set:
+  third:
+    !ADD
+    - !ITEM ARG third
+    - ' with postfix'
+```
+
+`unset` and `update` arguments are also available, see `!DICT` chapter for more details.
+
+More complex parsing:
+
+```
+!REGEX.PARSE
+  what: !EVENT
+  regex: '^(\w+)\s(\w+)\s(.*)$'
+  items:
+    - item1
+    - item2
+    - .body
+
+  update:
+    !MAP
+      what: !ITEM ARG item2
+      in:
+        'sub1': !INCLUDE subparser1
+        'sub2': !INCLUDE subparser2
+
+  unset:
+    - .body
+```
+
+And the `subparser1.yaml` example:
+
+```
+!REGEX.PARSE
+  what: !ITEM ARG .body
+  regex: '^(\w+)\s(.*)$'
+  items:
+        - word1
+        - word2
+```
 
 
 ### Regular expression "REGEX.REPLACE"
@@ -499,17 +627,32 @@ Returns the value of the scalar.
 The usage of this expression is typically advanced or internal.
 
 
-### Lookup "LOOKUP"
+### Lookups
+
+#### Obtain value from a lookup "LOOKUP.GET"
 
 Obtains value from a lookup specified by `in` (id of the lookup) using `what` as a key.
 
 Type: _Mapping_.
 
 ```
-!LOOKUP
+!LOOKUP.GET
 what: <...>
 in: <...>
 ```
+#### Check if a lookup contains the value "LOOKUP.CONTAINS"
+
+Returns `True` is a lookup specified by `in` (id of the lookup) contains a key `what`.
+If not, then `False` is returned. 
+
+Type: _Mapping_.
+
+```
+!LOOKUP.CONTAINS
+what: <...>
+in: <...>
+```
+
 
 ### Utility
 
@@ -522,14 +665,18 @@ Checks if `what` exists in the provided key-value map. If so, it returns the map
 ```
 !MAP
 what: !ITEM EVENT potatoes
+
 in:
 	7: only seven
 	20: twenty
 	12: twelve
 	10: enough to join the potato throwing competition
+
 else:
 	no right amount of potatoes found
 ```
+
+For more complex tasks that for example include range check, check also a `!WHEN` expression.
 
 _Note:_ the `!MAP` expression can be combined with `!INCLUDE` statement for a faster evaluation (based on `what`) and a structured declarations.
 
@@ -742,4 +889,48 @@ Get the value from a configuration using `configuration_key`.
 Configuration is a key/value space.
 
 _Note_: Configuration items are resolved during YAML load time.
+
+
+
+### Manipulate the context of the event processing `CONTEXT.SET`
+
+Type: _Mapping_.
+
+```
+- !CONTEXT.SET
+  what: <... expression ...>
+  set:
+    target: unparsed
+```
+
+This expression sets items into the `context` of the event (see `!CONTEXT`). The context contains various meta-data about the event processing.
+
+`what` is optional, by default `None`. It will be directly passed to the output of this expression. It means that `!CONTEXT.SET` is no-op with a side effect on the event context.
+
+Example of use in the parsing:
+
+```
+!FIRST
+- !REGEX.PARSE
+what: !EVENT
+regex: '^(one)\s(two)\s(three)$'
+items:
+  - one
+  - two
+  - three
+- !REGEX.PARSE
+what: !EVENT
+regex: '^(uno)\s(duo)\s(tres)$'
+items:
+  - one
+  - two
+  - three
+# This is where the handling of partially parsed event starts
+- !CONTEXT.SET
+set:
+  target: unparsed
+- !DICT
+set:
+  unparsed: !EVENT
+```
 
