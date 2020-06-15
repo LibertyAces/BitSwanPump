@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class UPPER(Expression):
@@ -9,4 +9,4 @@ class UPPER(Expression):
 		self.Value = arg_what
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.evaluate(self.Value, context, event, *args, **kwargs).upper()
+		return evaluate(self.Value, context, event, *args, **kwargs).upper()

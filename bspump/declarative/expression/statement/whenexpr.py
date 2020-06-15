@@ -1,4 +1,4 @@
-from ...abc import SequenceExpression
+from ...abc import SequenceExpression, evaluate
 
 
 class WHEN(SequenceExpression):
@@ -29,16 +29,16 @@ class WHEN(SequenceExpression):
 			expr_test = branch.get('test')
 			if expr_test is not None:
 
-				res = self.evaluate(expr_test, context, event, *args, **kwargs)
+				res = evaluate(expr_test, context, event, *args, **kwargs)
 				if res:
 					expr_then = branch.get('then', True)
-					return self.evaluate(expr_then, context, event, *args, **kwargs)
+					return evaluate(expr_then, context, event, *args, **kwargs)
 
 				else:
 					continue
 
 			expr_else = branch.get('else')
 			if expr_else is not None:
-				return self.evaluate(expr_else, context, event, *args, **kwargs)
+				return evaluate(expr_else, context, event, *args, **kwargs)
 
 		return False

@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class LOWER(Expression):
@@ -10,4 +10,4 @@ class LOWER(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.evaluate(self.Value, context, event, *args, **kwargs).lower()
+		return evaluate(self.Value, context, event, *args, **kwargs).lower()

@@ -1,6 +1,6 @@
 import operator
 
-from ..abc import SequenceExpression
+from ..abc import SequenceExpression, evaluate
 
 
 def _and_reduce(operator, iterable):
@@ -23,7 +23,7 @@ class LT(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _and_reduce(
 			operator.lt,
-			[self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]
+			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
 		)
 
 
@@ -35,7 +35,7 @@ class LE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _and_reduce(
 			operator.le,
-			[self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]
+			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
 		)
 
 
@@ -47,7 +47,7 @@ class EQ(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _and_reduce(
 			operator.eq,
-			[self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]
+			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
 		)
 
 
@@ -59,7 +59,7 @@ class NE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _and_reduce(
 			operator.ne,
-			[self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]
+			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
 		)
 
 
@@ -71,7 +71,7 @@ class GE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _and_reduce(
 			operator.ge,
-			[self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]
+			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
 		)
 
 
@@ -83,7 +83,7 @@ class GT(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _and_reduce(
 			operator.gt,
-			[self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]
+			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
 		)
 
 
@@ -95,7 +95,7 @@ class IS(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _and_reduce(
 			operator.is_,
-			[self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]
+			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
 		)
 
 
@@ -107,5 +107,5 @@ class ISNOT(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _and_reduce(
 			operator.is_not,
-			[self.evaluate(item, context, event, *args, **kwargs) for item in self.Items]
+			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
 		)

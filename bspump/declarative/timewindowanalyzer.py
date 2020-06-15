@@ -1,6 +1,6 @@
 from ..analyzer import TimeWindowAnalyzer
 from .builder import ExpressionBuilder
-from .abc import Expression
+from .abc import Expression, evaluate
 
 
 class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
@@ -58,9 +58,9 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 				x = 'evaluate'
 			if isinstance(x, list):
 				for i in x:
-					self.evaluate(self.Evaluates[i], context, event)
+					evaluate(self.Evaluates[i], context, event)
 			else:
-				self.evaluate(self.Evaluates[x], context, event)
+				evaluate(self.Evaluates[x], context, event)
 
 		return event
 
@@ -82,7 +82,7 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 
 		matrix = evalobj.get('primary')
 		if isinstance(matrix, Expression):
-			ret = matrix.evaluate(
+			ret = evaluate(
 				matrix, context, event,
 				cell,
 				row=row,
@@ -98,7 +98,7 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 		for t in self.Trigger:
 			matrix = t[matrix]
 			test = matrix['test']
-			result = test.evaluate(
+			result = evaluate(
 				test, context, event,
 				cell,
 				row=row,

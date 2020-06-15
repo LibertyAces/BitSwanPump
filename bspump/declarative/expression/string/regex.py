@@ -1,6 +1,6 @@
 import re
 
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class REGEX(Expression):
@@ -17,12 +17,12 @@ class REGEX(Expression):
 		# TODO: Regex flags
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		match = re.search(self.Regex, value)
 		if match is None:
-			return self.evaluate(self.Miss, context, event, *args, **kwargs)
+			return evaluate(self.Miss, context, event, *args, **kwargs)
 		else:
-			return self.evaluate(self.Hit, context, event, *args, **kwargs)
+			return evaluate(self.Hit, context, event, *args, **kwargs)
 
 
 class REGEX_PARSE(Expression):
@@ -55,13 +55,13 @@ class REGEX_PARSE(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		try:
 			match = re.search(self.Regex, value)
 		except TypeError:
 			match = None
 		if match is None:
-			return self.evaluate(self.Miss, context, event, *args, **kwargs)
+			return evaluate(self.Miss, context, event, *args, **kwargs)
 
 		groups = match.groups()
 		if self.Items is None:
@@ -70,9 +70,9 @@ class REGEX_PARSE(Expression):
 		ret = dict()
 		for item, group in zip(self.Items, groups):
 			if isinstance(item, Expression):
-				result = item.evaluate(item, context, event, group, *args, **kwargs)
+				result = evaluate(item, context, event, group, *args, **kwargs)
 				if result is None:
-					return self.evaluate(self.Miss, context, event, *args, **kwargs)
+					return evaluate(self.Miss, context, event, *args, **kwargs)
 				ret.update(result)
 
 			elif isinstance(item, dict):
@@ -83,13 +83,13 @@ class REGEX_PARSE(Expression):
 				key, value = next(iter(item.items()))
 
 				if isinstance(value, Expression):
-					v = value.evaluate(value, context, event, group, *args, **kwargs)
+					v = evaluate(value, context, event, group, *args, **kwargs)
 					if v is not None:
 						ret[key] = v
 
 				elif isinstance(value, list):
 					for valuei in value:
-						v = valuei.evaluate(valuei, context, event, group, *args, **kwargs)
+						v = evaluate(valuei, context, event, group, *args, **kwargs)
 						if v is not None:
 							ret[key] = v
 							break
@@ -101,12 +101,12 @@ class REGEX_PARSE(Expression):
 
 		if self.Set is not None:
 			for key, value in self.Set.items():
-				v = self.evaluate(value, context, event, ret, *args, **kwargs)
+				v = evaluate(value, context, event, ret, *args, **kwargs)
 				if v is not None:
 					ret[key] = v
 
 		if self.Update is not None:
-			update_dict = self.Update.evaluate(self.Update, context, event, ret, *args, **kwargs)
+			update_dict = evaluate(self.Update, context, event, ret, *args, **kwargs)
 			if update_dict is not None and update_dict is not False:
 				ret.update(update_dict)
 
@@ -131,8 +131,8 @@ class REGEX_REPLACE(Expression):
 		self.Replace = arg_replace
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		repl = self.evaluate(self.Replace, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
+		repl = evaluate(self.Replace, context, event, *args, **kwargs)
 		return self.Regex.sub(repl, value)
 
 
@@ -145,8 +145,8 @@ class REGEX_SPLIT(Expression):
 		self.Max = arg_max
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
-		maxsplit = self.evaluate(self.Max, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
+		maxsplit = evaluate(self.Max, context, event, *args, **kwargs)
 		return self.Regex.split(value, maxsplit=maxsplit)
 
 
@@ -158,5 +158,5 @@ class REGEX_FINDALL(Expression):
 		self.Regex = re.compile(arg_regex)
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		return self.Regex.findall(value)

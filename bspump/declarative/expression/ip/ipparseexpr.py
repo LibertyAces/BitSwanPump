@@ -1,6 +1,6 @@
 from netaddr import IPAddress
 
-from bspump.declarative.abc import Expression
+from bspump.declarative.abc import Expression, evaluate
 
 
 class IP_PARSE(Expression):
@@ -13,5 +13,5 @@ class IP_PARSE(Expression):
 		self.Value = value
 
 	def __call__(self, context, event, *args, **kwargs):
-		ip = IPAddress(self.evaluate(self.Value, context, event, *args, **kwargs))
+		ip = IPAddress(evaluate(self.Value, context, event, *args, **kwargs))
 		return ip.ipv6().value

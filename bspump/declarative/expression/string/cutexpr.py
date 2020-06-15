@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class CUT(Expression):
@@ -17,6 +17,6 @@ class CUT(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.evaluate(self.Value, context, event, *args, **kwargs)
+		value = evaluate(self.Value, context, event, *args, **kwargs)
 		x = value.split(self.Delimiter, self.Field + 1)
 		return x[self.Field]

@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 
 class DICT(Expression):
@@ -54,14 +54,14 @@ This is how to create the empty dictionary:
 		if self.With is None:
 			with_dict = dict()
 		else:
-			with_dict = self.evaluate(self.With, context, event, *args, **kwargs)
+			with_dict = evaluate(self.With, context, event, *args, **kwargs)
 			if with_dict is None:
 				return None
 			# TODO: Must be usable as a dictionary
 
 		if self.Set is not None:
 			for key, value in self.Set.items():
-				v = self.evaluate(value, context, event, *args, **kwargs)
+				v = evaluate(value, context, event, *args, **kwargs)
 				if v is not None:
 					with_dict[key] = v
 
@@ -71,16 +71,16 @@ This is how to create the empty dictionary:
 					orig = with_dict[key]
 				except KeyError:
 					continue
-				with_dict[key] = self.evaluate(value, context, event, orig, *args, **kwargs)
+				with_dict[key] = evaluate(value, context, event, orig, *args, **kwargs)
 
 		if self.Add is not None:
 			for key, value in self.Add.items():
-				v = self.evaluate(value, context, event, *args, **kwargs)
+				v = evaluate(value, context, event, *args, **kwargs)
 				if v is not None:
 					with_dict[key] += v
 
 		if self.Update is not None:
-			update_dict = self.Update.evaluate(self.Update, context, event, with_dict, *args, **kwargs)
+			update_dict = evaluate(self.Update, context, event, with_dict, *args, **kwargs)
 			if update_dict is not None and update_dict is not False:
 				with_dict.update(update_dict)
 

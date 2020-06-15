@@ -1,4 +1,4 @@
-from ...abc import Expression
+from ...abc import Expression, evaluate
 
 from ..value.eventexpr import EVENT
 from ..value.eventexpr import KWARGS
@@ -55,8 +55,8 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			self.Default = arg_default
 
 	def __call__(self, context, event, *args, **kwargs):
-		with_dict = self.evaluate(self.With, context, event, *args, **kwargs)
-		item = self.evaluate(self.Item, context, event, *args, **kwargs)
+		with_dict = evaluate(self.With, context, event, *args, **kwargs)
+		item = evaluate(self.Item, context, event, *args, **kwargs)
 
 		try:
 			if '.' in item:
@@ -68,10 +68,10 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 		except KeyError:
 			if self.Default is None:
 				return None
-			return self.evaluate(self.Default, context, event, *args, **kwargs)
+			return evaluate(self.Default, context, event, *args, **kwargs)
 		except IndexError:
 			if self.Default is None:
 				return None
-			return self.evaluate(self.Default, context, event, *args, **kwargs)
+			return evaluate(self.Default, context, event, *args, **kwargs)
 
 		return value

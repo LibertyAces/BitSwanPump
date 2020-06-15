@@ -1,6 +1,6 @@
 import operator
 
-from ..abc import SequenceExpression, Expression
+from ..abc import SequenceExpression, Expression, evaluate
 
 
 class AND(SequenceExpression):
@@ -31,4 +31,4 @@ class NOT(Expression):
 		self.Value = arg_what
 
 	def __call__(self, context, event, *args, **kwargs):
-		return not self.evaluate(self.Value, context, event, *args, **kwargs)
+		return not evaluate(self.Value, context, event, *args, **kwargs)
