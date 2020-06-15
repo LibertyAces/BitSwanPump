@@ -36,6 +36,8 @@ class WinRMSource(TriggerSource):
 		"encoding": "utf-8",  # Encoding of the output
 	}
 
+	EmptyList = []
+
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
@@ -97,7 +99,10 @@ class WinRMSource(TriggerSource):
 				if self.LastValue is not None:
 					try:
 						index = lines.index(self.LastValue)
-						lines = lines[index:]
+						if index == (len(lines) - 1):
+							lines = self.EmptyList
+						else:
+							lines = lines[(index+1):]
 					except ValueError:
 						pass
 
