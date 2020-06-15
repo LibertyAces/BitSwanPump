@@ -102,7 +102,7 @@ class WinRMSource(TriggerSource):
 						if index == (len(lines) - 1):
 							lines = self.EmptyList
 						else:
-							lines = lines[(index+1):]
+							lines = lines[(index + 1):]
 					except ValueError:
 						pass
 
