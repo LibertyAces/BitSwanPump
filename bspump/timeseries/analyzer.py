@@ -1,7 +1,7 @@
 import logging
 
-from .analyzer import TimeWindowAnalyzer
-from .model import Model
+from ..analyzer.timewindowanalyzer import TimeWindowAnalyzer
+from ..model.model import Model
 
 ###
 
@@ -10,7 +10,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class TimeSeriesModelAnalyzer(TimeWindowAnalyzer):
+class TimeSeriesPredictor(TimeWindowAnalyzer):
 	'''
 	'''
 
@@ -20,7 +20,7 @@ class TimeSeriesModelAnalyzer(TimeWindowAnalyzer):
 	}
 
 	def __init__(self, app, pipeline, model, matrix_id=None, dtype='(3,)f8', columns=15, 
-					analyze_on_clock=False, resolution=60, start_time=None, clock_driven=True, 
+					analyze_on_clock=False, resolution=60, start_time=None, clock_driven=False, 
 					id=None, config=None):
 
 		super().__init__(app, pipeline, matrix_id=matrix_id, dtype=dtype, columns=columns, 
@@ -29,18 +29,13 @@ class TimeSeriesModelAnalyzer(TimeWindowAnalyzer):
 
 		self.Model = model
 		self.PredictedAttribute = self.Config['predicted_attribute']
-		# TODO add params
 		self.initialize_window()
 
 	def initialize_window(self):
 		pass
 
 	# Override it if needed
-	def preenrich(self, context, event):
-		event[self.PredictedAttribute] = None
-
-	# Override it if needed
-	def enrich(self, predicted, context, event):
+	def enrich(self, context, event, predicted):
 		event[self.PredictedAttribute] = predicted
 
 
@@ -53,10 +48,12 @@ class TimeSeriesModelAnalyzer(TimeWindowAnalyzer):
 		if sample is not None:
 			transformed_sample = self.Model.transform(sample)
 			predicted = self.Model.predict(transformed_sample)
-			self.enrich(predicted, context, event)
+			# print(predicted, event)
+			# raise
+			self.enrich(context, event, predicted)
 			self.TimeWindow.Array[0, column, 2] = predicted
 		else:
-			self.preenrich(context, event)
+			self.enrich(context, event, None)
 
 		return event
 

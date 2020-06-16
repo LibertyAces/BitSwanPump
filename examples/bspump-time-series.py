@@ -6,6 +6,8 @@ import bspump.common
 import bspump.file
 import bspump.trigger
 import bspump.analyzer
+import bspump.model
+import bspump.timeseries
 
 import numpy as np
 import datetime
@@ -35,28 +37,31 @@ class MyPipeline(bspump.Pipeline):
 		model = MyLSTMModel(self, id='MyModel', config={'path_model': 'examples/timeseries/my_model.h5', 
 												'path_parameters': 'examples/timeseries/my_parameters.json'})
 		self.build(
+			# bspump.file.FileCSVSource(app, self, config={
+			# 	'path':'examples/timeseries/data.csv'
+			# }).on(bspump.trigger.PubSubTrigger(app, message_types='go!')),
 			bspump.file.FileCSVSource(app, self, config={
 				'path':'examples/timeseries/data.csv'
-			}).on(bspump.trigger.PubSubTrigger(app, message_type='go!')),
+			}).on(bspump.trigger.OpportunisticTrigger(app)),
 			TimestampEnricher(app, self),
 			MyTimeSeriesPredictor(app, self, model),
 			bspump.common.PPrintSink(app, self)
 		)
 
 
-class TimeStampEnricher(bspump.Processor):
+class TimestampEnricher(bspump.Processor):
 	def process(self, context, event):
 		time_string = event['Timestamp']
 		timestamp = datetime.datetime.strptime(time_string, '%Y-%m-%d %H:%M')
-		event['@timestamp'] = timestamp
+		event['@timestamp'] = int(timestamp.timestamp())
 		return event
 
 
 class MyTimeSeriesPredictor(bspump.timeseries.TimeSeriesPredictor):
-	def __init__(self, app, model, resolution=3600, columns=30, id=None, config=None):
-		super().__init__(app, model, resolution=resolution, columns=columns, id=id, config=config)
-
-
+	def __init__(self, app, pipeline, model, start_time=1584108000, resolution=3600, columns=493, id=None, config=None):
+		super().__init__(app, pipeline, model, start_time=start_time, resolution=resolution, columns=columns, id=id, config=config)
+		pipeline.PubSub.subscribe("bspump.file_source.no_files!", self.analyze)
+		self.App = app
 
 	def initialize_window(self):
 		self.TimeWindow.add_row('One and only row')
@@ -65,20 +70,21 @@ class MyTimeSeriesPredictor(bspump.timeseries.TimeSeriesPredictor):
 		if (column - self.Model.WindowSize) < 0:
 			return None
 		
-		sample = self.TimeWindow.Array[0, (column - self.Model.WindowSize):column, 1]
-		if np.any(sample == 0): # not ready
-			return None
+		sample = self.TimeWindow.Array[0, (column - self.Model.WindowSize):column, :]
+		# if np.any(sample[:, 1] == 0): # not ready
+		# 	return None
 
-		return sample
+		return sample[:, 0]
 
 
 	def evaluate(self, context, event):
 		timestamp = event['@timestamp']
 		column = self.TimeWindow.get_column(timestamp)
 		if column is None:
+			print("why?")
 			return None, None
 		
-		value = event['Count']
+		value = int(event['Count'])
 		self.TimeWindow.Array[0, column, 0] = value
 		self.TimeWindow.Array[0, column, 1] += 1
 
@@ -88,26 +94,33 @@ class MyTimeSeriesPredictor(bspump.timeseries.TimeSeriesPredictor):
 
 	def alarm(self):
 		error = tf.keras.metrics.mean_absolute_error(self.TimeWindow.Array[0, :, 0], self.TimeWindow.Array[0, :, 2]).numpy()
-		print(error)
+		print('mean absolute error', error)
 		
 
-	def analyze(self):
-		# TODO export predicted
-		pass
+	async def analyze(self, message_type):
+		print("Analyzing...")
+		self.alarm()
+		predicted = self.TimeWindow.Array[0, :, 2].tolist()
+		with open("examples/timeseries/exported.json", "w") as f:
+			json.dump({'predicted': predicted}, f)
+		
+		print("Done!")
+		self.App.stop()
 
+# TODO: test all
+# TODO: why none in the end
 
-
-class MyLSTSMModel(bspump.model.Model):
+class MyLSTMModel(bspump.model.Model):
 
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
-		self.TrainedModel = self.load_model_from_file()
-		self.Parameters = self.load_parameters_from_file()
+		self.load_model_from_file()
+		self.load_parameters_from_file()
 		self.WindowSize = self.Parameters['window_size']
 
 
 	def load_model_from_file(self):
-		self.TrainedModel = tf.keras.models.load_model(self.Path)
+		self.TrainedModel = tf.keras.models.load_model(self.PathModel)
 
 
 	def transform(self, sample):
@@ -126,4 +139,6 @@ class MyLSTSMModel(bspump.model.Model):
 
 if __name__ == '__main__':
 	app = MyApplication()
+	app.PubSub.publish("go!")
 	app.run()
+

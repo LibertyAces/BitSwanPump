@@ -13,7 +13,7 @@ L = logging.getLogger(__name__)
 
 class Model(abc.ABC, asab.ConfigObject):
 	'''
-		Generic `Model` object.
+		Generic `Model` object. 
 
 	'''
 
