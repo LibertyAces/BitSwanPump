@@ -37,9 +37,6 @@ class MyPipeline(bspump.Pipeline):
 		model = MyLSTMModel(self, id='MyModel', config={'path_model': 'examples/timeseries/my_model.h5', 
 												'path_parameters': 'examples/timeseries/my_parameters.json'})
 		self.build(
-			# bspump.file.FileCSVSource(app, self, config={
-			# 	'path':'examples/timeseries/data.csv'
-			# }).on(bspump.trigger.PubSubTrigger(app, message_types='go!')),
 			bspump.file.FileCSVSource(app, self, config={
 				'path':'examples/timeseries/data.csv'
 			}).on(bspump.trigger.OpportunisticTrigger(app)),
@@ -70,45 +67,46 @@ class MyTimeSeriesPredictor(bspump.timeseries.TimeSeriesPredictor):
 		if (column - self.Model.WindowSize) < 0:
 			return None
 		
-		sample = self.TimeWindow.Array[0, (column - self.Model.WindowSize):column, :]
-		# if np.any(sample[:, 1] == 0): # not ready
+		sample = self.TimeWindow.Array[0, (column - self.Model.WindowSize):column]
+		# if np.any(sample['count'] == 0): # not ready
 		# 	return None
 
-		return sample[:, 0]
+		return sample['value']
 
 
 	def evaluate(self, context, event):
 		timestamp = event['@timestamp']
 		column = self.TimeWindow.get_column(timestamp)
 		if column is None:
-			print("why?")
 			return None, None
 		
 		value = int(event['Count'])
-		self.TimeWindow.Array[0, column, 0] = value
-		self.TimeWindow.Array[0, column, 1] += 1
+		self.TimeWindow.Array[0, column]['value'] = value
+		self.TimeWindow.Array[0, column]['count'] += 1
 
 		sample = self.get_sample(column)
 		return sample, column
 
 
+	def assign(self, value, column):
+		self.TimeWindow.Array[0, column]['predicted'] = value
+	
+
 	def alarm(self):
-		error = tf.keras.metrics.mean_absolute_error(self.TimeWindow.Array[0, :, 0], self.TimeWindow.Array[0, :, 2]).numpy()
+		error = tf.keras.metrics.mean_absolute_error(self.TimeWindow.Array[0, :]['value'], self.TimeWindow.Array[0, :]['predicted']).numpy()
 		print('mean absolute error', error)
 		
 
 	async def analyze(self, message_type):
 		print("Analyzing...")
 		self.alarm()
-		predicted = self.TimeWindow.Array[0, :, 2].tolist()
+		predicted = self.TimeWindow.Array[0, :]['predicted'].tolist()
 		with open("examples/timeseries/exported.json", "w") as f:
 			json.dump({'predicted': predicted}, f)
 		
 		print("Done!")
 		self.App.stop()
 
-# TODO: test all
-# TODO: why none in the end
 
 class MyLSTMModel(bspump.model.Model):
 
