@@ -23,8 +23,11 @@ class ProcessorBase(abc.ABC, asab.ConfigObject):
 	def construct(cls, app, pipeline, definition: dict):
 		newid = definition.get('id')
 		config = definition.get('config')
-		return cls(app, pipeline, id=newid, config=config)
-
+		args = definition.get('args')
+		if args is not None:
+			return cls(app, pipeline, id=newid, config=config, **args)
+		else:
+			return cls(app, pipeline, id=newid, config=config)
 
 
 	@abc.abstractmethod

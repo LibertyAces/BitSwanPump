@@ -1,5 +1,4 @@
 import logging
-import time
 
 import bspump
 import bspump.common
@@ -18,8 +17,8 @@ L = logging.getLogger(__name__)
 
 """
 
-	This is an example of encrypting JSON data and enriching them by hash 
-	which has been made by IntegrityEnricherProcessor. JSON data are
+	This is an example of encrypting JSON data from ElasticSearch and enriching them by hash 
+	which has been made by IntegrityEnricher. JSON data are
 	then uploaded to ElasticSearch.
 
 
@@ -30,10 +29,15 @@ L = logging.getLogger(__name__)
 	[connection:ESConnection]
 	url=http://localhost:9200/
 
+	# ElasticSearch source
+
+	[pipeline:SamplePipeline:ElasticSearchSource]
+	index=bs
+
 	# ElasticSearch sink
 
 	[pipeline:SamplePipeline:ElasticSearchSink]
-	index_prefix=bs_
+	index_prefix=bs_hashed
 
 """
 
@@ -42,26 +46,14 @@ class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
-		upper_bound = int(time.time())
-		lower_bound = upper_bound - 100500
 		self.build(
-			bspump.file.FileLineSource(app, self, config={
-				'path': './data/sampledata.json',
-				'post': 'noop',
-			}).on(bspump.trigger.RunOnceTrigger(app)),
-			bspump.common.JsonBytesToDictParser(app, self),
-			bspump.random.RandomEnricher(app, self, config={
-				'field': '@timestamp',
-				'lower_bound': lower_bound,
-				'upper_bound': upper_bound
-			}),
-			bspump.integrity.IntegrityEnricherProcessor(app, self, 
-				config={'key_path': './data/test_ec_key',
-						'algorithm': 'HS512',
-				}),
+			bspump.elasticsearch.ElasticSearchSource(
+				app, self, "ESConnection"
+			).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
+			bspump.integrity.IntegrityEnricher(app, self),
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
 		)
-		
+
 
 if __name__ == '__main__':
 	app = bspump.BSPumpApplication()
@@ -76,5 +68,7 @@ if __name__ == '__main__':
 	# Construct and register Pipeline
 	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
+
+	pl.PubSub.publish("go!")
 
 	app.run()

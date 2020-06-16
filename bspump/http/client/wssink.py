@@ -11,13 +11,17 @@ class HTTPClientWebSocketSink(Sink):
 
 	ConfigDefaults = {
 		'url': 'https://localhost:8081/',
+		"output_queue_max_size": 100,
 	}
 
 	def __init__(self, app, pipeline, ssl=None, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
 
 		self.Queue = asyncio.Queue()
-		self.QueueMaxSize = 10
+
+		self.QueueMaxSize = int(self.Config['output_queue_max_size'])
+		assert (self.QueueMaxSize >= 1)
+
 		self.SSL = ssl
 		self.WebSocket = None
 		self.Exiting = False
@@ -92,7 +96,7 @@ class HTTPClientWebSocketSink(Sink):
 
 			# Unthrottle if needed
 			if self.Queue.qsize() == (self.QueueMaxSize - 1):
-				self.Pipeline.throttle(self.Queue, True)
+				self.Pipeline.throttle(self.Queue, False)
 
 			if isinstance(event, (bytes, bytearray, memoryview)):
 				await ws.send_bytes(event)

@@ -70,7 +70,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self.Sources = []
 		self.Processors = [[]]  # List of lists of processors, the depth is increased by a Generator object
-		self._source_coros = []  # List of source main() coroutines
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
@@ -180,7 +179,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				L.warning("Error on a pipeline is already set!")
 
 			self._error = (context, event, exc, self.App.time())
-			L.warning("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
+			L.exception("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
 
 			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
 			self._evaluate_ready()
@@ -425,6 +424,21 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			processor.set_depth(len(self.Processors) - 1)
 			self.Processors.append([])
 
+		self._post_add_processor(processor)
+
+
+	def remove_processor(self, processor_id):
+		for depth in self.Processors:
+			for idx, processor in enumerate(depth):
+				if processor.Id != processor_id:
+					continue
+				del depth[idx]
+				del self.ProfilerCounter[processor.Id]
+				if isinstance(processor, Analyzer):
+					del self.ProfilerCounter['analyzer_' + processor.Id]
+				return
+		raise KeyError("Cannot find processor '{}'".format(processor_id))
+
 
 	def insert_before(self, id, processor):
 		"""
@@ -436,6 +450,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			for idx, _processor in enumerate(processors):
 				if _processor.Id == id:
 					processors.insert(idx, processor)
+					self._post_add_processor(processor)
 					return True
 		return False
 
@@ -450,33 +465,36 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			for idx, _processor in enumerate(processors):
 				if _processor.Id == id:
 					processors.insert(idx + 1, processor)
+					self._post_add_processor(processor)
 					return True
 		return False
 
 
-	def build(self, source, *processors):
-		self.set_source(source)
-		for processor in processors:
-			self.append_processor(processor)
-			self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
+	def _post_add_processor(self, processor):
+		self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
+			'bspump.pipeline.profiler',
+			tags={
+				'processor': processor.Id,
+				'pipeline': self.Id,
+			},
+			init_values={'duration': 0.0, 'run': 0},
+			reset=self.ResetProfiler,
+		)
+		if isinstance(processor, Analyzer):
+			self.ProfilerCounter['analyzer_' + processor.Id] = self.MetricsService.create_counter(
 				'bspump.pipeline.profiler',
 				tags={
-					'processor': processor.Id,
+					'analyzer': processor.Id,
 					'pipeline': self.Id,
 				},
 				init_values={'duration': 0.0, 'run': 0},
 				reset=self.ResetProfiler,
 			)
-			if isinstance(processor, Analyzer):
-				self.ProfilerCounter['analyzer_' + processor.Id] = self.MetricsService.create_counter(
-					'bspump.pipeline.profiler',
-					tags={
-						'analyzer': processor.Id,
-						'pipeline': self.Id,
-					},
-					init_values={'duration': 0.0, 'run': 0},
-					reset=self.ResetProfiler,
-				)
+
+	def build(self, source, *processors):
+		self.set_source(source)
+		for processor in processors:
+			self.append_processor(processor)
 
 
 	def iter_processors(self):
@@ -486,6 +504,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		for processors in self.Processors:
 			for processor in processors:
 				yield processor
+
 
 	# Locate  ...
 

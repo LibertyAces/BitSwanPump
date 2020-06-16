@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 import bspump
-import bspump.analyzer
+import bspump.matrix
 import bspump.unittest
 
 
@@ -14,7 +14,7 @@ class TestSessionMatrix(bspump.unittest.TestCase):
 			('f1', 'U20'),
 			('f2', 'i8'),
 		]
-		matrix = bspump.analyzer.SessionMatrix(app=self.App, dtype=dtype)
+		matrix = bspump.matrix.SessionMatrix(app=self.App, dtype=dtype)
 		n = 100
 		for i in range(n):
 			name = "id_" + str(i)
@@ -35,7 +35,7 @@ class TestSessionMatrix(bspump.unittest.TestCase):
 			('f3', 'f8'),
 			('f4', 'U30')
 		]
-		matrix = bspump.analyzer.SessionMatrix(app=self.App, dtype=dtype)
+		matrix = bspump.matrix.SessionMatrix(app=self.App, dtype=dtype)
 		index = matrix.add_row("abc")
 		event = {
 			'id': 'abc',
@@ -78,7 +78,7 @@ class TestSessionMatrix(bspump.unittest.TestCase):
 			('f0', 'U3'),
 			('f1', 'U8'),
 		]
-		matrix = bspump.analyzer.SessionMatrix(app=self.App, dtype=dtype, config={'primary_name':'event_id'})
+		matrix = bspump.matrix.SessionMatrix(app=self.App, dtype=dtype, config={'primary_name':'event_id'})
 		event_id = 'abc'
 		index = matrix.add_row(event_id)
 		matrix.Array[index]['f0'] = 'aaa'

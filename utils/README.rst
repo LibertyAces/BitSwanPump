@@ -70,6 +70,31 @@ bskibana
     --silent, -s          Don't print anything
 
 
+bsintegrity
+^^^^^^^^^^^
+
+::
+
+  bsintegrity [-h] {check} ...
+
+  Manage hashed data from ElasticSearch
+
+    Example of use:
+
+    bsintegrity check http://localhost:9200 index-001 ../path/to/your_ec_key HS256 20 1
+
+
+  positional arguments:
+    {check}
+                          commands
+      check               Check the integrity of hashed data from ElasticSearch
+
+
+  optional arguments:
+    -h, --help            show this help message and exit
+
+
+
 Licence
 -------
 

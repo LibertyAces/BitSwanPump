@@ -1,8 +1,10 @@
-import bspump
 import logging
-# The library is called pyjwt when installing package via pip (pip install pyjwt)
-import jwt
 
+import secrets
+import hashlib
+import base64
+
+from ..abc.processor import Processor
 
 ###
 
@@ -11,63 +13,60 @@ L = logging.getLogger(__name__)
 ###
 
 
-class IntegrityEnricherProcessor(bspump.Processor):
+class IntegrityEnricher(Processor):
+	"""
+	IntegrityEnricher is a enricher processor, which enriches JSON data
+	by hashed events.
 
-	'''
-	IntegrityEnricherProcessor is a enricher processor, which enriches JSON data
-	by hashed events. Data are encoded by JSON Web Tokens standards.
-
-...
-
-	Supported algorithms for cryptographic signing, default is HS256
-
-
-	HS256 - HMAC using SHA-256 hash algorithm (default)
-	HS384 - HMAC using SHA-384 hash algorithm
-	HS512 - HMAC using SHA-512 hash algorithm
-	ES256 - ECDSA signature algorithm using SHA-256 hash algorithm
-	ES384 - ECDSA signature algorithm using SHA-384 hash algorithm
-	ES512 - ECDSA signature algorithm using SHA-512 hash algorithm
-	RS256 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-256 hash algorithm
-	RS384 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-384 hash algorithm
-	RS512 - RSASSA-PKCS1-v1_5 signature algorithm using SHA-512 hash algorithm
-	PS256 - RSASSA-PSS signature using SHA-256 and MGF1 padding with SHA-256
-	PS384 - RSASSA-PSS signature using SHA-384 and MGF1 padding with SHA-384
-	PS512 - RSASSA-PSS signature using SHA-512 and MGF1 padding with SHA-512
-	'''
+	Supported algorithms for cryptographic signing, default is SHA256
+	'SHA256', 'dsaEncryption', 'MD4', 'sha256', 'sha3_512', 'DSA', 'sha3_256', 'sha3_384', 'SHA512', 'md5', 'SHA224',
+	'MD5', 'sha', 'whirlpool', 'ripemd160', 'SHA384', 'ecdsa-with-SHA1', 'RIPEMD160', 'sha1', 'blake2s', 'shake_128',
+	'blake2b', 'sha512', 'sha224', 'md4', 'SHA', 'dsaWithSHA', 'sha384', 'sha3_224', 'shake_256', 'DSA-SHA', 'SHA1'
+	"""
 
 	ConfigDefaults = {
-		'key_path': '',
-		'algorithm': 'HS256',
+		'algorithm': 'SHA256',
+		'hash_key': '_id',
+		'prev_hash_key': '_prev_id',
+		'salt_length': 3,
 	}
-
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
-		self.KeyPath = self.Config['key_path']
 		self.Algorithm = self.Config['algorithm']
-
-		# Check if the key path is set
-		self.JWTPrivateKey = None
-		if self.KeyPath == '' or self.KeyPath is None:
-			self.JWTPrivateKey = None
-		else:
-			with open(self.KeyPath, 'r') as file:
-				self.JWTPrivateKey = file.read()
-
-	# Encoding event and enriching JSON with the encoded event
-	def hash_event(self, context, event):
-		# Check on loaded key
-		if self.JWTPrivateKey is None:
-			L.warning('Key has not been loaded!')
-			return
-
-		# Check if previous hash present in JSON and if so, delete it
-		event.pop("hash", None)
-		# Hash event
-		event["hash"] = jwt.encode(event, self.JWTPrivateKey, algorithm=self.Algorithm).decode("utf-8")
-
+		self.HashKey = self.Config['hash_key']
+		self.PrevHashKey = self.Config['prev_hash_key']
+		self.SaltLength = int(self.Config['salt_length'])
+		self.PreviousHash = None
 
 	def process(self, context, event):
-		self.hash_event(context, event)
+
+		# Check that the event is a dictionary
+		assert isinstance(event, dict)
+
+		# Check if hash / previous hash already present in event and if so, delete it from event
+		event.pop(self.HashKey, None)
+
+		# Salt event - to ensure that events are not going to be the same after hash
+		event["_s"] = secrets.token_urlsafe(self.SaltLength)
+
+		# Set previous hash
+		if self.PreviousHash is not None:
+			event[self.PrevHashKey] = self.PreviousHash
+		else:
+			event.pop(self.PrevHashKey, None)
+
+		# Hash event using key, value, key, value ... sequence
+		_hash = hashlib.new(self.Algorithm)
+		for key in sorted(event.keys()):
+			_hash.update(str(key).encode("ascii"))
+			_hash.update(str(event[key]).encode("ascii"))
+		hash_base64 = base64.b64encode(_hash.digest()).decode("ascii")
+
+		# Store the hash as base64 string
+		event[self.HashKey] = hash_base64
+
+		# Actual hash will become previous hash in the next iteration
+		self.PreviousHash = hash_base64
+
 		return event

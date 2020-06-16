@@ -1,0 +1,226 @@
+import argparse
+import os
+import json
+import re
+import pprint
+
+import datetime
+import time
+
+import requests
+
+import hashlib
+import base64
+
+'''
+
+	BS integrity
+
+	The main role of integrity check is to find whether the actual hashed event consist the same
+	information as it is stored in the previous event in its previous hash. The output of bsintegrity is 
+	the number of items on which has / has not been integrity approved. Items where integrity has not been
+	approved also returns the set of actual and previous hash.
+
+	Below is the brief description of functionality.
+
+	Integrity checker:
+
+	1] Take one ElasticSearch index - for which the integrity is going to be analyzed
+
+	2] Check total count of index items
+
+	3] Request ElasticSearch for all items
+		- by series of requests where every iteration has "n" items which is defined by
+		the user (items_size). Number of iterations is set by the count of items in index 
+		and by items_size
+
+	4] For every item
+		a] checks its signature (hash) with the items
+		b] Integrity enricher add to the event the set of actual hash and previous hash
+		   Previous hash is the hash of the previous entry
+		   bspump.integrity.integrityenricher
+
+	5] At the end of the iteration, there will be a set of hash pairs which could be examined
+	e.g. from the chart perspective
+
+'''
+
+class Integrity:
+
+	def __init__(self):
+		# Hit and Miss count to see how many items (objects) were checked and with hit or miss result
+		self.HitCount = 0
+		self.ChainMissCount = 0
+		self.EventMissCount = 0
+		# Hashes where integrity has not been approved are stored here and eventually printed at the end of the process
+		self.HashSet = {}
+
+
+	# Return count of all items for given index
+	def get_items_count_in_index(self, es_url, index_name):
+		url = es_url + '/_cat/count/{}?format=JSON'.format(index_name)
+		r = requests.get(url)
+		if r.status_code != 200:
+			print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
+			return None
+		else:
+			msg = r.json()
+			return int(msg[0]['count'])
+
+
+	# Progress bar
+	def progress_bar(self, iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
+		percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+		filledLength = int(length * iteration // total)
+		bar = fill * filledLength + '-' * (length - filledLength)
+		print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
+		# Print new line after the end of iteration
+		if iteration == total:
+			print()
+
+	# Fetch data from ES
+	def fetch_items(self, URL, index, items_size, scroll, algorithm, prev_hash_key):
+		# Call method returning count of items in index
+		count = self.get_items_count_in_index(URL, index)
+		scroll_id = None
+		print('Fetching data from ElasticSearch')
+		self.progress_bar(0, count, prefix='Download:', suffix='Complete', length=50)
+		downloadbar_counter = 0
+		while True:
+			# Make cursor to ES and get data by items size
+			if scroll_id is None:
+				url = URL + '/{}/_search?scroll={}m'.format(index, scroll)
+				query = {"size":items_size}
+			else:
+				url = URL + "/_search/scroll"
+				query = {"scroll":"{}m".format(scroll),"scroll_id": scroll_id}
+
+			r = requests.post(url, json=query)
+			if r.status_code != 200:
+				print("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(r.status_code, url, r.text))
+				break
+
+			msg = r.json()
+
+			scroll_id = msg['_scroll_id']
+
+			hits = msg['hits']['hits']
+			if len(hits) == 0:
+				break
+
+			# Store sets of actual and previous hash to global dictionary
+			for JSONobject in hits:
+				downloadbar_counter += 1
+				event = JSONobject["_source"]
+				self.HashSet[event.get(prev_hash_key)] = JSONobject["_id"]
+
+				# Check the data integrity inside the event/document
+				_hash = hashlib.new(algorithm)
+				for key in sorted(event.keys()):
+					_hash.update(str(key).encode("ascii"))
+					_hash.update(str(event[key]).encode("ascii"))
+				hash_base64 = base64.b64encode(_hash.digest()).decode("ascii")
+				if hash_base64 != JSONobject["_id"]:
+					self.EventMissCount += 1
+
+			# Update Progress Bar
+			self.progress_bar(downloadbar_counter, count, prefix='Download:', suffix='Complete', length=50)
+ 
+
+	# Check for integrity
+	def COMMAND_check(self, URL, index, items_size, scroll, algorithm, prev_hash_key):
+		# Initialize scroll number
+		if scroll == '' or scroll is None:
+			scroll = "1"
+		# Initialize items size
+		if items_size == '' or items_size is None:
+			items_size = 100
+		# Use default hash algorithm
+		if algorithm == '' or algorithm is None:
+			algorithm = "SHA256"
+		# Initialize hash and previous hash names
+		if prev_hash_key == '' or prev_hash_key is None:
+			prev_hash_key = "_prev_id"
+
+		# Call method which get the data from ES
+		self.fetch_items(URL, index, items_size, scroll, algorithm, prev_hash_key)
+		# Set inital values for progress bar
+		progressbar_counter = 0
+		progressbar_len = len(self.HashSet)
+		print('Checking for integrity')
+		self.progress_bar(0, progressbar_len, prefix='Progress:', suffix='Complete', length=50)
+
+		# Remove initial previous hash (it is set to None in enricher)
+		actual_hash = self.HashSet.pop(None, None)
+		self.HitCount += 1
+		progressbar_counter += 1
+		for i in range(len(self.HashSet)):
+			previous_hash = self.HashSet.pop(actual_hash, None)
+			if previous_hash is not None:
+				self.HitCount += 1
+			else:
+				self.ChainMissCount += 1
+			actual_hash = previous_hash
+			progressbar_counter += 1
+			# Update Progress Bar
+			self.progress_bar(progressbar_counter, progressbar_len, prefix='Progress:', suffix='Complete', length=50)
+
+		# Check whether integrity has been ensured
+
+		print('\n')
+		if self.EventMissCount > 0:
+			print('Data integrity inside events has not been ensured.')
+			print('Number of items where integrity has not been ensured: {}\n'.format(str(self.EventMissCount)))
+
+		if len(self.HashSet) > 0:
+			print(self.HashSet)
+			print('\n')
+			print('Chain integrity has not been ensured.')
+			print('Number of items where integrity has not been ensured: {}\n'.format(str(self.ChainMissCount)))
+
+		if len(self.HashSet) == 0 and self.EventMissCount == 0:
+			print('Integrity has been ensured.')
+			print('Number of items where integrity has been ensured: {}\n'.format(str(self.HitCount)))
+
+
+def parse_cmdline():
+
+	# Parse args
+	parser = argparse.ArgumentParser(
+		formatter_class=argparse.RawDescriptionHelpFormatter,
+		description='''
+		Check integrity on ElasticSearch hashes.\n
+		-----------------------------------------------------
+		''')
+
+	subparsers = parser.add_subparsers(help='commands')
+
+	# An check command
+	check_parser = subparsers.add_parser('check', help='check on integrity of hashed events')
+	check_parser.add_argument('URL', action='store', help='a ElasticSearch URL, e.g. http://localhost:9200')
+	check_parser.add_argument('index', action='store', help='a ElasticSearch index, e.g. my_index-01')
+	check_parser.add_argument('--items_size', action='store', help='a Items to be loaded from ES in one iteration, e.g. --items_size=50; Default items_size=100')
+	check_parser.add_argument('--scroll', action='store', help='a ElasticSearch scroll, e.g. --scroll=2; Default scroll=1')
+	check_parser.add_argument('--algorithm', action='store', help='a Previous hash key name, e.g. --algorithm=SHA256')
+	check_parser.add_argument('--prev_hash_key', action='store', help='a Previous hash key name, e.g. --prev_hash_key=_prev_id')
+	check_parser.set_defaults(COMMAND='check')
+
+	return parser.parse_args()
+
+
+def main():
+	# Get arguments
+	args = parse_cmdline()
+
+	# Call the command
+	if 'COMMAND' not in args:
+		print("Please select a command: check")
+		print("For more information see --help")
+		return 1
+
+	if args.COMMAND == 'check':
+		return Integrity().COMMAND_check(args.URL, args.index, args.items_size, args.scroll, args.algorithm, args.prev_hash_key)
+
+
+if __name__ == '__main__':
+	main()

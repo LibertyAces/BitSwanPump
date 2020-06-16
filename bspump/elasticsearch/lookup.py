@@ -113,15 +113,18 @@ The ElasticSearchLookup can be then located and used inside a custom enricher:
 		"""
 		Obtain the value from lookup asynchronously.
 		"""
-
+		value = None
 		try:
 			value = self.Cache[key]
 			self.CacheCounter.add('hit', 1)
 		except KeyError:
-			value = await self._find_one(key)
-			if value is not None:
-				self.Cache[key] = value
-				self.CacheCounter.add('miss', 1)
+			try:
+				value = await self._find_one(key)
+				if value is not None:
+					self.Cache[key] = value
+					self.CacheCounter.add('miss', 1)
+			except Exception as e:
+				L.warn("There was an exception {}".format(e))
 
 		if value is None:
 			self.SuccessCounter.add('miss', 1)

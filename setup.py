@@ -71,7 +71,8 @@ setup(
 		'aiokafka>=0.5.1,<1.0',
 		'aiomysql>=0.0.20,<0.1',
 		'aiosmtplib>=1.0.5,<2.0',
-		'asab>=20.1,<21.0',
+		'aiozk>=0.0.0',
+		'asab>=19.1',
 		'fastavro>=0.21.24,<1.0',
 		'google-api-python-client>=1.7.10,<2',
 		'mongoquery>=1.3.5,<2.0',
@@ -85,6 +86,10 @@ setup(
 		# 'pyarrow>=0.13.0,<1.0',  # `pip install pyarrow` fails on Apline Linux
 		'pytz>=2019.1,<2020.0',
 		'requests>=2.21.0,<3.0',
+		'netaddr>=0.6.0,<10.0',
+		'pyyml>=0.0.0,<10.0.0',
+		'pymongo>=0.0.0,<10.0.0',
+		'pywinrm>=0.0.0',
 	],
 	scripts=[
 		'utils/bselastic',

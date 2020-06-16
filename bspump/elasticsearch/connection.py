@@ -51,14 +51,12 @@ class ElasticSearchConnection(Connection):
 		'bulk_out_max_size': 1024 * 1024,
 		'timeout': 300,
 		'allowed_bulk_response_codes': '200,201,409',
-		"allow_retry": 0,  # Allows retry of the inserted bulk, when the allowed bulk response code occurs in error
 	}
 
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
-		self._allow_retry = int(self.Config['allow_retry'])
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 
 		username = self.Config.get('username')
@@ -102,6 +100,9 @@ class ElasticSearchConnection(Connection):
 			for i in range(self._loader_per_url):
 				self._futures.append((url + '_bulk', None))
 
+		# Initialize metrics
+		metrics_service = app.get_service('asab.MetricsService')
+		self.BulkInsertReturnCodesCounter = metrics_service.create_counter("esconnection.bulkinsert.returncodes", init_values=dict())
 
 	def get_url(self):
 		return random.choice(self.node_urls)
@@ -199,9 +200,7 @@ class ElasticSearchConnection(Connection):
 						if respj.get('errors', True) is not False:
 							error_level = 0
 							for item in respj['items']:
-								if self._allow_retry != 0:
-									self._output_queue.put_nowait(bulk_out)
-								# TODO: item['index']['status']: add metrics counter for status code
+								self.BulkInsertReturnCodesCounter.add(str(item['index']['status']), 1, init_value=0)
 								if item['index']['status'] not in self.AllowedBulkResponseCodes:
 									if error_level == 0:
 										L.error("Failed to insert bulk into ElasticSearch status: {}".format(resp.status))

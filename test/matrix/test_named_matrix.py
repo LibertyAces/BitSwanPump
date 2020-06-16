@@ -15,9 +15,9 @@ class TestNamedMatrix(bspump.unittest.TestCase):
 			dtype = "int_")
 
 		matrix.zeros()
-		self.assertEqual(matrix.Array.shape, (0,))
-		self.assertEqual(len(matrix.N2IMap), 0)
-		self.assertEqual(len(matrix.I2NMap), 0)
+		self.assertEqual(matrix.Array.shape, (1,))
+		self.assertEqual(len(matrix.Index.N2IMap), 0)
+		self.assertEqual(len(matrix.Index.I2NMap), 0)
 
 
 	def test_matrix_flush(self):
@@ -32,12 +32,12 @@ class TestNamedMatrix(bspump.unittest.TestCase):
 		check_array = matrix.Array[40:100]
 
 		for i in range(0, 40):
-			matrix.close_row(i)
+			matrix.close_row(str(i))
 
 		matrix.flush()
 		self.assertEqual(matrix.Array.shape, (n - 40,))
-		self.assertEqual(len(matrix.N2IMap), n - 40)
-		self.assertEqual(len(matrix.I2NMap), n - 40)
+		self.assertEqual(len(matrix.Index.N2IMap), n - 40)
+		self.assertEqual(len(matrix.Index.I2NMap), n - 40)
 		self.assertEqual(len(check_array), len(matrix.Array))
 		for i in range(len(check_array)):
 			self.assertEqual(check_array[i], matrix.Array[i])
@@ -54,8 +54,8 @@ class TestNamedMatrix(bspump.unittest.TestCase):
 			n2i[name] = index
 			i2n[index] = name
 
-		self.assertEqual(n2i, matrix.N2IMap)
-		self.assertEqual(i2n, matrix.I2NMap)
+		self.assertEqual(n2i, matrix.Index.N2IMap)
+		self.assertEqual(i2n, matrix.Index.I2NMap)
 
 
 	def test_matrix_close_row(self):
@@ -65,10 +65,10 @@ class TestNamedMatrix(bspump.unittest.TestCase):
 			index = matrix.add_row(str(i))
 
 		for i in range(0, 5):
-			matrix.close_row(i)
-			self.assertNotIn(i, matrix.I2NMap)
+			matrix.close_row(str(i))
+			self.assertNotIn(i, matrix.Index.I2NMap)
 
-		self.assertEqual(len(matrix.I2NMap), len(matrix.N2IMap))
+		self.assertEqual(len(matrix.Index.I2NMap), len(matrix.Index.N2IMap))
 
 
 	def test_matrix_get_row_index(self):

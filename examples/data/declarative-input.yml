@@ -1,0 +1,25 @@
+--- !DICT
+with: !EVENT
+set:
+  seen: True
+  when: !NOW
+  rotten_potatoes:
+    !ITEM EVENT potatoes
+  count:
+    !ADD
+    - !ITEM EVENT potatoes
+    - !ITEM
+      with: !EVENT
+      item: carrots
+      default: 0
+    - !IF
+      test:
+        !GT
+        - !ITEM
+          with: !EVENT
+          item: radishes
+          default: 0
+        - 2
+      then: !!float 10
+      else: 0
+    - 20
