@@ -41,6 +41,7 @@ class WinRMSource(TriggerSource):
 
 		"command": "wevtutil qe system /c:500 /rd:true",  # The user must be in "Event Log Readers group"
 		"duplicity_check": True,  # Check duplicities
+		"duplicity_reverse_order": True,  # Works with "wevtutil qe system /c:500 /rd:true"
 		"encoding": "utf-8",  # Encoding of the output
 
 		"last_value_storage": "/data/winrm_last_value_storage.json",  # Last value storage
@@ -80,6 +81,7 @@ class WinRMSource(TriggerSource):
 
 		# Duplicities
 		self.DuplicityCheck = self.Config.getboolean("duplicity_check")
+		self.DuplicityReverseOrder = self.Config.getboolean("duplicity_reverse_order")
 
 		# Load last value from file storage
 		self.LastValue = None
@@ -126,10 +128,16 @@ class WinRMSource(TriggerSource):
 					if self.LastValue is not None:
 						try:
 							index = self.rindex(lines, self.LastValue)
-							if index == (len(lines) - 1):
-								lines = self.EmptyList
+							if not self.DuplicityReverseOrder:
+								if index == (len(lines) - 1):
+									lines = self.EmptyList
+								else:
+									lines = lines[(index + 1):]
 							else:
-								lines = lines[(index + 1):]
+								if index == 0:
+									lines = self.EmptyList
+								else:
+									lines = lines[:index]
 						except ValueError:
 							pass
 
