@@ -1,7 +1,7 @@
 import logging
 
 from ..analyzer.timewindowanalyzer import TimeWindowAnalyzer
-from ..model.model import Model
+
 
 ###
 
@@ -19,13 +19,13 @@ class TimeSeriesPredictor(TimeWindowAnalyzer):
 		'predicted_attribute': 'predicted'
 	}
 
-	def __init__(self, app, pipeline, model, matrix_id=None, dtype=[('value', 'f8'), ('predicted', 'f8'), ('count', 'i8')], 
-						columns=15, analyze_on_clock=False, resolution=60, start_time=None, clock_driven=False,
-						id=None, config=None):
+	def __init__(self, app, pipeline, model, matrix_id=None, dtype=[('value', 'f8'), ('predicted', 'f8'), ('count', 'i8')],
+									columns=15, analyze_on_clock=False, resolution=60, start_time=None, clock_driven=False,
+									id=None, config=None):
 
 		super().__init__(app, pipeline, matrix_id=matrix_id, dtype=dtype, columns=columns,
-							analyze_on_clock=analyze_on_clock, resolution=resolution, start_time=start_time,
-							clock_driven=clock_driven, id=id, config=config)
+										analyze_on_clock=analyze_on_clock, resolution=resolution, start_time=start_time,
+										clock_driven=clock_driven, id=id, config=config)
 
 		self.Model = model
 		self.PredictedAttribute = self.Config['predicted_attribute']
