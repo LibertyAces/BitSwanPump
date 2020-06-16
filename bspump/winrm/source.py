@@ -39,7 +39,7 @@ class WinRMSource(TriggerSource):
 		"username": "",  # <DOMAIN>\<USER>
 		"password": "",
 
-		"command": "wevtutil qe system /c:500 /rd:false",  # The user must be in "Event Log Readers group"
+		"command": "wevtutil qe system /c:500 /rd:true",  # The user must be in "Event Log Readers group"
 		"duplicity_check": True,  # Check duplicities
 		"encoding": "utf-8",  # Encoding of the output
 
