@@ -7,7 +7,11 @@ import json
 import urllib3
 import urllib3.connectionpool
 
+import asyncio
+
 import winrm
+from winrm.exceptions import WinRMOperationTimeoutError
+
 
 from ..abc.source import TriggerSource
 
@@ -40,6 +44,7 @@ class WinRMSource(TriggerSource):
 		"encoding": "utf-8",  # Encoding of the output
 
 		"last_value_storage": "/data/winrm_last_value_storage.json",  # Last value storage
+		"sleep": 0.01  # seconds
 	}
 
 	EmptyList = []
@@ -54,7 +59,7 @@ class WinRMSource(TriggerSource):
 		urllib3.connectionpool.log.addFilter(WindowsSuppressFilter())
 
 		# Create connection protocol
-		self.Protocol = winrm.protocol.Protocol(
+		self.Protocol = WinRMProtocol(
 			endpoint=self.Config["endpoint"],
 			transport=self.Config["transport"],
 			server_cert_validation=self.Config["server_cert_validation"],
@@ -71,6 +76,7 @@ class WinRMSource(TriggerSource):
 		# Obtain command and encoding from the config
 		self.Command = self.Config["command"]
 		self.Encoding = self.Config["encoding"]
+		self.Sleep = float(self.Config["sleep"])
 
 		# Duplicities
 		self.DuplicityCheck = self.Config.getboolean("duplicity_check")
@@ -99,38 +105,44 @@ class WinRMSource(TriggerSource):
 		command_id = self.Protocol.run_command(self.ShellId, self.Command)
 
 		# Obtain the output from the command
-		std_out, std_err, status_code = self.Protocol.get_command_output(self.ShellId, command_id)
+		command_done = False
+		while not command_done:
 
-		# Log errors
-		if std_err is not None and len(std_err) > 0:
-			L.error("Error occurred in WinRMSource for command '{}' with status code '{}': '{}'".format(
-				self.Command, status_code, std_err
-			))
+			std_out, std_err, status_code, command_done = self.Protocol.get_command_output_nowait(self.ShellId, command_id)
 
-		# Process the output
-		if std_out is not None and len(std_out) > 0:
-			output = std_out.decode(self.Encoding)
-			lines = output.replace("\r", "").split("\n")
+			# Log errors
+			if std_err is not None and len(std_err) > 0:
+				L.error("Error occurred in WinRMSource for command '{}' with status code '{}': '{}'".format(
+					self.Command, status_code, std_err
+				))
 
-			# Check duplicities
-			if self.DuplicityCheck:
-				if self.LastValue is not None:
-					try:
-						index = self.rindex(lines, self.LastValue)
-						if index == (len(lines) - 1):
-							lines = self.EmptyList
-						else:
-							lines = lines[(index + 1):]
-					except ValueError:
-						pass
+			# Process the output
+			if std_out is not None and len(std_out) > 0:
+				output = std_out.decode(self.Encoding)
+				lines = output.replace("\r", "").split("\n")
 
-			# Put the output of the command to the pipeline
-			for line in lines:
-				if len(line) > 0:
-					await self.process(line, context={
-						"status_code": status_code
-					})
-					self.LastValue = line
+				# Check duplicities
+				if self.DuplicityCheck:
+					if self.LastValue is not None:
+						try:
+							index = self.rindex(lines, self.LastValue)
+							if index == (len(lines) - 1):
+								lines = self.EmptyList
+							else:
+								lines = lines[(index + 1):]
+						except ValueError:
+							pass
+
+				# Put the output of the command to the pipeline
+				for line in lines:
+					if len(line) > 0:
+						await self.process(line, context={
+							"status_code": status_code
+						})
+						self.LastValue = line
+
+				# Sleep for some time
+				await asyncio.sleep(self.Sleep)
 
 		# Cleanup the command
 		self.Protocol.cleanup_command(self.ShellId, command_id)
@@ -152,3 +164,23 @@ class WindowsSuppressFilter(logging.Filter):
 
 	def filter(self, record):
 		return 'wsman' not in record.getMessage()
+
+
+class WinRMProtocol(winrm.protocol.Protocol):
+	"""
+	Custom implementation of get command output method.
+	"""
+
+	def get_command_output_nowait(self, shell_id, command_id):
+		stdout_buffer, stderr_buffer = [], []
+		command_done = False
+		return_code = None
+		try:
+			stdout, stderr, return_code, command_done = \
+				self._raw_get_command_output(shell_id, command_id)
+			stdout_buffer.append(stdout)
+			stderr_buffer.append(stderr)
+		except WinRMOperationTimeoutError:
+			# this is an expected error when waiting for a long-running process, just silently retry
+			pass
+		return b''.join(stdout_buffer), b''.join(stderr_buffer), return_code, command_done
