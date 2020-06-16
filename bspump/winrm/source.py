@@ -1,5 +1,6 @@
 import logging
 
+import itertools
 import os
 import json
 
@@ -115,7 +116,7 @@ class WinRMSource(TriggerSource):
 			if self.DuplicityCheck:
 				if self.LastValue is not None:
 					try:
-						index = lines.index(self.LastValue)
+						index = self.rindex(lines, self.LastValue)
 						if index == (len(lines) - 1):
 							lines = self.EmptyList
 						else:
@@ -133,6 +134,15 @@ class WinRMSource(TriggerSource):
 
 		# Cleanup the command
 		self.Protocol.cleanup_command(self.ShellId, command_id)
+
+	@staticmethod
+	def rindex(lst, item):
+		def index_ne(x):
+			return lst[x] != item
+		try:
+			return next(itertools.dropwhile(index_ne, reversed(range(len(lst)))))
+		except StopIteration:
+			raise ValueError("rindex(lst, item): item not in list")
 
 
 class WindowsSuppressFilter(logging.Filter):
