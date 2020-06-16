@@ -18,8 +18,8 @@ class Model(abc.ABC, asab.ConfigObject):
 	'''
 
 	ConfigDefaults = {
-		'path_model': '', # path to serialized model
-		'path_parameters': '', # path to serialized model
+		'path_model': '',  # path to serialized model
+		'path_parameters': '',  # path to serialized model
 	}
 
 

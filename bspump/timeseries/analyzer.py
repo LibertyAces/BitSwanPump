@@ -24,22 +24,26 @@ class TimeSeriesPredictor(TimeWindowAnalyzer):
 					id=None, config=None):
 
 		super().__init__(app, pipeline, matrix_id=matrix_id, dtype=dtype, columns=columns, 
-				analyze_on_clock=analyze_on_clock, resolution=resolution, start_time=start_time,
-				clock_driven=clock_driven, id=id, config=config)
+						analyze_on_clock=analyze_on_clock, resolution=resolution, start_time=start_time,
+						clock_driven=clock_driven, id=id, config=config)
 
 		self.Model = model
 		self.PredictedAttribute = self.Config['predicted_attribute']
 		self.initialize_window()
 
+
 	def initialize_window(self):
 		pass
+
 
 	# Override it if needed
 	def enrich(self, context, event, predicted):
 		event[self.PredictedAttribute] = predicted
 
+
 	def assign(self, *args):
 		pass
+
 
 	def process(self, context, event):
 		if self.predicate(context, event):
