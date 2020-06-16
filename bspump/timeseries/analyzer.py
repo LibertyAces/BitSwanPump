@@ -20,11 +20,10 @@ class TimeSeriesPredictor(TimeWindowAnalyzer):
 	}
 
 	def __init__(
-			self, app, pipeline, model, matrix_id=None,
-			dtype=[('value', 'f8'), ('predicted', 'f8'), ('count', 'i8')],
-			columns=15, analyze_on_clock=False, resolution=60, start_time=None,
-			clock_driven=False, id=None, config=None
-		):
+		self, app, pipeline, model, matrix_id=None,
+		dtype=[('value', 'f8'), ('predicted', 'f8'), ('count', 'i8')],
+		columns=15, analyze_on_clock=False, resolution=60, start_time=None,
+		clock_driven=False, id=None, config=None):
 
 		super().__init__(
 			app, pipeline, matrix_id=matrix_id, dtype=dtype,
