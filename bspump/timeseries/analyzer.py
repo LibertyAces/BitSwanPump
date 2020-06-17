@@ -12,6 +12,8 @@ L = logging.getLogger(__name__)
 
 class TimeSeriesPredictor(TimeWindowAnalyzer):
 	'''
+	Trained model based time window analyzer, which collects
+	data into time series and predicts certain value.
 	'''
 
 	ConfigDefaults = {
@@ -38,14 +40,23 @@ class TimeSeriesPredictor(TimeWindowAnalyzer):
 
 
 	def initialize_window(self):
+		'''
+		Specific initialization if needed.
+		'''
 		pass
 
 
 	def enrich(self, context, event, predicted):
+		'''
+		Enriches event with predicted value, override if needed.
+		'''
 		event[self.PredictedAttribute] = predicted
 
 
 	def assign(self, *args):
+		'''
+		Record predicted values into time window matrix (or anywhere) if needed.
+		'''
 		pass
 
 
@@ -67,4 +78,7 @@ class TimeSeriesPredictor(TimeWindowAnalyzer):
 
 
 	def alarm(self, *args):
+		'''
+		Compare real value and predicted and raise an alarm.
+		'''
 		pass
