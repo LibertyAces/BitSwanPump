@@ -8,7 +8,6 @@ import pymysql
 import pymysql.cursors
 import pymysql.err
 
-from asab import PubSub
 from ..abc.connection import Connection
 from .convertors import convertors
 
@@ -56,9 +55,11 @@ class MySQLConnection(Connection):
 		'db': '',
 		'connect_timeout': 10,
 		'reconnect_delay': 5.0,
-		'output_queue_max_size': 10,
-		'max_bulk_size': 2,
+		'output_queue_max_size': 100,
+		'max_bulk_size': 5,
 		'autocommit': True,
+		'connection_pool_minsize': 1,
+		'connection_pool_maxsize': 10,
 	}
 
 	RetryErrors = frozenset([1047, 1053, 1077, 1078, 1079, 1080, 2003, 2006, 2012, 2013, 1152, 1205, 1213, 1223])
@@ -69,7 +70,7 @@ class MySQLConnection(Connection):
 		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
 		self.ConnectionEvent.clear()
 
-		self.PubSub = PubSub(app)
+		self.PubSub = app.PubSub
 		self.Loop = app.Loop
 
 		self._host = self.Config['host']
@@ -84,9 +85,15 @@ class MySQLConnection(Connection):
 		self._autocommit = self.Config.getboolean('autocommit')
 
 		self._conn_future = None
+		self._conn_pool = None
+		self._conn_sync = None
 		self._connection_request = False
 		self._pause = False
 		self._throttled_by_error = False
+
+		# Size of connection pool
+		self.ConnectionPoolMinSize = self.Config["connection_pool_minsize"]
+		self.ConnectionPoolMaxSize = self.Config["connection_pool_maxsize"]
 
 		# Subscription
 		self._on_health_check('connection.open!')
@@ -99,10 +106,10 @@ class MySQLConnection(Connection):
 		self._bulks = {}  # We have a "bulk" per query
 
 
-	def _on_pause(self):
+	def _on_pause(self, event_type, connection):
 		self._pause = True
 
-	def _on_unpause(self):
+	def _on_unpause(self, event_type, connection):
 		self._pause = False
 
 
@@ -160,6 +167,15 @@ class MySQLConnection(Connection):
 
 
 	async def _async_connection(self):
+		# Erase the previous connections
+		if self._conn_pool is not None:
+			try:
+				self._conn_pool.close()
+				await self._conn_pool.wait_closed()
+			except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError):
+				pass
+			self._conn_pool = None
+
 		try:
 			async with aiomysql.create_pool(
 				host=self._host,
@@ -170,11 +186,19 @@ class MySQLConnection(Connection):
 				conv=convertors,
 				connect_timeout=self._connect_timeout,
 				autocommit=self._autocommit,
+				minsize=self.ConnectionPoolMinSize,
+				maxsize=self.ConnectionPoolMaxSize,
 				loop=self.Loop) as pool:
 
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
-				await self._loader()
+
+				# Ensures that all connections are utilized
+				loaders = []
+				for index in range(0, self.ConnectionPoolMaxSize):
+					loaders.append(asyncio.ensure_future(self._loader()))
+				await asyncio.wait(loaders, return_when=asyncio.ALL_COMPLETED)
+
 		except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError) as e:
 			if e.args[0] in self.RetryErrors:
 				L.warn("Recoverable error '{}' occurred in MySQLConnection. Retrying.".format(e.args[0]))
@@ -188,6 +212,14 @@ class MySQLConnection(Connection):
 
 
 	def _sync_connection(self):
+		# Close the connection first
+		if self._conn_sync is not None:
+			try:
+				self._conn_sync.close()
+			except (pymysql.err.InternalError, pymysql.err.ProgrammingError, pymysql.err.OperationalError):
+				pass
+			self._conn_sync = None
+
 		try:
 			connection = pymysql.connect(
 				host=self._host,
