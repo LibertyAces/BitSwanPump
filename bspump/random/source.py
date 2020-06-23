@@ -13,11 +13,15 @@ class RandomSource(TriggerSource):
 		generates n (specified in `Config` as `number`, default is 1000) events per trigger fire.
 
 		There can be 2 options of usage:
-		a) User provides `choice` as an array of values to choice randomly and assigned to field;
+		a) User provides `choice` as an array of values to choose randomly;
 		b) The random integer between `Config['lower_bound']` and `Config['upper_bound']`
+
+		If `field` from `Config` is not an empty string, the random source generates dictionary
+		event `{`field`: `generated value`}`. Otherwise it's a random number.
 	'''
 
 	ConfigDefaults = {
+		'field': '',
 		'number': 1000,
 		'lower_bound': 0,
 		'upper_bound': 1000,
@@ -34,8 +38,12 @@ class RandomSource(TriggerSource):
 		self.EventsTillIdle = int(self.Config['events_till_idle'])
 		self.EventCounter = 0
 		self.Choice = None
+		self.Field = None
 		if choice is not None:
 			self.Choice = choice
+
+		if self.Config['field'] != '':
+			self.Field = self.Config['field']
 
 
 	def generate_random(self):
@@ -43,8 +51,14 @@ class RandomSource(TriggerSource):
 			Override this method to generate differently
 		'''
 		if self.Choice is not None:
+			if self.Field is not None:
+				return {self.Field : random.choice(self.Choice)}
+			
 			return random.choice(self.Choice)
 		else:
+			if self.Field is not None:
+				return {self.Field: random.randint(self.LowerBound, self.UpperBound)}
+
 			return random.randint(self.LowerBound, self.UpperBound)
 
 
