@@ -52,8 +52,8 @@ class RandomSource(TriggerSource):
 		'''
 		if self.Choice is not None:
 			if self.Field is not None:
-				return {self.Field : random.choice(self.Choice)}
-			
+				return {self.Field: random.choice(self.Choice)}
+
 			return random.choice(self.Choice)
 		else:
 			if self.Field is not None:
