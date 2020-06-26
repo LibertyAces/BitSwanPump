@@ -90,6 +90,7 @@ setup(
 		'pyyml>=0.0.0,<10.0.0',
 		'pymongo>=0.0.0,<10.0.0',
 		'pywinrm>=0.0.0',
+		'pyaml>=0.0.0,<20.4.0'
 	],
 	scripts=[
 		'utils/bselastic',
