@@ -58,7 +58,7 @@ class DICT_PARSE(Expression):
 
 		self.Update = arg_update
 
-	
+
 	def __call__(self, context, event, *args, **kwargs):
 		value = evaluate(self.Value, context, event, *args, **kwargs)
 		ret = self.Parser(context, value)
@@ -79,4 +79,3 @@ class DICT_PARSE(Expression):
 				ret.pop(key, None)
 
 		return ret
-
