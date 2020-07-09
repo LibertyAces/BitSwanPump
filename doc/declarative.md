@@ -376,6 +376,56 @@ Short form:
 !TUPLE [first, second, third]
 ```
 
+### Parse a dictionary `!DICT.PARSE`
+
+Type: _Mapping_.
+
+```
+!DICT.PARSE
+what: ...
+type: kvs
+set: ...
+unset: ...
+update: ...
+```
+
+Parse `what` input (string) into a dictionary.
+`what` can be of various key/value formats, specified by `type`.
+
+`set`, `unset` and `update` arguments are also available, see `!DICT` chapter for more details.
+
+
+#### Simple key/value format with space separation `kvdqs`
+
+Type: `kvs`
+
+Example: 
+
+```
+key1=value1 key2=value2 key3=value3
+```
+
+#### Key/value format with values in double quotes and with space separation
+
+Type: `kvdqs`
+
+Example: 
+
+```
+key1="value1" key2="value2" key3="value\"3\"" key3="value four" 
+```
+
+#### URL Query string
+
+Type: `qs`
+
+Example: 
+
+```
+first=this+is+a+field&second=was+it+clear+%28already%29%3F
+```
+
+
 
 ### String tests "STARTSWITH", "ENDSWITH", "CONTAINS"
 
@@ -485,6 +535,10 @@ miss: Missed :-(
 set:
 	item1: foo
 	item2: bar
+unset:
+  - item1
+update:
+  item2: ...
 ```
 
 If nothing is found `miss` is returned.
