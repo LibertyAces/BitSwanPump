@@ -31,15 +31,23 @@ class FlattenDictProcessor(Processor):
 
 
 	"""
+	ConfigDefaults = {
+		'separator': '.'
+	}
 
-	def _construct_key(self, previous_key, separator, new_key):
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id, config)
+		self.Separator = self.Config['separator']
+
+
+	def _construct_key(self, previous_key, new_key):
 		if previous_key:
-			return u"{}{}{}".format(previous_key, separator, new_key)
+			return u"{}{}{}".format(previous_key, self.Separator, new_key)
 		else:
 			return new_key
 
 
-	def flatten(self, nested_dict, separator="."):
+	def flatten(self, nested_dict):
 
 		flattened_dict = dict()
 
@@ -55,7 +63,6 @@ class FlattenDictProcessor(Processor):
 						object_[object_key],
 						self._construct_key(
 							key,
-							separator,
 							object_key))
 			# Anything else
 			else:
