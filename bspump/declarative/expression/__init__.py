@@ -43,6 +43,7 @@ from .string.contains import CONTAINS
 
 # Data structures
 from .datastructs.dictexpr import DICT
+from .datastructs.dict_parse import DICT_PARSE
 from .datastructs.tupleexpr import TUPLE
 from .datastructs.listexpr import LIST
 
@@ -89,6 +90,7 @@ __all__ = [
 	"IF", "WHEN", "FOR", "FIRST",
 	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
+	"DICT_PARSE",
 	"STARTSWITH", "ENDSWITH", "SUBSTRING",
 	"UPPER", "LOWER",
 	"JOIN", "CUT",
