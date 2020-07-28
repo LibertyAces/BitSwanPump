@@ -65,7 +65,7 @@ setup(
 		'Source': 'https://github.com/LibertyAces/BitSwanPump'
 	},
 	install_requires=[
-		'asab>=20.6',
+		'asab>=20.7.28',
 		'aiohttp>=3.6.2',
 		'requests>=2.24.0',
 		'aiokafka>=0.6.0',
