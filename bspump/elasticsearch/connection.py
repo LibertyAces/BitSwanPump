@@ -102,7 +102,9 @@ class ElasticSearchConnection(Connection):
 
 		# Initialize metrics
 		metrics_service = app.get_service('asab.MetricsService')
-		self.BulkInsertReturnCodesCounter = metrics_service.create_counter("esconnection.bulkinsert.returncodes", init_values=dict())
+		self.BulkInsertReturnCodesCounter = metrics_service.create_counter("esconnection.bulkinsert.returncodes", init_values={
+			"200": 0,
+		})
 
 	def get_url(self):
 		return random.choice(self.node_urls)
