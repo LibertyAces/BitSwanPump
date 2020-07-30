@@ -65,7 +65,7 @@ setup(
 		'Source': 'https://github.com/LibertyAces/BitSwanPump'
 	},
 	install_requires=[
-		'asab>=20.6',
+		'asab>=20.7.28',
 		'aiohttp>=3.6.2',
 		'requests>=2.24.0',
 		'aiokafka>=0.6.0',
@@ -85,8 +85,9 @@ setup(
 		'motor>=2.1.0',
 		'mongoquery>=1.3.6',
 		'pywinrm>=0.4.1',
-		'pyarrow>=0.13.0',  #`pip install pyarrow` fails on Apline Linux, official bspump alpine images do not include pyarrow
+		'pyarrow>=0.13.0',  # `pip install pyarrow` fails on Apline Linux, official bspump alpine images do not include pyarrow
 		'pandas>=0.24.2',  # pandas is required in bstelco
+		'xxhash>=1.4.4',
 	],
 	scripts=[
 		'utils/bselastic',
