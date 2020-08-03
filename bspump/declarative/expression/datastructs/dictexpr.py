@@ -1,5 +1,13 @@
 from ...abc import Expression, evaluate
 
+import logging
+
+#
+
+L = logging.getLogger(__name__)
+
+#
+
 
 class DICT(Expression):
 	"""
@@ -26,7 +34,7 @@ This is how to create the empty dictionary:
 ```
 """
 
-	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_unset=None, arg_add=None, arg_update=None):
+	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_unset=None, arg_add=None, arg_update=None, arg_mandatory=None):
 		super().__init__(app)
 
 		self.With = arg_with
@@ -46,6 +54,10 @@ This is how to create the empty dictionary:
 		if arg_unset is not None:
 			assert(isinstance(arg_unset, list))
 		self.Unset = arg_unset
+
+		if arg_mandatory is not None:
+			assert(isinstance(arg_mandatory, list))
+		self.Mandatory = arg_mandatory
 
 		self.Update = arg_update
 
@@ -87,5 +99,13 @@ This is how to create the empty dictionary:
 		if self.Unset is not None:
 			for key in self.Unset:
 				with_dict.pop(key, None)
+
+		# Check that all mandatory fields are present in the dictionary
+		if self.Mandatory is not None:
+			for mandatory_field in self.Mandatory:
+				if mandatory_field not in with_dict:
+					# TODO: Remove eventually when there are more occurrences among other expressions as well
+					L.warning("Mandatory field '{}' not present in dictionary. Returning None.".format(mandatory_field))
+					return None
 
 		return with_dict

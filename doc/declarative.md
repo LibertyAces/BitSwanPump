@@ -299,6 +299,11 @@ modify:
 
 update:
 	!DICT
+
+madatory:
+	- item1
+	- item2
+	- item6
 ```
 
 If `with` is not specified, the new dictionary will be created.
@@ -316,6 +321,9 @@ Argument `modify` (optional) is similar to `set` but the item must exist and it 
 
 Argument `update` (optional) allows to update the dictionary with items from another dictionary.
 The `ARG` contains a current value of the dictionary.
+
+Argument `mandatory` (optional) allows to specify a list of mandatory attributes, that must be set
+after all other operations are performed. If one of the mandatory fields is missing, None is returned.
 
 ```
 - !DICT
