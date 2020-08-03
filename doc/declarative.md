@@ -300,7 +300,7 @@ modify:
 update:
 	!DICT
 
-madatory:
+mandatory:
 	- item1
 	- item2
 	- item6
