@@ -104,7 +104,8 @@ This is how to create the empty dictionary:
 		if self.Mandatory is not None:
 			for mandatory_field in self.Mandatory:
 				if mandatory_field not in with_dict:
-					L.error("Mandatory field '{}' not present in dictionary. Returning None.".format(mandatory_field))
+					# TODO: Remove eventually when there are more occurrences among other expressions as well
+					L.warning("Mandatory field '{}' not present in dictionary. Returning None.".format(mandatory_field))
 					return None
 
 		return with_dict
