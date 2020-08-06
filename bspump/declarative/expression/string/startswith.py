@@ -10,5 +10,8 @@ class STARTSWITH(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = evaluate(self.Value, context, event, *args, **kwargs)
+		if value is None:
+			return False
+
 		prefix = evaluate(self.Prefix, context, event, *args, **kwargs)
 		return value.startswith(prefix)

@@ -12,5 +12,8 @@ class CONTAINS(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = evaluate(self.Value, context, event, *args, **kwargs)
+		if value is None:
+			return False
+
 		substr = evaluate(self.Substring, context, event, *args, **kwargs)
 		return substr in value

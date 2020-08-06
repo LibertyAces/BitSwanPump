@@ -10,5 +10,8 @@ class ENDSWITH(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = evaluate(self.What, context, event, *args, **kwargs)
+		if value is None:
+			return False
+
 		postfix = evaluate(self.Postfix, context, event, *args, **kwargs)
 		return value.endswith(postfix)
