@@ -36,6 +36,7 @@ if __name__ == '__main__':
 	svc.add_connection(
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection", config={
 			"bulk_out_max_size": 100,
+			# 'url': 'http://es01:9200;http://es02:9200;http://es03:9200;http://es04:9200',
 		}))
 
 	# Construct and register Pipeline

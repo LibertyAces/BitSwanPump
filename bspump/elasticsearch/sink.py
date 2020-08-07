@@ -23,14 +23,11 @@ class ElasticSearchSink(Sink):
 	of the sink:
 
 	es_index (STRING): ElasticSearch index name
-	es_id (STRING): ElasticSearch document "_id"
-	es_version (INT): ElasticSearch document version
 	"""
 
 
 	ConfigDefaults = {
 		"index_prefix": "bspump_",
-		"doctype": "doc",
 		"time_period": "d",
 		"rollover_mechanism": 'ilm',
 		"max_index_size": 30 * 1024 * 1024 * 1024,  # This is 30GB
@@ -41,8 +38,6 @@ class ElasticSearchSink(Sink):
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self._doctype = self.Config['doctype']
-
 		self._connection = pipeline.locate_connection(app, connection)
 
 		ro = self.Config['rollover_mechanism']
@@ -50,7 +45,7 @@ class ElasticSearchSink(Sink):
 			self._rollover_mechanism = ElasticSearchTimeRollover(app, self)
 		elif ro == 'size':
 			self._rollover_mechanism = ElasticSearchSizeRollover(app, self, self._connection)
-		elif ro == 'noop' or ro == 'ilm' or ro == 'fixed':  # Do not use fixed, it is an obsolete name
+		elif ro == 'noop' or ro == 'ilm':
 			self._rollover_mechanism = ElasticSearchNoopRollover(app, self)
 		else:
 			L.error("Unknown rollover mechanism: '{}'".format(ro))
@@ -61,25 +56,14 @@ class ElasticSearchSink(Sink):
 
 
 	def process(self, context, event):
-		assert self._rollover_mechanism.Index is not None
+		index = context.get("es_index", self._rollover_mechanism.Index)
+		assert index is not None
 
-		# Obtain index from context and ID from event
-		_index = context.get("es_index")
-		_id = event.pop("_id", None)
-
-		# Header
-		data = '{{"index": {{ "_index": "{}", "_type": "{}"'.format(
-			_index if _index is not None else self._rollover_mechanism.Index, self._doctype
+		self._connection.consume(
+			index,
+			event.pop("_id", None),
+			json.dumps(event)
 		)
-
-		# ID
-		if _id is not None:
-			data += ', "_id": "{}"'.format(_id)
-
-		# Event/Ending
-		data += ' }}\n{}\n'.format(json.dumps(event))
-
-		self._connection.consume(data)
 
 
 	def _connection_throttle(self, event_name, connection):

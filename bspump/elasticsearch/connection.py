@@ -50,7 +50,6 @@ class ElasticSearchConnection(Connection):
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 1024 * 1024,
 		'timeout': 300,
-		'allowed_bulk_response_codes': '200,201,409',
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -80,10 +79,10 @@ class ElasticSearchConnection(Connection):
 		self._loader_per_url = int(self.Config['loader_per_url'])
 
 		self._bulk_out_max_size = int(self.Config['bulk_out_max_size'])
-		self._bulk_out = ""
-		self._started = True
+		self._bulks = {}
 
 		self._timeout = float(self.Config['timeout'])
+		self._started = True
 
 		self.Loop = app.Loop
 
@@ -91,41 +90,44 @@ class ElasticSearchConnection(Connection):
 		self.PubSub.subscribe("Application.run!", self._start)
 		self.PubSub.subscribe("Application.exit!", self._on_exit)
 
-		self.AllowedBulkResponseCodes = frozenset(
-			[int(x) for x in re.findall(r"[0-9]+", self.Config['allowed_bulk_response_codes'])]
-		)
-
 		self._futures = []
 		for url in self.node_urls:
 			for i in range(self._loader_per_url):
-				self._futures.append((url + '_bulk', None))
+				self._futures.append((url, None))
 
-		# Initialize metrics
-		metrics_service = app.get_service('asab.MetricsService')
-		self.BulkInsertReturnCodesCounter = metrics_service.create_counter("esconnection.bulkinsert.returncodes", init_values={
-			"200": 0,
-		})
 
 	def get_url(self):
 		return random.choice(self.node_urls)
-
-	def consume(self, data):
-		self._bulk_out += data
-
-		if len(self._bulk_out) > self._bulk_out_max_size:
-			self.flush()
 
 
 	def get_session(self):
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
+
+	def consume(self, index, _id, data):
+		bulk = self._bulks.get(index)
+		if bulk is None:
+			bulk = ElasticSearchBulk(index, self._bulk_out_max_size)
+			self._bulks[index] = bulk
+		
+		if bulk.consume(_id, data):
+			# Bulk is ready, schedule to be send
+			del self._bulks[index]
+			self._output_queue.put_nowait(bulk)
+
+			# Signalize need for throttling
+			if self._output_queue.qsize() == self._output_queue_max_size:
+				self.PubSub.publish("ElasticSearchConnection.pause!", self)
+
+
 	def _start(self, event_type):
-		self.PubSub.subscribe("Application.tick/10!", self._on_tick)
+		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
+
 
 	async def _on_exit(self, event_name):
 		self._started = False
-		self.flush()
+		self.flush(forced = True)
 
 		# Wait till the _loader() terminates (one after another)
 		pending = [item[1] for item in self._futures]
@@ -155,60 +157,96 @@ class ElasticSearchConnection(Connection):
 			if self._started:
 				url, future = self._futures[i]
 				if future is None:
-					future = asyncio.ensure_future(self._loader(url), loop=self.Loop)
+					future = asyncio.ensure_future(self._loader(url))
 					self._futures[i] = (url, future)
 
 		self.flush()
 
 
-	def flush(self):
-		if len(self._bulk_out) == 0:
-			# TODO: Add this event to metrics
-			return
+	def flush(self, forced = False):
+		aged = []
+		for index, bulk in self._bulks.items():
+			bulk.Aging += 1
+			if (bulk.Aging >= 2) or forced:
+				aged.append(index)
 
-		# TODO: Add this event to metrics
-		assert(self._bulk_out is not None)
-		self._output_queue.put_nowait(self._bulk_out)
-		self._bulk_out = ""
+		for index in aged:
+			bulk = self._bulks.pop(index)
+			self._output_queue.put_nowait(bulk)
 
-		# Signalize need for throttling
-		if self._output_queue.qsize() == self._output_queue_max_size:
-			self.PubSub.publish("ElasticSearchConnection.pause!", self)
+			# Signalize need for throttling
+			if self._output_queue.qsize() == self._output_queue_max_size:
+				self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
 
 	async def _loader(self, url):
 		async with self.get_session() as session:
 			while self._started:
-				bulk_out = await self._output_queue.get()
-				if bulk_out is None:
+				bulk = await self._output_queue.get()
+				if bulk is None:
 					break
 
 				if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("ElasticSearchConnection.unpause!", self, asynchronously=True)
 
-				# TODO: if exception happens, save bulk_out back to queue for a future resend (don't forget throttling)
+				await bulk.upload(url, session, self._timeout)
 
-				L.debug("Sending bulk request (size: {}) to {}".format(len(bulk_out), url))
 
-				async with session.post(url, data=bulk_out, headers={'Content-Type': 'application/json'}, timeout=self._timeout) as resp:
-					if resp.status != 200:
-						resp_body = await resp.text()
-						L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status, resp_body))
-						raise RuntimeError("Failed to insert document into ElasticSearch")
+class ElasticSearchBulk(object):
 
-					else:
-						resp_body = await resp.text()
-						respj = json.loads(resp_body)
-						if respj.get('errors', True) is not False:
-							error_level = 0
-							for item in respj['items']:
-								self.BulkInsertReturnCodesCounter.add(str(item['index']['status']), 1, init_value=0)
-								if item['index']['status'] not in self.AllowedBulkResponseCodes:
-									if error_level == 0:
-										L.error("Failed to insert bulk into ElasticSearch status: {}".format(resp.status))
-									error_level += 1
-									L.error(" - {} Failed document detail: '{}'".format(item['index']['status'], item))
-							if error_level > 0:
-								raise RuntimeError("Failed to insert document into ElasticSearch")
 
-						L.debug("Bulk POST finished successfully")
+	def __init__(self, index, max_size):
+		self.Index = index
+		self.Aging = 0
+		self.Capacity = max_size
+		self.Items = []
+
+
+	def consume(self, _id, data): 
+		self.Items.append((_id, data))
+		self.Capacity -= len(data)
+		self.Aging = 0
+		return self.Capacity <= 0
+
+
+	async def upload(self, url, session, timeout):
+		if len(self.Items) == 0:
+			return
+
+		async with session.post(
+				url + '{}/_bulk?filter_path=items.*.error'.format(self.Index),
+				data = self._data_feeder(),
+				headers = {
+					'Content-Type': 'application/json'
+				},
+				timeout = timeout,
+			) as resp:
+				print(">>>", await resp.text())
+				# 	if resp.status != 200:
+				# 		resp_body = await resp.text()
+				# 		L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status, resp_body))
+				# 		raise RuntimeError("Failed to insert document into ElasticSearch")
+
+				# 	else:
+				# 		resp_body = await resp.text()
+				# 		respj = json.loads(resp_body)
+				# 		if respj.get('errors', True) is not False:
+				# 			error_level = 0
+				# 			for item in respj['items']:
+				# 				self.BulkInsertReturnCodesCounter.add(str(item['index']['status']), 1, init_value=0)
+				# 				if item['index']['status'] not in self.AllowedBulkResponseCodes:
+				# 					if error_level == 0:
+				# 						L.error("Failed to insert bulk into ElasticSearch status: {}".format(resp.status))
+				# 					error_level += 1
+				# 					L.error(" - {} Failed document detail: '{}'".format(item['index']['status'], item))
+				# 			if error_level > 0:
+				# 				raise RuntimeError("Failed to insert document into ElasticSearch")
+
+
+	async def _data_feeder(self):
+		for _id, data in self.Items:
+			yield b'\n'.join([
+				b'{"create":{}}' if _id is None else json.dumps({"index":{"_id" : _id}}).encode('utf-8'),
+				data.encode('utf-8'),
+				b'' # This forces trailing '\n'
+			])
