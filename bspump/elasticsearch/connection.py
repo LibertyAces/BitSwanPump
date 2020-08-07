@@ -213,34 +213,27 @@ class ElasticSearchBulk(object):
 		if len(self.Items) == 0:
 			return
 
+		url = url + '{}/_bulk?filter_path=items.*.error'.format(self.Index)
+
 		async with session.post(
-				url + '{}/_bulk?filter_path=items.*.error'.format(self.Index),
+				url,
 				data = self._data_feeder(),
 				headers = {
 					'Content-Type': 'application/json'
 				},
 				timeout = timeout,
-			) as resp:
-				print(">>>", await resp.text())
-				# 	if resp.status != 200:
-				# 		resp_body = await resp.text()
-				# 		L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(resp.status, resp_body))
-				# 		raise RuntimeError("Failed to insert document into ElasticSearch")
+			) as resp:				
+				if resp.status == 200:
+					await resp.read()
+					return
 
-				# 	else:
-				# 		resp_body = await resp.text()
-				# 		respj = json.loads(resp_body)
-				# 		if respj.get('errors', True) is not False:
-				# 			error_level = 0
-				# 			for item in respj['items']:
-				# 				self.BulkInsertReturnCodesCounter.add(str(item['index']['status']), 1, init_value=0)
-				# 				if item['index']['status'] not in self.AllowedBulkResponseCodes:
-				# 					if error_level == 0:
-				# 						L.error("Failed to insert bulk into ElasticSearch status: {}".format(resp.status))
-				# 					error_level += 1
-				# 					L.error(" - {} Failed document detail: '{}'".format(item['index']['status'], item))
-				# 			if error_level > 0:
-				# 				raise RuntimeError("Failed to insert document into ElasticSearch")
+				resp_body = await resp.json()
+
+				L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
+					resp.status,
+					resp_body
+				))
+				raise RuntimeError("Failed to insert document into ElasticSearch")
 
 
 	async def _data_feeder(self):
