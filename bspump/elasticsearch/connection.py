@@ -4,6 +4,7 @@ import logging
 import random
 import re
 
+import orjson
 import aiohttp
 
 from ..abc.connection import Connection
@@ -238,8 +239,5 @@ class ElasticSearchBulk(object):
 
 	async def _data_feeder(self):
 		for _id, data in self.Items:
-			yield b'\n'.join([
-				b'{"create":{}}' if _id is None else json.dumps({"index":{"_id" : _id}}).encode('utf-8'),
-				data.encode('utf-8'),
-				b'' # This forces trailing '\n'
-			])
+			yield b'{"create":{}}\n' if _id is None else orjson.dumps({"index":{"_id" : _id}}, option=orjson.OPT_APPEND_NEWLINE)
+			yield data
