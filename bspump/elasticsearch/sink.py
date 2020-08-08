@@ -1,12 +1,6 @@
-import time
-import json
-import asyncio
-
 import logging
 
 import orjson
-import aiohttp
-
 
 from ..abc.sink import Sink
 
@@ -27,9 +21,8 @@ class ElasticSearchSink(Sink):
 	es_index (STRING): ElasticSearch index name
 	"""
 
-
 	ConfigDefaults = {
-		"index_prefix": "bspump_", # Obsolete
+		"index_prefix": "bspump_",  # Obsolete, use 'index'
 		"index": "",
 	}
 

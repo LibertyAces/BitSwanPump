@@ -1,8 +1,6 @@
 import asyncio
-import json
 import logging
 import random
-import re
 
 import orjson
 import aiohttp
@@ -110,7 +108,7 @@ class ElasticSearchConnection(Connection):
 		if bulk is None:
 			bulk = ElasticSearchBulk(index, self._bulk_out_max_size)
 			self._bulks[index] = bulk
-		
+
 		if bulk.consume(_id, data):
 			# Bulk is ready, schedule to be send
 			del self._bulks[index]
@@ -128,7 +126,7 @@ class ElasticSearchConnection(Connection):
 
 	async def _on_exit(self, event_name):
 		self._started = False
-		self.flush(forced = True)
+		self.flush(forced=True)
 
 		# Wait till the _loader() terminates (one after another)
 		pending = [item[1] for item in self._futures]
@@ -164,7 +162,7 @@ class ElasticSearchConnection(Connection):
 		self.flush()
 
 
-	def flush(self, forced = False):
+	def flush(self, forced=False):
 		aged = []
 		for index, bulk in self._bulks.items():
 			bulk.Aging += 1
@@ -203,7 +201,7 @@ class ElasticSearchBulk(object):
 		self.Items = []
 
 
-	def consume(self, _id, data): 
+	def consume(self, _id, data):
 		self.Items.append((_id, data))
 		self.Capacity -= len(data)
 		self.Aging = 0
@@ -217,27 +215,27 @@ class ElasticSearchBulk(object):
 		url = url + '{}/_bulk?filter_path=items.*.error'.format(self.Index)
 
 		async with session.post(
-				url,
-				data = self._data_feeder(),
-				headers = {
-					'Content-Type': 'application/json'
-				},
-				timeout = timeout,
-			) as resp:				
-				if resp.status == 200:
-					await resp.read()
-					return
+			url,
+			data=self._data_feeder(),
+			headers={
+				'Content-Type': 'application/json'
+			},
+			timeout=timeout,
+		) as resp:
+			if resp.status == 200:
+				await resp.read()
+				return
 
-				resp_body = await resp.json()
+			resp_body = await resp.json()
 
-				L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
-					resp.status,
-					resp_body
-				))
-				raise RuntimeError("Failed to insert document into ElasticSearch")
+			L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
+				resp.status,
+				resp_body
+			))
+			raise RuntimeError("Failed to insert document into ElasticSearch")
 
 
 	async def _data_feeder(self):
 		for _id, data in self.Items:
-			yield b'{"create":{}}\n' if _id is None else orjson.dumps({"index":{"_id" : _id}}, option=orjson.OPT_APPEND_NEWLINE)
+			yield b'{"create":{}}\n' if _id is None else orjson.dumps({"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE)
 			yield data
