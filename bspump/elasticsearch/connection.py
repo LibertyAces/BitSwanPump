@@ -128,12 +128,13 @@ class ElasticSearchConnection(Connection):
 		self._started = False
 		self.flush(forced=True)
 
-		# Wait till the _loader() terminates (one after another)
+		# Wait till the _loader() terminates (one after another)		
 		pending = [item[1] for item in self._futures]
+		self._futures = []
 		while len(pending) > 0:
 			# By sending None via queue, we signalize end of life
 			await self._output_queue.put(None)
-			done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+			done, pending = await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
 
 
 	def _on_tick(self, event_name):
