@@ -128,7 +128,7 @@ class ElasticSearchConnection(Connection):
 		self._started = False
 		self.flush(forced=True)
 
-		# Wait till the _loader() terminates (one after another)		
+		# Wait till the _loader() terminates (one after another)
 		pending = [item[1] for item in self._futures]
 		self._futures = []
 		while len(pending) > 0:
