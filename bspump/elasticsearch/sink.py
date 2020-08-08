@@ -29,7 +29,7 @@ class ElasticSearchSink(Sink):
 
 
 	ConfigDefaults = {
-		"index_prefix": "bspump_",
+		"index_prefix": "bspump_", # Obsolete
 		"index": "",
 	}
 
@@ -42,6 +42,7 @@ class ElasticSearchSink(Sink):
 		self.Index = self.Config.get('index')
 		if self.Index is None:
 			L.warning("The 'index_prefix' has been renamed to 'index', adjust the configuration.")
+			self.Index = self.Config.get('index_prefix')
 
 		app.PubSub.subscribe("ElasticSearchConnection.pause!", self._connection_throttle)
 		app.PubSub.subscribe("ElasticSearchConnection.unpause!", self._connection_throttle)
