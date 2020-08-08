@@ -47,7 +47,7 @@ class ElasticSearchConnection(Connection):
 		'password': '',
 		'loader_per_url': 4,  # Number of parael loaders per URL
 		'output_queue_max_size': 10,
-		'bulk_out_max_size': 1024 * 1024,
+		'bulk_out_max_size': 2 * 1024 * 1024,
 		'timeout': 300,
 	}
 
