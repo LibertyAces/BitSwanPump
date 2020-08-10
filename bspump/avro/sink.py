@@ -83,7 +83,8 @@ class AvroSink(Sink):
 		else:
 			if self.RolloverMechanism != 'none':
 				L.warning('Unknown rollover mechanism {} - defaulting to none'.format(
-					self.RolloverMechanism, self.ConfigDefaults['rollover_mechanism']))
+					self.RolloverMechanism
+				))
 
 			self.RolloverMechanism = 'none'
 			self.Index = None

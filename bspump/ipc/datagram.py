@@ -77,7 +77,7 @@ class DatagramSource(Source):
 				break
 
 			except Exception:
-				L.exception(f"Error in datagram source.")
+				L.exception("Error in datagram source.")
 				raise
 
 

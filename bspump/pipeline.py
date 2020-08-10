@@ -573,7 +573,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			'Log': [record.__dict__ for record in self.L.Deque]
 		}
 
-		for l, processors in enumerate(self.Processors):
+		for processors in self.Processors:
 			rest['Processors'].append(processors)
 
 		if self._error:
