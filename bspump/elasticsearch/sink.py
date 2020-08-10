@@ -33,7 +33,7 @@ class ElasticSearchSink(Sink):
 		self.Connection = pipeline.locate_connection(app, connection)
 
 		self.Index = self.Config.get('index')
-		if self.Index is None:
+		if self.Index is None or len(self.Index) == 0:
 			L.warning("The 'index_prefix' has been renamed to 'index', adjust the configuration.")
 			self.Index = self.Config.get('index_prefix')
 
