@@ -62,7 +62,11 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			if '.' in item:
 				value = with_dict
 				for i in item.split('.'):
-					value = value[i]
+					try:
+						value = value[i]
+					except TypeError:
+						# In case the child is list, not dict
+						value = value[int(i)]
 			else:
 				value = with_dict[item]
 		except KeyError:
