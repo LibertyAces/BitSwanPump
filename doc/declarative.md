@@ -917,13 +917,13 @@ The details about format of timezone can be found at http://pytz.sourceforge.net
 
 ### Debug output `DEBUG`
 
-Print the content of the `arg` onto console and pass that unchanged.
+Print the content of the `what` onto console and pass that unchanged.
 
 Type: _Mapping_.
 
 ```
 !DEBUG
-arg: !ITEM EVENT potatoes
+what: !ITEM EVENT potatoes
 ```
 
 
