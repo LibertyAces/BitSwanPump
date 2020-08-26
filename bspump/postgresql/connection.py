@@ -191,7 +191,7 @@ class PostgreSQLConnection(Connection):
 					try:
 						async with conn.cursor() as cur:
 							for item in data:
-								_query = await cur.mogrify(query, item)
+								_query = cur.mogrify(query, item)
 								await cur.execute(_query)
 					except BaseException:
 						L.exception("Unexpected error when processing PostgreSQL query.")
