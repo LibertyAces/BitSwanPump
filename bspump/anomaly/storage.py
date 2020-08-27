@@ -190,8 +190,12 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		# Synchronous to make atomic cycle
 		for key, anomaly in self["closed"].items():
 			# Pass anomaly to the storage pipeline
-			self.Context["es_id"] = key
-			await anomaly_storage_pipeline_source.put_async(self.Context, anomaly)
+			context = {
+				"es_id": key,
+			}
+			for _key, _value in self.Context.items():
+				context[_key] = _value
+			await anomaly_storage_pipeline_source.put_async(context, anomaly)
 			# Delete the closed anomaly after some time
 			if current_time > anomaly["ts_end"] + self.ClosedAnomalyLongevity:
 				self.AnomalyStorageCounter.add("anomalies.closed.flushed", 1)
@@ -205,8 +209,12 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		await asyncio.sleep(0.01)
 		# Synchronous to make atomic cycle
 		for key, anomaly in self["open"].items():
-			self.Context["es_id"] = key
-			await anomaly_storage_pipeline_source.put_async(self.Context, anomaly)
+			context = {
+				"es_id": key,
+			}
+			for _key, _value in self.Context.items():
+				context[_key] = _value
+			await anomaly_storage_pipeline_source.put_async(context, anomaly)
 			self.AnomalyStorageCounter.add("anomalies.open.flushed", 1)
 
 		# Throttle the parental pipeline
