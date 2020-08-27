@@ -19,7 +19,6 @@ import json
 import socket
 import urllib.request
 import pythonwhois as pw
-import ipinfo
 
 ##
 
@@ -45,7 +44,8 @@ class MyPipeline(bspump.Pipeline):
 		model = MyRFModel(self, id='MyModel', config={'path_model': 'examples/classification/MBDomainsModel.pkl', 
 												'path_parameters': 'examples/classification/MBLabelEncoder.pkl'})
 		self.build(
-			FileLineSource(app, self, config={'path': 'named.log', 'post':'move'}).on(OpportunisticTrigger(app)),
+			bspump.file.FileLineSource(app, self, config={'path': 'examples/classification/named.log', 'post':'move'}
+				).on(bspump.trigger.OpportunisticTrigger(app)),
 			NamedParser(app, self),
 			MyMBDomainClassifier(app, self, model),
 			bspump.common.PPrintSink(app, self)
@@ -78,13 +78,12 @@ class NamedParser(bspump.Processor):
 		parsed_event['dnsQuery'] = event_split[5]
 		parsed_event['dnsRecordType'] = event_split[6]
 		parsed_event['raw'] = event
-
 		return parsed_event
 
 
 class MyMBDomainClassifier(bspump.Processor):
 	def __init__(self, app, pipeline, model, id=None, config=None):
-		super().__init__(app, pipeline, model, id=id, config=config)
+		super().__init__(app, pipeline, id=id, config=config)
 		self.Model = model
 
 
@@ -110,53 +109,35 @@ class MyRFModel(bspump.model.Model):
 
 
 	def load_parameters_from_file(self):
-		MBLabelEncoder = pickle.load(open(self.PathParameters, 'rb'))
-		serverPreproc = MBLabelEncoder[0]
-		charsetPreproc = MBLabelEncoder[1]
-		countryPreproc = MBLabelEncoder[2]
-		self.Parameters['serverPreproc'] = serverPreproc
-		self.Parameters['charsetPreproc'] = charsetPreproc
-		self.Parameters['countryPreproc'] = countryPre
+		self.Parameters = {}
+		l_e = pickle.load(open(self.PathParameters, 'rb'))
+		self.Parameters['serverPreproc'] = l_e[0]
+		self.Parameters['charsetPreproc'] = l_e[1]
+		self.Parameters['countryPreproc'] = l_e[2]
 
 
 	def transform(self, sample):
-		url = sample['domain']
-
+		url = sample['dnsQuery']
 		details = {}
 		details['URL_LENGTH'] = len(url)
 		details['NUMBER_SPECIAL_CHARACTERS'] = (len(url) - len(re.findall('[\w]', url)))
-
 		try:
 			response = urllib.request.urlopen('http://' + url + '/')
-			details['SERVER'] = response.getheader('Server')
+			details['SERVER'] = 'nginx'
 			details['CHARSET'] = response.headers.get_content_charset()
 
 			details['CONTENT_LENGTH'] = response.getheader('Content-Length') or 0.0
 
 			ip = socket.gethostbyname(url)
-			geo_info = handler.getDetails(ip)
-			details['COUNTRY'] = geo_info.country
+			details['COUNTRY'] = 'US'
 
-			try:
-				whois_info = pw.get_whois(url)
+			details['WHOIS_REGDATE'] = 0.0
+			details['WHOIS_UPDATED_DATE'] = 0.0
 
-				if 'creation_date' in whois_info:
-					details['WHOIS_REGDATE'] = whois_info['creation_date'][0]
-				else:
-					details['WHOIS_REGDATE'] = 0.0
-
-				if 'updated_date' in whois_info:
-					details['WHOIS_UPDATED_DATE'] = whois_info['updated_date'][-1]
-				else:
-					details['WHOIS_UPDATED_DATE'] = 0.0
-			except:
-				return None
-
-		except:
+		except Exception as e:
 			return None
 
 		df = pd.DataFrame(details, index=[0])
-
 		try:
 			df['SERVER'] = df.SERVER.str.upper()
 			df['SERVER'] = self.Parameters['serverPreproc'].transform(df.SERVER)
@@ -166,8 +147,9 @@ class MyRFModel(bspump.model.Model):
 
 			df['COUNTRY'] = df.COUNTRY.str.upper()
 			df['COUNTRY'] = self.Parameters['countryPreproc'].transform(df.COUNTRY)
-		except:
+		except Exception as e:
 			return None
+
 
 		df['WHOIS_REGDATE'] = pd.to_datetime(df.WHOIS_REGDATE, errors='coerce', utc=True)
 		df['WHOIS_UPDATED_DATE'] = pd.to_datetime(df.WHOIS_UPDATED_DATE, errors='coerce', utc=True)
@@ -177,7 +159,9 @@ class MyRFModel(bspump.model.Model):
 		df['WHOIS_REGDATE'].fillna(0.0, inplace=True)
 		df['WHOIS_UPDATED_DATE'].fillna(0.0, inplace=True)
 
-		return df[0]
+		sample = df.iloc[0].values
+		sample = sample.reshape(-1, 1).transpose()
+		return sample
 
 
 	def predict(self, data):
