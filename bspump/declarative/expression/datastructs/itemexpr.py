@@ -63,10 +63,12 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 				value = with_dict
 				for i in item.split('.'):
 					try:
-						value = value[i]
+						if isinstance(value, list):
+							value = value[int(i)]
+						else:
+							value = value[i]
 					except TypeError:
-						# In case the child is list, not dict
-						value = value[int(i)]
+						value = None
 			else:
 				value = with_dict[item]
 		except KeyError:
