@@ -16,6 +16,7 @@ class DatagramSource(Source):
 	ConfigDefaults = {
 		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
 		'max_packet_size': 64 * 1024,
+		'receiver_buffer_size': 0,
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -25,6 +26,9 @@ class DatagramSource(Source):
 		# Create a UDP socket
 		self.Address = str(self.Config['address'])
 
+		# Receive Buffer Size
+		self.ReceiveBufferSize = int(self.Config['receiver_buffer_size'])
+
 		if ":" in self.Address:
 			host, port = self.Address.rsplit(":", maxsplit=1)
 			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
@@ -33,6 +37,9 @@ class DatagramSource(Source):
 			self.Socket.setblocking(False)
 			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+			if self.ReceiveBufferSize > 0:
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
+
 			self.Socket.bind(sockaddr)
 
 		else:
@@ -41,6 +48,8 @@ class DatagramSource(Source):
 			self.Socket.setblocking(False)
 			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+			if self.ReceiveBufferSize > 0:
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
 
 			self.Socket.bind(self.Address)
 
@@ -68,7 +77,7 @@ class DatagramSource(Source):
 				break
 
 			except Exception:
-				L.exception(f"Error in datagram source.")
+				L.exception("Error in datagram source.")
 				raise
 
 
@@ -76,6 +85,7 @@ class DatagramSink(Sink):
 	ConfigDefaults = {
 		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
 		'max_packet_size': 64 * 1024,
+		'receiver_buffer_size': 0,
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -85,6 +95,9 @@ class DatagramSink(Sink):
 		# Create a UDP socket
 		self.Address = str(self.Config['address'])
 
+		# Receive Buffer Size
+		self.ReceiveBufferSize = int(self.Config['receiver_buffer_size'])
+
 		if ":" in self.Address:
 			host, port = self.Address.rsplit(":", maxsplit=1)
 			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
@@ -93,6 +106,9 @@ class DatagramSink(Sink):
 			self.Socket.setblocking(False)
 			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+			if self.ReceiveBufferSize > 0:
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
+
 			self.Socket.connect(sockaddr)
 
 		else:
@@ -101,6 +117,8 @@ class DatagramSink(Sink):
 			self.Socket.setblocking(False)
 			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+			if self.ReceiveBufferSize > 0:
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
 
 			self.Socket.connect(self.Address)
 

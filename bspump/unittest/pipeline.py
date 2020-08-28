@@ -19,7 +19,7 @@ class UnitTestPipeline(Pipeline):
 		super().__init__(app, "UnitTestPipeline")
 
 		self.Source = UnitTestSource(app, self).on(
-			PubSubTrigger(app, "unittest.go!", self.PubSub)
+			PubSubTrigger(app, "Application.run!", app.PubSub)
 		)
 		self.Processor = processor(app, self, *args, **kwargs)
 		self.Sink = UnitTestSink(app, self)
@@ -33,8 +33,7 @@ class UnitTestPipeline(Pipeline):
 		"""
 		Start the pipeline
 		"""
-
-		self.PubSub.publish("unittest.go!")
+		pass
 
 
 	def _on_finished(self, event_name, pipeline):

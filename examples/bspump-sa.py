@@ -33,11 +33,11 @@ class MyPipeline(Pipeline):
 
 		self.build(
 			bspump.random.RandomSource(app, self,
-				config={'number': 300, 'upper_bound': 10, 'field':'user'}
+				config={'number': 300, 'upper_bound': 10, 'field':'user', 'prefix': ''}
 				).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=.1)),
 			bspump.random.RandomEnricher(app, self, config={'field':'duration', 'lower_bound':1, 'upper_bound': 5}, id="RE0"),
 			bspump.random.RandomEnricher(app, self, config={'field':'user_link', 'upper_bound': 10}, id="RE1"),
-			GraphSessionAnalyzer(app, self), 
+			GraphSessionAnalyzer(app, self, config={'analyze_period': 5}), 
 			NullSink(app, self)
 		)
 
@@ -63,31 +63,39 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 
 	
 	def evaluate(self, context, event):
-		
+		# print("kek", event)
 		start_time = time.time()
 		user_from = event["user"]
 		user_to = event["user_link"]
 		duration = event['duration']
-		if user_from not in self.Sessions.N2IMap:
-			self.Sessions.add_row(user_from)
+		row = self.Sessions.get_row_index(user_from)
+		if row is None:
+			row = self.Sessions.add_row(user_from)
 			
-		self.Sessions.Array[self.Sessions.N2IMap[user_from]]["duration"] = duration
-		self.Sessions.Array[self.Sessions.N2IMap[user_from]]["user_link"] = user_to
+		self.Sessions.Array[row]["duration"] = duration
+		self.Sessions.Array[row]["user_link"] = user_to
 
-		if user_to not in self.Sessions.N2IMap:
+		row_ = self.Sessions.get_row_index(user_to)
+		if row_ is None:
 			self.Sessions.add_row(user_to)
 
 	
-	async def analyze(self):
+	def analyze(self):
+		print('Analyzing!')
 		graph = {}
-		self.Sessions.close_row('user_1')
+		# self.Sessions.close_row(self.Sessions.get_row_index('user_1'))
 		sessions_snapshot = self.Sessions.Array
 		for i in range(0, sessions_snapshot.shape[0]):
 			if i in self.Sessions.ClosedRows:
+				print("indeed")
 				continue
 
-			user_from = self.Sessions.I2NMap[i]
+			user_from = self.Sessions.get_row_index(i)
+			print(user_from)
 			user_to = sessions_snapshot[i]['user_link']
+			if user_to == '':
+				continue
+
 			link_weight = sessions_snapshot[i]['duration']
 			edge = tuple([user_to, link_weight])
 			rev_edge = tuple([user_from, link_weight])
@@ -101,8 +109,8 @@ class GraphSessionAnalyzer(SessionAnalyzer):
 				graph[user_to] = [rev_edge]
 			else:
 				graph[user_to].append(rev_edge)
-
-			self.Sessions.close_row(user_from)
+			# user_from_idx = self.Sessions.get_row_index(user_from)
+			# self.Sessions.close_row(i)
 
 		self.Sessions.flush()
 		L.warning("Graph is {}".format(graph))

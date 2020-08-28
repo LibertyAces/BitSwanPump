@@ -1,10 +1,10 @@
 import abc
-import collections
 import logging
-
+import os
 import numpy as np
 
 import asab
+from .utils.closedrows import ClosedRows, PersistentClosedRows
 
 ###
 
@@ -59,10 +59,14 @@ class Matrix(abc.ABC, asab.ConfigObject):
 
 	'''
 
+	ConfigDefaults = {
+		'max_closed_rows_capacity': 0.2,
+	}
 
-	def __init__(self, app, dtype='float_', id=None, config=None):
+	def __init__(self, app, dtype='float_', persistent=False, id=None, config=None):
 		if not isinstance(dtype, str):
 			dtype = dtype[:]
+
 		self.Id = id if id is not None else self.__class__.__name__
 		super().__init__("matrix:{}".format(self.Id), config=config)
 
@@ -70,7 +74,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		self.Loop = app.Loop
 
 		self.DType = dtype
-
+		self.MaxClosedRowsCapacity = float(self.Config['max_closed_rows_capacity'])
 		self.zeros()
 
 		metrics_service = app.get_service('asab.MetricsService')
@@ -86,9 +90,10 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		)
 
 
-	def zeros(self, rows=0):
-		self.ClosedRows = set()
+	def zeros(self, rows=1):
 		self.Array = np.zeros(self.build_shape(rows), dtype=self.DType)
+		self.ClosedRows = ClosedRows()
+		self.ClosedRows.add(0)
 
 
 	def flush(self):
@@ -96,28 +101,23 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		The matrix will be recreated without rows from `ClosedRows`.
 		'''
 		indexes = set(range(self.Array.shape[0]))
-		saved_indexes = list(indexes - self.ClosedRows)
+		closed_indexes = set()
+		closed_indexes |= self.ClosedRows.get_rows()
+		saved_indexes = list(indexes - closed_indexes)
 		saved_indexes.sort()
-
-		self.Array = self.Array.take(saved_indexes)
-		self.ClosedRows = set()
-
+		self.Array = self.Array.take(saved_indexes, axis=0)
+		self.ClosedRows.flush(self.Array.shape[0])
 		self.Gauge.set("rows.closed", 0)
 		self.Gauge.set("rows.active", self.Array.shape[0])
+		return closed_indexes, saved_indexes
 
 
-	def close_row(self, row_index, clear=True):
-		assert(row_index < self.Array.shape[0])
-		if row_index in self.ClosedRows:
-			return
+	def close_rows(self, row_names, clear=True):
+		pass
 
-		if clear:
-			self.Array[row_index] = np.zeros(1, dtype=self.DType)
-		self.ClosedRows.add(row_index)
 
-		crc = len(self.ClosedRows)
-		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
-		self.Gauge.set("rows.closed", crc)
+	def close_row(self, row_name, clear=True):
+		pass
 
 
 	def add_row(self):
@@ -139,13 +139,17 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		return rows,
 
 
+	def reshape(self, shape):
+		return shape
+
+
 	def _grow_rows(self, rows=1):
 		'''
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
 		current_rows = self.Array.shape[0]
 		self.Array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
-		self.ClosedRows |= frozenset(range(current_rows, current_rows + rows))
+		self.ClosedRows.extend(current_rows, self.Array.shape[0])
 
 
 	def time(self):
@@ -168,92 +172,84 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		pass
 
 
-class NamedMatrix(Matrix):
+
+class PersistentMatrix(Matrix):
+	ConfigDefaults = {
+		'path': '',
+	}
 
 	def __init__(self, app, dtype='float_', id=None, config=None):
 		super().__init__(app, dtype=dtype, id=id, config=config)
-		self.PubSub = asab.PubSub(app)
 
-	def zeros(self):
-		super().zeros()
-		self.N2IMap = collections.OrderedDict()
-		self.I2NMap = collections.OrderedDict()
+
+	def create_path(self):
+		self.Path = self.Config['path']
+		if not os.path.exists(self.Path):
+			os.makedirs(self.Path)
+
+		self.ArrayPath = os.path.join(self.Path, 'array.dat')
+
+
+	def zeros(self, rows=1):
+		self.create_path()
+		if os.path.exists(self.ArrayPath):
+			self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='readwrite')
+			self.Array = self.Array.reshape(self.reshape(self.Array.shape))
+		else:
+			array = np.zeros(self.build_shape(rows), dtype=self.DType)
+			self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=array.shape)
+
+		path = os.path.join(self.Path, 'closed_rows.dat')
+		self.ClosedRows = PersistentClosedRows(path, size=self.Array.shape[0])
 
 
 	def flush(self):
 		'''
 		The matrix will be recreated without rows from `ClosedRows`.
 		'''
+		indexes = set(range(self.Array.shape[0]))
+		closed_indexes = set()
+		closed_indexes |= self.ClosedRows.get_rows()
+		saved_indexes = list(indexes - closed_indexes)
+		saved_indexes.sort()
+		self.Array = self.Array.take(saved_indexes, axis=0)
+		array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=self.Array.shape)
+		array[:] = self.Array[:]
+		self.Array = array
 
-		n2imap = collections.OrderedDict()
-		i2nmap = collections.OrderedDict()
-		saved_indexes = []
-
-		i = 0
-		for row_name, row_index in self.N2IMap.items():
-			if row_index not in self.ClosedRows:
-				n2imap[row_name] = i
-				i2nmap[i] = row_name
-				saved_indexes.append(row_index)
-				i += 1
-
-		self.Array = self.Array.take(saved_indexes)
-		self.N2IMap = n2imap
-		self.I2NMap = i2nmap
-		self.ClosedRows = set()
-
+		self.ClosedRows.flush(self.Array.shape[0])
 		self.Gauge.set("rows.closed", 0)
 		self.Gauge.set("rows.active", self.Array.shape[0])
-		self.PubSub.publish("Matrix changed!")
+		return closed_indexes, saved_indexes
 
 
-	def add_row(self, row_name: str):
-		assert(row_name is not None)
+	def close_row(self, row_name, clear=True):
+		row_index = self.Index.get_row_index(row_name)
+		if (row_index in self.ClosedRows) or (row_index is None):
+			return False
 
-		row_index = super().add_row()
-		self.N2IMap[row_name] = row_index
-		self.I2NMap[row_index] = row_name
-		self.PubSub.publish("Matrix changed!")
+		if clear:
+			self.Array[row_index] = np.zeros(1, dtype=self.DType)
 
-		return row_index
+		self.ClosedRows.add(row_index)
 
+		if len(self.ClosedRows) >= self.MaxClosedRowsCapacity * self.Array.shape[0]:
+			self.flush()
 
-	def close_row(self, row_index: int):
-		super().close_row(row_index)
-
-		row_name = self.I2NMap.pop(row_index)
-		del self.N2IMap[row_name]
-		self.PubSub.publish("Matrix changed!")
-
-
-	def get_row_index(self, row_name: str):
-		return self.N2IMap.get(row_name)
+		crc = len(self.ClosedRows)
+		self.Gauge.set("rows.active", self.Array.shape[0] - crc)
+		self.Gauge.set("rows.closed", crc)
+		return True
 
 
-	def get_row_name(self, row_index: int):
-		return self.I2NMap.get(row_index)
-
-
-	def serialize(self):
-		serialized = {}
-		serialized['N2IMap'] = self.N2IMap
-		serialized['I2NMap'] = self.I2NMap
-		serialized['ClosedRows'] = list(self.ClosedRows)
-		serialized['DType'] = self.DType
-		serialized['Array'] = self.Array.tolist()
-		return serialized
-
-
-	def deserialize(self, data):
-		self.N2IMap = data['N2IMap']
-		self.I2NMap = data['I2NMap']
-		self.ClosedRows = set(data['ClosedRows'])
-		self.DType = []
-		array = []
-		for member in data['DType']:
-			self.DType.append(tuple(member))
-
-		for member in data['Array']:
-			array.append(tuple(member))
-
-		self.Array = np.array(array, dtype=self.DType)
+	def _grow_rows(self, rows=1):
+		'''
+		Override this method to gain control on how a new closed rows are added to the matrix
+		'''
+		current_rows = self.Array.shape[0]
+		array = np.zeros(self.Array.shape, dtype=self.DType)
+		array[:] = self.Array[:]
+		array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
+		self.Array = np.memmap(self.ArrayPath, dtype=self.DType, mode='w+', shape=array.shape)
+		self.Array[:] = array[:]
+		self.ClosedRows.extend(current_rows, self.Array.shape[0])

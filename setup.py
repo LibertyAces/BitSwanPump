@@ -42,7 +42,7 @@ class custom_build_py(build_py):
 setup(
 	name='bspump',
 	version=version,
-	description='BSPump is a real-time stream processor for Python 3.5+',
+	description='BSPump is a real-time stream processor for Python 3.6+',
 	long_description=open('README.rst').read(),
 	url='https://github.com/LibertyAces/BitSwanPump',
 	author='TeskaLabs Ltd',
@@ -50,12 +50,10 @@ setup(
 	license='BSD License',
 	platforms='any',
 	classifiers=[
-		'Development Status :: 3 - Alpha',
-		'Programming Language :: Python :: 3.5',
+		'Development Status :: 5 - Production/Stable',
 		'Programming Language :: Python :: 3.6',
 		'Programming Language :: Python :: 3.7',
 	],
-	keywords='asyncio asab',
 	packages=find_packages(),
 	package_data={
 		'bspump.web': [
@@ -67,23 +65,30 @@ setup(
 		'Source': 'https://github.com/LibertyAces/BitSwanPump'
 	},
 	install_requires=[
-		'aiohttp>=3.5.4,<4.0',
-		'aiokafka>=0.5.1,<1.0',
-		'aiomysql>=0.0.20,<0.1',
-		'aiosmtplib>=1.0.5,<2.0',
-		'asab>=19.7,<20.0',
-		'fastavro>=0.21.24,<1.0',
-		'google-api-python-client>=1.7.10,<2',
-		'mongoquery>=1.3.5,<2.0',
-		'motor>=2.0.0,<3.0',
-		'mysql-replication>=0.19,<1.0',
-		'numpy>=1.16.3,<2.0',
-		'pandas>=0.24.2,<1.0',
-		'pika>=1.0.1,<2.0',
-		'pymysql>=0.9,<=0.9.2',  # aiomysql 0.0.20 requires PyMySQL<=0.9.2
-		# 'pyarrow>=0.13.0,<1.0',  # `pip install pyarrow` fails on Apline Linux
-		'pytz>=2019.1,<2020.0',
-		'requests>=2.21.0,<3.0',
+		'asab>=20.7.28',
+		'aiohttp>=3.6.2',
+		'requests>=2.24.0',
+		'aiokafka>=0.6.0',
+		'aiozk>=0.25.0',
+		'aiosmtplib>=1.1.3',
+		'fastavro>=0.23.5',
+		'google-api-python-client>=1.7.10',
+		'numpy>=1.19.0',
+		'pika>=1.1.0',
+		'pymysql>=0.9.2,<=0.9.2', # aiomysql 0.0.20 requires PyMySQL<=0.9.2
+		'aiomysql>=0.0.20',
+		'mysql-replication>=0.21',
+		'pytz>=2020.1',
+		'netaddr>=0.7.20',
+		'pyyaml>=5.3.1',
+		'pymongo>=3.10.1',
+		'motor>=2.1.0',
+		'mongoquery>=1.3.6',
+		'orjson>=3.3.0',
+		'pywinrm>=0.4.1',
+		'pyarrow>=0.13.0', # `pip install pyarrow` fails on Apline Linux, official bspump alpine images do not include pyarrow
+		'pandas>=0.24.2',
+		'xxhash>=1.4.4',
 	],
 	scripts=[
 		'utils/bselastic',

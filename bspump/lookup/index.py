@@ -258,7 +258,6 @@ class SliceIndex(Index):
 
 
 	def update(self, matrix):
-		print(">>>wawa")
 		self._create_slices(matrix)
 		print(len(self.SliceMap), self.MinValue, self.MaxValue, self.Resolution)
 

@@ -90,14 +90,31 @@ class KafkaSink(Sink):
 		assert (self._output_queue_max_size >= 1)
 		self._conn_future = None
 
-		producer_param_names = [
-			"client_id", "metadata_max_age_ms", "request_timeout_ms", "api_version",
-			"acks", "max_batch_size", "max_request_size", "linger_ms", "send_backoff_ms",
-			"retry_backoff_ms", "connections_max_idle_ms", "enable_idempotence",
-			"transactional_id", "transaction_timeout_ms",
-		]
-		self._producer_params = {x: y for x, y in self.Config.items() if x in producer_param_names and y != ""}
+		producer_param_definition = {
+			"client_id": str,
+			"metadata_max_age_ms": int,
+			"request_timeout_ms": int,
+			"api_version": str,
+			"max_batch_size": int,
+			"max_request_size": int,
+			"linger_ms": int,
+			"send_backoff_ms": int,
+			"retry_backoff_ms": int,
+			"connections_max_idle_ms": int,
+			"enable_idempotence": bool,
+			"transactional_id": str,
+			"transaction_timeout_ms": int,
+		}
+		self._producer_params = {
+			x: producer_param_definition[x](y)
+			for x, y in self.Config.items() if x in producer_param_definition.keys() and y != ""
+		}
 
+		if self.Config.get("acks") is not None:  # Mixed int with strings, needs special care
+			if self.Config["acks"] in (0, 1, -1, "0", "1", "-1"):
+				self._producer_params["acks"] = int(self.Config["acks"])
+			if self.Config["acks"] == "all":
+				self._producer_params["acks"] = self.Config["acks"]
 
 		# Subscription
 		self._on_health_check('connection.open!')

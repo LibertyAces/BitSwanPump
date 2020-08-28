@@ -24,7 +24,7 @@ class MongoDBSink(Sink):
 
     ConfigDefaults = {
         "output_queue_max_size": 100,
-        'collection': 'collection',
+        'collection': 'collection',  # default collection, if not specified inside context
     }
 
     def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -81,30 +81,35 @@ class MongoDBSink(Sink):
             self.Pipeline.throttle(self, True)
         # Here,  we take the event (in this case it should be either a dictionary or a list of dictionaries,
         # and insert it into the queue to be available to the _outflux method.
-        self._output_queue.put_nowait(event)
+        self._output_queue.put_nowait((context, event))
 
     async def _insert(self):
 
-        db = self.Connection.Client[self.Connection.Database][self.Collection]
+        db = self.Connection.Client[self.Connection.Database]
 
         while True:
             # Here is where we await the event (which in this case contains the data we want to save to the database)
             # to be pulled out of the queue and saved to a local variable.
-            item = await self._output_queue.get()
+            context, event = await self._output_queue.get()
+
             # We check the queue size and remove throttling if the size is smaller than its defined max size.
             if self._output_queue.qsize() == self._output_queue_max_size - 1:
                 self.Pipeline.throttle(self, False)
+
+            # Obtain the collection to put the obtained item to
+            collection = db[context.get("collection", self.Collection)]
+
             # At this point, we check what kind of item we pulled from the queue. If its None, it means we
             # reached what was inserted by _on_application_stop and we break the loop immediately.
             # If this is not the case we continue determining the type of the item and proceed accordingly,
             # including raising a type error, if the type is unexpected.
-            if item is None:
+            if event is None:
                 break
-            elif type(item) == dict:
-                await db.insert_one(item)
+            elif type(event) == dict:
+                await collection.insert_one(event)
                 self._output_queue.task_done()
-            elif type(item) == list and len(item) > 0:
-                await db.insert_many(item)
+            elif type(event) == list and len(event) > 0:
+                await collection.insert_many(event)
                 self._output_queue.task_done()
             else:
-                raise TypeError(f"Only dict or list of dicts allowed, {type(item)} supplied")
+                raise TypeError(f"Only dict or list of dicts allowed, {type(event)} supplied")

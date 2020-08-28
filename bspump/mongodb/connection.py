@@ -12,26 +12,6 @@ L = logging.getLogger(__name__)
 #
 
 
-# TODO: Generalize this function to ConfigObject
-def _get_int_or_none(config_obj, key):
-	v = config_obj.get(key)
-	if isinstance(v, str) and len(v) == 0:
-		return None
-	try:
-		return int(v)
-	except ValueError:
-		L.error("Expects integer value", struct_data={'key': key, 'value': v})
-		return None
-
-
-# TODO: Generalize this function to ConfigObject
-def _get_str_or_none(config_obj, key):
-	v = config_obj.get(key)
-	if len(v) == 0:
-		return None
-	return v
-
-
 class MongoDBConnection(Connection):
 
 	'''
@@ -47,8 +27,6 @@ host=mongodb://localhost:27017
 
 [connection:Mongo]
 host=mongodb://host1,host2/?replicaSet=my-replicaset-name
-
-
 	'''
 
 	ConfigDefaults = {
@@ -96,3 +74,23 @@ host=mongodb://host1,host2/?replicaSet=my-replicaset-name
 		)
 
 		self.Database = self.Config['database']
+
+
+# TODO: Generalize this function to ConfigObject
+def _get_int_or_none(config_obj, key):
+	v = config_obj.get(key)
+	if isinstance(v, str) and len(v) == 0:
+		return None
+	try:
+		return int(v)
+	except ValueError:
+		L.error("Expects integer value", struct_data={'key': key, 'value': v})
+		return None
+
+
+# TODO: Generalize this function to ConfigObject
+def _get_str_or_none(config_obj, key):
+	v = config_obj.get(key)
+	if len(v) == 0:
+		return None
+	return v

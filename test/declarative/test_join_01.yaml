@@ -1,0 +1,9 @@
+---
+!DEBUG
+what:
+  !JOIN
+  items:
+    - !ITEM EVENT string
+    - !ITEM EVENT integer
+    - !ITEM EVENT nonexistent
+  delimiter: ':'

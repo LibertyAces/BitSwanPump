@@ -2,6 +2,11 @@ import asyncio
 import logging
 
 import aiopg
+import aiopg.utils
+
+import psycopg2
+import psycopg2.errorcodes
+import psycopg2.extras
 
 import asab
 from ..abc.connection import Connection
@@ -25,6 +30,20 @@ class PostgreSQLConnection(Connection):
 		'max_bulk_size': 1,  # This is because execute many is not supported by aiopg
 	}
 
+	# This is just guess work based on the existing MySQL retryables
+	# This doesn't work for connection errors for sync_connection
+	RetryErrors = frozenset([
+		psycopg2.errorcodes.ADMIN_SHUTDOWN,
+		psycopg2.errorcodes.CRASH_SHUTDOWN,
+		psycopg2.errorcodes.CANNOT_CONNECT_NOW,
+		psycopg2.errorcodes.CONNECTION_FAILURE,
+		psycopg2.errorcodes.CONNECTION_EXCEPTION,
+		psycopg2.errorcodes.SQLSERVER_REJECTED_ESTABLISHMENT_OF_SQLCONNECTION,
+		psycopg2.errorcodes.SQLCLIENT_UNABLE_TO_ESTABLISH_SQLCONNECTION,
+		psycopg2.errorcodes.CLASS_INVALID_TRANSACTION_INITIATION,
+		psycopg2.errorcodes.TOO_MANY_CONNECTIONS,
+		psycopg2.errorcodes.QUERY_CANCELED])
+
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 
@@ -44,6 +63,7 @@ class PostgreSQLConnection(Connection):
 		self._output_queue_max_size = self.Config['output_queue_max_size']
 		self._max_bulk_size = int(self.Config['max_bulk_size'])
 
+		self._conn_sync = None
 		self._conn_future = None
 		self._connection_request = False
 		self._pause = False
@@ -112,9 +132,12 @@ class PostgreSQLConnection(Connection):
 		assert(self._conn_future is None)
 
 		self._conn_future = asyncio.ensure_future(
-			self._connection(),
+			self._async_connection(),
 			loop=self.Loop
 		)
+
+		# Connection future already resulted (with or without exception)
+		self._sync_connection()
 
 	def build_dsn(self):
 		dsn = ""
@@ -141,7 +164,7 @@ class PostgreSQLConnection(Connection):
 		dsn = dsn.strip()
 		return dsn
 
-	async def _connection(self):
+	async def _async_connection(self):
 		dsn = self.build_dsn()
 
 		try:
@@ -152,15 +175,71 @@ class PostgreSQLConnection(Connection):
 
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
+
 				await self._loader()
+
+		except (psycopg2.OperationalError, psycopg2.ProgrammingError, psycopg2.InternalError) as e:
+			if e.pgcode in self.RetryErrors:
+				L.warning("Recoverable error '{}' ({}) occurred in PostgreSQLConnection.".format(e.pgerror, e.pgcode))
+				return None
+			raise e
 		except BaseException as e:
 			L.exception("Unexpected PostgresSQL connection error. %s" % e)
 			raise
 
 
-	def acquire(self):
+	def acquire(self) -> aiopg.utils._PoolConnectionContextManager:
+		"""
+		Acquire asynchronous database connection
+
+		Use with `async with` statement
+
+	.. code-block:: python
+
+		async with self.Connection.acquire_connection() as connection:
+			async with connection.cursor() as cursor:
+				await cursor.execute(query)
+
+		:return: Asynchronous Context Manager
+		"""
 		assert(self._conn_pool is not None)
 		return self._conn_pool.acquire()
+
+	def _sync_connection(self):
+		"""
+		Acquire synchronous psycopg2 connection
+		Currently only used for iterating over a PostgreSQLLookup
+		"""
+		dsn = self.build_dsn()
+		if self._conn_sync is not None:
+			try:
+				self._conn_sync.close()
+			except (psycopg2.OperationalError, psycopg2.ProgrammingError, psycopg2.InternalError):
+				pass
+			self._conn_sync = None
+		try:
+			connection = psycopg2.connect(
+				dsn=dsn,
+				connect_timeout=self._connect_timeout)
+			self._conn_sync = connection
+		except (psycopg2.OperationalError, psycopg2.ProgrammingError, psycopg2.InternalError) as e:
+			if e.pgcode in self.RetryErrors:
+				L.warning("Recoverable error '{}' ({}) occurred in PostgreSQLConnection.".format(e.pgerror, e.pgcode))
+				return None
+			L.exception("Unexpected PostgreSQL (psycopg2) connection error")
+			raise e
+		except BaseException:
+			L.exception("Unexpected PostgreSQL (psycopg2) connection error")
+
+			raise
+
+	def acquire_sync_cursor(self) -> psycopg2.extras.DictCursor:
+		"""
+		Acquire synchronous psycopg2 cursor
+		Currently only used for iterating over a PostgreSQLLookup
+		"""
+		assert(self._conn_sync is not None)
+		return self._conn_sync.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 
 	def consume(self, query, data):
@@ -191,7 +270,7 @@ class PostgreSQLConnection(Connection):
 					try:
 						async with conn.cursor() as cur:
 							for item in data:
-								_query = await cur.mogrify(query, item)
+								_query = cur.mogrify(query, item)
 								await cur.execute(_query)
 					except BaseException:
 						L.exception("Unexpected error when processing PostgreSQL query.")

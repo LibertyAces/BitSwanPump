@@ -16,7 +16,8 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.subprocess.SubProcessSource(app, self, config={
-				'command': 'tail -n 2 data/es_sink.json'
+				'command': 'tail -n 2 data/es_sink.json',
+				'ok_return_codes': '0,1'
 			}),
 			EmptyFilterProcessor(app, self),
 			bspump.common.JsonBytesToDictParser(app, self),

@@ -2,12 +2,15 @@ stages:
   - test
 
 test:
+  image: python:3.7
   stage: test
   coverage: '/\d+\%$/'
   script:
-    - source ~/.venv/bspump/bin/activate
+    - apt-get update
+    - apt-get -y install unixodbc-dev
     - python setup.py install
     - pip install -r requirements-dev.txt
+    - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
     - pip install flake8
     - coverage run -m unittest
     - coverage report -m

@@ -19,7 +19,7 @@ class TestPrintSink(bspump.unittest.ProcessorTestCase):
 			events
 		)
 		self.assertEqual(
-			mocked_print.mock_calls[0],
+			mocked_print.mock_calls[1],
 			call("Please, print this to me", file=sys.stdout)
 		)
 
@@ -67,7 +67,7 @@ class TestPrintProcessor(bspump.unittest.ProcessorTestCase):
 			events
 		)
 		self.assertEqual(
-			mocked_print.mock_calls[0],
+			mocked_print.mock_calls[1],
 			call("Please, print this to me", file=sys.stdout)
 		)
 
@@ -115,7 +115,7 @@ class TestPrintContextProcessor(bspump.unittest.ProcessorTestCase):
 			events
 		)
 		self.assertEqual(
-			mocked_print.mock_calls[0],
+			mocked_print.mock_calls[1],
 			call(context, file=sys.stdout)
 		)
 

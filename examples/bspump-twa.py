@@ -127,7 +127,7 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 		self.TimeWindow.Array[row, column] += 1
 
 
-	async def analyze(self):
+	def analyze(self):
 		if self.TimeWindow.Array.shape[0] == 0:
 			return
 
@@ -150,7 +150,7 @@ class SamplePipeline(bspump.Pipeline):
 			# http://opendata.praha.eu/dataset/parkovani_pr/resource/601ca22a-2c53-49e7-b396-26cc64cedc3d
 			# and put it to the "examples" folder
 			bspump.file.FileCSVSource(app, self, config={
-					'path': './TSK_data_2016_2018.csv',
+					'path': 'examples/data/TSK_data_2016_2018.csv',
 					'post': 'noop',
 					'delimiter': ';',
 					'encoding': 'utf-8',

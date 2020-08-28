@@ -2,8 +2,8 @@ import collections
 import logging
 
 from ..abc.generator import Generator
-from ..analyzer.sessionmatrix import SessionMatrix
-from ..analyzer.timewindowmatrix import TimeWindowMatrix
+from .sessionmatrix import SessionMatrix
+from .timewindowmatrix import TimeWindowMatrix
 
 
 L = logging.getLogger(__name__)

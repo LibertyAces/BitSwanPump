@@ -26,6 +26,14 @@ Welcome to BSPump reference documentation!
     :members:
     :undoc-members:
 
+.. automodule:: bspump.declarative
+    :members:
+    :undoc-members:
+
+.. automodule:: bspump.declarative.expression
+    :members:
+    :undoc-members:
+
 Indices and tables
 ==================
 

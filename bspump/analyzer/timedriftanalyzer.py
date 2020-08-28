@@ -17,6 +17,7 @@ class TimeDriftAnalyzer(Analyzer):
 		The output of the analyzis is a metric with average time, median time, minimum time,
 		maximum time and a standart deviation.
 	'''
+
 	ConfigDefaults = {
 		'analyze_period': 5 * 60,  # once per 5 minutes
 		'history_size': 100,  # keep maximum 100 array members

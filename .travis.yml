@@ -5,13 +5,15 @@ python:
   - "3.7"
 
 install:
-  - sudo apt-get install unixodbc-dev
+  - sudo apt-get -y install unixodbc-dev
   - python setup.py install
   - pip install https://downloads.tableau.com/tssoftware/Tableau-SDK-Python-Linux-64Bit-10-3-23.tar.gz
-  - pip install pyarrow>=0.13.0
+  - pip install "pyarrow>=0.16.0"
   - pip install -r requirements-dev.txt
   - pip install codecov
   - pip install flake8
+  - pip install "numpy>=1.18.1"
+  - pip freeze
 
 script:
   - coverage run -m unittest

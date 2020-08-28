@@ -70,7 +70,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self.Sources = []
 		self.Processors = [[]]  # List of lists of processors, the depth is increased by a Generator object
-		self._source_coros = []  # List of source main() coroutines
 
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
@@ -120,6 +119,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._error = None  # None if not in error state otherwise there is a tuple (context, event, exc, timestamp)
 
 		self._throttles = set()
+		self._ancestral_pipelines = set()
 
 		self._ready = asyncio.Event(loop=app.Loop)
 		self._ready.clear()
@@ -172,14 +172,14 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				self.MetricsCounter.add('warning', 1)
 				self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
 				return
-
+			else:
 				self.MetricsCounter.add('error', 1)
 
 			if (self._error is not None):
 				L.warning("Error on a pipeline is already set!")
 
 			self._error = (context, event, exc, self.App.time())
-			L.warning("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
+			L.exception("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
 
 			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
 			self._evaluate_ready()
@@ -211,13 +211,39 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		return True
 
+	def link(self, ancestral_pipeline):
+		"""
+		Link this pipeline with an ancestral pipeline.
+		This is needed e. g. for a propagation of the throttling from child pipelines back to their ancestors.
+		If the child pipeline uses InternalSource, which may become throttled because the internal queue is full,
+		the throttling is propagated to the ancestral pipeline, so that its source may block incoming events until the
+		internal queue is empty again.
+
+		:param ancestral_pipeline: pipeline
+		"""
+
+		self._ancestral_pipelines.add(ancestral_pipeline)
+
+	def unlink(self, ancestral_pipeline):
+		"""
+		Unlink an ancestral pipeline from this pipeline.
+
+		:param ancestral_pipeline: pipeline
+		"""
+
+		self._ancestral_pipelines.remove(ancestral_pipeline)
 
 	def throttle(self, who, enable=True):
 		# L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
 		if enable:
 			self._throttles.add(who)
 		else:
-			self._throttles.remove(who)
+			if who in self._throttles:
+				self._throttles.remove(who)
+
+		# Throttle primary pipelines, if there are any
+		for ancestral_pipeline in self._ancestral_pipelines:
+			ancestral_pipeline.throttle(who=who, enable=enable)
 
 		self._evaluate_ready()
 
@@ -296,7 +322,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			raise
 
 
-	async def inject(self, context, event, depth):
+	def inject(self, context, event, depth):
 		"""
 		Inject method serves to inject events into the pipeline's depth defined by the depth attribute.
 		Every depth is interconnected with a generator object.
@@ -335,7 +361,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self.MetricsCounter.add('event.in', 1)
 
-		await self.inject(context, event, depth=0)
+		self.inject(context, event, depth=0)
 
 	# Future methods
 
@@ -398,6 +424,21 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			processor.set_depth(len(self.Processors) - 1)
 			self.Processors.append([])
 
+		self._post_add_processor(processor)
+
+
+	def remove_processor(self, processor_id):
+		for depth in self.Processors:
+			for idx, processor in enumerate(depth):
+				if processor.Id != processor_id:
+					continue
+				del depth[idx]
+				del self.ProfilerCounter[processor.Id]
+				if isinstance(processor, Analyzer):
+					del self.ProfilerCounter['analyzer_' + processor.Id]
+				return
+		raise KeyError("Cannot find processor '{}'".format(processor_id))
+
 
 	def insert_before(self, id, processor):
 		"""
@@ -409,6 +450,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			for idx, _processor in enumerate(processors):
 				if _processor.Id == id:
 					processors.insert(idx, processor)
+					self._post_add_processor(processor)
 					return True
 		return False
 
@@ -423,33 +465,36 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			for idx, _processor in enumerate(processors):
 				if _processor.Id == id:
 					processors.insert(idx + 1, processor)
+					self._post_add_processor(processor)
 					return True
 		return False
 
 
-	def build(self, source, *processors):
-		self.set_source(source)
-		for processor in processors:
-			self.append_processor(processor)
-			self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
+	def _post_add_processor(self, processor):
+		self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
+			'bspump.pipeline.profiler',
+			tags={
+				'processor': processor.Id,
+				'pipeline': self.Id,
+			},
+			init_values={'duration': 0.0, 'run': 0},
+			reset=self.ResetProfiler,
+		)
+		if isinstance(processor, Analyzer):
+			self.ProfilerCounter['analyzer_' + processor.Id] = self.MetricsService.create_counter(
 				'bspump.pipeline.profiler',
 				tags={
-					'processor': processor.Id,
+					'analyzer': processor.Id,
 					'pipeline': self.Id,
 				},
 				init_values={'duration': 0.0, 'run': 0},
 				reset=self.ResetProfiler,
 			)
-			if isinstance(processor, Analyzer):
-				self.ProfilerCounter['analyzer_' + processor.Id] = self.MetricsService.create_counter(
-					'bspump.pipeline.profiler',
-					tags={
-						'analyzer': processor.Id,
-						'pipeline': self.Id,
-					},
-					init_values={'duration': 0.0, 'run': 0},
-					reset=self.ResetProfiler,
-				)
+
+	def build(self, source, *processors):
+		self.set_source(source)
+		for processor in processors:
+			self.append_processor(processor)
 
 
 	def iter_processors(self):
@@ -459,6 +504,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		for processors in self.Processors:
 			for processor in processors:
 				yield processor
+
 
 	# Locate  ...
 
@@ -527,7 +573,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			'Log': [record.__dict__ for record in self.L.Deque]
 		}
 
-		for l, processors in enumerate(self.Processors):
+		for processors in self.Processors:
 			rest['Processors'].append(processors)
 
 		if self._error:

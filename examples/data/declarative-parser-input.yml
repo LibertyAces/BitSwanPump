@@ -1,0 +1,4 @@
+--- !REGEX_PARSE
+regex: '^(\w+)\s+(\w+)\s+(frank|march)?'
+items: [Foo, Bar, Bob]
+value: !EVENT

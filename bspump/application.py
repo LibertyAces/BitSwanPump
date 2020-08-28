@@ -73,23 +73,20 @@ build: {} [{}]
 			prog=prog,
 			description=description
 		)
-		parser.add_argument(
-			'-w', '--web',
-			const="0.0.0.0 80",
-			nargs="?",
-			metavar="ADDRESS",
-			help='Enable the web API, ADDRESS specify an listen address such as "0.0.0.0 80"'
-		)
 		return parser
 
 
 	def parse_arguments(self, args=None):
 		args = super().parse_arguments(args=args)
-		self._web_listen = args.web
+		self._web_listen = args.web_api
+		return args
 
 
 	async def main(self):
 		print("{} pipeline(s) ready.".format(len(self.PumpService.Pipelines)))
+		# TODO: Come up with solution how to reconsile this with unittests, maybe as follows?
+		# L.log(31, "{} pipeline(s) ready.".format(len(self.PumpService.Pipelines)))
+		pass
 
 
 	def _on_signal_usr1(self):

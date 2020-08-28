@@ -66,6 +66,7 @@ setup(
 	scripts=[
 		'bselastic',
 		'bskibana',
+		'bsintegrity',
 	],
 	cmdclass={
 		'build_py': custom_build_py,

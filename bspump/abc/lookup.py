@@ -29,6 +29,7 @@ class Lookup(abc.ABC, asab.ConfigObject):
 		"master_url": "",  # If not empty, a lookup is in slave mode (will load data from master or cache)
 		"master_lookup_id": "",  # If not empty, it specify the lookup id that will be used for loading from master
 		"master_timeout": 30,  # In secs.
+		"master_url_endpoint": "/bspump/v1/lookup"
 	}
 
 
@@ -51,7 +52,7 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			master_lookup_id = self.Config['master_lookup_id']
 			if master_lookup_id == "":
 				master_lookup_id = self.Id
-			self.MasterURL = master_url + '/lookup/' + master_lookup_id
+			self.MasterURL = "{}{}/{}".format(master_url, self.Config['master_url_endpoint'], master_lookup_id)
 		else:
 			self.MasterURL = None  # No master is defined
 
@@ -212,6 +213,18 @@ class Lookup(abc.ABC, asab.ConfigObject):
 
 class MappingLookup(Lookup, collections.abc.Mapping):
 	pass
+
+
+class AsyncLookupMixin(Lookup):
+	"""
+	AsyncLookupMixin makes sure the value from the lookup is obtained asynchronously.
+	AsyncLookupMixin is to be used for every technology that is external to BSPump,
+	respective that require a connection to resource server such as SQL etc.
+	"""
+
+	@abc.abstractmethod
+	async def get(self, key):
+		pass
 
 
 class DictionaryLookup(MappingLookup):

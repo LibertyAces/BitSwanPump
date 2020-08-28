@@ -15,7 +15,7 @@ class IteratorSource(TriggerSource):
 
 
 	async def cycle(self, *args, **kwags):
-		for event in self.Iterator():
+		for event in self.Iterator:
 			await self.process(event)
 
 
@@ -23,4 +23,4 @@ class IteratorGenerator(Generator):
 
 	async def generate(self, context, event, depth):
 		for item in event:
-			await self.Pipeline.inject(context, item, depth)
+			self.Pipeline.inject(context, item, depth)

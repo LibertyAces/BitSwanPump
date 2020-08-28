@@ -1,0 +1,6 @@
+---
+!ADD
+- 1 # Add a one second to the date/time from bellow
+- !DATETIME.PARSE
+  what: "1970-01-01 00:00:01"
+  format: "%Y-%m-%d %H:%M:%S"

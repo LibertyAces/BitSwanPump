@@ -3,6 +3,7 @@ import concurrent
 import concurrent.futures
 import logging
 import re
+import aiokafka
 
 import kafka
 import kafka.errors
@@ -13,6 +14,7 @@ from ..abc.source import Source
 #
 
 L = logging.getLogger(__name__)
+
 
 #
 
@@ -57,20 +59,23 @@ class KafkaSource(Source):
 		"max_partition_fetch_bytes": "",
 		"api_version": "auto",
 
-		"session_timeout_ms": 10000,  # Maximum time between two heartbeats that will not cause removal of the consumer from consumer group
+		"session_timeout_ms": 10000,
+		# Maximum time between two heartbeats that will not cause removal of the consumer from consumer group
 		"consumer_timeout_ms": "",
 		"request_timeout_ms": "",
 		"get_timeout_ms": 20000,
-
-		"event_block_size": 1000,  # The number of lines after which the main method enters the idle state to allow other operations to perform their tasks
+		# The number of lines after which the main method enters the idle
+		# state to allow other operations to perform their tasks
+		"event_block_size": 1000,
 		"event_idle_time": 0.01,  # The time for which the main method enters the idle state (see above)
+		# Specify partitions the consumer should use, use with caution when specifying more topics
+		"user_defined_partitions": '',
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.topics = re.split(r'\s*,\s*', self.Config['topic'])
-
 
 		consumer_params = {}
 
@@ -106,6 +111,8 @@ class KafkaSource(Source):
 		if v != "":
 			consumer_params['request_timeout_ms'] = int(v)
 
+		self.MaxRecords = self.Config.get('max_records')
+
 		self.GetTimeoutMs = int(self.Config.get("get_timeout_ms"))
 
 		self.Connection = pipeline.locate_connection(app, connection)
@@ -132,17 +139,35 @@ class KafkaSource(Source):
 		self.EventCounter = 0
 		self.EventBlockSize = int(self.Config["event_block_size"])
 		self.EventIdleTime = float(self.Config["event_idle_time"])
+		self.Offsets = {}
 
 	def create_consumer(self):
-		self.Partitions = None
-		self.Consumer = self.Connection.create_consumer(
-			*self.topics,
-			**self.ConsumerParams
-		)
+		if len(self.Config["user_defined_partitions"]) != 0:
+			self.Consumer = self.Connection.create_consumer(
+				**self.ConsumerParams
+			)
+			self.Partitions = \
+				[aiokafka.TopicPartition(topic, int(partition))
+					for topic, partition in zip(self.topics, self.Config["user_defined_partitions"].split(","))]
+			self.Consumer.assign(self.Partitions)
+
+		else:
+			self.Partitions = None
+			self.Consumer = self.Connection.create_consumer(
+				*self.topics,
+				**self.ConsumerParams
+			)
 
 	async def initialize_consumer(self):
 		await self.Consumer.start()
 		self.Partitions = self.Consumer.assignment()
+		self.Pipeline.PubSub.subscribe("bspump.pipeline.not_ready!", self._not_ready_handler)
+
+	async def _not_ready_handler(self, message_type, *args, **kwargs):
+		# Preventive commit, when the pipeline is throttled
+		if len(self._group_id) > 0:
+			# TODO: Consider cases where self.MaxRecords != 1
+			await self._commit(self.Offsets)
 
 	async def main(self):
 		await self.initialize_consumer()
@@ -150,24 +175,28 @@ class KafkaSource(Source):
 			while 1:
 				await self.Pipeline.ready()
 				t0 = time.perf_counter()
-				data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
+				data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs, max_records=self.MaxRecords)
 				self.ProfilerCounter.add('duration', time.perf_counter() - t0)
 				self.ProfilerCounter.add('run', 1)
 				if len(data) == 0:
 					for partition in self.Partitions:
 						await self.Consumer.seek_to_end(partition)
 					t0 = time.perf_counter()
-					data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs)
+					data = await self.Consumer.getmany(timeout_ms=self.GetTimeoutMs, max_records=self.MaxRecords)
 					self.ProfilerCounter.add('duration', time.perf_counter() - t0)
 					self.ProfilerCounter.add('run', 1)
 				for topic_partition, messages in data.items():
 					for message in messages:
-						# TODO: If pipeline is not ready, don't commit messages ...
+						self.Offsets[topic_partition] = message.offset
 						# Process message
 						context = {"kafka": message}
 						await self.process(message.value, context=context)
 						# Simulate event
 						await self._simulate_event()
+
+					if topic_partition in self.Offsets:
+						self.Offsets[topic_partition] += 1
+
 				if len(self._group_id) > 0:
 					await self._commit()
 		except concurrent.futures._base.CancelledError:
@@ -175,10 +204,14 @@ class KafkaSource(Source):
 		finally:
 			await self.Consumer.stop()
 
-	async def _commit(self):
+	async def _commit(self, offsets=None):
 		for i in range(self.Retry, 0, -1):
 			try:
-				await self.Consumer.commit()
+				if offsets is not None and len(offsets) > 0:
+					await self.Consumer.commit(offsets)
+				else:
+					await self.Consumer.commit()
+
 				break
 			except concurrent.futures._base.CancelledError as e:
 				# Ctrl-C -> terminate and exit
