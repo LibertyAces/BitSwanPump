@@ -38,7 +38,6 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		self.Id = id
 		self.Pipeline = pipeline
 		self.AnomalyStoragePipelineSource = anomaly_storage_pipeline_source
-		self.Context = {}
 		self.AnomalyClasses = anomaly_classes
 		self.ClosedAnomalyLongevity = int(self.Config["closed_anomaly_longevity"])
 		self.Index = str(self.Config["index"])
@@ -193,8 +192,6 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 			context = {
 				"es_id": key,
 			}
-			for _key, _value in self.Context.items():
-				context[_key] = _value
 			await anomaly_storage_pipeline_source.put_async(context, anomaly)
 			# Delete the closed anomaly after some time
 			if current_time > anomaly["ts_end"] + self.ClosedAnomalyLongevity:
@@ -212,8 +209,6 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 			context = {
 				"es_id": key,
 			}
-			for _key, _value in self.Context.items():
-				context[_key] = _value
 			await anomaly_storage_pipeline_source.put_async(context, anomaly)
 			self.AnomalyStorageCounter.add("anomalies.open.flushed", 1)
 
