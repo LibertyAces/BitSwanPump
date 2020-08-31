@@ -62,7 +62,13 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			if '.' in item:
 				value = with_dict
 				for i in item.split('.'):
-					value = value[i]
+					try:
+						if isinstance(value, list):
+							value = value[int(i)]
+						else:
+							value = value[i]
+					except TypeError:
+						value = None
 			else:
 				value = with_dict[item]
 		except KeyError:
