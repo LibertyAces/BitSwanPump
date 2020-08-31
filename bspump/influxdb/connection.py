@@ -48,8 +48,9 @@ class InfluxDBConnection(Connection):
 
 		self._url_write = self.url + 'write?db=' + self.Config["db"]
 
-		self._output_bucket_max_size = self.Config["output_bucket_max_size"]
+		self._output_bucket_max_size = int(self.Config["output_bucket_max_size"])
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+		self._timeout = aiohttp.ClientTimeout(total=int(self.Config['timeout']))
 		self.RetryEnabled = self.Config.getboolean("retry_enabled")
 
 		self.AllowedBulkResponseCodes = frozenset(
@@ -119,8 +120,9 @@ class InfluxDBConnection(Connection):
 				self.PubSub.publish("InfluxDBConnection.unpause!", self, asynchronously=True)
 
 			# Sending the data asynchronously
+
 			try:
-				async with aiohttp.ClientSession() as session:
+				async with aiohttp.ClientSession(timeout=self._timeout) as session:
 					async with session.post(self._url_write, data=_output_bucket) as resp:
 						resp_body = await resp.text()
 						if resp.status in self.AllowedBulkResponseCodes and self.RetryEnabled:
@@ -136,6 +138,7 @@ class InfluxDBConnection(Connection):
 							L.error(
 								"Failed to insert a line into Influx status:{} body:{}".format(resp.status, resp_body))
 							raise RuntimeError("Failed to insert line into Influx")
+
 			# Here we define errors, that we want to retry
 			except OSError:
 				if self.RetryEnabled:
