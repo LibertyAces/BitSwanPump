@@ -16,7 +16,7 @@ class LIST(Expression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		if self.With is None:
-			with_list = dict()
+			with_list = list()
 		else:
 			with_list = evaluate(self.With, context, event, *args, **kwargs)
 			if not isinstance(with_list, list):
