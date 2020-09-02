@@ -58,10 +58,10 @@ class IntegrityEnricher(Processor):
 
 		# Hash event using key, value, key, value ... sequence
 		_hash = hashlib.new(self.Algorithm)
-		for key in sorted(event.keys()):
-			_hash.update(str(key).encode("ascii"))
-			_hash.update(str(event[key]).encode("ascii"))
-		hash_base64 = base64.b64encode(_hash.digest()).decode("ascii")
+		for key in sorted(event.keys()):  # TODO: Remove encoding entirely
+			_hash.update(str(key).encode("utf-8"))
+			_hash.update(str(event[key]).encode("utf-8"))
+		hash_base64 = base64.b64encode(_hash.digest()).decode("utf-8")
 
 		# Store the hash as base64 string
 		event[self.HashKey] = hash_base64
