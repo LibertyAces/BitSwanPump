@@ -4,6 +4,8 @@ import secrets
 import hashlib
 import base64
 
+import orjson
+
 from ..abc.processor import Processor
 
 ###
@@ -57,11 +59,13 @@ class IntegrityEnricher(Processor):
 			event.pop(self.PrevHashKey, None)
 
 		# Hash event using key, value, key, value ... sequence
-		_hash = hashlib.new(self.Algorithm)
-		for key in sorted(event.keys()):  # TODO: Remove encoding entirely
-			_hash.update(str(key).encode("utf-8"))
-			_hash.update(str(event[key]).encode("utf-8"))
-		hash_base64 = base64.b64encode(_hash.digest()).decode("utf-8")
+		h = hashlib.new(self.Algorithm)
+		h.update(orjson.dumps(
+			event,
+			default=orjson_default,
+			option=orjson.OPT_NON_STR_KEYS | orjson.OPT_SORT_KEYS)
+		)
+		hash_base64 = h.hexdigest()
 
 		# Store the hash as base64 string
 		event[self.HashKey] = hash_base64
@@ -70,3 +74,9 @@ class IntegrityEnricher(Processor):
 		self.PreviousHash = hash_base64
 
 		return event
+
+
+def orjson_default(obj):
+	if isinstance(obj, bytes):
+		return base64.b64encode(obj).decode('ascii')
+	raise TypeError
