@@ -301,7 +301,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				if depth > 0:
 					raise  # Handle error on the top depth
 				self.set_error(context, event, e)
-				e = None # Event is discarted
+				event = None  # Event is discarted
 
 			finally:
 				self.ProfilerCounter[processor.Id].add('duration', time.perf_counter() - t0)
