@@ -239,7 +239,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			self._throttles.add(who)
 		else:
 			if who in self._throttles:
-				self._throttles.remove(who)
+				try:
+					self._throttles.remove(who)
+				except KeyError:
+					raise KeyError("'{}' not present among throttles".format(who))
 
 		# Throttle primary pipelines, if there are any
 		for ancestral_pipeline in self._ancestral_pipelines:
