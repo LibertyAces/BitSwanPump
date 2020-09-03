@@ -23,12 +23,16 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 	def __init__(self, app, pipeline, id=None, config=None):
 		start_time=datetime.datetime(year=2020, month=8, day=31, hour=8, minute=0, second=0).timestamp()
 		super().__init__(
+			columns=20,
+			resolution=30,
+			dtype="i2",
+			analyze_on_clock=True,
 			app=app, pipeline=pipeline, start_time=start_time, clock_driven=False,
-			id=id, config=config, analyze_on_clock=True, dtype="i2")
+			id=id, config=config)
 		self.MaxTimestamp = 0.0
 
 	def predicate(self, context, event):
-		if '@timestamp' not in event:
+		if '@timestamp' not in event or 'user' not in event:
 			return False
 		return True
 
@@ -49,6 +53,12 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 			row = self.TimeWindow.add_row(event["user"])
 
 		self.TimeWindow.Array[row, column] += 1
+		print(">>> Item added to row: {}, column: {}, sum: {} ({})".format(
+			row,
+			column,
+			self.TimeWindow.Array[row, column],
+			str(event)
+		))
 
 	def analyze(self):
 		if self.TimeWindow.Array.shape[0] == 0:
@@ -57,11 +67,10 @@ class MyTimeWindowAnalyzer(bspump.analyzer.TimeWindowAnalyzer):
 		# selecting part of matrix specified in configuration
 		x = self.TimeWindow.Array[:, :]
 
-		index = 0
-		for item in x[0]:
-			if item > 2:
-				print("More than two logins at row '{}'.".format(index))
-			index += 1
+		for row in range(0, len(x)):
+			for column in range(0, len(x[row])):
+				if x[row][column] > 2:
+					print("More than two logins at row '{}' and column '{}'.".format(row, column))
 
 
 class SamplePipeline(bspump.Pipeline):
