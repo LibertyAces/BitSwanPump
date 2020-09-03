@@ -239,7 +239,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			self._throttles.add(who)
 		else:
 			if who in self._throttles:
-				self._throttles.remove(who)
+				try:
+					self._throttles.remove(who)
+				except KeyError:
+					raise KeyError("'{}' not present among throttles".format(who))
 
 		# Throttle primary pipelines, if there are any
 		for ancestral_pipeline in self._ancestral_pipelines:
@@ -293,12 +296,13 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			t0 = time.perf_counter()
 			try:
 				event = processor.process(context, event)
+
 			except BaseException as e:
 				if depth > 0:
 					raise  # Handle error on the top depth
-				L.exception("Pipeline processing error in the '{}' on depth {}".format(self.Id, depth))
 				self.set_error(context, event, e)
-				raise
+				e = None # Event is discarted
+
 			finally:
 				self.ProfilerCounter[processor.Id].add('duration', time.perf_counter() - t0)
 				self.ProfilerCounter[processor.Id].add('run', 1)
@@ -314,12 +318,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		assert(event is not None)
 
-		try:
-			raise ProcessingError("Incomplete pipeline, event '{}' is not consumed by a Sink".format(event))
-		except BaseException as e:
-			L.exception("Pipeline processing error in the '{}' on depth {}".format(self.__class__.__name__, depth))
-			self.set_error(context, event, e)
-			raise
+		self.set_error(
+			context,
+			event,
+			ProcessingError("Incomplete pipeline, event '{}' is not consumed by a Sink".format(event))
+		)
 
 
 	def inject(self, context, event, depth):
@@ -404,7 +407,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		exception = future.exception()
 		if exception is not None:
-			self.set_error(None, None, exception)
+			try:
+				self.set_error(None, None, exception)
+			except Exception:
+				# The exception is handled by set_error
+				pass
 
 	# Construction
 
