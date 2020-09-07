@@ -7,7 +7,6 @@ python:
 install:
   - sudo apt-get -y install unixodbc-dev
   - python setup.py install
-  - pip install https://downloads.tableau.com/tssoftware/Tableau-SDK-Python-Linux-64Bit-10-3-23.tar.gz
   - pip install "pyarrow>=0.16.0"
   - pip install -r requirements-dev.txt
   - pip install codecov
