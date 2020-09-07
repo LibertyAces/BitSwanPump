@@ -8,9 +8,10 @@ class IP_PARSE(Expression):
 	Parses string, hex number or decimal number to IP address.
 	"""
 
-	def __init__(self, app, *, value):
+	# TODO: IP.PARSE should be able to receive expressions as values natively
+	def __init__(self, app, *, value=None, arg_value=None):
 		super().__init__(app)
-		self.Value = value
+		self.Value = value if value is not None else arg_value
 
 	def __call__(self, context, event, *args, **kwargs):
 		ip = IPAddress(evaluate(self.Value, context, event, *args, **kwargs))
