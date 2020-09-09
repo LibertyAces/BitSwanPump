@@ -32,4 +32,4 @@ class LOOKUP_CONTAINS(LOOKUP_GET):
 	def __call__(self, context, event, *args, **kwargs):
 		lookup = self.PumpService.locate_lookup(self.LookupID, context)
 		key = self.build_key(context, event, *args, **kwargs)
-		return key in lookup
+		return lookup.get(key) is not None
