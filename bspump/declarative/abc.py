@@ -1,5 +1,12 @@
 import abc
 import functools
+import logging
+
+#
+
+L = logging.getLogger(__name__)
+
+#
 
 
 class Expression(abc.ABC):
@@ -36,7 +43,11 @@ class SequenceExpression(Expression):
 
 
 def evaluate(value, context, event, *args, **kwargs):
-	if isinstance(value, Expression):
-		return value(context, event, *args, **kwargs)
-	else:
-		return value
+	try:
+		if isinstance(value, Expression):
+			return value(context, event, *args, **kwargs)
+		else:
+			return value
+	except Exception as e:
+		L.exception("During evaluate, the following exception occurred: '{}'".format(e))
+		return None
