@@ -11,8 +11,8 @@ Usage:
 ``
 	"""
 
-	def __init__(self, app, *, value):
-		super().__init__(app)
+	def __init__(self, app, location, *, value):
+		super().__init__(app, location)
 		assert(value == "")
 
 	def __call__(self, context, event, *args, **kwargs):
@@ -22,8 +22,8 @@ Usage:
 
 class CONTEXT_SET(Expression):
 
-	def __init__(self, app, *, arg_set, arg_what=None):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_set, arg_what=None):
+		super().__init__(app, location)
 		self.What = arg_what
 		self.Set = arg_set
 

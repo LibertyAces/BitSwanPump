@@ -4,8 +4,8 @@ from ...abc import Expression, evaluate
 class LOWER(Expression):
 
 
-	def __init__(self, app, *, arg_what):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_what):
+		super().__init__(app, location)
 		self.Value = arg_what
 
 

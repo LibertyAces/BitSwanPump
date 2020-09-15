@@ -3,8 +3,8 @@ from ...abc import Expression, evaluate
 
 class JOIN(Expression):
 
-	def __init__(self, app, *, arg_items, arg_delimiter=" ", arg_miss=""):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_items, arg_delimiter=" ", arg_miss=""):
+		super().__init__(app, location)
 		self.Items = arg_items
 		self.Char = arg_delimiter
 		self.Miss = arg_miss  # Could be None

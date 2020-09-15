@@ -3,8 +3,8 @@ from ...abc import Expression, evaluate
 
 class ENDSWITH(Expression):
 
-	def __init__(self, app, *, arg_what, arg_postfix):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_what, arg_postfix):
+		super().__init__(app, location)
 		self.What = arg_what
 		self.Postfix = arg_postfix
 

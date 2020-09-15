@@ -7,8 +7,8 @@ class IN(Expression):
 	"""
 
 
-	def __init__(self, app, *, arg_what, arg_where):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_what, arg_where):
+		super().__init__(app, location)
 		self.Where = arg_where
 		self.What = arg_what
 

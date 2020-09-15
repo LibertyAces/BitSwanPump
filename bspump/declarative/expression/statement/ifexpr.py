@@ -6,8 +6,8 @@ class IF(Expression):
 	Checks "if" condition passes - if so, proceeds with "then" expression, otherwise with "else"
 	"""
 
-	def __init__(self, app, *, arg_test, arg_then=True, arg_else=False):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_test, arg_then=True, arg_else=False):
+		super().__init__(app, location)
 		self.Test = arg_test
 		self.Then = arg_then
 		self.Else = arg_else

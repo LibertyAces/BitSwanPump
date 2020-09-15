@@ -3,8 +3,8 @@ from ...abc import Expression, evaluate
 
 class LOOKUP_GET(Expression):
 
-	def __init__(self, app, *, arg_in, arg_what):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_in, arg_what):
+		super().__init__(app, location)
 		self.PumpService = app.get_service("bspump.PumpService")
 		self.LookupID = arg_in
 		self.Key = arg_what

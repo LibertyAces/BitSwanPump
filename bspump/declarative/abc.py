@@ -2,6 +2,8 @@ import abc
 import functools
 import logging
 
+from .declerror import DeclarationError
+
 #
 
 L = logging.getLogger(__name__)
@@ -11,13 +13,17 @@ L = logging.getLogger(__name__)
 
 class Expression(abc.ABC):
 
-	def __init__(self, app):
+	def __init__(self, app, location=None):
 		self.App = app
+		self.Location = location
 		self.Node = None  # The YAML node, assigned by a builder during YAML parsing
 
 	@abc.abstractmethod
 	def __call__(self, context, event, *args, **kwargs):
 		pass
+
+	def get_location(self):
+		return self.Location
 
 
 class SequenceExpression(Expression):
@@ -33,8 +39,8 @@ class SequenceExpression(Expression):
 		)
 	'''
 
-	def __init__(self, app, *, sequence):
-		super().__init__(app)
+	def __init__(self, app, location, *, sequence):
+		super().__init__(app, location)
 		self.Items = sequence
 
 	def reduce(self, operator, context, event, *args, **kwargs):
@@ -49,5 +55,4 @@ def evaluate(value, context, event, *args, **kwargs):
 		else:
 			return value
 	except Exception as e:
-		L.exception("During evaluate, the following exception occurred: '{}'".format(e))
-		return None
+		raise DeclarationError(original_exception=e, location=value.get_location())

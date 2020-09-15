@@ -9,8 +9,8 @@ class IP_PARSE(Expression):
 	"""
 
 	# TODO: IP.PARSE should be able to receive expressions as values natively
-	def __init__(self, app, *, value=None, arg_value=None):
-		super().__init__(app)
+	def __init__(self, app, location, *, value=None, arg_value=None):
+		super().__init__(app, location)
 		self.Value = value if value is not None else arg_value
 
 	def __call__(self, context, event, *args, **kwargs):

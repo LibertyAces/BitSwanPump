@@ -34,8 +34,8 @@ This is how to create the empty dictionary:
 ```
 """
 
-	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_unset=None, arg_add=None, arg_update=None, arg_mandatory=None):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_with=None, arg_set=None, arg_modify=None, arg_unset=None, arg_add=None, arg_update=None, arg_mandatory=None):
+		super().__init__(app, location)
 
 		self.With = arg_with
 

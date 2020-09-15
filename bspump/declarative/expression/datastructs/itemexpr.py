@@ -27,8 +27,8 @@ default: 0
 Scalar form has some limitations (e.g no default value) but it is more compact
 	"""
 
-	def __init__(self, app, *, arg_with=None, arg_item=None, arg_default=None, value=None):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_with=None, arg_item=None, arg_default=None, value=None):
+		super().__init__(app, location)
 
 		if value is not None:
 			# Scalar value provided
@@ -36,17 +36,17 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 
 			with_ = with_.upper()
 			if with_ == 'EVENT':
-				self.With = EVENT(app, value='')
+				self.With = EVENT(app, location=location, value='')
 			elif with_ == 'CONTEXT':
-				self.With = CONTEXT(app, value='')
+				self.With = CONTEXT(app, location=location, value='')
 			elif with_ == 'KWARGS':
-				self.With = KWARGS(app, value='')
+				self.With = KWARGS(app, location=location, value='')
 			elif with_ == 'ARG':
-				self.With = ARG(app, value='')
+				self.With = ARG(app, location=location, value='')
 			else:
 				raise RuntimeError("Invalid item argument '{}' - must be EVENT, CONTEXT, KWARGS, ARG", format(with_))
 
-			self.Item = VALUE(app, value=item)
+			self.Item = VALUE(app, location=location, value=item)
 			self.Default = None
 
 		else:

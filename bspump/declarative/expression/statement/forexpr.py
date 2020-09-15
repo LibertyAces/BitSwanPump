@@ -4,8 +4,8 @@ from ...abc import Expression, evaluate
 class FOR(Expression):
 
 
-	def __init__(self, app, *, arg_each, arg_do):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_each, arg_do):
+		super().__init__(app, location)
 		self.Each = arg_each
 		self.Do = arg_do
 

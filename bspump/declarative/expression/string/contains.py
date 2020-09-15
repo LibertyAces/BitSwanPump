@@ -4,8 +4,8 @@ from ...abc import Expression, evaluate
 class CONTAINS(Expression):
 
 
-	def __init__(self, app, *, arg_what, arg_substring):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_what, arg_substring):
+		super().__init__(app, location)
 		self.Value = arg_what
 		self.Substring = arg_substring
 

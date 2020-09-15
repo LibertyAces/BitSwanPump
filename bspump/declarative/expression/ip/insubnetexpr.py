@@ -8,8 +8,8 @@ class IP_INSUBNET(Expression):
 	Checks if expression is of given subnet.
 	"""
 
-	def __init__(self, app, *, arg_subnet, arg_what):
-		super().__init__(app)
+	def __init__(self, app, location, *, arg_subnet, arg_what):
+		super().__init__(app, location)
 		self.Subnet = arg_subnet
 		self.Value = arg_what
 
