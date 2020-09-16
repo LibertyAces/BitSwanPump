@@ -36,17 +36,17 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 
 			with_ = with_.upper()
 			if with_ == 'EVENT':
-				self.With = EVENT(app, value='')
+				self.With = EVENT(app=app, value='')
 			elif with_ == 'CONTEXT':
-				self.With = CONTEXT(app, value='')
+				self.With = CONTEXT(app=app, value='')
 			elif with_ == 'KWARGS':
-				self.With = KWARGS(app, value='')
+				self.With = KWARGS(app=app, value='')
 			elif with_ == 'ARG':
-				self.With = ARG(app, value='')
+				self.With = ARG(app=app, value='')
 			else:
 				raise RuntimeError("Invalid item argument '{}' - must be EVENT, CONTEXT, KWARGS, ARG", format(with_))
 
-			self.Item = VALUE(app, value=item)
+			self.Item = VALUE(app=app, value=item)
 			self.Default = None
 
 		else:

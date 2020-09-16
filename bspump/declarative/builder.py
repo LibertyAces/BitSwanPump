@@ -6,16 +6,13 @@ import yaml
 from . import expression
 from .libraries import FileDeclarationLibrary
 
+from .declerror import DeclarationError
 
 ###
 
 L = logging.getLogger(__name__)
 
 ###
-
-
-class DeclarationError(RuntimeError):
-	pass
 
 
 class ExpressionBuilder(object):
@@ -26,6 +23,7 @@ class ExpressionBuilder(object):
 	def __init__(self, app, libraries=None):
 		self.App = app
 		self.ExpressionClasses = {}
+		self.Identifier = None
 
 		self.Config = {}
 
@@ -52,7 +50,6 @@ class ExpressionBuilder(object):
 		self.Config.update(config)
 
 	def read(self, identifier):
-
 		# Read declaration from available declarations libraries
 		for declaration_library in self.Libraries:
 			declaration = declaration_library.read(identifier)
@@ -63,10 +60,12 @@ class ExpressionBuilder(object):
 
 
 	def parse(self, declaration, source_name=None):
+		self.Identifier = None
 		if isinstance(declaration, str) and declaration.startswith('---'):
 			pass
 		else:
-			declaration = self.read(declaration)
+			self.Identifier = declaration
+			declaration = self.read(self.Identifier)
 
 		loader = yaml.Loader(declaration)
 		if source_name is not None:
@@ -111,22 +110,30 @@ class ExpressionBuilder(object):
 		assert(node.tag[0] == '!')
 		xclass = self.ExpressionClasses[node.tag[1:]]
 
+		location = node.start_mark
+		if self.Identifier is not None:
+			# https://github.com/yaml/pyyaml/blob/4c2e993321ad29a02a61c4818f3cef9229219003/lib3/yaml/reader.py
+			location = location.replace("<unicode string>", str(self.Identifier))
+
 		try:
 			if isinstance(node, yaml.ScalarNode):
 				value = loader.construct_scalar(node)
-				obj = xclass(self.App, value=value)
+				obj = xclass(app=self.App, value=value)
+				obj.set_location(location)
 				obj.Node = node
 				return obj
 
 			elif isinstance(node, yaml.SequenceNode):
 				value = loader.construct_sequence(node)
-				obj = xclass(self.App, sequence=value)
+				obj = xclass(app=self.App, sequence=value)
+				obj.set_location(location)
 				obj.Node = node
 				return obj
 
 			elif isinstance(node, yaml.MappingNode):
 				value = loader.construct_mapping(node)
-				obj = xclass(self.App, **dict(('arg_' + k, v) for k, v in value.items()))
+				obj = xclass(app=self.App, **dict(('arg_' + k, v) for k, v in value.items()))
+				obj.set_location(location)
 				obj.Node = node
 				return obj
 

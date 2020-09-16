@@ -22,7 +22,7 @@ class CAST(Expression):
 		if value is not None:
 			# Scalar variant
 
-			self.Value = ARG(app, value='')
+			self.Value = ARG(app=app, value='')
 
 			# Detect type cast function
 			if value == "int":
