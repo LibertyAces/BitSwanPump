@@ -61,8 +61,9 @@ This is how to create the empty dictionary:
 
 		self.Update = arg_update
 
-
 	def __call__(self, context, event, *args, **kwargs):
+		field_alias_lookup = context.get("field_alias")
+
 		if self.With is None:
 			with_dict = dict()
 		else:
@@ -82,14 +83,33 @@ This is how to create the empty dictionary:
 				try:
 					orig = with_dict[key]
 				except KeyError:
-					continue
+					try:
+						if field_alias_lookup is None:
+							continue
+						key = field_alias_lookup.get(key)
+						if key is None:
+							continue
+						orig = with_dict[key]
+					except KeyError:
+						continue
 				with_dict[key] = evaluate(value, context, event, orig, *args, **kwargs)
 
 		if self.Add is not None:
 			for key, value in self.Add.items():
 				v = evaluate(value, context, event, *args, **kwargs)
 				if v is not None:
-					with_dict[key] += v
+					try:
+						with_dict[key] += v
+					except KeyError:
+						try:
+							if field_alias_lookup is None:
+								continue
+							key = field_alias_lookup.get(key)
+							if key is None:
+								continue
+							with_dict[key] += v
+						except KeyError:
+							continue
 
 		if self.Update is not None:
 			update_dict = evaluate(self.Update, context, event, with_dict, *args, **kwargs)
@@ -98,12 +118,23 @@ This is how to create the empty dictionary:
 
 		if self.Unset is not None:
 			for key in self.Unset:
-				with_dict.pop(key, None)
+				popped = with_dict.pop(key, None)
+				if popped is None:
+					if field_alias_lookup is None:
+						continue
+					key = field_alias_lookup.get(key)
+					if key is None:
+						continue
+					with_dict.pop(key, None)
 
 		# Check that all mandatory fields are present in the dictionary
 		if self.Mandatory is not None:
 			for mandatory_field in self.Mandatory:
 				if mandatory_field not in with_dict:
+					if field_alias_lookup is not None:
+						mandatory_field = field_alias_lookup.get(mandatory_field)
+						if mandatory_field is not None and mandatory_field in with_dict:
+							continue
 					# TODO: Remove eventually when there are more occurrences among other expressions as well
 					L.warning("Mandatory field '{}' not present in dictionary. Returning None.".format(mandatory_field))
 					return None
