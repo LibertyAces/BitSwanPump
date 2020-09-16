@@ -58,8 +58,6 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 		with_dict = evaluate(self.With, context, event, *args, **kwargs)
 		item = evaluate(self.Item, context, event, *args, **kwargs)
 
-		raise RuntimeError("a")
-
 		try:
 			if '.' in item:
 				value = with_dict
