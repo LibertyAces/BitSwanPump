@@ -13,14 +13,17 @@ L = logging.getLogger(__name__)
 
 class Expression(abc.ABC):
 
-	def __init__(self, app, location=None):
+	def __init__(self, app=None):
 		self.App = app
-		self.Location = location
+		self.Location = None
 		self.Node = None  # The YAML node, assigned by a builder during YAML parsing
 
 	@abc.abstractmethod
 	def __call__(self, context, event, *args, **kwargs):
 		pass
+
+	def set_location(self, location):
+		self.Location = location
 
 	def get_location(self):
 		return self.Location
@@ -39,8 +42,8 @@ class SequenceExpression(Expression):
 		)
 	'''
 
-	def __init__(self, app, location, *, sequence):
-		super().__init__(app, location)
+	def __init__(self, app, *, sequence):
+		super().__init__(app)
 		self.Items = sequence
 
 	def reduce(self, operator, context, event, *args, **kwargs):

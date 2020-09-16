@@ -11,8 +11,8 @@ Usage:
 ``
 	"""
 
-	def __init__(self, app, location, *, value):
-		super().__init__(app, location)
+	def __init__(self, app, *, value):
+		super().__init__(app)
 		assert(value == "")
 
 	def __call__(self, context, event, *args, **kwargs):
@@ -29,8 +29,8 @@ Usage:
 ``
 	"""
 
-	def __init__(self, app, location, *, value):
-		super().__init__(app, location)
+	def __init__(self, app, *, value):
+		super().__init__(app)
 		assert(value == "")
 
 	def __call__(self, context, event, *args, **kwargs):
@@ -48,8 +48,8 @@ Usage:
 ``
 	"""
 
-	def __init__(self, app, location, *, value):
-		super().__init__(app, location)
+	def __init__(self, app, *, value):
+		super().__init__(app)
 		self.ArgName = value
 
 	def __call__(self, context, event, *args, **kwargs):
@@ -57,8 +57,8 @@ Usage:
 
 
 class ARGS(Expression):
-	def __init__(self, app, location, *, value):
-		super().__init__(app, location)
+	def __init__(self, app, *, value):
+		super().__init__(app)
 		assert(value == '')
 
 	def __call__(self, context, event, *args, **kwargs):
@@ -66,8 +66,8 @@ class ARGS(Expression):
 
 
 class ARG(Expression):
-	def __init__(self, app, location, *, value):
-		super().__init__(app, location)
+	def __init__(self, app, *, value):
+		super().__init__(app)
 		assert(value == '')
 		self.ArgNumber = 0
 

@@ -4,8 +4,8 @@ from ...abc import Expression, evaluate
 class CUT(Expression):
 
 
-	def __init__(self, app, location, *, arg_what, arg_delimiter, arg_field):
-		super().__init__(app, location)
+	def __init__(self, app, *, arg_what, arg_delimiter, arg_field):
+		super().__init__(app)
 
 		self.Value = arg_what
 

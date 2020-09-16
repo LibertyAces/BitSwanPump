@@ -27,8 +27,8 @@ default: 0
 Scalar form has some limitations (e.g no default value) but it is more compact
 	"""
 
-	def __init__(self, app, location, *, arg_with=None, arg_item=None, arg_default=None, value=None):
-		super().__init__(app, location)
+	def __init__(self, app, *, arg_with=None, arg_item=None, arg_default=None, value=None):
+		super().__init__(app)
 
 		if value is not None:
 			# Scalar value provided
@@ -36,17 +36,17 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 
 			with_ = with_.upper()
 			if with_ == 'EVENT':
-				self.With = EVENT(app, location=location, value='')
+				self.With = EVENT(app=app, value='')
 			elif with_ == 'CONTEXT':
-				self.With = CONTEXT(app, location=location, value='')
+				self.With = CONTEXT(app=app, value='')
 			elif with_ == 'KWARGS':
-				self.With = KWARGS(app, location=location, value='')
+				self.With = KWARGS(app=app, value='')
 			elif with_ == 'ARG':
-				self.With = ARG(app, location=location, value='')
+				self.With = ARG(app=app, value='')
 			else:
 				raise RuntimeError("Invalid item argument '{}' - must be EVENT, CONTEXT, KWARGS, ARG", format(with_))
 
-			self.Item = VALUE(app, location=location, value=item)
+			self.Item = VALUE(app=app, value=item)
 			self.Default = None
 
 		else:
@@ -57,6 +57,8 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 	def __call__(self, context, event, *args, **kwargs):
 		with_dict = evaluate(self.With, context, event, *args, **kwargs)
 		item = evaluate(self.Item, context, event, *args, **kwargs)
+
+		raise RuntimeError("a")
 
 		try:
 			if '.' in item:

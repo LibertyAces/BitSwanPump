@@ -11,8 +11,8 @@ class DATETIME_FORMAT(Expression):
 	Format example: "%Y-%m-%d %H:%M:%S"
 	"""
 
-	def __init__(self, app, location, *, arg_format, arg_with=None):
-		super().__init__(app, location)
+	def __init__(self, app, *, arg_format, arg_with=None):
+		super().__init__(app)
 		self.Format = arg_format
 		self.Value = arg_with if arg_with is not None else datetime.datetime.utcnow()
 

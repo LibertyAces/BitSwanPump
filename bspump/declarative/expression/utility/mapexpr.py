@@ -19,8 +19,8 @@ class MAP(Expression):
 	"""
 
 
-	def __init__(self, app, location, *, arg_what, arg_in, arg_else=None):
-		super().__init__(app, location)
+	def __init__(self, app, *, arg_what, arg_in, arg_else=None):
+		super().__init__(app)
 		self.Value = arg_what
 		self.Default = arg_else
 		self.Map = arg_in

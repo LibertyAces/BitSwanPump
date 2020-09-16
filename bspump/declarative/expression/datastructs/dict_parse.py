@@ -36,8 +36,8 @@ class QueryStringParser(object):
 
 class DICT_PARSE(Expression):
 
-	def __init__(self, app, location, *, arg_what, arg_type=None, arg_set=None, arg_unset=None, arg_update=None):
-		super().__init__(app, location)
+	def __init__(self, app, *, arg_what, arg_type=None, arg_set=None, arg_unset=None, arg_update=None):
+		super().__init__(app)
 
 		self.Value = arg_what
 		self.Type = arg_type

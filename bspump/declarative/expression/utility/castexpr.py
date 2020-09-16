@@ -16,13 +16,13 @@ class CAST(Expression):
 	Casts "value" to "type"
 	"""
 
-	def __init__(self, app, location, *, arg_what=None, arg_type=None, arg_default=None, value=None):
-		super().__init__(app, location)
+	def __init__(self, app, *, arg_what=None, arg_type=None, arg_default=None, value=None):
+		super().__init__(app)
 
 		if value is not None:
 			# Scalar variant
 
-			self.Value = ARG(app, location=location, value='')
+			self.Value = ARG(app=app, value='')
 
 			# Detect type cast function
 			if value == "int":

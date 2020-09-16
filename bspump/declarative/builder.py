@@ -118,19 +118,22 @@ class ExpressionBuilder(object):
 		try:
 			if isinstance(node, yaml.ScalarNode):
 				value = loader.construct_scalar(node)
-				obj = xclass(self.App, location=location, value=value)
+				obj = xclass(app=self.App, value=value)
+				obj.set_location(location)
 				obj.Node = node
 				return obj
 
 			elif isinstance(node, yaml.SequenceNode):
 				value = loader.construct_sequence(node)
-				obj = xclass(self.App, location=location, sequence=value)
+				obj = xclass(app=self.App, sequence=value)
+				obj.set_location(location)
 				obj.Node = node
 				return obj
 
 			elif isinstance(node, yaml.MappingNode):
 				value = loader.construct_mapping(node)
-				obj = xclass(self.App, location=location, **dict(('arg_' + k, v) for k, v in value.items()))
+				obj = xclass(app=self.App, **dict(('arg_' + k, v) for k, v in value.items()))
+				obj.set_location(location)
 				obj.Node = node
 				return obj
 

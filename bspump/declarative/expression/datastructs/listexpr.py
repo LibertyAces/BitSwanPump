@@ -3,8 +3,8 @@ from ...abc import Expression, evaluate
 
 class LIST(Expression):
 
-	def __init__(self, app, location, *, arg_with=None, arg_append=None):
-		super().__init__(app, location)
+	def __init__(self, app, *, arg_with=None, arg_append=None):
+		super().__init__(app)
 
 		self.With = arg_with
 
