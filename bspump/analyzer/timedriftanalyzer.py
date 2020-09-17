@@ -69,7 +69,7 @@ class TimeDriftAnalyzer(Analyzer):
 		'''
 			Returns the time difference of current event.
 		'''
-		diff = self.App.time() * 1000 - event_timestamp
+		diff = self.App.time() - event_timestamp
 		return diff
 
 
@@ -91,11 +91,11 @@ class TimeDriftAnalyzer(Analyzer):
 	def analyze(self):
 		# in seconds
 		if len(self.History) > 0:
-			avg = np.mean(self.History) / 1000
-			median = np.median(self.History) / 1000
-			stddev = np.std(self.History) / 1000
-			min_v = np.min(self.History) / 1000
-			max_v = np.max(self.History) / 1000
+			avg = np.mean(self.History)
+			median = np.median(self.History)
+			stddev = np.std(self.History)
+			min_v = np.min(self.History)
+			max_v = np.max(self.History)
 			self.History = []
 		else:
 			avg = median = stddev = min_v = max_v = 0.0
