@@ -36,17 +36,17 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 
 			with_ = with_.upper()
 			if with_ == 'EVENT':
-				self.With = EVENT(app=app, value='')
+				self.With = EVENT(app, value='')
 			elif with_ == 'CONTEXT':
-				self.With = CONTEXT(app=app, value='')
+				self.With = CONTEXT(app, value='')
 			elif with_ == 'KWARGS':
-				self.With = KWARGS(app=app, value='')
+				self.With = KWARGS(app, value='')
 			elif with_ == 'ARG':
-				self.With = ARG(app=app, value='')
+				self.With = ARG(app, value='')
 			else:
 				raise RuntimeError("Invalid item argument '{}' - must be EVENT, CONTEXT, KWARGS, ARG", format(with_))
 
-			self.Item = VALUE(app=app, value=item)
+			self.Item = VALUE(app, value=item)
 			self.Default = None
 
 		else:
@@ -55,6 +55,7 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			self.Default = arg_default
 
 	def __call__(self, context, event, *args, **kwargs):
+		field_alias_lookup = context.get("field_alias")
 		with_dict = evaluate(self.With, context, event, *args, **kwargs)
 		item = evaluate(self.Item, context, event, *args, **kwargs)
 
@@ -67,11 +68,25 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 							value = value[int(i)]
 						else:
 							value = value[i]
+					except KeyError as e:
+						if field_alias_lookup is None:
+							raise e
+						i = field_alias_lookup.get(i)
+						if i is None:
+							raise e
+						value = value[i]
 					except TypeError:
 						value = None
 			else:
 				value = with_dict[item]
 		except KeyError:
+			try:
+				if field_alias_lookup is not None:
+					item = field_alias_lookup.get(item)
+					if item is not None:
+						return with_dict[item]
+			except KeyError:
+				pass
 			if self.Default is None:
 				return None
 			return evaluate(self.Default, context, event, *args, **kwargs)
