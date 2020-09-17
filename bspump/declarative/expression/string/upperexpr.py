@@ -9,4 +9,7 @@ class UPPER(Expression):
 		self.Value = arg_what
 
 	def __call__(self, context, event, *args, **kwargs):
-		return evaluate(self.Value, context, event, *args, **kwargs).upper()
+		try:
+			return evaluate(self.Value, context, event, *args, **kwargs).upper()
+		except AttributeError:
+			return None

@@ -10,4 +10,7 @@ class LOWER(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		return evaluate(self.Value, context, event, *args, **kwargs).lower()
+		try:
+			return evaluate(self.Value, context, event, *args, **kwargs).lower()
+		except AttributeError:
+			return None
