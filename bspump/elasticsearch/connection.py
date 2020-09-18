@@ -223,17 +223,35 @@ class ElasticSearchBulk(object):
 			},
 			timeout=timeout,
 		) as resp:
-			if resp.status == 200:
-				await resp.read()
-				return
 
+			# Obtain the response from ElasticSearch,
+			# which should always be a json
 			resp_body = await resp.json()
 
-			L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
-				resp.status,
-				resp_body
-			))
-			raise RuntimeError("Failed to insert document into ElasticSearch")
+			if resp.status == 200:
+
+				# Check that all documents were successfully inserted to ElasticSearch
+				# Since 'filter_path=items.*.error' is set, only error items are returned
+				items = resp_body.get("items")
+				if items is None:
+					return
+
+				# Some of the documents were not inserted properly,
+				# usually because of attributes mismatch, see:
+				# https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+				for item in items:
+					L.error("Failed to insert document into ElasticSearch: '{}'".format(
+						str(item)
+					))
+
+			else:
+
+				# An ElasticSearch error occurred while inserting documents
+				L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
+					resp.status,
+					resp_body
+				))
+				raise RuntimeError("Failed to insert document into ElasticSearch")
 
 
 	async def _data_feeder(self):
