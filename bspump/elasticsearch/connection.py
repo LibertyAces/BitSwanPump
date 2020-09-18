@@ -94,6 +94,15 @@ class ElasticSearchConnection(Connection):
 			for i in range(self._loader_per_url):
 				self._futures.append((url, None))
 
+		# Create metrics counters
+		metrics_service = app.get_service('asab.MetricsService')
+		self.DocumentInsert = metrics_service.create_counter(
+			"esconnection.docinsert",
+			init_values={
+				"hit": 0,
+				"miss": 0,
+			}
+		)
 
 	def get_url(self):
 		return random.choice(self.node_urls)
@@ -106,7 +115,7 @@ class ElasticSearchConnection(Connection):
 	def consume(self, index, _id, data):
 		bulk = self._bulks.get(index)
 		if bulk is None:
-			bulk = ElasticSearchBulk(index, self._bulk_out_max_size)
+			bulk = ElasticSearchBulk(self, index, self._bulk_out_max_size)
 			self._bulks[index] = bulk
 
 		if bulk.consume(_id, data):
@@ -195,11 +204,12 @@ class ElasticSearchConnection(Connection):
 class ElasticSearchBulk(object):
 
 
-	def __init__(self, index, max_size):
+	def __init__(self, connection, index, max_size):
 		self.Index = index
 		self.Aging = 0
 		self.Capacity = max_size
 		self.Items = []
+		self.Connection = connection
 
 
 	def consume(self, _id, data):
@@ -210,7 +220,8 @@ class ElasticSearchBulk(object):
 
 
 	async def upload(self, url, session, timeout):
-		if len(self.Items) == 0:
+		items_count = len(self.Items)
+		if items_count == 0:
 			return
 
 		url = url + '{}/_bulk?filter_path=items.*.error'.format(self.Index)
@@ -232,21 +243,25 @@ class ElasticSearchBulk(object):
 
 				# Check that all documents were successfully inserted to ElasticSearch
 				# Since 'filter_path=items.*.error' is set, only error items are returned
-				items = resp_body.get("items")
-				if items is None:
+				error_items = resp_body.get("items")
+				if error_items is None:
+					self.Connection.DocumentInsert.add("hit", items_count)
 					return
 
 				# Some of the documents were not inserted properly,
 				# usually because of attributes mismatch, see:
 				# https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
-				for item in items:
+				for error_item in error_items:
+					self.Connection.DocumentInsert.add("miss", 1)
 					L.error("Failed to insert document into ElasticSearch: '{}'".format(
-						str(item)
+						str(error_item)
 					))
+				self.Connection.DocumentInsert.add("hit", items_count - len(error_items))
 
 			else:
 
 				# An ElasticSearch error occurred while inserting documents
+				self.Connection.DocumentInsert.add("miss", items_count)
 				L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
 					resp.status,
 					resp_body
