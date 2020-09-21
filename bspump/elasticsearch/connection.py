@@ -49,6 +49,7 @@ class ElasticSearchConnection(Connection):
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 2 * 1024 * 1024,
 		'timeout': 300,
+		'fail_log_max_size': 20,
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -94,13 +95,15 @@ class ElasticSearchConnection(Connection):
 			for i in range(self._loader_per_url):
 				self._futures.append((url, None))
 
+		self.FailLogMaxSize = int(self.Config['fail_log_max_size'])
+
 		# Create metrics counters
 		metrics_service = app.get_service('asab.MetricsService')
-		self.DocumentInsert = metrics_service.create_counter(
-			"esconnection.docinsert",
+		self.InsertMetric = metrics_service.create_counter(
+			"elasticsearch.insert",
 			init_values={
-				"hit": 0,
-				"miss": 0,
+				"ok": 0,
+				"fail": 0,
 			}
 		)
 
@@ -209,7 +212,8 @@ class ElasticSearchBulk(object):
 		self.Aging = 0
 		self.Capacity = max_size
 		self.Items = []
-		self.Connection = connection
+		self.InsertMetric = connection.InsertMetric
+		self.FailLogMaxSize = connection.FailLogMaxSize
 
 
 	def consume(self, _id, data):
@@ -245,23 +249,35 @@ class ElasticSearchBulk(object):
 				# Since 'filter_path=items.*.error' is set, only error items are returned
 				error_items = resp_body.get("items")
 				if error_items is None:
-					self.Connection.DocumentInsert.add("hit", items_count)
+					self.InsertMetric.add("ok", items_count)
 					return
 
 				# Some of the documents were not inserted properly,
 				# usually because of attributes mismatch, see:
 				# https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+				counter = 0
 				for error_item in error_items:
-					self.Connection.DocumentInsert.add("miss", 1)
-					L.error("Failed to insert document into ElasticSearch: '{}'".format(
-						str(error_item)
+					if counter < self.FailLogMaxSize:
+						L.error("Failed to insert document into ElasticSearch: '{}'".format(
+							str(error_item)
+						))
+					counter += 1
+
+				# Show remaining log messages
+				if counter > self.FailLogMaxSize:
+					L.error("Failed to insert document into ElasticSearch: '{}' more logs".format(
+						counter - self.FailLogMaxSize
 					))
-				self.Connection.DocumentInsert.add("hit", items_count - len(error_items))
+
+				# Insert metrics
+				error_items_len = len(error_items)
+				self.InsertMetric.add("fail", error_items_len)
+				self.InsertMetric.add("ok", items_count - error_items_len)
 
 			else:
 
 				# An ElasticSearch error occurred while inserting documents
-				self.Connection.DocumentInsert.add("miss", items_count)
+				self.InsertMetric.add("fail", items_count)
 				L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
 					resp.status,
 					resp_body
