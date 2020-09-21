@@ -49,6 +49,7 @@ class ElasticSearchConnection(Connection):
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 2 * 1024 * 1024,
 		'timeout': 300,
+		'fail_log_max_size': 20,
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -94,6 +95,17 @@ class ElasticSearchConnection(Connection):
 			for i in range(self._loader_per_url):
 				self._futures.append((url, None))
 
+		self.FailLogMaxSize = int(self.Config['fail_log_max_size'])
+
+		# Create metrics counters
+		metrics_service = app.get_service('asab.MetricsService')
+		self.InsertMetric = metrics_service.create_counter(
+			"elasticsearch.insert",
+			init_values={
+				"ok": 0,
+				"fail": 0,
+			}
+		)
 
 	def get_url(self):
 		return random.choice(self.node_urls)
@@ -106,7 +118,7 @@ class ElasticSearchConnection(Connection):
 	def consume(self, index, _id, data):
 		bulk = self._bulks.get(index)
 		if bulk is None:
-			bulk = ElasticSearchBulk(index, self._bulk_out_max_size)
+			bulk = ElasticSearchBulk(self, index, self._bulk_out_max_size)
 			self._bulks[index] = bulk
 
 		if bulk.consume(_id, data):
@@ -195,11 +207,13 @@ class ElasticSearchConnection(Connection):
 class ElasticSearchBulk(object):
 
 
-	def __init__(self, index, max_size):
+	def __init__(self, connection, index, max_size):
 		self.Index = index
 		self.Aging = 0
 		self.Capacity = max_size
 		self.Items = []
+		self.InsertMetric = connection.InsertMetric
+		self.FailLogMaxSize = connection.FailLogMaxSize
 
 
 	def consume(self, _id, data):
@@ -210,7 +224,8 @@ class ElasticSearchBulk(object):
 
 
 	async def upload(self, url, session, timeout):
-		if len(self.Items) == 0:
+		items_count = len(self.Items)
+		if items_count == 0:
 			return
 
 		url = url + '{}/_bulk?filter_path=items.*.error'.format(self.Index)
@@ -223,17 +238,51 @@ class ElasticSearchBulk(object):
 			},
 			timeout=timeout,
 		) as resp:
-			if resp.status == 200:
-				await resp.read()
-				return
 
+			# Obtain the response from ElasticSearch,
+			# which should always be a json
 			resp_body = await resp.json()
 
-			L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
-				resp.status,
-				resp_body
-			))
-			raise RuntimeError("Failed to insert document into ElasticSearch")
+			if resp.status == 200:
+
+				# Check that all documents were successfully inserted to ElasticSearch
+				# Since 'filter_path=items.*.error' is set, only error items are returned
+				error_items = resp_body.get("items")
+				if error_items is None:
+					self.InsertMetric.add("ok", items_count)
+					return
+
+				# Some of the documents were not inserted properly,
+				# usually because of attributes mismatch, see:
+				# https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+				counter = 0
+				for error_item in error_items:
+					if counter < self.FailLogMaxSize:
+						L.error("Failed to insert document into ElasticSearch: '{}'".format(
+							str(error_item)
+						))
+					counter += 1
+
+				# Show remaining log messages
+				if counter > self.FailLogMaxSize:
+					L.error("Failed to insert document into ElasticSearch: '{}' more insertions of documents failed".format(
+						counter - self.FailLogMaxSize
+					))
+
+				# Insert metrics
+				error_items_len = len(error_items)
+				self.InsertMetric.add("fail", error_items_len)
+				self.InsertMetric.add("ok", items_count - error_items_len)
+
+			else:
+
+				# An ElasticSearch error occurred while inserting documents
+				self.InsertMetric.add("fail", items_count)
+				L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
+					resp.status,
+					resp_body
+				))
+				raise RuntimeError("Failed to insert document into ElasticSearch")
 
 
 	async def _data_feeder(self):
