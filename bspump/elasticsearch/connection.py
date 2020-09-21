@@ -265,7 +265,7 @@ class ElasticSearchBulk(object):
 
 				# Show remaining log messages
 				if counter > self.FailLogMaxSize:
-					L.error("Failed to insert document into ElasticSearch: '{}' more logs".format(
+					L.error("Failed to insert document into ElasticSearch: '{}' more insertions of documents failed".format(
 						counter - self.FailLogMaxSize
 					))
 
