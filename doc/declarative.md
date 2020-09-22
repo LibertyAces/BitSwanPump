@@ -549,6 +549,9 @@ update:
   item2: ...
 ```
 
+Alternatively, with linear block parsing,
+there is no need to escape the `regex` string:
+
 If nothing is found `miss` is returned.
 Otherwise, groups are returned in as a list.
 
@@ -648,6 +651,18 @@ The expression then looks as follows:
 !REGEX.PARSE
   what: !ITEM ARG .body
   regex: '^(\w+)''\s(.*)$'
+  items:
+        - word1
+        - word2
+```
+
+Or with linear block parsing:
+
+```
+!REGEX.PARSE
+  what: !ITEM ARG .body
+  regex: >
+	'^(\w+)'\s(.*)$'
   items:
         - word1
         - word2
