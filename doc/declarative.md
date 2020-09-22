@@ -640,6 +640,20 @@ And the `subparser1.yaml` example:
         - word2
 ```
 
+In order to escape quote character `'` in `regex` attribute,
+double the character `''`.
+The expression then looks as follows:
+
+```
+!REGEX.PARSE
+  what: !ITEM ARG .body
+  regex: '^(\w+)''\s(.*)$'
+  items:
+        - word1
+        - word2
+```
+
+Double quotes are escaped with slash in the beginning.
 
 ### Regular expression "REGEX.REPLACE"
 
