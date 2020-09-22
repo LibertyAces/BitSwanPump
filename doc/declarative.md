@@ -549,9 +549,6 @@ update:
   item2: ...
 ```
 
-Alternatively, with linear block parsing,
-there is no need to escape the `regex` string:
-
 If nothing is found `miss` is returned.
 Otherwise, groups are returned in as a list.
 
