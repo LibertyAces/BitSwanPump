@@ -11,9 +11,9 @@ class DeclarativeProcessor(Processor):
 		declaration = definition.get("declaration")
 		return cls(app, pipeline, declaration=declaration, id=_id, config=config)
 
-	def __init__(self, app, pipeline, declaration, id=None, config=None):
+	def __init__(self, app, pipeline, declaration, libraries=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		builder = ExpressionBuilder(app)
+		builder = ExpressionBuilder(app, libraries)
 		self.Expression = builder.parse(declaration)
 
 	def process(self, context, event):
