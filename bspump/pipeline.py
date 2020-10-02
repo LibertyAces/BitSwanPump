@@ -74,7 +74,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
 		self.MetricsService = app.get_service('asab.MetricsService')
-		self.MetricsCounter = self.MetricsService.create_counter(
+		self.MetricsCounter = self.MetricsService.create_eps_counter(
 			"bspump.pipeline",
 			tags={'pipeline': self.Id},
 			init_values={
