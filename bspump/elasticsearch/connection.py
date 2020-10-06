@@ -238,7 +238,7 @@ class ElasticSearchBulk(object):
 		if items_count == 0:
 			return
 
-		url = url + '{}/_bulk'.format(self.Index)
+		url = url + '{}/_bulk?filter_path=items.*.error'.format(self.Index)
 
 		async with session.post(
 			url,
@@ -256,15 +256,11 @@ class ElasticSearchBulk(object):
 			if resp.status == 200:
 
 				# Check that all documents were successfully inserted to ElasticSearch
-				# We filter the error items here, so that we also receive ID in the error
-				error_items = list()
-				for item in resp_body.get("items"):
-					item_keys = list(item.keys())
-					if "error" in item[item_keys[0]]:
-						error_items.append(item)
+				# We filter the error items using ?filter_path=items.*.error in the query
+				error_items = resp_body.get("items")
 
 				# If there are no error messages, continue
-				if len(error_items) == 0:
+				if error_items is None:
 					self.InsertMetric.add("ok", items_count)
 					return
 
