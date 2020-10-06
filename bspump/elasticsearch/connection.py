@@ -115,13 +115,13 @@ class ElasticSearchConnection(Connection):
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
 
-	def consume(self, index, _id, data):
+	def consume(self, index, _id, data, meta=None):
 		bulk = self._bulks.get(index)
 		if bulk is None:
 			bulk = ElasticSearchBulk(self, index, self._bulk_out_max_size)
 			self._bulks[index] = bulk
 
-		if bulk.consume(_id, data):
+		if bulk.consume(_id, data, meta):
 			# Bulk is ready, schedule to be send
 			del self._bulks[index]
 			self._output_queue.put_nowait(bulk)
@@ -203,7 +203,7 @@ class ElasticSearchConnection(Connection):
 
 				await bulk.upload(url, session, self._timeout)
 
-	async def upload_error_callback(self, error_item):
+	async def upload_error_callback(self, bulk, error_item):
 		"""
 		When an upload to ElasticSearch fails for a given item,
 		this callback is called.
@@ -215,7 +215,6 @@ class ElasticSearchConnection(Connection):
 
 class ElasticSearchBulk(object):
 
-
 	def __init__(self, connection, index, max_size):
 		self.Index = index
 		self.Aging = 0
@@ -226,8 +225,8 @@ class ElasticSearchBulk(object):
 		self.UploadErrorCallback = connection.upload_error_callback
 
 
-	def consume(self, _id, data):
-		self.Items.append((_id, data))
+	def consume(self, _id, data, meta=None):
+		self.Items.append((_id, data, meta))
 		self.Capacity -= len(data)
 		self.Aging = 0
 		return self.Capacity <= 0
@@ -278,7 +277,7 @@ class ElasticSearchBulk(object):
 							str(error_item)
 						))
 					counter += 1
-					await self.UploadErrorCallback(error_item)
+					await self.UploadErrorCallback(self, error_item)
 
 				# Show remaining log messages
 				if counter > self.FailLogMaxSize:
@@ -303,6 +302,6 @@ class ElasticSearchBulk(object):
 
 
 	async def _data_feeder(self):
-		for _id, data in self.Items:
+		for _id, data, meta in self.Items:
 			yield b'{"create":{}}\n' if _id is None else orjson.dumps({"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE)
 			yield data
