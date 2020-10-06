@@ -207,6 +207,7 @@ class ElasticSearchConnection(Connection):
 		"""
 		When an upload to ElasticSearch fails for a given item,
 		this callback is called.
+		:param bulk:
 		:param error_item:
 		:return:
 		"""
