@@ -68,6 +68,7 @@ class FileABCSource(TriggerSource):
 		)
 
 		self.Loop = app.Loop
+		self.ProactorService = app.get_service("asab.ProactorService")
 
 		self.LinesCounter = 0
 		self.LinesPerEvent = int(self.Config["lines_per_event"])
@@ -78,7 +79,16 @@ class FileABCSource(TriggerSource):
 
 		start_time = time.time()
 		for path in self.path.split(os.pathsep):
-			filename = _glob_scan(path, self.Gauge, self.Loop, exclude=self.exclude, include=self.include)
+			#Asynchronously call following:
+			# filename = _glob_scan(path, self.Gauge, self.Loop, exclude=self.exclude, include=self.include)
+			filename = await self.ProactorService.execute(
+				_glob_scan,
+				path,
+				self.Gauge,
+				self.Loop,
+				self.exclude,
+				self.include
+			)
 			if filename is not None:
 				break
 		end_time = time.time()

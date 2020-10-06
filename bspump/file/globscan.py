@@ -35,7 +35,7 @@ def _glob_scan(path, gauge, loop, exclude='', include=''):
 	filelist_to_check.extend(filelist)
 
 	# also check the whole folder meanwhile
-	loop.call_soon(_file_check, filelist_to_check, gauge)
+	loop.call_soon_threadsafe(_file_check, filelist_to_check, gauge)
 
 	while len(filelist) > 0:
 		fname = filelist.pop(0)
