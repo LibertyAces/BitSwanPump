@@ -115,13 +115,13 @@ class ElasticSearchConnection(Connection):
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
 
-	def consume(self, index, _id, data, meta=None):
+	def consume(self, index, _id, data):
 		bulk = self._bulks.get(index)
 		if bulk is None:
 			bulk = ElasticSearchBulk(self, index, self._bulk_out_max_size)
 			self._bulks[index] = bulk
 
-		if bulk.consume(_id, data, meta):
+		if bulk.consume(_id, data):
 			# Bulk is ready, schedule to be send
 			del self._bulks[index]
 			self._output_queue.put_nowait(bulk)
@@ -226,8 +226,8 @@ class ElasticSearchBulk(object):
 		self.UploadErrorCallback = connection.upload_error_callback
 
 
-	def consume(self, _id, data, meta=None):
-		self.Items.append((_id, data, meta))
+	def consume(self, _id, data):
+		self.Items.append((_id, data))
 		self.Capacity -= len(data)
 		self.Aging = 0
 		return self.Capacity <= 0
@@ -299,6 +299,6 @@ class ElasticSearchBulk(object):
 
 
 	async def _data_feeder(self):
-		for _id, data, meta in self.Items:
+		for _id, data in self.Items:
 			yield b'{"create":{}}\n' if _id is None else orjson.dumps({"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE)
 			yield data
