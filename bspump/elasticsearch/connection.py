@@ -203,12 +203,12 @@ class ElasticSearchConnection(Connection):
 
 				await bulk.upload(url, session, self._timeout)
 
-	async def upload_error_callback(self, bulk, error_item):
+	async def upload_error_callback(self, bulk, error_items):
 		"""
-		When an upload to ElasticSearch fails for a given item,
+		When an upload to ElasticSearch fails for error items,
 		this callback is called.
 		:param bulk:
-		:param error_item:
+		:param error_items:
 		:return:
 		"""
 		pass
@@ -267,23 +267,28 @@ class ElasticSearchBulk(object):
 				# Some of the documents were not inserted properly,
 				# usually because of attributes mismatch, see:
 				# https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+
+				await self.UploadErrorCallback(self, error_items)
+
+				# Log first 20 errors
 				counter = 0
 				for error_item in error_items:
 					if counter < self.FailLogMaxSize:
 						L.error("Failed to insert document into ElasticSearch: '{}'".format(
 							str(error_item)
 						))
+					else:
+						break
 					counter += 1
-					await self.UploadErrorCallback(self, error_item)
 
 				# Show remaining log messages
-				if counter > self.FailLogMaxSize:
+				error_items_len = len(error_items)
+				if error_items_len > self.FailLogMaxSize:
 					L.error("Failed to insert document into ElasticSearch: '{}' more insertions of documents failed".format(
-						counter - self.FailLogMaxSize
+						error_items_len - self.FailLogMaxSize
 					))
 
 				# Insert metrics
-				error_items_len = len(error_items)
 				self.InsertMetric.add("fail", error_items_len)
 				self.InsertMetric.add("ok", items_count - error_items_len)
 
