@@ -1,4 +1,5 @@
-import json
+import orjson
+
 from ..abc.processor import Processor
 
 
@@ -16,9 +17,7 @@ class DictToJsonBytesParser(Processor):
 		self.Encoding = self.Config['encoding']
 
 	def process(self, context, event):
-		assert isinstance(event, dict)
-		json_result = json.dumps(event)
-		return json_result.encode(self.Encoding)
+		return orjson.dumps(event)
 
 
 class JsonBytesToDictParser(Processor):
@@ -36,6 +35,4 @@ class JsonBytesToDictParser(Processor):
 		self.Encoding = self.Config['encoding']
 
 	def process(self, context, event):
-		assert isinstance(event, bytes)
-		json_result = event.decode(self.Encoding)
-		return json.loads(json_result)
+		return orjson.loads(event)
