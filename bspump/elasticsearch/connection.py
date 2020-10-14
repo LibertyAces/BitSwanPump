@@ -281,7 +281,7 @@ class ElasticSearchBulk(object):
 				# Log first 20 errors
 				counter = 0
 				for response_item in response_items:
-					if "error" not in response_item.get("index"):
+					if "error" not in response_item.get("index", ""):
 						continue
 
 					if counter < self.FailLogMaxSize:
