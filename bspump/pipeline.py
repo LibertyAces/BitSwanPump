@@ -168,7 +168,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				self._evaluate_ready()
 
 		else:
-			if not self.catch_error(exc, event):
+			if self.handle_error(exc, context, event):
 				self.MetricsCounter.add('warning', 1)
 				self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
 				return
@@ -185,10 +185,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			self._evaluate_ready()
 
 
-	def catch_error(self, exception, event):
+	def handle_error(self, exception, context, event):
 		"""
 		Override to evaluate on the pipeline processing error.
-		Return True for hard errors (stop the pipeline processing) or False for soft errors that will be ignored
+		Return False for hard errors (stop the pipeline processing) or True for soft errors that will be ignored
 
 .. code:: python
 
@@ -203,13 +203,13 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				bspump.common.PPrintSink(app, self)
 			)
 
-		def catch_error(self, exception, event):
+		def handle_error(self, exception, context, event):
 			if isinstance(exception, json.decoder.JSONDecodeError):
-				return False
-			return True
+				return True
+			return False
 		"""
 
-		return True
+		return False
 
 	def link(self, ancestral_pipeline):
 		"""

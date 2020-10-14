@@ -52,6 +52,7 @@ class ElasticSearchConnection(Connection):
 		'bulk_out_max_size': 2 * 1024 * 1024,
 		'timeout': 300,
 		'fail_log_max_size': 20,
+		'precise_error_handling': False,
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -99,6 +100,12 @@ class ElasticSearchConnection(Connection):
 				self._futures.append((url, None))
 
 		self.FailLogMaxSize = int(self.Config['fail_log_max_size'])
+
+		# Precise error handling
+		if self.Config.getboolean("precise_error_handling"):
+			self.FilterPath = "errors,took,items.*.error,items.*._id"
+		else:
+			self.FilterPath = "errors,took,items.*.error"
 
 		# Create metrics counters
 		metrics_service = app.get_service('asab.MetricsService')
@@ -199,12 +206,12 @@ class ElasticSearchConnection(Connection):
 
 				await bulk.upload(url, session, self._timeout)
 
-	async def upload_error_callback(self, bulk, error_items):
+	async def upload_error_callback(self, bulk, response_items):
 		"""
 		When an upload to ElasticSearch fails for error items,
 		this callback is called.
 		:param bulk:
-		:param error_items:
+		:param response_items:
 		:return:
 		"""
 		pass
@@ -219,6 +226,7 @@ class ElasticSearchBulk(object):
 		self.Items = []
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
+		self.FilterPath = connection.FilterPath
 		self.UploadErrorCallback = connection.upload_error_callback
 
 	def consume(self, _id, data):
@@ -232,7 +240,7 @@ class ElasticSearchBulk(object):
 		if items_count == 0:
 			return
 
-		url = url + '{}/_bulk?filter_path=items.*.error'.format(self.Index)
+		url = url + '{}/_bulk?filter_path={}'.format(self.Index, self.FilterPath)
 
 		async with session.post(
 				url,
@@ -250,11 +258,8 @@ class ElasticSearchBulk(object):
 			if resp.status == 200:
 
 				# Check that all documents were successfully inserted to ElasticSearch
-				# We filter the error items using ?filter_path=items.*.error in the query
-				error_items = resp_body.get("items")
-
 				# If there are no error messages, continue
-				if error_items is None:
+				if not resp_body.get("errors", False):
 					self.InsertMetric.add("ok", items_count)
 					return
 
@@ -262,30 +267,33 @@ class ElasticSearchBulk(object):
 				# usually because of attributes mismatch, see:
 				# https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
 
-				await self.UploadErrorCallback(self, error_items)
+				response_items = resp_body.get("items")
+				await self.UploadErrorCallback(self, response_items)
 
+				# When the log handling is not precise,
+				# the iteration only happens on error items natively
 				# Log first 20 errors
 				counter = 0
-				for error_item in error_items:
+				for response_item in response_items:
+					if "error" not in response_item.get("index", ""):
+						continue
+
 					if counter < self.FailLogMaxSize:
 						L.error("Failed to insert document into ElasticSearch: '{}'".format(
-							str(error_item)
+							str(response_item)
 						))
-					else:
-						break
+
 					counter += 1
 
 				# Show remaining log messages
-				error_items_len = len(error_items)
-				if error_items_len > self.FailLogMaxSize:
-					L.error(
-						"Failed to insert document into ElasticSearch: '{}' more insertions of documents failed".format(
-							error_items_len - self.FailLogMaxSize
-						))
+				if counter > self.FailLogMaxSize:
+					L.error("Failed to insert document into ElasticSearch: '{}' more insertions of documents failed".format(
+						counter - self.FailLogMaxSize
+					))
 
 				# Insert metrics
-				self.InsertMetric.add("fail", error_items_len)
-				self.InsertMetric.add("ok", items_count - error_items_len)
+				self.InsertMetric.add("fail", counter)
+				self.InsertMetric.add("ok", items_count - counter)
 
 			else:
 
