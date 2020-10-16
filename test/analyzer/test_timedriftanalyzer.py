@@ -9,7 +9,7 @@ class TestTimeDriftAnalyzer(bspump.unittest.ProcessorTestCase):
 	def test_time_drift_analyzer(self, mocked_time):
 		mocked_time.return_value = 100
 		events = [
-			(None, {"@timestamp": 30000}),
+			(None, {"@timestamp": 30}),
 			(None, {"foo": "bar"}),
 		]
 		self.set_up_processor(bspump.analyzer.TimeDriftAnalyzer)
@@ -20,9 +20,9 @@ class TestTimeDriftAnalyzer(bspump.unittest.ProcessorTestCase):
 
 		self.assertEqual(
 			[event for context, event in output],
-			[{'@timestamp': 30000}, {'foo': 'bar'}]
+			[{'@timestamp': 30}, {'foo': 'bar'}]
 		)
 		self.assertEqual(
 			self.Pipeline.Processor.History,
-			[70000]
+			[70]
 		)

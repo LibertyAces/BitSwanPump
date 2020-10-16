@@ -17,6 +17,7 @@ class DictToJsonBytesParser(Processor):
 		self.Encoding = self.Config['encoding']
 
 	def process(self, context, event):
+		assert isinstance(event, dict)
 		return orjson.dumps(event)
 
 
@@ -35,4 +36,5 @@ class JsonBytesToDictParser(Processor):
 		self.Encoding = self.Config['encoding']
 
 	def process(self, context, event):
+		assert isinstance(event, bytes)
 		return orjson.loads(event)

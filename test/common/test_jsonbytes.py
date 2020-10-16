@@ -21,7 +21,7 @@ class TestDictToJsonBytesParser(bspump.unittest.ProcessorTestCase):
 
 		self.assertEqual(
 			[event for context, event in output],
-			[b'{"foo": "bar"}', b'{"fizz": "buzz"}', b'{"spam": "eggs"}']
+			[b'{"foo":"bar"}', b'{"fizz":"buzz"}', b'{"spam":"eggs"}']
 		)
 
 
