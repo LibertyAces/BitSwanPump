@@ -243,12 +243,12 @@ class ElasticSearchBulk(object):
 		url = url + '{}/_bulk?filter_path={}'.format(self.Index, self.FilterPath)
 
 		async with session.post(
-				url,
-				data=self._data_feeder(),
-				headers={
-					'Content-Type': 'application/json'
-				},
-				timeout=timeout,
+			url,
+			data=self._data_feeder(),
+			headers={
+				'Content-Type': 'application/json'
+			},
+			timeout=timeout,
 		) as resp:
 
 			# Obtain the response from ElasticSearch,
@@ -307,6 +307,7 @@ class ElasticSearchBulk(object):
 
 	async def _data_feeder(self):
 		for _id, data in self.Items:
-			yield b'{"create":{}}\n' if _id is None else orjson.dumps({"index": {"_id": _id}},
-																	  option=orjson.OPT_APPEND_NEWLINE)
+			yield b'{"create":{}}\n' if _id is None else orjson.dumps(
+				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+			)
 			yield data
