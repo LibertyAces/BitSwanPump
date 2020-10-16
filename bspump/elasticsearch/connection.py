@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import random
+import re
 
 import orjson
 import aiohttp
@@ -42,7 +43,8 @@ class ElasticSearchConnection(Connection):
 	"""
 
 	ConfigDefaults = {
-		'url': 'http://localhost:9200/',  # Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
+		'url': 'http://localhost:9200/',
+		# Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
 		'username': '',
 		'password': '',
 		'loader_per_url': 4,  # Number of parael loaders per URL
@@ -69,7 +71,8 @@ class ElasticSearchConnection(Connection):
 
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
-		for url in self.Config['url'].split(';'):
+		# for url in self.Config['url'].split(';'):
+		for url in re.split(r"\s+", self.Config['url']):
 			url = url.strip()
 			if len(url) == 0:
 				continue
@@ -117,10 +120,8 @@ class ElasticSearchConnection(Connection):
 	def get_url(self):
 		return random.choice(self.node_urls)
 
-
 	def get_session(self):
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
-
 
 	def consume(self, index, _id, data):
 		bulk = self._bulks.get(index)
@@ -137,11 +138,9 @@ class ElasticSearchConnection(Connection):
 			if self._output_queue.qsize() == self._output_queue_max_size:
 				self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
-
 	def _start(self, event_type):
 		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
-
 
 	async def _on_exit(self, event_name):
 		self._started = False
@@ -154,7 +153,6 @@ class ElasticSearchConnection(Connection):
 			# By sending None via queue, we signalize end of life
 			await self._output_queue.put(None)
 			done, pending = await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
-
 
 	def _on_tick(self, event_name):
 		for i in range(len(self._futures)):
@@ -181,7 +179,6 @@ class ElasticSearchConnection(Connection):
 
 		self.flush()
 
-
 	def flush(self, forced=False):
 		aged = []
 		for index, bulk in self._bulks.items():
@@ -196,7 +193,6 @@ class ElasticSearchConnection(Connection):
 			# Signalize need for throttling
 			if self._output_queue.qsize() == self._output_queue_max_size:
 				self.PubSub.publish("ElasticSearchConnection.pause!", self)
-
 
 	async def _loader(self, url):
 		async with self.get_session() as session:
@@ -233,13 +229,11 @@ class ElasticSearchBulk(object):
 		self.FilterPath = connection.FilterPath
 		self.UploadErrorCallback = connection.upload_error_callback
 
-
 	def consume(self, _id, data):
 		self.Items.append((_id, data))
 		self.Capacity -= len(data)
 		self.Aging = 0
 		return self.Capacity <= 0
-
 
 	async def upload(self, url, session, timeout):
 		items_count = len(self.Items)
@@ -249,12 +243,12 @@ class ElasticSearchBulk(object):
 		url = url + '{}/_bulk?filter_path={}'.format(self.Index, self.FilterPath)
 
 		async with session.post(
-			url,
-			data=self._data_feeder(),
-			headers={
-				'Content-Type': 'application/json'
-			},
-			timeout=timeout,
+				url,
+				data=self._data_feeder(),
+				headers={
+					'Content-Type': 'application/json'
+				},
+				timeout=timeout,
 		) as resp:
 
 			# Obtain the response from ElasticSearch,
@@ -311,8 +305,8 @@ class ElasticSearchBulk(object):
 				))
 				raise RuntimeError("Failed to insert document into ElasticSearch")
 
-
 	async def _data_feeder(self):
 		for _id, data in self.Items:
-			yield b'{"create":{}}\n' if _id is None else orjson.dumps({"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE)
+			yield b'{"create":{}}\n' if _id is None else orjson.dumps({"index": {"_id": _id}},
+																	  option=orjson.OPT_APPEND_NEWLINE)
 			yield data
