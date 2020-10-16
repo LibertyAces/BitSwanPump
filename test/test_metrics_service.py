@@ -72,5 +72,5 @@ class TestMetricsService(bspump.unittest.ProcessorTestCase):
             [({}, "ok")],
             self.Pipeline.Sink.Output
         )
-        self.assertEqual(1, self.WarningCount)
-        self.assertEqual(1, self.ErrorCount)
+        self.assertEqual(2, self.WarningCount)
+        self.assertEqual(0, self.ErrorCount)

@@ -8,5 +8,4 @@ from .matrix import *
 from .declarative import *
 from .integrity import *
 from .test_config_defaults import *
-#from .test_metrics_service import *
-
+from .test_metrics_service import *
