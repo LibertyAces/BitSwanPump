@@ -58,6 +58,7 @@ class ElasticSearchConnection(Connection):
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 
+		self.App = app
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue(loop=app.Loop)
 
@@ -123,10 +124,13 @@ class ElasticSearchConnection(Connection):
 	def get_session(self):
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
-	def consume(self, index, _id, data):
+	def consume(self, index, _id, data, bulk_class=None):
 		bulk = self._bulks.get(index)
 		if bulk is None:
-			bulk = ElasticSearchBulk(self, index, self._bulk_out_max_size)
+			if bulk_class is None:
+				bulk = ElasticSearchBulk(self, index, self._bulk_out_max_size)
+			else:
+				bulk = bulk_class(self, index, self._bulk_out_max_size)
 			self._bulks[index] = bulk
 
 		if bulk.consume(_id, data):
@@ -206,16 +210,6 @@ class ElasticSearchConnection(Connection):
 
 				await bulk.upload(url, session, self._timeout)
 
-	async def upload_error_callback(self, bulk, response_items):
-		"""
-		When an upload to ElasticSearch fails for error items,
-		this callback is called.
-		:param bulk:
-		:param response_items:
-		:return:
-		"""
-		pass
-
 
 class ElasticSearchBulk(object):
 
@@ -227,7 +221,6 @@ class ElasticSearchBulk(object):
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
-		self.UploadErrorCallback = connection.upload_error_callback
 
 	def consume(self, _id, data):
 		self.Items.append((_id, data))
@@ -268,7 +261,7 @@ class ElasticSearchBulk(object):
 				# https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
 
 				response_items = resp_body.get("items")
-				await self.UploadErrorCallback(self, response_items)
+				await self.upload_error_callback(response_items)
 
 				# When the log handling is not precise,
 				# the iteration only happens on error items natively
@@ -303,7 +296,7 @@ class ElasticSearchBulk(object):
 					resp.status,
 					resp_body
 				))
-				raise RuntimeError("Failed to insert document into ElasticSearch")
+				await self.es_error_callback(self.Items)
 
 	async def _data_feeder(self):
 		for _id, data in self.Items:
@@ -311,3 +304,21 @@ class ElasticSearchBulk(object):
 				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
 			)
 			yield data
+
+	async def upload_error_callback(self, response_items):
+		"""
+		When an upload to ElasticSearch fails for error items (document could not be inserted),
+		this callback is called.
+		:param response_items: list with dict items: {"index": {"_id": ..., "error": ...}}
+		:return:
+		"""
+		pass
+
+	async def es_error_callback(self, bulk_items):
+		"""
+		When an upload to ElasticSearch fails b/c of ElasticSearch error,
+		this callback is called.
+		:param bulk_items: list with tuple items: (_id, data)
+		:return:
+		"""
+		pass
