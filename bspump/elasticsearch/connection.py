@@ -100,7 +100,7 @@ class ElasticSearchBulk(object):
 					resp.status,
 					resp_body
 				))
-				await self.full_error_callback(self.Items)
+				await self.full_error_callback(self.Items, resp.status)
 
 	async def _data_feeder(self):
 		for _id, data in self.Items:
@@ -118,11 +118,12 @@ class ElasticSearchBulk(object):
 		"""
 		pass
 
-	async def full_error_callback(self, bulk_items):
+	async def full_error_callback(self, bulk_items, return_code):
 		"""
 		When an upload to ElasticSearch fails b/c of ElasticSearch error,
 		this callback is called.
 		:param bulk_items: list with tuple items: (_id, data)
+		:param return_code: ElasticSearch return code
 		:return:
 		"""
 		pass

@@ -48,7 +48,7 @@ class ElasticSearchSink(Sink):
 			context.get("es_index", self.Index),
 			event.pop("_id", None),
 			orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE),
-			bulk_class=self.BulkClass if self.BulkClass is not None else ElasticSearchBulk
+			bulk_class=self.BulkClass
 		)
 
 
