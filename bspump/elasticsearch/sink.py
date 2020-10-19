@@ -28,7 +28,7 @@ class ElasticSearchSink(Sink):
 	}
 
 
-	def __init__(self, app, pipeline, connection, id=None, config=None, bulk_class=None):
+	def __init__(self, app, pipeline, connection, id=None, config=None, bulk_class=ElasticSearchBulk):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Connection = pipeline.locate_connection(app, connection)
