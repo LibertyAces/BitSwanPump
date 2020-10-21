@@ -1,5 +1,7 @@
 from netaddr import IPAddress
 
+import netaddr.core
+
 from bspump.declarative.abc import Expression, evaluate
 
 
@@ -17,7 +19,11 @@ class IP_FORMAT(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		ip = IPAddress(evaluate(self.Value, context, event, *args, **kwargs))
+		try:
+			ip = IPAddress(evaluate(self.Value, context, event, *args, **kwargs))
+		except netaddr.core.AddrFormatError:
+			# IP address could not be detected
+			return None
 
 		if self.Format == "ipv6":
 			return str(ip.ipv6())
