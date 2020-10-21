@@ -31,4 +31,8 @@ class NOT(Expression):
 		self.Value = arg_what
 
 	def __call__(self, context, event, *args, **kwargs):
-		return not evaluate(self.Value, context, event, *args, **kwargs)
+		try:
+			return not evaluate(self.Value, context, event, *args, **kwargs)
+		except TypeError:
+			# Incompatible types included
+			return None
