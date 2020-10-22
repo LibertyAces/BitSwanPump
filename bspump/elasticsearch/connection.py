@@ -230,6 +230,12 @@ class ElasticSearchConnection(Connection):
 				"fail": 0,
 			}
 		)
+		self.QueueMetric = metrics_service.create_gauge(
+			"elasticsearch.outputqueue",
+			init_values={
+				"size": 0,
+			}
+		)
 
 	def get_url(self):
 		return random.choice(self.node_urls)
@@ -269,6 +275,8 @@ class ElasticSearchConnection(Connection):
 			done, pending = await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
 
 	def _on_tick(self, event_name):
+		self.QueueMetric.set("size", int(self._output_queue.qsize()))
+
 		for i in range(len(self._futures)):
 
 			# 1) Check for exited futures
