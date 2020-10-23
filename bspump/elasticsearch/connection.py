@@ -65,7 +65,7 @@ class ElasticSearchBulk(object):
 				# https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
 
 				response_items = resp_body.get("items")
-				await self.partial_error_callback(response_items)
+				self.partial_error_callback(response_items)
 
 				# When the log handling is not precise,
 				# the iteration only happens on error items natively
@@ -100,7 +100,7 @@ class ElasticSearchBulk(object):
 					resp.status,
 					resp_body
 				))
-				await self.full_error_callback(self.Items, resp.status)
+				self.full_error_callback(self.Items, resp.status)
 
 	async def _data_feeder(self):
 		for _id, data in self.Items:
@@ -109,7 +109,7 @@ class ElasticSearchBulk(object):
 			)
 			yield data
 
-	async def partial_error_callback(self, response_items):
+	def partial_error_callback(self, response_items):
 		"""
 		When an upload to ElasticSearch fails for error items (document could not be inserted),
 		this callback is called.
@@ -118,7 +118,7 @@ class ElasticSearchBulk(object):
 		"""
 		pass
 
-	async def full_error_callback(self, bulk_items, return_code):
+	def full_error_callback(self, bulk_items, return_code):
 		"""
 		When an upload to ElasticSearch fails b/c of ElasticSearch error,
 		this callback is called.
