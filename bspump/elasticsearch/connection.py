@@ -324,6 +324,6 @@ class ElasticSearchConnection(Connection):
 					break
 
 				if self._output_queue.qsize() == self._output_queue_max_size - 1:
-					self.PubSub.publish("ElasticSearchConnection.unpause!", self, asynchronously=True)
+					self.PubSub.publish("ElasticSearchConnection.unpause!", self)
 
 				await bulk.upload(url, session, self._timeout)
