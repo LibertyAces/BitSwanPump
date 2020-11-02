@@ -87,8 +87,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		)
 		self.MetricsEPSCounter = self.get_eps_counter()
 
-		self.MetricsTetantsCounter = {}
-
 		self.MetricsGauge = self.MetricsService.create_gauge(
 			"bspump.pipeline.gauge",
 			tags={'pipeline': self.Id},
@@ -170,12 +168,12 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		else:
 			if self.handle_error(exc, context, event):
 				_event = ('warning', 1)
-				self.add_events_to_counters(context, _event)
+				self.add_events_to_counters(_event)
 				self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
 				return
 			else:
 				_event = ('error', 1)
-				self.add_events_to_counters(context, _event)
+				self.add_events_to_counters(_event)
 
 
 			if (self._error is not None):
@@ -309,10 +307,10 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				if len(self.Processors) == (depth + 1):
 					if isinstance(processor, Sink):
 						_event = ('event.out', 1)
-						self.add_events_to_counters(context, _event)
+						self.add_events_to_counters(_event)
 					else:
 						_event = ('event.drop', 1)
-						self.add_events_to_counters(context, _event)
+						self.add_events_to_counters(_event)
 
 				return
 
@@ -362,25 +360,24 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 		_event = ('event.in', 1)
-		self.add_events_to_counters(context, _event)
+		self.add_events_to_counters(_event)
 
 
 		self.inject(context, event, depth=0)
 
-	def add_events_to_counters(self, context, _event):
-		self.add_event_to_tenant_counter(_event, context)
+	def add_events_to_counters(self, _event):
 		self.MetricsEPSCounter.add(_event[0], _event[1])
 		self.MetricsCounter.add(_event[0], _event[1])
 
 	def add_event_to_tenant_counter(self, _event, context):
 		if context is not None and 'tenant' in context:
 			tenant = context.get('tenant', 'default')
-			if tenant in self.MetricsTetantsCounter:
-				eps_counter = self.MetricsTetantsCounter[tenant]
+			if tenant in self.MetricsTenantsCounter:
+				eps_counter = self.MetricsTenantsCounter[tenant]
 				eps_counter.add(_event[0], _event[1])
 			else:
 				counter = self.get_eps_counter()
-				self.MetricsTetantsCounter.update({tenant: counter})
+				self.MetricsTenantsCounter.update({tenant: counter})
 				counter.add(_event[0], _event[1])
 
 	def get_eps_counter(self):

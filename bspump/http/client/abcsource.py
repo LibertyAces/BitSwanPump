@@ -78,9 +78,9 @@ class HTTPABCClientSource(TriggerSource):
 				L.warning("{}, will retry ({}/{}) in {:0.0f} sec".format(e, self.FailedResponses, self.MaxFailedResponses, self.FailChilldown))
 
 				_event = ('warning', 1)
-				self.Pipeline.add_events_to_counters(None, _event)
+				self.Pipeline.add_events_to_counters(_event)
 				_event = ('event.in', 1)
-				self.Pipeline.add_events_to_counters(None, _event)
+				self.Pipeline.add_events_to_counters(_event)
 				await asyncio.sleep(self.FailChilldown)
 			else:
 				L.error("{}, {} failed response(s)".format(e, self.FailedResponses))
