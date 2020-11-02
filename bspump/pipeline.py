@@ -175,7 +175,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				_event = ('error', 1)
 				self.add_events_to_counters(_event)
 
-
 			if (self._error is not None):
 				L.warning("Error on a pipeline is already set!")
 
@@ -358,27 +357,14 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		while not self.is_ready():
 			await self.ready()
 
-
 		_event = ('event.in', 1)
 		self.add_events_to_counters(_event)
-
 
 		self.inject(context, event, depth=0)
 
 	def add_events_to_counters(self, _event):
 		self.MetricsEPSCounter.add(_event[0], _event[1])
 		self.MetricsCounter.add(_event[0], _event[1])
-
-	def add_event_to_tenant_counter(self, _event, context):
-		if context is not None and 'tenant' in context:
-			tenant = context.get('tenant', 'default')
-			if tenant in self.MetricsTenantsCounter:
-				eps_counter = self.MetricsTenantsCounter[tenant]
-				eps_counter.add(_event[0], _event[1])
-			else:
-				counter = self.get_eps_counter()
-				self.MetricsTenantsCounter.update({tenant: counter})
-				counter.add(_event[0], _event[1])
 
 	def get_eps_counter(self):
 		return self.MetricsService.create_eps_counter(
