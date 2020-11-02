@@ -34,7 +34,7 @@ class DirectSource(Source):
 
 		# DirectSource is not using the common asynchronous process method
 		_event = ('event.in', 1)
-		self.Pipeline.add_events_to_counters(_event)
+		self.Pipeline.add_event_to_counters(_event)
 		self.Pipeline.inject(context=child_context, event=event, depth=0)
 
 	async def main(self):

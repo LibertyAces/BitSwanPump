@@ -4,6 +4,7 @@ import collections
 import concurrent
 import datetime
 import logging
+from enum import Enum
 
 import time
 
@@ -21,6 +22,12 @@ L = logging.getLogger(__name__)
 
 
 #
+class Events(Enum):
+	IN = 'in'
+	OUT = 'out'
+	DROP = 'drop'
+	WARNING = 'warning'
+	ERROR = 'error'
 
 
 class Pipeline(abc.ABC, asab.ConfigObject):
@@ -135,6 +142,14 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 	def time(self):
 		return self.App.time()
 
+	def add_event_to_counters(self, metric_value):
+		if metric_value[0] in (Events.OUT, Events.IN, Events.DROP):
+			self.MetricsEPSCounter.add('eps.' + metric_value[0].value, metric_value[1])
+			self.MetricsCounter.add('event.' + metric_value[0].value, metric_value[1])
+		else:
+			self.MetricsEPSCounter.add(metric_value[0].value, metric_value[1])
+			self.MetricsCounter.add(metric_value[0].value, metric_value[1])
+
 	def _on_metrics_flush(self, event_type, metric, values):
 		if metric != self.MetricsCounter:
 			return
@@ -167,13 +182,12 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		else:
 			if self.handle_error(exc, context, event):
-				_event = ('warning', 1)
-				self.add_events_to_counters(_event)
+
+				self.add_event_to_counters((Events.WARNING, 1))
 				self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
 				return
 			else:
-				_event = ('error', 1)
-				self.add_events_to_counters(_event)
+				self.add_event_to_counters((Events.ERROR, 1))
 
 			if (self._error is not None):
 				L.warning("Error on a pipeline is already set!")
@@ -305,11 +319,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			if event is None:  # Event has been consumed on the way
 				if len(self.Processors) == (depth + 1):
 					if isinstance(processor, Sink):
-						_event = ('event.out', 1)
-						self.add_events_to_counters(_event)
+
+						self.add_event_to_counters((Events.OUT, 1))
 					else:
-						_event = ('event.drop', 1)
-						self.add_events_to_counters(_event)
+
+						self.add_event_to_counters((Events.DROP, 1))
 
 				return
 
@@ -357,23 +371,20 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		while not self.is_ready():
 			await self.ready()
 
-		_event = ('event.in', 1)
-		self.add_events_to_counters(_event)
+		self.add_event_to_counters((Events.IN, 1))
 
 		self.inject(context, event, depth=0)
 
-	def add_events_to_counters(self, _event):
-		self.MetricsEPSCounter.add(_event[0], _event[1])
-		self.MetricsCounter.add(_event[0], _event[1])
+
 
 	def get_eps_counter(self):
 		return self.MetricsService.create_eps_counter(
 			"bspump.pipeline",
 			tags={'pipeline': self.Id},
 			init_values={
-				'event.in': 0,
-				'event.out': 0,
-				'event.drop': 0,
+				'eps.in': 0,
+				'eps.out': 0,
+				'eps.drop': 0,
 				'warning': 0,
 				'error': 0,
 			}
