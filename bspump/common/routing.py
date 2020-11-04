@@ -33,8 +33,8 @@ class DirectSource(Source):
 			event = copy.deepcopy(event)
 
 		# DirectSource is not using the common asynchronous process method
-		_event = ('event.in', 1)
-		self.Pipeline.add_event_to_counters(_event)
+		self.Pipeline.MetricsEPSCounter.add('eps.in', 1)
+		self.Pipeline.MetricsCounter.add('event.in', 1)
 		self.Pipeline.inject(context=child_context, event=event, depth=0)
 
 	async def main(self):
