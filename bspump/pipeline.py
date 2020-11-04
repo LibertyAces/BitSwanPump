@@ -4,7 +4,6 @@ import collections
 import concurrent
 import datetime
 import logging
-from enum import Enum
 
 import time
 
