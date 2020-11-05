@@ -21,9 +21,7 @@ L = logging.getLogger(__name__)
 
 #
 
-
 class Pipeline(abc.ABC, asab.ConfigObject):
-
 	"""
 
 Multiple sources
@@ -63,7 +61,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.AsyncFutures = []
 		self.AsyncConcurencyLimit = int(self.Config["async_concurency_limit"])
 		self.ResetProfiler = self.Config.getboolean("reset_profiler")
-		assert(self.AsyncConcurencyLimit > 1)
+		assert (self.AsyncConcurencyLimit > 1)
 
 		# This object serves to identify the throttler, because list cannot be used as a throttler
 		self.AsyncFuturesThrottler = object()
@@ -74,7 +72,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		# Publish-Subscribe for this pipeline
 		self.PubSub = asab.PubSub(app)
 		self.MetricsService = app.get_service('asab.MetricsService')
-		self.MetricsCounter = self.MetricsService.create_eps_counter(
+		self.MetricsCounter = self.MetricsService.create_counter(
 			"bspump.pipeline",
 			tags={'pipeline': self.Id},
 			init_values={
@@ -85,6 +83,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				'error': 0,
 			}
 		)
+		self.MetricsEPSCounter = self.create_eps_counter()
+
 		self.MetricsGauge = self.MetricsService.create_gauge(
 			"bspump.pipeline.gauge",
 			tags={'pipeline': self.Id},
@@ -130,7 +130,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self._context = {}
 
-
 	def time(self):
 		return self.App.time()
 
@@ -145,10 +144,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.MetricsGauge.set("warning.ratio", values["warning"] / values["event.in"])
 		self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"])
 
-
 	def is_error(self):
 		return self._error is not None
-
 
 	def set_error(self, context, event, exc):
 		'''
@@ -169,10 +166,13 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		else:
 			if self.handle_error(exc, context, event):
+
+				self.MetricsEPSCounter.add('warning', 1)
 				self.MetricsCounter.add('warning', 1)
 				self.PubSub.publish("bspump.pipeline.warning!", pipeline=self)
 				return
 			else:
+				self.MetricsEPSCounter.add('error', 1)
 				self.MetricsCounter.add('error', 1)
 
 			if (self._error is not None):
@@ -183,7 +183,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
 			self._evaluate_ready()
-
 
 	def handle_error(self, exception, context, event):
 		"""
@@ -250,7 +249,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self._evaluate_ready()
 
-
 	def _evaluate_ready(self):
 		orig_ready = self.is_ready()
 
@@ -271,7 +269,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				self.PubSub.publish("bspump.pipeline.not_ready!", pipeline=self)
 				self.MetricsDutyCycle.set('ready', False)
 
-
 	async def ready(self):
 		"""
 		Can be used in source: `await self.Pipeline.ready()`
@@ -285,10 +282,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		await self._ready.wait()
 		return True
 
-
 	def is_ready(self):
 		return self._ready.is_set()
-
 
 	def _do_process(self, event, depth, context):
 		for processor in self.Processors[depth]:
@@ -310,20 +305,21 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			if event is None:  # Event has been consumed on the way
 				if len(self.Processors) == (depth + 1):
 					if isinstance(processor, Sink):
+
+						self.MetricsEPSCounter.add('eps.out', 1)
 						self.MetricsCounter.add('event.out', 1)
 					else:
+						self.MetricsEPSCounter.add('eps.drop', 1)
 						self.MetricsCounter.add('event.drop', 1)
-
 				return
 
-		assert(event is not None)
+		assert (event is not None)
 
 		self.set_error(
 			context,
 			event,
 			ProcessingError("Incomplete pipeline, event '{}' is not consumed by a Sink".format(event))
 		)
-
 
 	def inject(self, context, event, depth):
 		"""
@@ -346,7 +342,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 		self._do_process(event, depth, context)
 
-
 	async def process(self, event, context=None):
 		"""
 		Process method serves to inject events into the pipeline's depth 0,
@@ -362,9 +357,25 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		while not self.is_ready():
 			await self.ready()
 
+		self.MetricsEPSCounter.add('eps.in', 1)
 		self.MetricsCounter.add('event.in', 1)
 
 		self.inject(context, event, depth=0)
+
+
+
+	def create_eps_counter(self):
+		return self.MetricsService.create_eps_counter(
+			"bspump.pipeline",
+			tags={'pipeline': self.Id},
+			init_values={
+				'eps.in': 0,
+				'eps.out': 0,
+				'eps.drop': 0,
+				'warning': 0,
+				'error': 0,
+			}
+		)
 
 	# Future methods
 
@@ -387,7 +398,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		# Throttle when the number of futures exceeds the max count
 		if len(self.AsyncFutures) == self.AsyncConcurencyLimit:
 			self.throttle(self.AsyncFuturesThrottler, True)
-
 
 	def _future_done(self, future):
 		"""
@@ -421,7 +431,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		else:
 			self.Sources.extend(source)
 
-
 	def append_processor(self, processor):
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
 		# TODO: Check if fitting
@@ -432,7 +441,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			self.Processors.append([])
 
 		self._post_add_processor(processor)
-
 
 	def remove_processor(self, processor_id):
 		for depth in self.Processors:
@@ -445,7 +453,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 					del self.ProfilerCounter['analyzer_' + processor.Id]
 				return
 		raise KeyError("Cannot find processor '{}'".format(processor_id))
-
 
 	def insert_before(self, id, processor):
 		"""
@@ -461,7 +468,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 					return True
 		return False
 
-
 	def insert_after(self, id, processor):
 		"""
 		Insert the processor into a pipeline after another processor specified by id
@@ -475,7 +481,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 					self._post_add_processor(processor)
 					return True
 		return False
-
 
 	def _post_add_processor(self, processor):
 		self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
@@ -503,7 +508,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		for processor in processors:
 			self.append_processor(processor)
 
-
 	def iter_processors(self):
 		"""
 		Iterate thru all processors.
@@ -511,7 +515,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		for processors in self.Processors:
 			for processor in processors:
 				yield processor
-
 
 	# Locate  ...
 
@@ -538,8 +541,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		Find by a processor by id.
 		"""
 		for processor in self.iter_processors():
-				if processor.Id == processor_id:
-					return processor
+			if processor.Id == processor_id:
+				return processor
 
 	# Lifecycle ...
 
@@ -551,7 +554,6 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			source.start(self.Loop)
 
 		self._evaluate_ready()
-
 
 	async def stop(self):
 		# Stop all futures
@@ -603,9 +605,9 @@ class PipelineLogger(logging.Logger):
 		super().__init__(name, level=level)
 		self.Deque = collections.deque([], 50)
 		self._metrics_counter = metrics_counter
-		# TODO: configurable maxlen that is now 50 ^^
-		# TODO: configurable log level (per pipeline, from its config)
 
+	# TODO: configurable maxlen that is now 50 ^^
+	# TODO: configurable log level (per pipeline, from its config)
 
 	def handle(self, record):
 		# Count errors and warnings
@@ -620,7 +622,6 @@ class PipelineLogger(logging.Logger):
 		# Add record
 		self.Deque.append(record)
 
-
 	def _format_time(self, record):
 		try:
 			ct = datetime.datetime.fromtimestamp(record.created)
@@ -628,3 +629,4 @@ class PipelineLogger(logging.Logger):
 		except BaseException as e:
 			L.error("ERROR when logging: {}".format(e))
 			return str(record.created)
+
