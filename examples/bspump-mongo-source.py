@@ -12,11 +12,12 @@ import logging
 L = logging.getLogger(__name__)
 
 """
-This example connects to mongodb running on our oilvan server. 
+    This example connects to mongodb running on our oilvan server. 
         #host = //10.17.161.11:27017
         #databaseb=genieacs
         #collections=devices 
-    query's the database according to the parameters passed into query_parms.
+    query's the database according to the parameters passed into query_parms 
+    and outputs the result into console 
 """
 
 class MyApplication(BSPumpApplication):
@@ -35,7 +36,9 @@ class MyPipeline0(Pipeline):
         super().__init__(app, pipeline_id)
 
         """
-        query_parms takes three parms (filter,projection,number of records). If you don't pass either of these.Default is None.
+        query_parms takes three parms (filter,projection,number of records). If you don't pass either of these.
+        Default is None. 
+        
         Example on how to use queryparms 
         
         query_parms = {
