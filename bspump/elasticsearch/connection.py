@@ -52,9 +52,12 @@ class ElasticSearchBulk(object):
 			L.warn("{}".format(e))
 			return False
 
-		# Obtain the response from ElasticSearch,
-		# which should always be a json
-		resp_body = await resp.json()
+		# Obtain the response from ElasticSearch, which should always be a json
+		try:
+			resp_body = await resp.json()
+		except Exception as e:
+			L.warn("{}".format(e))
+			return False
 
 		if resp.status == 200:
 
@@ -354,7 +357,7 @@ class ElasticSearchConnection(Connection):
 				await asyncio.sleep(20)  # Throttle a bit before next try
 				return
 
-			# Push buld into the ElasticSearch
+			# Push bulks into the ElasticSearch
 			while self._started:
 				bulk = await self._output_queue.get()
 				if bulk is None:
