@@ -358,7 +358,7 @@ class ElasticSearchConnection(Connection):
 
 			except aiohttp.client_exceptions.ContentTypeError as e:
 				L.warn("Failed communication {}".format(e))
-				await asyncio.sleep(20)  # Throttle a bit before next try
+				await asyncio.sleep(20)  # Throttle a lot before next try
 				return
 
 			# Push bulks into the ElasticSearch
