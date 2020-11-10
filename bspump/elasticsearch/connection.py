@@ -49,6 +49,8 @@ class ElasticSearchBulk(object):
 				timeout=timeout,
 			)
 		except OSError as e:
+			# This means that there was a hard error such as network or DNS failure
+			# Likely no communication took place with ElasticSearch
 			L.warn("{}".format(e))
 			return False
 
@@ -56,13 +58,15 @@ class ElasticSearchBulk(object):
 		try:
 			resp_body = await resp.json()
 		except Exception as e:
+			# We received something else than JSON, that's bad
+			# Let's assume that the bulk did not reach ElasticSearch
 			L.warn("{}".format(e))
 			return False
 
 		if resp.status == 200:
 
 			# Check that all documents were successfully inserted to ElasticSearch
-			# If there are no error messages, continue
+			# If there are no error messages, we are done here
 			if not resp_body.get("errors", False):
 				self.InsertMetric.add("ok", items_count)
 				return True
@@ -101,7 +105,7 @@ class ElasticSearchBulk(object):
 
 		else:
 
-			# An ElasticSearch error occurred while inserting documents
+			# The major ElasticSearch error occurred while inserting documents, response was not 200
 			self.InsertMetric.add("fail", items_count)
 			L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
 				resp.status,
@@ -135,7 +139,7 @@ class ElasticSearchBulk(object):
 		:param return_code: ElasticSearch return code
 		:return: False if the bulk is to be resumbitted again
 		"""
-		return True
+		return False
 
 
 class ElasticSearchConnection(Connection):
