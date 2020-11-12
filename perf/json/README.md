@@ -7,7 +7,7 @@ Client machine: `Intel(R) Xeon(R) CPU E3-1226 v3 @ 3.30GHz`
 Payload:  `{ "name" : "Chuck Norris" }`  
 
 
-## JSON To Dict Parsing
+## JSON Parsing
 
  * `./perf-jsonbytestodict.py`: 190 kEPS (using `JsonBytesToDict` and `orjson`)
  * `./perf-jsontodict.py`: 142 kEPS (using `JsonToDict` and `json` module from a standard Python library)
