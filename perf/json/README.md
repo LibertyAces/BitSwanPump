@@ -2,16 +2,17 @@
 
 Technology: ElasticSearch
 
+
 ## Benchmarks
 
 Client machine: `Intel(R) Xeon(R) CPU E3-1226 v3 @ 3.30GHz`  
 Payload size:  `{ "name" : "Chuck Norris" }`  
 
 
-## Sink
+## JsonBytesToDictParser
 
- * `./test-es-sink.py`: 243 kEPS
- * `./test-baseline-sink.py`: 170 kEPS (not sending events to ElasticSearch)
+ * `./test-es-sink.py`: xxx kEPS
+ * `./test-baseline.py`: xxx kEPS (not parsing JSONs)
 
 
 *kEPS stands for kilo (1000) events per second*
