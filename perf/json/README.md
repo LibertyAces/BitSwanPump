@@ -11,8 +11,8 @@ Payload size:  `{ "name" : "Chuck Norris" }`
 
 ## JsonBytesToDictParser
 
- * `./test-es-sink.py`: xxx kEPS
- * `./test-baseline.py`: xxx kEPS (not parsing JSONs)
+ * `./test-jsonbytestodict-sink.py`: 180 kEPS
+ * `./test-baseline.py`: 263 kEPS (not parsing JSONs)
 
 
 *kEPS stands for kilo (1000) events per second*
