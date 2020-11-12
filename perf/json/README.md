@@ -15,3 +15,5 @@ Payload:  `{ "name" : "Chuck Norris" }`
 
 
 *kEPS stands for kilo (1000) events per second*
+
+_Disclaimer_: Your mileage may vary eg. due to a size of the JSON to parse.
