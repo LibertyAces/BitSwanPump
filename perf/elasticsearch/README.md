@@ -1,6 +1,5 @@
-# BitSwan BSPump ElasticSearch Performance testing
+# BitSwan BSPump ElasticSearch performance
 
-Technology: ElasticSearch
 
 ## Benchmarks
 

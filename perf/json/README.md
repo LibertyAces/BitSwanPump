@@ -1,17 +1,16 @@
-# BitSwan BSPump ElasticSearch Performance testing
-
-Technology: ElasticSearch
+# BitSwan BSPump JSON Parsing performance
 
 
 ## Benchmarks
 
 Client machine: `Intel(R) Xeon(R) CPU E3-1226 v3 @ 3.30GHz`  
-Payload size:  `{ "name" : "Chuck Norris" }`  
+Payload:  `{ "name" : "Chuck Norris" }`  
 
 
 ## JsonBytesToDictParser
 
- * `./perf-jsonbytestodict.py`: 180 kEPS
+ * `./perf-jsonbytestodict.py`: 190 kEPS (using `orjson`)
+ * `./perf-jsontodict.py`: 142 kEPS (using `json` module from a standard Python library)
  * `./perf-baseline.py`: 263 kEPS (not parsing JSONs)
 
 
