@@ -40,7 +40,6 @@ class SamplePipeline(bspump.Pipeline):
 			LoadSource(app, self).on(
 				bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)
 			),
-			bspump.common.JsonBytesToDictParser(app, self),
 			bspump.common.NullSink(app, self)
 		)
 
