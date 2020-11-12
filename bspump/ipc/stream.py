@@ -2,6 +2,8 @@ import asyncio
 import logging
 import socket
 
+import asab.net
+
 from ..abc.sink import Sink
 from ..abc.source import Source
 
@@ -9,11 +11,11 @@ from ..abc.source import Source
 
 L = logging.getLogger(__name__)
 
-
 #
 
 
 class StreamSource(Source):
+
 	ConfigDefaults = {
 		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
 	}
@@ -25,6 +27,13 @@ class StreamSource(Source):
 		self.Writers = set()
 
 		self.Address = str(self.Config['address'])
+
+		if 'cert' in self.Config or 'key' in self.Config:
+			sslbuilder = asab.net.SSLContextBuilder('[none]', config=self.Config)
+			self.SSL = sslbuilder.build()
+		else:
+			self.SSL = None
+
 
 	async def handler(self, reader, writer):
 		"""
@@ -40,6 +49,7 @@ class StreamSource(Source):
 				'peer': writer.transport.get_extra_info('peername'),
 			})
 
+
 	async def _handler_wrapper(self, reader, writer):
 		self.Writers.add(writer)
 
@@ -50,6 +60,7 @@ class StreamSource(Source):
 			writer.close()
 			self.Writers.remove(writer)
 
+
 	async def main(self):
 		# Start server
 		if ":" in self.Address:
@@ -59,13 +70,15 @@ class StreamSource(Source):
 			server = await asyncio.start_server(
 				self._handler_wrapper,
 				host, port,
-				loop=self.Loop
+				loop=self.Loop,
+				ssl=self.SSL,
 			)
 		else:
 			server = await asyncio.start_unix_server(
 				self._handler_wrapper,
 				path=self.Address,
-				loop=self.Loop
+				loop=self.Loop,
+				ssl=self.SSL,
 			)
 
 		await self.stopped()
