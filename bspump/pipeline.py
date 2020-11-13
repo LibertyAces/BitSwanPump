@@ -366,7 +366,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def create_eps_counter(self):
 		return self.MetricsService.create_eps_counter(
-			"bspump.pipeline",
+			"bspump.pipeline.eps",
 			tags={'pipeline': self.Id},
 			init_values={
 				'eps.in': 0,
