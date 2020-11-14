@@ -30,14 +30,33 @@ class StreamSource(Source):
 		"""
 		This method could be overridden to implement various application protocols.
 		"""
+		# Socket
+		sock = writer.transport.get_extra_info('socket')
+
+		# Peer
+		peer_name = writer.transport.get_extra_info('peername')
+		if sock.family is socket.AF_INET or sock.family is socket.AF_INET6:
+			peer = '{}+{}'.format(peer_name[0], peer_name[1])
+		else:
+			peer = peer_name
+
+		# Me
+		sock_name = writer.transport.get_extra_info('sockname')
+		if sock.family is socket.AF_INET or sock.family is socket.AF_INET6:
+			me = '{}+{}'.format(sock_name[0], sock_name[1])
+		else:
+			me = sock_name
+
 		while True:
 			await self.Pipeline.ready()
 			data = await reader.readline()
 			# End of stream detected
 			if len(data) == 0:
 				break
+
 			await self.process(data, context={
-				'peer': writer.transport.get_extra_info('peername'),
+				'peer': peer,
+				'me': me
 			})
 
 	async def _handler_wrapper(self, reader, writer):
