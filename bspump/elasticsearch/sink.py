@@ -24,7 +24,7 @@ class ElasticSearchSink(Sink):
 
 	ConfigDefaults = {
 		"index_prefix": "bspump_",  # Obsolete, use 'index'
-		"index": "",
+		"index": "bspump_",
 	}
 
 

@@ -301,11 +301,10 @@ class ElasticSearchConnection(Connection):
 			if future is not None and future.done():
 				# Ups, _loader() task crashed during runtime, we need to restart it
 				try:
-					r = future.result()
-					# This error should never happen
-					L.error("ElasticSearch error observed, returned: '{}' (should be None)".format(r))
+					future.result()
+					L.error("ElasticSearch error observed, will retry shortly")
 				except Exception:
-					L.exception("ElasticSearch error observed, restoring the order")
+					L.exception("ElasticSearch error observed, will retry shortly")
 
 				self._futures[i] = (url, None)
 
