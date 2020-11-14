@@ -302,9 +302,10 @@ class ElasticSearchConnection(Connection):
 				# Ups, _loader() task crashed during runtime, we need to restart it
 				try:
 					future.result()
-					L.error("ElasticSearch error observed, will retry shortly")
+					if self._started:
+						L.error("ElasticSearch issue detected, will retry shortly")
 				except Exception:
-					L.exception("ElasticSearch error observed, will retry shortly")
+					L.exception("ElasticSearch issue detected, will retry shortly")
 
 				self._futures[i] = (url, None)
 
@@ -346,17 +347,22 @@ class ElasticSearchConnection(Connection):
 				async with session.get(url + "_cluster/health") as resp:
 					await resp.json()
 					if resp.status != 200:
-						L.warn("Cluster is not ready".format(resp.status))
+						L.error("Cluster is not ready", struct_data={'status': resp.status})
 						await asyncio.sleep(5)  # Throttle a bit before next try
 						return
 
+			except aiohttp.client_exceptions.ServerDisconnectedError:
+				L.error("Cluster is not ready, server disconnected or not ready")
+				await asyncio.sleep(5)  # Throttle a bit before next try
+				return
+
 			except OSError as e:
-				L.warn("{}".format(e))
+				L.error("{}, cluster is not ready".format(e))
 				await asyncio.sleep(5)  # Throttle a bit before next try
 				return
 
 			except aiohttp.client_exceptions.ContentTypeError as e:
-				L.warn("Failed communication {}".format(e))
+				L.error("Failed communication {}".format(e))
 				await asyncio.sleep(20)  # Throttle a lot before next try
 				return
 
