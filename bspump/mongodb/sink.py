@@ -68,7 +68,7 @@ class MongoDBSink(Sink):
     def _on_application_stop(self, message_type, counter):
         # On requested stop, we insert 'None' to the FIFO (first in first out) asyncio Queue this means (see later),
         # that no task or item inserted after will be processed.
-        self._output_queue.put_nowait(None)
+        self._output_queue.put_nowait((None,None))
 
     async def _on_exit(self, message_type):
         # On application exit, we first await completion of all tasks in the queue.
@@ -92,6 +92,9 @@ class MongoDBSink(Sink):
             # to be pulled out of the queue and saved to a local variable.
             context, event = await self._output_queue.get()
 
+            if event is None:
+                break
+
             # We check the queue size and remove throttling if the size is smaller than its defined max size.
             if self._output_queue.qsize() == self._output_queue_max_size - 1:
                 self.Pipeline.throttle(self, False)
@@ -103,9 +106,8 @@ class MongoDBSink(Sink):
             # reached what was inserted by _on_application_stop and we break the loop immediately.
             # If this is not the case we continue determining the type of the item and proceed accordingly,
             # including raising a type error, if the type is unexpected.
-            if event is None:
-                break
-            elif type(event) == dict:
+
+            if type(event) == dict:
                 await collection.insert_one(event)
                 self._output_queue.task_done()
             elif type(event) == list and len(event) > 0:
