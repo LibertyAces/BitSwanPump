@@ -34,4 +34,3 @@ class LineSourceProtocol(SourceProtocolABC):
 				break
 
 			await source.process(data, context=context.copy())
-			print("Cycled")
