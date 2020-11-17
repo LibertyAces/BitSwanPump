@@ -90,6 +90,23 @@ def parse_cmdline():
 		default=None)
 	delete_parser.set_defaults(COMMAND='delete')
 
+	# Force merge command
+	forcemerge_parser = subparsers.add_parser('force-merge', help='forces merge and shrinks all indices')
+	forcemerge_parser.add_argument('URL', action='store', help='an ElasticSearch URL')
+	forcemerge_parser.add_argument('--max-cpu-load',
+		action='store',
+		help='CPU usage threshold that will trigger the merge',
+		default='1')
+	forcemerge_parser.add_argument('--backup-node',
+		action='store',
+		help='Node where the shrunk indices will be stored (defaults to data node with the lowest memory usage)',
+		default=None)
+	forcemerge_parser.add_argument('--exclude',
+		action='store',
+		help='Indices with matching prefix will be excluded',
+		default=None)
+	forcemerge_parser.set_defaults(COMMAND='force-merge')
+
 	return parser.parse_args()
 
 
@@ -292,7 +309,7 @@ def COMMAND_cleanup(URL, args_min_date, args_max_date, exclude_prefix):
 	print("Count of non-green indicies: {}".format(not_green_count))
 
 
-def COMMAND_reopen(URL, args_min_date, args_max_date, exclude_prefix):
+def COMMAND_reopen(URL, args_min_date, args_max_date, exclude_prefix, max_server_load):
 	url = URL
 	if url[-1:] != '/': url += '/'
 
@@ -565,8 +582,6 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 					print("Closing index {}".format(name))
 					result = req_close_index(url, name)
 
-
-
 		except KeyboardInterrupt:
 			return
 
@@ -574,11 +589,109 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 			print("Error in this index:")
 			pprint.pprint(index)
 
-
-
 	print("Original count of indicies: {}".format(len(indices)))
 	print("Count of deleted indicies: {}".format(delete_count))
 	print("Count of reamining indicies: {}".format(len(indices)-delete_count))
+
+
+def COMMAND_forcemerge(URL, max_cpu_load, backup_node, exclude_prefix):
+	url = URL
+	if url[-1:] == '/':
+		url = url[:-1]
+
+	print("Communicating with: {}".format(url))
+
+	print("Retrieving CPU stats...")
+	url_get_os_stats = "{}/_nodes/stats/os/".format(url)
+	r = requests.get(url_get_os_stats)
+	stats = r.json()
+	cpu_usage = {}
+	nodes_memory = []
+	for node_id, node_details in stats["nodes"].items():
+		cpu_usage[node_details["name"]] = node_details["os"]["cpu"]["percent"]
+		nodes_memory.append((
+			"data" in node_details["roles"],
+			node_details["os"]["mem"]["free_in_bytes"],
+			node_details["name"]))
+	nodes_memory.sort(reverse=True)
+
+	# If no backup node specified, use the one with most free memory
+	if not backup_node:
+		backup_node = nodes_memory[0][2]
+
+	# for k, v in cpu_usage.items():
+	# 	print(k, v)
+	# for v in nodes_memory:
+	# 	print(v)
+	get_indices = "{}/_cat/indices?format=json".format(url)
+	r = requests.get(get_indices)
+	indices = r.json()
+
+	not_green_count = 0
+
+	indices = sorted(indices, key=lambda index: index['index'].rsplit('_')[-1], reverse=False)
+	failed = 0
+	successful = 0
+	for index in indices:
+		try:
+			name = index['index']
+
+			if name.startswith('.'):
+				print("Index {} will be excluded. Indexes that start with '.' are always excluded".format(name))
+				continue
+
+			if exclude_prefix is not None and name.startswith(exclude_prefix):
+				print("Index {0} will be excluded because it matches prefix {1}".format(name, exclude_prefix))
+				continue
+
+			if index['health'] != 'green':
+				print("Index {index} health is {health} - skipping".format(**index))
+				not_green_count += 1
+				continue
+
+			if index['status'] != 'open':
+				continue
+
+			prepare_for_shrink = {
+				"settings": {
+					"index.number_of_replicas": 0,
+					"index.routing.allocation.require._name": backup_node,
+					"index.blocks.write": True
+				}
+			}
+
+			r = requests.put("{}/{}/_settings".format(url, index["name"]), json=prepare_for_shrink)
+			result = r.json()
+			if not result.get('acknowledged'):
+				print("Pre-shrink preparation failed for index '{}': {}".format(name, result))
+				failed += 1
+				continue
+
+			requests.post("{}/{}/_forcemerge?&max_num_segments=1".format(url, index["name"]))
+			result = r.json()
+			if not result.get('acknowledged'):
+				print("Force merge of index '{}' returned error: {}".format(name, result))
+				failed += 1
+				continue
+
+			r = requests.post("{url}/{index}/_shrink/shrunk_{index}".format(url=url, index=index["name"]))
+			result = r.json()
+			if not result.get('acknowledged'):
+				print("Shrink of index '{}' returned error: {}".format(name, result))
+				failed += 1
+				continue
+			successful += 1
+
+		except KeyboardInterrupt:
+			return
+		except Exception as e:
+			print("Error in index '{}': {}".format(index["name"], e))
+			# pprint.pprint(index)
+
+	print("Count of total indicies: {}".format(len(indices)))
+	print("Count of non-green indicies: {}".format(not_green_count))
+	print("Failed shrinks: {}".format(failed))
+	print("Successfully shrunk: {}".format(successful))
 
 
 def main():
@@ -605,6 +718,9 @@ def main():
 
 	elif args.COMMAND == 'delete':
 		return COMMAND_delete(args.URL, args.min_date, args.max_date, args.exclude)
+
+	elif args.COMMAND == 'force-merge':
+		return COMMAND_forcemerge(args.URL, args.max_cpu_load, args.backup_node, args.exclude)
 
 
 if __name__ == '__main__':
