@@ -1,4 +1,5 @@
 import logging
+import re
 
 import aiokafka
 
@@ -44,7 +45,7 @@ class KafkaConnection(Connection):
 	"""
 
 	ConfigDefaults = {
-		'bootstrap_servers': 'localhost:9092',
+		'bootstrap_servers': 'localhost:9092',  # One or more URLs separated by whitespace or semicolon
 		'compression_type': '',
 		'security_protocol': 'PLAINTEXT',
 		'sasl_mechanism': 'PLAIN',
@@ -52,11 +53,9 @@ class KafkaConnection(Connection):
 		'sasl_plain_password': '',
 	}
 
-
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 		self.Loop = app.Loop
-
 
 	async def create_producer(self, **kwargs):
 		producer = aiokafka.AIOKafkaProducer(
@@ -70,7 +69,6 @@ class KafkaConnection(Connection):
 			**kwargs
 		)
 		return producer
-
 
 	def create_consumer(self, *topics, **kwargs):
 		consumer = aiokafka.AIOKafkaConsumer(
@@ -87,8 +85,11 @@ class KafkaConnection(Connection):
 		return consumer
 
 	def get_bootstrap_servers(self):
-		return self.Config['bootstrap_servers'].split(';')
-
+		return [
+			url for url
+			in re.split(r"[\s;]+", self.Config['bootstrap_servers'])
+			if url
+		]
 
 	def get_compression(self):
 		"""
