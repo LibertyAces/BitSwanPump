@@ -556,6 +556,8 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._evaluate_ready()
 
 	async def stop(self):
+		self.PubSub.publish("bspump.pipeline.stop!", pipeline=self)
+
 		# Stop all futures
 		while len(self.AsyncFutures) > 0:
 			# The futures are removed in _future_done
