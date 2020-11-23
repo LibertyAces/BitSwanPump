@@ -13,6 +13,13 @@ L = logging.getLogger(__name__)
 
 ##
 
+"""
+    This example connects to FTP server ,converts filename into bytes and outputs the result into console .
+    If the filename is not specified coverts each and every files into bytes and and outputs the result into 
+    console .
+"""
+
+
 class MyApplication(BSPumpApplication):
 
     def __init__(self):
@@ -32,7 +39,7 @@ class MyApplication(BSPumpApplication):
 class MyPipeline0(Pipeline):
     def __init__(self, app, pipeline_id=None):
         super().__init__(app, pipeline_id)
-        #Default is root ,fill in specific path inside FTP if necessary in remote_path'
+        #Default is root ,fill in specific path inside FTP if any remote_path'
         self.build(
             bspump.ftp.FTPSource(app, self, "FTPConnection", config={'remote_path': '/',
                                                                      'mode': 'r' })
