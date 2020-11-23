@@ -9,7 +9,7 @@ def _and_reduce(operator, iterable, context, event, *args, **kwargs):
 
 	for b in it:
 		b = evaluate(b, context, event, *args, **kwargs)
-		if b is None or not operator(a, b):
+		if not operator(a, b):
 			return False
 		a = b
 
