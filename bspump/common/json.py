@@ -5,13 +5,13 @@ from ..abc.processor import Processor
 class DictToJsonParser(Processor):
 
 	def process(self, context, event):
-		return simdjson(event)
+		return simdjson.dumps(event)
 
 
 class JsonToDictParser(Processor):
 
 	def process(self, context, event):
-		return simdjson(event)
+		return simdjson.loads(event)
 
 
 class SimdJsonParser(Processor):
