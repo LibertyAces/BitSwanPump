@@ -1,7 +1,10 @@
 import asyncio
 import logging
+
+from aioftp import StatusCodeError
+
 from bspump.abc.source import TriggerSource
-import aioftp
+
 ###
 
 L = logging.getLogger(__name__)
@@ -21,14 +24,12 @@ class FTPSource(TriggerSource):
 		self.Loop = app.Loop
 		self.Pipeline = pipeline
 		self.Queue = asyncio.Queue(loop=self.Loop)
-
 		self.Connection = pipeline.locate_connection(app, connection)
-
 		self.Filename= self.Config.get('filename',None)
-		print(self.Filename)
 		self.RemotePath = self.Config['remote_path']
 		self._conn_future = None
 		self.list_future = None
+		self.FinishedWithQueue = False
 
 	async def list_files(self):
 
@@ -38,33 +39,37 @@ class FTPSource(TriggerSource):
 		#conenct to client
 		self.client = await self.Connection.run1()
 
-		for path, info in (await self.client.list()):
-			print(path)
-			self.Queue.put_nowait(path)
+		if self.Filename is not None:
+			tmp = self.RemotePath + '/'+ self.Filename
+			self.Queue.put_nowait(tmp)
+		else:
+			for path, info in (await self.client.list(self.RemotePath)):
+				try:
+					if info['type'] == 'dir':
+						pass
+					else:
+						self.Queue.put_nowait(path)
+				except asyncio.queues.QueueFull:
+					L.warning("Queue has reached it's limit")
+		#Indicate that we are done with the queue
+		self.FinishedWithQueue = True
 
 	async def inbound(self):
 		while True:
 			try:
+				#Close connection
+				if(self.FinishedWithQueue):
+					if self.Queue.empty():
+						await self.client.quit()
+						self._conn_future = None
+						break
+
 				path = await self.Queue.get()
-				if self.Filename is not None:
-					path = self.Filename
-
-				#get connection object
-				self.client = await self.Connection.run1()
-
 				async with self.client.download_stream(path) as stream:
 					async for block in stream.iter_by_block():
 						await self.process(block)
-
-				if self.Queue.empty():
-					print()
-					print("Done!")
-					await stream.finish()
-					await self.client.quit()
-					self._conn_future = None
-					break
-			except ConnectionResetError:
-				pass
+			except (ConnectionResetError,StatusCodeError) as exception:
+				L.exception(exception)
 
 	async def cycle(self):
 		if self.list_future:
@@ -85,5 +90,7 @@ class FTPSource(TriggerSource):
 				self.inbound(),
 				loop=self.Loop
 			)
+			await self._conn_future
+
 
 

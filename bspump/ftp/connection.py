@@ -28,10 +28,10 @@ class FTPConnection(Connection):
 		self.Port = self.Config.get('port')
 
 	async def run1(self):
-		Client = aioftp.Client()
-		await Client.connect(self.Hostname,21)
-		await Client.login(self.Username, self.Password)
-		return Client
+		client = aioftp.Client()
+		await client.connect(self.Hostname,21)
+		await client.login(self.Username, self.Password)
+		return client
 
 
 
