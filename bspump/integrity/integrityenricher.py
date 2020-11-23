@@ -4,7 +4,7 @@ import secrets
 import hashlib
 import base64
 
-import orjson
+import simdjson
 
 from ..abc.processor import Processor
 
@@ -60,11 +60,7 @@ class IntegrityEnricher(Processor):
 
 		# Hash event using key, value, key, value ... sequence
 		h = hashlib.new(self.Algorithm)
-		h.update(orjson.dumps(
-			event,
-			default=orjson_default,
-			option=orjson.OPT_NON_STR_KEYS | orjson.OPT_SORT_KEYS)
-		)
+		h.update(simdjson.dumps(event, sort_keys=True))
 		hash_base64 = h.hexdigest()
 
 		# Store the hash as base64 string

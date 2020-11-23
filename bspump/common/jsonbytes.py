@@ -1,4 +1,9 @@
-import orjson
+try:
+	import orjson
+except ModuleNotFoundError:
+	pass
+
+# IMPORTANT: This module is obsolete, not supported and will be removed in a future
 
 from ..abc.processor import Processor
 
