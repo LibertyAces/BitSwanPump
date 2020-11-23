@@ -6,26 +6,11 @@ import bspump
 import bspump.common
 import bspump.trigger
 
-import simdjson
-
 ###
 
 L = logging.getLogger(__name__)
 
 ###
-
-
-class SimdJsonParser(bspump.Processor):
-	'''
-	Based on https://github.com/TkTech/pysimdjson
-	'''
-
-	def __init__(self, app, pipeline, id=None, config=None):
-		super().__init__(app, pipeline, id, config)
-		self._parser = simdjson.Parser()
-
-	def process(self, context, event: bytes):
-		return self._parser.parse(event)
 
 
 class LoadSource(bspump.TriggerSource):
@@ -53,7 +38,7 @@ class SamplePipeline(bspump.Pipeline):
 			LoadSource(app, self).on(
 				bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)
 			),
-			SimdJsonParser(app, self),
+			bspump.common.SimdJsonParser(app, self),
 			bspump.common.NullSink(app, self)
 		)
 

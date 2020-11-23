@@ -1,6 +1,6 @@
+import json
 import simdjson
 from ..abc.processor import Processor
-
 
 class DictToJsonParser(Processor):
 
@@ -26,3 +26,15 @@ class SimdJsonParser(Processor):
 
 	def process(self, context, event: bytes):
 		return self._parser.parse(event)
+
+
+class StdDictToJsonParser(Processor):
+
+	def process(self, context, event):
+		return json.dumps(event)
+
+
+class StdJsonToDictParser(Processor):
+
+	def process(self, context, event):
+		return json.loads(event)

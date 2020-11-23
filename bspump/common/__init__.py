@@ -9,6 +9,8 @@ from .iterator import IteratorSource
 from .json import DictToJsonParser
 from .json import JsonToDictParser
 from .json import SimdJsonParser
+from .json import StdDictToJsonParser
+from .json import StdJsonToDictParser
 from .json import JsonToDictParser as JSONParser  # For backward compatability
 from .json import JsonToDictParser as JSONParserProcessor  # For backward compatability
 from .jsonbytes import DictToJsonBytesParser
@@ -36,6 +38,8 @@ __all__ = (
 	'DictToJsonParser',
 	'JsonToDictParser',
 	'SimdJsonParser',
+	'StdDictToJsonParser',
+	'StdJsonToDictParser',
 	'JSONParser',
 	'JSONParserProcessor',
 	'DictToJsonBytesParser',
