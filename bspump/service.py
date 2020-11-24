@@ -96,15 +96,14 @@ class BSPumpService(asab.Service):
 	def locate_lookup(self, lookup_id, context=None):
 		if isinstance(lookup_id, Lookup):
 			return lookup_id
-		try:
-			return self.Lookups[lookup_id]
-		except KeyError:
-			for lookup_factory in self.LookupFactories:
-				lookup = lookup_factory.locate_lookup(lookup_id, context)
-				if lookup is not None:
-					self.Lookups[lookup_id] = lookup
-					return lookup
-			raise KeyError("Cannot find lookup id '{}' (did you call add_lookup() ?)".format(lookup_id))
+
+		# TODO: Make sure the lookup is always properly returned
+		for lookup_factory in self.LookupFactories:
+			lookup = lookup_factory.locate_lookup(lookup_id, context)
+			if lookup is not None:
+				self.Lookups[lookup_id] = lookup
+				return lookup
+		raise KeyError("Cannot find lookup id '{}' (did you call add_lookup() ?)".format(lookup_id))
 
 	def add_lookup_factory(self, lookup_factory):
 		self.LookupFactories.append(lookup_factory)
