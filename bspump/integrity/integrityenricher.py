@@ -60,7 +60,7 @@ class IntegrityEnricher(Processor):
 
 		# Hash event using key, value, key, value ... sequence
 		h = hashlib.new(self.Algorithm)
-		h.update(simdjson.dumps(event, sort_keys=True))
+		h.update(simdjson.dumps(event, sort_keys=True).encode("utf-8"))
 		hash_base64 = h.hexdigest()
 
 		# Store the hash as base64 string
