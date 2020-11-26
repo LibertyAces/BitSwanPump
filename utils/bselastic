@@ -613,18 +613,30 @@ def COMMAND_shrink(URL, index, backup_node=None, shrunk_prefix="shrunk_"):
 
 	if not backup_node:
 		# pick a random warm node
-		# TODO: how to tell if a node is warm?
 		r = requests.get("{}/_cat/nodeattrs?format=json".format(url))
 		warm_nodes = []
 		for entry in r.json():
+			# TODO: how to tell if a node is warm?
 			if entry["attr"] == "data" and entry["value"] == "????????? WARM":
 				warm_nodes.append(entry["node"])
-		if not warm_nodes:
-			raise RuntimeError("Warm node detection failed.")
-		backup_node = random.choice(warm_nodes)
-
-		# or pick a warm node with least indices
-		# TODO: how to tell number of indices on a node?
+		if warm_nodes:
+			backup_node = random.choice(warm_nodes)
+			# or pick a warm node with least indices
+			# TODO: how to tell number of indices on a node?
+		else:
+			print("Could not detect warm nodes. Picking random data node.")
+	if not backup_node:
+		r = requests.get("{}/_cat/nodes?format=json".format(url))
+		data_nodes = []
+		for entry in r.json():
+			if "d" in entry["node.role"]:
+				data_nodes.append(entry["name"])
+		if data_nodes:
+			backup_node = random.choice(data_nodes)
+		else:
+			print("No data nodes. Stopping.")
+			return
+	print("Using '{}' as backup node.".format(backup_node))
 
 	# prepare for shrink
 	prepare_for_shrink = {
@@ -641,7 +653,9 @@ def COMMAND_shrink(URL, index, backup_node=None, shrunk_prefix="shrunk_"):
 		return
 
 	# shrink
-	r = requests.post("{url}/{index}/_shrink/{prefix}{index}".format(url=url, index=index, prefix=shrunk_prefix))
+	r = requests.post(
+		"{url}/{index}/_shrink/{prefix}{index}".format(url=url, index=index, prefix=shrunk_prefix)
+	)
 	result = r.json()
 	if not result.get("acknowledged"):
 		print("Shrink of index '{}' returned error: {}".format(index, result))
