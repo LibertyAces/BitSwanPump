@@ -3,6 +3,7 @@ import argparse
 import os
 import json
 import pprint
+import random
 import re
 import datetime
 import time
@@ -106,6 +107,22 @@ def parse_cmdline():
 		help='Indices with matching prefix will be excluded',
 		default=None)
 	forcemerge_parser.set_defaults(COMMAND='force-merge')
+
+	# Shrink command
+	forcemerge_parser = subparsers.add_parser('shrink', help='shrink a specified index')
+	forcemerge_parser.add_argument('URL', action='store', help='an ElasticSearch URL')
+	forcemerge_parser.add_argument('--index',
+		action='store',
+		help='Index to shrink')
+	forcemerge_parser.add_argument('--backup-node',
+		action='store',
+		help='Node where the shrunk index will be stored (by default, a warm node is picked at random)',
+		default=None)
+	forcemerge_parser.add_argument('--shrunk-prefix',
+		action='store',
+		help='Prefix of the resulting shrunk index',
+		default='shrunk_')
+	forcemerge_parser.set_defaults(COMMAND='shrink')
 
 	return parser.parse_args()
 
@@ -594,6 +611,51 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 	print("Count of reamining indicies: {}".format(len(indices)-delete_count))
 
 
+def COMMAND_shrink(URL, index, backup_node=None, shrunk_prefix="shrunk_"):
+	url = URL
+	if url[-1:] == '/':
+		url = url[:-1]
+
+	# check index health, must be green
+	r = requests.get("{}/_cat/indices?format=json".format(url))
+	indices = r.json()
+
+	if not backup_node:
+		# pick a random warm node
+		# TODO: how to tell if a node is warm?
+		r = requests.get("{}/_cat/nodeattrs?format=json".format(url))
+		warm_nodes = []
+		for entry in r.json():
+			if entry["attr"] == "data" and entry["value"] == "????????? WARM":
+				warm_nodes.append(entry["node"])
+		if not warm_nodes:
+			raise RuntimeError("Warm node detection failed.")
+		backup_node = random.choice(warm_nodes)
+
+		# or pick a warm node with least indices
+		# TODO: how to tell number of indices on a node?
+
+	# prepare for shrink
+	prepare_for_shrink = {
+		"settings": {
+			"index.number_of_replicas": 0,
+			"index.routing.allocation.require._name": backup_node,
+			"index.blocks.write": True
+		}
+	}
+	r = requests.put("{}/{}/_settings".format(url, index), json=prepare_for_shrink)
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Pre-shrink preparation failed for index '{}': {}".format(index, result))
+		return
+
+	# shrink
+	r = requests.post("{url}/{index}/_shrink/{prefix}{index}".format(url=url, index=index, prefix=shrunk_prefix))
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Shrink of index '{}' returned error: {}".format(index, result))
+
+
 def COMMAND_forcemerge(URL, max_cpu_load, backup_node, exclude_prefix):
 	url = URL
 	if url[-1:] == '/':
@@ -721,6 +783,9 @@ def main():
 
 	elif args.COMMAND == 'force-merge':
 		return COMMAND_forcemerge(args.URL, args.max_cpu_load, args.backup_node, args.exclude)
+
+	elif args.COMMAND == 'shrink':
+		return COMMAND_shrink(args.URL, args.index, args.backup_node, args.shrunk_prefix)
 
 
 if __name__ == '__main__':
