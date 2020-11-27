@@ -109,10 +109,10 @@ def parse_cmdline():
 		action='store',
 		help='Node to allocate the shrunk index shard to (by default, a warm node is picked at random)',
 		default=None)
-	forcemerge_parser.add_argument('--shrunk-prefix',
+	forcemerge_parser.add_argument('--suffix-separator',
 		action='store',
 		help='Prefix of the resulting shrunk index',
-		default='shrunk_')
+		default='_')
 	forcemerge_parser.set_defaults(COMMAND='shrink')
 
 	return parser.parse_args()
@@ -602,15 +602,29 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 	print("Count of reamining indicies: {}".format(len(indices)-delete_count))
 
 
-def COMMAND_shrink(URL, index, target_node=None, shrunk_prefix="shrunk_"):
+def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
+	HEALTH_CHECK_PERIOD = 5
+	SHRINK_SUFFIX = "s"
+
 	url = URL
 	if url[-1:] == '/':
 		url = url[:-1]
 
 	# check index health, must be green
-	r = requests.get("{}/_cat/indices?format=json".format(url))
-	indices = r.json()
+	result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+	if result["status"] != "green":
+		print("Health status of index '{}' is {}. Aborting.".format(index, result["status"]))
 
+	# set shrunk index name
+	parts = index.split(suffix_separator)
+	if re.fullmatch("[0-9]+", parts[-1]):
+		parts.insert(-1, SHRINK_SUFFIX)
+	else:
+		parts.append(SHRINK_SUFFIX)
+	new_index = suffix_separator.join(parts)
+	print(f"New name: {new_index}")
+
+	# pick a node for allocation
 	if not target_node:
 		# pick a random warm node
 		r = requests.get("{}/_cat/nodeattrs?format=json".format(url))
@@ -636,7 +650,7 @@ def COMMAND_shrink(URL, index, target_node=None, shrunk_prefix="shrunk_"):
 		else:
 			print("No data nodes. Stopping.")
 			return
-	print("Using '{}' as target node.".format(target_node))
+	print("Using '{}' for allocation.".format(target_node))
 
 	# prepare for shrink
 	prepare_for_shrink = {
@@ -649,18 +663,52 @@ def COMMAND_shrink(URL, index, target_node=None, shrunk_prefix="shrunk_"):
 	r = requests.put("{}/{}/_settings".format(url, index), json=prepare_for_shrink)
 	result = r.json()
 	if not result.get("acknowledged"):
-		print("Pre-shrink preparation failed for index '{}': {}".format(index, result))
+		print("Pre-shrink preparation failed for index '{}': \n{}".format(index, result))
 		return
 
-	# TODO: wait until all shards are allocated to target_node
+	# wait until all shards are allocated to target_node
+	result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+	while result["status"] != "green":
+		print("Health status of index '{}' is {}. Waiting...".format(index, result["status"]))
+		time.sleep(HEALTH_CHECK_PERIOD)
+		result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
 
 	# shrink
+	shrink_settings = {
+		"settings": {
+			"index.routing.allocation.require._name": None,
+			# "index.blocks.write": None
+		}
+	}
 	r = requests.post(
-		"{url}/{index}/_shrink/{prefix}{index}".format(url=url, index=index, prefix=shrunk_prefix)
+		"{url}/{index}/_shrink/{shrunk_index}".format(url=url, index=index, shrunk_index=new_index),
+		json=shrink_settings
 	)
 	result = r.json()
 	if not result.get("acknowledged"):
-		print("Shrink of index '{}' returned error: {}".format(index, result))
+		print("Shrink of index '{}' returned error: \n{}".format(index, result))
+		return
+	print("Index '{}' shrunk successfully.".format(index))
+
+	# wait until all shards are allocated
+	result = requests.get("{}/_cluster/health/{}".format(url, new_index)).json()
+	while result["status"] != "green":
+		print("Health status of index '{}' is {}. Waiting...".format(index, result["status"]))
+		time.sleep(HEALTH_CHECK_PERIOD)
+		result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+
+	# delete old index
+	r = requests.delete("{url}/{index}".format(url=url, index=index))
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Cannot delete index '{}': \n{}".format(index, result))
+		return
+	print("Index '{}' deleted.".format(index))
+
+	# rename new index
+	# = clone and delete old
+	# OR
+	# just add an alias
 
 
 def COMMAND_forcemerge(URL, index):
@@ -716,7 +764,7 @@ def main():
 		return COMMAND_forcemerge(args.URL, args.index)
 
 	elif args.COMMAND == 'shrink':
-		return COMMAND_shrink(args.URL, args.index, args.target_node, args.shrunk_prefix)
+		return COMMAND_shrink(args.URL, args.index, args.target_node, args.suffix_separator)
 
 
 if __name__ == '__main__':
