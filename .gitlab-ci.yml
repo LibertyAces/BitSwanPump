@@ -1,7 +1,8 @@
 stages:
   - test
+  - flake8
 
-test:
+test-py37:
   image: python:3.7
   stage: test
   coverage: '/\d+\%$/'
@@ -11,7 +12,30 @@ test:
     - python setup.py install
     - pip install -r requirements-dev.txt
     - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
-    - pip install flake8
     - coverage run -m unittest test
     - coverage report -m
+
+test-py36:
+  image: python:3.6
+  stage: test
+  coverage: '/\d+\%$/'
+  script:
+    - apt-get update
+    - apt-get -y install unixodbc-dev
+    - python setup.py install
+    - pip install -r requirements-dev.txt
+    - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
+    - coverage run -m unittest test
+    - coverage report -m
+
+flake8:
+  image: python:3.7
+  stage: flake8
+  script:
+    - apt-get update
+    - apt-get -y install unixodbc-dev
+    - python setup.py install
+    - pip install -r requirements-dev.txt
+    - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
+    - pip install flake8
     - flake8 bspump
