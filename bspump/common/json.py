@@ -2,6 +2,7 @@ import json
 import simdjson
 from ..abc.processor import Processor
 
+
 class DictToJsonParser(Processor):
 
 	def process(self, context, event):

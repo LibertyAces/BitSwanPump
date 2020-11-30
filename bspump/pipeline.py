@@ -21,6 +21,7 @@ L = logging.getLogger(__name__)
 
 #
 
+
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
 
@@ -631,4 +632,3 @@ class PipelineLogger(logging.Logger):
 		except BaseException as e:
 			L.error("ERROR when logging: {}".format(e))
 			return str(record.created)
-

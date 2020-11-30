@@ -92,13 +92,3 @@ class MongoDBSource(TriggerSource):
         async for recs in cur:
             pass
             await self.process(recs, context={})
-
-
-
-
-
-
-
-
-
-
