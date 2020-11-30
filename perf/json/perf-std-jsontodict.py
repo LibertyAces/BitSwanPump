@@ -4,7 +4,6 @@ import time
 
 import bspump
 import bspump.common
-import bspump.elasticsearch
 import bspump.file
 import bspump.trigger
 
@@ -26,7 +25,7 @@ class LoadSource(bspump.TriggerSource):
 		print("START ----")
 		stime = time.time()
 		for i in range(0, self.Number):
-			event = b'{"name": "Chuck Norris"}'
+			event = '{"name": "Chuck Norris"}'
 			await self.process(event)
 		etime = time.time()
 		print("EPS: {:.0f}".format(self.Number / (etime - stime)))
@@ -40,7 +39,7 @@ class SamplePipeline(bspump.Pipeline):
 			LoadSource(app, self).on(
 				bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)
 			),
-			bspump.common.JsonBytesToDictParser(app, self),
+			bspump.common.StdJsonToDictParser(app, self),
 			bspump.common.NullSink(app, self)
 		)
 

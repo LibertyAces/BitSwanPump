@@ -84,9 +84,8 @@ setup(
 		'pymongo>=3.10.1',
 		'motor>=2.1.0',
 		'mongoquery>=1.3.6',
-		'orjson>=3.3.0',
+		'pysimdjson>=3.1.1',
 		'pywinrm>=0.4.1',
-		'pyarrow>=0.13.0', # `pip install pyarrow` fails on Apline Linux, official bspump alpine images do not include pyarrow
 		'pandas>=0.24.2',
 		'xxhash>=1.4.4',
 	],
