@@ -12,6 +12,6 @@ test:
     - pip install -r requirements-dev.txt
     - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
     - pip install flake8
-    - coverage run -m unittest
+    - coverage run -m unittest test
     - coverage report -m
     - flake8 bspump
