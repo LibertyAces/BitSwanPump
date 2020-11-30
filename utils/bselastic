@@ -105,10 +105,12 @@ def parse_cmdline():
 	forcemerge_parser.add_argument('--index',
 		action='store',
 		help='Index to shrink')
-	forcemerge_parser.add_argument('--target-node',
+	forcemerge_parser.add_argument(
+		'--target-node',
 		action='store',
 		help='Node to allocate the shrunk index shard to (by default, a warm node is picked at random)',
-		default=None)
+		# default=None
+	)
 	forcemerge_parser.add_argument('--suffix-separator',
 		action='store',
 		help='Prefix of the resulting shrunk index',
@@ -602,7 +604,7 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 	print("Count of reamining indicies: {}".format(len(indices)-delete_count))
 
 
-def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
+def COMMAND_shrink(URL, index, target_node, suffix_separator="_"):
 	HEALTH_CHECK_PERIOD = 5
 	SHRINK_SUFFIX = "s"
 
@@ -622,7 +624,7 @@ def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
 	else:
 		parts.append(SHRINK_SUFFIX)
 	new_index = suffix_separator.join(parts)
-	print(f"New name: {new_index}")
+	print(f"Shrunk index name: {new_index}")
 
 	# pick a node for allocation
 	if not target_node:
