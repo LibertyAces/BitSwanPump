@@ -1,6 +1,31 @@
 stages:
   - test
-  - flake8
+
+test-py39:
+  image: python:3.9
+  stage: test
+  coverage: '/\d+\%$/'
+  script:
+    - apt-get update
+    - apt-get -y install unixodbc-dev
+    - python setup.py install
+    - pip install -r requirements-dev.txt
+    - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
+    - coverage run -m unittest test
+    - coverage report -m
+
+test-py38:
+  image: python:3.8
+  stage: test
+  coverage: '/\d+\%$/'
+  script:
+    - apt-get update
+    - apt-get -y install unixodbc-dev
+    - python setup.py install
+    - pip install -r requirements-dev.txt
+    - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
+    - coverage run -m unittest test
+    - coverage report -m
 
 test-py37:
   image: python:3.7
@@ -30,7 +55,7 @@ test-py36:
 
 flake8:
   image: python:3.7
-  stage: flake8
+  stage: test
   script:
     - apt-get update
     - apt-get -y install unixodbc-dev
