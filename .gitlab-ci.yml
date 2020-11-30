@@ -1,18 +1,19 @@
 stages:
   - test
 
-test-py39:
-  image: python:3.9
-  stage: test
-  coverage: '/\d+\%$/'
-  script:
-    - apt-get update
-    - apt-get -y install unixodbc-dev
-    - python setup.py install
-    - pip install -r requirements-dev.txt
-    - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
-    - coverage run -m unittest test
-    - coverage report -m
+# TODO: Enable when ready for Python 3.9
+# test-py39:
+#   image: python:3.9
+#   stage: test
+#   coverage: '/\d+\%$/'
+#   script:
+#     - apt-get update
+#     - apt-get -y install unixodbc-dev
+#     - python setup.py install
+#     - pip install -r requirements-dev.txt
+#     - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
+#     - coverage run -m unittest test
+#     - coverage report -m
 
 test-py38:
   image: python:3.8
@@ -49,6 +50,7 @@ test-py36:
     - apt-get -y install unixodbc-dev
     - python setup.py install
     - pip install -r requirements-dev.txt
+    - pip install dataclasses
     - pip install --upgrade git+git://github.com/TeskaLabs/asab.git#egg=asab
     - coverage run -m unittest test
     - coverage report -m
