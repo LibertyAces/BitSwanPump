@@ -109,7 +109,7 @@ def parse_cmdline():
 		'--target-node',
 		action='store',
 		help='Node to allocate the shrunk index shard to (by default, a warm node is picked at random)',
-		# default=None
+		default=None
 	)
 	forcemerge_parser.add_argument('--suffix-separator',
 		action='store',
@@ -604,7 +604,7 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 	print("Count of reamining indicies: {}".format(len(indices)-delete_count))
 
 
-def COMMAND_shrink(URL, index, target_node, suffix_separator="_"):
+def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
 	HEALTH_CHECK_PERIOD = 5
 	SHRINK_SUFFIX = "s"
 
@@ -629,29 +629,16 @@ def COMMAND_shrink(URL, index, target_node, suffix_separator="_"):
 	# pick a node for allocation
 	if not target_node:
 		# pick a random warm node
-		r = requests.get("{}/_cat/nodeattrs?format=json".format(url))
-		warm_nodes = []
-		for entry in r.json():
-			# TODO: how to tell if a node is warm?
-			if entry["attr"] == "data" and entry["value"] == "????????? WARM":
-				warm_nodes.append(entry["node"])
-		if warm_nodes:
-			target_node = random.choice(warm_nodes)
-			# or pick a warm node with least indices
-			# TODO: how to tell number of indices on a node?
-		else:
-			print("Could not detect warm nodes. Picking random data node.")
-	if not target_node:
-		r = requests.get("{}/_cat/nodes?format=json".format(url))
-		data_nodes = []
-		for entry in r.json():
-			if "d" in entry["node.role"]:
-				data_nodes.append(entry["name"])
-		if data_nodes:
-			target_node = random.choice(data_nodes)
-		else:
+		r = requests.get("{}/_nodes?filter_path=nodes.*.name,nodes.*.roles".format(url))
+		available_nodes = [node["name"] for node in r.json() if "data_warm" in node["roles"]]
+		if not available_nodes:
+			print("No node with 'data_warm' role. Picking random data node.")
+			available_nodes = [node["name"] for node in r.json() if "data" in node["roles"]]
+		if not available_nodes:
 			print("No data nodes. Stopping.")
-			return
+			return False
+		target_node = random.choice(available_nodes)
+
 	print("Using '{}' for allocation.".format(target_node))
 
 	# prepare for shrink
@@ -666,7 +653,7 @@ def COMMAND_shrink(URL, index, target_node, suffix_separator="_"):
 	result = r.json()
 	if not result.get("acknowledged"):
 		print("Pre-shrink preparation failed for index '{}': \n{}".format(index, result))
-		return
+		return False
 
 	# wait until all shards are allocated to target_node
 	result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
@@ -689,7 +676,7 @@ def COMMAND_shrink(URL, index, target_node, suffix_separator="_"):
 	result = r.json()
 	if not result.get("acknowledged"):
 		print("Shrink of index '{}' returned error: \n{}".format(index, result))
-		return
+		return False
 	print("Index '{}' shrunk successfully.".format(index))
 
 	# wait until all shards are allocated
@@ -704,13 +691,10 @@ def COMMAND_shrink(URL, index, target_node, suffix_separator="_"):
 	result = r.json()
 	if not result.get("acknowledged"):
 		print("Cannot delete index '{}': \n{}".format(index, result))
-		return
+		return False
 	print("Index '{}' deleted.".format(index))
 
-	# rename new index
-	# = clone and delete old
-	# OR
-	# just add an alias
+	return True
 
 
 def COMMAND_forcemerge(URL, index):
