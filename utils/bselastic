@@ -3,6 +3,7 @@ import argparse
 import os
 import json
 import pprint
+import random
 import re
 import datetime
 import time
@@ -93,19 +94,28 @@ def parse_cmdline():
 	# Force merge command
 	forcemerge_parser = subparsers.add_parser('force-merge', help='forces merge and shrinks all indices')
 	forcemerge_parser.add_argument('URL', action='store', help='an ElasticSearch URL')
-	forcemerge_parser.add_argument('--max-cpu-load',
+	forcemerge_parser.add_argument('--index',
 		action='store',
-		help='CPU usage threshold that will trigger the merge',
-		default='1')
-	forcemerge_parser.add_argument('--backup-node',
-		action='store',
-		help='Node where the shrunk indices will be stored (defaults to data node with the lowest memory usage)',
-		default=None)
-	forcemerge_parser.add_argument('--exclude',
-		action='store',
-		help='Indices with matching prefix will be excluded',
-		default=None)
+		help='Index to force merge')
 	forcemerge_parser.set_defaults(COMMAND='force-merge')
+
+	# Shrink command
+	forcemerge_parser = subparsers.add_parser('shrink', help='shrink a specified index')
+	forcemerge_parser.add_argument('URL', action='store', help='an ElasticSearch URL')
+	forcemerge_parser.add_argument('--index',
+		action='store',
+		help='Index to shrink')
+	forcemerge_parser.add_argument(
+		'--target-node',
+		action='store',
+		help='Node to allocate the shrunk index shard to (by default, a warm node is picked at random)',
+		default=None
+	)
+	forcemerge_parser.add_argument('--suffix-separator',
+		action='store',
+		help='Prefix of the resulting shrunk index',
+		default='_')
+	forcemerge_parser.set_defaults(COMMAND='shrink')
 
 	return parser.parse_args()
 
@@ -594,104 +604,121 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 	print("Count of reamining indicies: {}".format(len(indices)-delete_count))
 
 
-def COMMAND_forcemerge(URL, max_cpu_load, backup_node, exclude_prefix):
+def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
+	HEALTH_CHECK_PERIOD = 5
+	SHRINK_SUFFIX = "s"
+
 	url = URL
 	if url[-1:] == '/':
 		url = url[:-1]
 
-	print("Communicating with: {}".format(url))
+	# check index health, must be green
+	result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+	if result["status"] != "green":
+		print("Health status of index '{}' is {}. Aborting.".format(index, result["status"]))
 
-	print("Retrieving CPU stats...")
-	url_get_os_stats = "{}/_nodes/stats/os/".format(url)
-	r = requests.get(url_get_os_stats)
-	stats = r.json()
-	cpu_usage = {}
-	nodes_memory = []
-	for node_id, node_details in stats["nodes"].items():
-		cpu_usage[node_details["name"]] = node_details["os"]["cpu"]["percent"]
-		nodes_memory.append((
-			"data" in node_details["roles"],
-			node_details["os"]["mem"]["free_in_bytes"],
-			node_details["name"]))
-	nodes_memory.sort(reverse=True)
+	# set shrunk index name
+	parts = index.split(suffix_separator)
+	if re.fullmatch("[0-9]+", parts[-1]):
+		parts.insert(-1, SHRINK_SUFFIX)
+	else:
+		parts.append(SHRINK_SUFFIX)
+	new_index = suffix_separator.join(parts)
+	print(f"Shrunk index name: {new_index}")
 
-	# If no backup node specified, use the one with most free memory
-	if not backup_node:
-		backup_node = nodes_memory[0][2]
+	# pick a node for allocation
+	if not target_node:
+		# pick a random warm node
+		r = requests.get("{}/_nodes?filter_path=nodes.*.name,nodes.*.roles".format(url))
+		available_nodes = [node["name"] for node in r.json() if "data_warm" in node["roles"]]
+		if not available_nodes:
+			print("No node with 'data_warm' role. Picking random data node.")
+			available_nodes = [node["name"] for node in r.json() if "data" in node["roles"]]
+		if not available_nodes:
+			print("No data nodes. Stopping.")
+			return False
+		target_node = random.choice(available_nodes)
 
-	# for k, v in cpu_usage.items():
-	# 	print(k, v)
-	# for v in nodes_memory:
-	# 	print(v)
-	get_indices = "{}/_cat/indices?format=json".format(url)
-	r = requests.get(get_indices)
-	indices = r.json()
+	print("Using '{}' for allocation.".format(target_node))
 
-	not_green_count = 0
+	# prepare for shrink
+	prepare_for_shrink = {
+		"settings": {
+			"index.number_of_replicas": 0,
+			"index.routing.allocation.require._name": target_node,
+			"index.blocks.write": True
+		}
+	}
+	r = requests.put("{}/{}/_settings".format(url, index), json=prepare_for_shrink)
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Pre-shrink preparation failed for index '{}': \n{}".format(index, result))
+		return False
 
-	indices = sorted(indices, key=lambda index: index['index'].rsplit('_')[-1], reverse=False)
-	failed = 0
-	successful = 0
-	for index in indices:
-		try:
-			name = index['index']
+	# wait until all shards are allocated to target_node
+	result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+	while result["status"] != "green":
+		print("Health status of index '{}' is {}. Waiting...".format(index, result["status"]))
+		time.sleep(HEALTH_CHECK_PERIOD)
+		result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
 
-			if name.startswith('.'):
-				print("Index {} will be excluded. Indexes that start with '.' are always excluded".format(name))
-				continue
+	# shrink
+	shrink_settings = {
+		"settings": {
+			"index.routing.allocation.require._name": None,
+			# "index.blocks.write": None
+		}
+	}
+	r = requests.post(
+		"{url}/{index}/_shrink/{shrunk_index}".format(url=url, index=index, shrunk_index=new_index),
+		json=shrink_settings
+	)
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Shrink of index '{}' returned error: \n{}".format(index, result))
+		return False
+	print("Index '{}' shrunk successfully.".format(index))
 
-			if exclude_prefix is not None and name.startswith(exclude_prefix):
-				print("Index {0} will be excluded because it matches prefix {1}".format(name, exclude_prefix))
-				continue
+	# wait until all shards are allocated
+	result = requests.get("{}/_cluster/health/{}".format(url, new_index)).json()
+	while result["status"] != "green":
+		print("Health status of index '{}' is {}. Waiting...".format(index, result["status"]))
+		time.sleep(HEALTH_CHECK_PERIOD)
+		result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
 
-			if index['health'] != 'green':
-				print("Index {index} health is {health} - skipping".format(**index))
-				not_green_count += 1
-				continue
+	# delete old index
+	r = requests.delete("{url}/{index}".format(url=url, index=index))
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Cannot delete index '{}': \n{}".format(index, result))
+		return False
+	print("Index '{}' deleted.".format(index))
 
-			if index['status'] != 'open':
-				continue
+	return True
 
-			prepare_for_shrink = {
-				"settings": {
-					"index.number_of_replicas": 0,
-					"index.routing.allocation.require._name": backup_node,
-					"index.blocks.write": True
-				}
-			}
 
-			r = requests.put("{}/{}/_settings".format(url, index["name"]), json=prepare_for_shrink)
-			result = r.json()
-			if not result.get('acknowledged'):
-				print("Pre-shrink preparation failed for index '{}': {}".format(name, result))
-				failed += 1
-				continue
+def COMMAND_forcemerge(URL, index):
+	url = URL
+	if url[-1:] == '/':
+		url = url[:-1]
 
-			requests.post("{}/{}/_forcemerge?&max_num_segments=1".format(url, index["name"]))
-			result = r.json()
-			if not result.get('acknowledged'):
-				print("Force merge of index '{}' returned error: {}".format(name, result))
-				failed += 1
-				continue
+	# From ES docs: Force merge should only be called against an index after you have finished writing to it.
 
-			r = requests.post("{url}/{index}/_shrink/shrunk_{index}".format(url=url, index=index["name"]))
-			result = r.json()
-			if not result.get('acknowledged'):
-				print("Shrink of index '{}' returned error: {}".format(name, result))
-				failed += 1
-				continue
-			successful += 1
+	block_write = {
+		"settings": {
+			"index.blocks.write": True
+		}
+	}
 
-		except KeyboardInterrupt:
-			return
-		except Exception as e:
-			print("Error in index '{}': {}".format(index["name"], e))
-			# pprint.pprint(index)
+	r = requests.put("{}/{}/_settings".format(url, index), json=block_write)
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Pre-merge preparation failed for index '{}': {}".format(index, result))
+		return
 
-	print("Count of total indicies: {}".format(len(indices)))
-	print("Count of non-green indicies: {}".format(not_green_count))
-	print("Failed shrinks: {}".format(failed))
-	print("Successfully shrunk: {}".format(successful))
+	r = requests.post("{}/{}/_forcemerge?&max_num_segments=1".format(url, index))
+	result = r.json()
+	print("Index '{}': {}".format(index, result))
 
 
 def main():
@@ -700,7 +727,7 @@ def main():
 
 	# Call the command
 	if 'COMMAND' not in args:
-		print("Please select a command: load_index_template, cleanup, reopen, close.")
+		print("Please select a command: load_index_template, cleanup, reopen, close, shrink, force-merge.")
 		print("For more information see --help")
 		return 1
 
@@ -720,7 +747,10 @@ def main():
 		return COMMAND_delete(args.URL, args.min_date, args.max_date, args.exclude)
 
 	elif args.COMMAND == 'force-merge':
-		return COMMAND_forcemerge(args.URL, args.max_cpu_load, args.backup_node, args.exclude)
+		return COMMAND_forcemerge(args.URL, args.index)
+
+	elif args.COMMAND == 'shrink':
+		return COMMAND_shrink(args.URL, args.index, args.target_node, args.suffix_separator)
 
 
 if __name__ == '__main__':
