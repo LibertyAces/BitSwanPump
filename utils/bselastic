@@ -795,7 +795,7 @@ def COMMAND_auto_shrink(URL, max_daytime, max_load, min_shards):
 		# TODO: get server load
 		server_load = 0
 		if server_load > max_load:
-			print("Server is overloaded. Waiting...")
+			print("Server load is too high ({}). Waiting...".format(server_load))
 			time.sleep(HEALTH_CHECK_PERIOD)
 			continue
 
@@ -807,8 +807,9 @@ def COMMAND_auto_shrink(URL, max_daytime, max_load, min_shards):
 		else:
 			failed_indices.append(index)
 
-	print("Successfully shrunk {} indices.".format(len(successful_indices)))
-	print("Failed to shrink {} indices.".format(len(failed_indices)))
+	print("Successfully shrunk indices: {}".format(len(successful_indices)))
+	print("Failed to shrink indices: {}".format(len(failed_indices)))
+	print("Unprocessed shrink candidates: {}".format(len(candidates)))
 
 
 def COMMAND_forcemerge(URL, index):
