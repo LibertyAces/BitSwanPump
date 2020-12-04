@@ -3,6 +3,7 @@ from .source import KafkaSource
 from .sink import KafkaSink
 from .batchsink import KafkaBatchSink
 from .keyfilter import KafkaKeyFilter
+from .topic_initializer import KafkaTopicInitializer
 
 __all__ = [
 	"KafkaConnection",
@@ -10,4 +11,5 @@ __all__ = [
 	"KafkaSink",
 	"KafkaKeyFilter",
 	"KafkaBatchSink",
+	"KafkaTopicInitializer",
 ]
