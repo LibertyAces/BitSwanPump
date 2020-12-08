@@ -54,32 +54,28 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			self.Item = arg_item
 			self.Default = arg_default
 
+
 	def __call__(self, context, event, *args, **kwargs):
 		with_dict = evaluate(self.With, context, event, *args, **kwargs)
 		item = evaluate(self.Item, context, event, *args, **kwargs)
 
+		if isinstance(self.With, CONTEXT):
+			return self.evaluate_CONTEXT(context, event, *args, **kwargs)
+
 		try:
-			if '.' in item:
-				value = with_dict
-				for i in item.split('.'):
-					try:
-						if isinstance(value, list):
-							value = value[int(i)]
-						else:
-							value = value[i]
-					except KeyError as e:
-						raise e
-					except TypeError:
-						value = None
-			else:
-				value = with_dict[item]
+			return with_dict[item]
+
 		except KeyError:
 			if self.Default is None:
 				return None
 			return evaluate(self.Default, context, event, *args, **kwargs)
+
 		except IndexError:
 			if self.Default is None:
 				return None
 			return evaluate(self.Default, context, event, *args, **kwargs)
 
-		return value
+
+	def evaluate_CONTEXT(self, context, event, *args, **kwargs):
+		# TODO: The 'old' version of code with support of '.' in the variable names
+		pass
