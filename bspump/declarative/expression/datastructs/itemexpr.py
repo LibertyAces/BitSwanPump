@@ -55,7 +55,6 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			self.Default = arg_default
 
 	def __call__(self, context, event, *args, **kwargs):
-		field_alias_lookup = context.get("field_alias")
 		with_dict = evaluate(self.With, context, event, *args, **kwargs)
 		item = evaluate(self.Item, context, event, *args, **kwargs)
 
@@ -69,24 +68,12 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 						else:
 							value = value[i]
 					except KeyError as e:
-						if field_alias_lookup is None:
-							raise e
-						i = field_alias_lookup.get(i)
-						if i is None:
-							raise e
-						value = value[i]
+						raise e
 					except TypeError:
 						value = None
 			else:
 				value = with_dict[item]
 		except KeyError:
-			try:
-				if field_alias_lookup is not None:
-					item = field_alias_lookup.get(item)
-					if item is not None:
-						return with_dict[item]
-			except KeyError:
-				pass
 			if self.Default is None:
 				return None
 			return evaluate(self.Default, context, event, *args, **kwargs)
