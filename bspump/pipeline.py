@@ -278,7 +278,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._chillout_counter += 1
 		if self._chillout_counter >= self._chillout_trigger:
 			self._chillout_counter = 0
-			await asyncio.sleep(0.0001, loop=self.Loop)
+			await asyncio.sleep(0, loop=self.Loop)
 
 		await self._ready.wait()
 		return True
