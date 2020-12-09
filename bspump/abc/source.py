@@ -1,4 +1,3 @@
-import abc
 import logging
 import asyncio
 import concurrent.futures
@@ -8,7 +7,7 @@ from asab import ConfigObject
 L = logging.getLogger(__name__)
 
 
-class Source(abc.ABC, ConfigObject):
+class Source(ConfigObject):
 
 	"""
 Each source represent a coroutine/Future/Task that is running in the context of the main loop.
@@ -74,7 +73,6 @@ It is acomplished by `await self.Pipeline.ready()` call.
 		self.start(loop)
 
 
-	@abc.abstractmethod
 	async def main(self):
 		raise NotImplementedError()
 
@@ -209,9 +207,9 @@ class TriggerSource(Source):
 				trigger.done(self)
 
 
-	@abc.abstractmethod
 	async def cycle(self, *args, **kwags):
 		raise NotImplementedError()
+
 
 	def rest_get(self):
 		result = super().rest_get()

@@ -1,4 +1,3 @@
-import abc
 import asyncio
 import logging
 import os
@@ -198,7 +197,6 @@ class FileABCSource(TriggerSource):
 			await asyncio.sleep(self.EventIdleTime)
 			self.LinesCounter = 0
 
-	@abc.abstractmethod
 	async def read(self, filename, f):
 		'''
 		Override this method to implement your File Source.

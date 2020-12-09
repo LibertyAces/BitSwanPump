@@ -1,4 +1,3 @@
-import abc
 import asyncio
 import collections.abc
 import json
@@ -17,7 +16,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class Lookup(abc.ABC, asab.ConfigObject):
+class Lookup(asab.ConfigObject):
 	"""
 	Lookups serve for fast data searching in lists of key-value type. They can subsequently be localized and used in pipeline objects (processors and the like). Each lookup requires a statically or dynamically created value list.
 
@@ -75,7 +74,6 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			self.PubSub.publish("bspump.Lookup.changed!")
 
 
-	@abc.abstractmethod
 	async def load(self) -> bool:
 		"""
 		Return True is lookup has been changed.
@@ -88,7 +86,8 @@ class Lookup(abc.ABC, asab.ConfigObject):
 			self.set(bspump.load_json_file('./examples/data/country_names.json'))
 			return True
 		"""
-		pass
+		raise NotImplementedError("Lookup '{}' serialize() method not implemented".format(self.Id))
+
 
 	# Serialization
 
@@ -222,9 +221,8 @@ class AsyncLookupMixin(Lookup):
 	respective that require a connection to resource server such as SQL etc.
 	"""
 
-	@abc.abstractmethod
 	async def get(self, key):
-		pass
+		raise NotImplementedError()
 
 
 class DictionaryLookup(MappingLookup):

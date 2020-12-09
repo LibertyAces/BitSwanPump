@@ -1,8 +1,7 @@
-import abc
 import asab
 
 
-class ProcessorBase(abc.ABC, asab.ConfigObject):
+class ProcessorBase(asab.ConfigObject):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -30,7 +29,6 @@ class ProcessorBase(abc.ABC, asab.ConfigObject):
 			return cls(app, pipeline, id=newid, config=config)
 
 
-	@abc.abstractmethod
 	def process(self, context, event):
 		raise NotImplementedError()
 

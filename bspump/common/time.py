@@ -1,4 +1,3 @@
-import abc
 import datetime
 import logging
 
@@ -36,7 +35,6 @@ class TimeZoneNormalizer(bspump.Processor):
 		return local_time.astimezone(pytz.utc)
 
 
-	@abc.abstractmethod
 	def process(self, context, event):
 		"""
 		Abstract method to process the event. Must be customized.

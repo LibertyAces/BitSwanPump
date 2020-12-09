@@ -1,4 +1,3 @@
-import abc
 import re
 import logging
 import asyncio
@@ -89,7 +88,6 @@ class HTTPABCClientSource(TriggerSource):
 				raise aiohttp.ClientError("{}, url='{}'".format(e, self.URL))
 
 
-	@abc.abstractmethod
 	async def read(self, response):
 		'''
 		Override this method to implement your HTTP Source.
