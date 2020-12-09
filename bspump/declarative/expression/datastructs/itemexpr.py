@@ -59,10 +59,11 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 		with_dict = evaluate(self.With, context, event, *args, **kwargs)
 		item = evaluate(self.Item, context, event, *args, **kwargs)
 
-		if isinstance(self.With, CONTEXT):
-			return self.evaluate_CONTEXT(context, event, *args, **kwargs)
-
 		try:
+
+			if isinstance(self.With, CONTEXT):
+				return self.evaluate_CONTEXT(with_dict, item)
+
 			return with_dict[item]
 
 		except KeyError:
@@ -76,6 +77,21 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			return evaluate(self.Default, context, event, *args, **kwargs)
 
 
-	def evaluate_CONTEXT(self, context, event, *args, **kwargs):
-		# TODO: The 'old' version of code with support of '.' in the variable names
-		pass
+	def evaluate_CONTEXT(self, with_dict, item):
+
+		if '.' in item:
+			value = with_dict
+			for i in item.split('.'):
+				try:
+					if isinstance(value, list):
+						value = value[int(i)]
+					else:
+						value = value[i]
+				except KeyError as e:
+					raise e
+				except TypeError:
+					return None
+			return value
+
+		else:
+			return with_dict[item]
