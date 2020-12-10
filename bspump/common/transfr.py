@@ -1,4 +1,3 @@
-import abc
 import collections.abc
 
 from ..abc.processor import Processor
@@ -13,9 +12,8 @@ class MappingTransformator(Processor):
 		self.Default = None
 
 
-	@abc.abstractmethod
 	def build(self, app):
-		return {}
+		raise NotImplementedError()
 
 
 	def _map(self, item):

@@ -1,6 +1,3 @@
-import abc
-
-
 class Anomaly(dict):
 	"""
 	Anomaly is an abstract class to be overriden for a specific anomaly and its type.
@@ -18,10 +15,9 @@ class Anomaly(dict):
 		self["D"] = self["ts_end"] - self["@timestamp"]
 		self["status"] = "closed"
 
-	@abc.abstractmethod
 	async def on_tick(self, current_time):
 		"""
 		Implement to perform operations on the anomaly, f. e. close.
 		:param current_time:
 		"""
-		pass
+		raise NotImplementedError()

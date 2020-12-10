@@ -1,7 +1,5 @@
-import abc
 
-
-class SourceProtocolABC(abc.ABC):
+class SourceProtocolABC(object):
 	'''
 	Source protocol is a handler class, that basically gets the socket (in reader)
 	and extract the payload from it in a way that is conformant to expected protocol.
@@ -13,9 +11,8 @@ class SourceProtocolABC(abc.ABC):
 	def __init__(self, source, app, pipeline, config):
 		pass
 
-	@abc.abstractmethod
 	async def inbound(self, source, reader, context):
-		pass
+		raise NotImplementedError()
 
 
 class LineSourceProtocol(SourceProtocolABC):
