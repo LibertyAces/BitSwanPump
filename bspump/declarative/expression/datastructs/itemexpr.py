@@ -64,7 +64,12 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			if isinstance(self.With, CONTEXT):
 				return self.evaluate_CONTEXT(with_dict, item)
 
-			return with_dict[item]
+			# ITEM expression expects to be natively working with simdjson
+			try:
+				# This call will fail if the string does not start with /
+				return with_dict.at_pointer(item)
+			except AttributeError:
+				return with_dict[item]
 
 		except KeyError:
 			if self.Default is None:
