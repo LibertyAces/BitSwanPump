@@ -68,7 +68,7 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			try:
 				# This call will fail if the string does not start with /
 				return with_dict.at_pointer(item)
-			except AttributeError:
+			except (ValueError, AttributeError):
 				return with_dict[item]
 
 		except KeyError:
