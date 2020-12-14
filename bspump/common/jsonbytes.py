@@ -1,4 +1,10 @@
-import json
+try:
+	import orjson
+except ModuleNotFoundError:
+	pass
+
+# IMPORTANT: This module is obsolete, not supported and will be removed in a future
+
 from ..abc.processor import Processor
 
 
@@ -17,8 +23,7 @@ class DictToJsonBytesParser(Processor):
 
 	def process(self, context, event):
 		assert isinstance(event, dict)
-		json_result = json.dumps(event)
-		return json_result.encode(self.Encoding)
+		return orjson.dumps(event)
 
 
 class JsonBytesToDictParser(Processor):
@@ -37,5 +42,4 @@ class JsonBytesToDictParser(Processor):
 
 	def process(self, context, event):
 		assert isinstance(event, bytes)
-		json_result = event.decode(self.Encoding)
-		return json.loads(json_result)
+		return orjson.loads(event)

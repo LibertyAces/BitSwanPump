@@ -27,7 +27,7 @@ class TestDictToJsonParser(bspump.unittest.ProcessorTestCase):
 
 	def test_event_not_dict(self):
 		events = [
-			(None, "Not a dictionary"),
+			"Not a dictionary",
 		]
 		bspump.pipeline.L = MagicMock()  # turn off logging
 		self.set_up_processor(bspump.common.DictToJsonParser)

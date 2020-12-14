@@ -69,13 +69,14 @@ setup(
 		'aiohttp>=3.6.2',
 		'requests>=2.24.0',
 		'aiokafka>=0.6.0',
+		"dataclasses>=0.5; python_version<'3.7'",  # This is for aiokafka
 		'aiozk>=0.25.0',
 		'aiosmtplib>=1.1.3',
 		'fastavro>=0.23.5',
 		'google-api-python-client>=1.7.10',
 		'numpy>=1.19.0',
 		'pika>=1.1.0',
-		'pymysql>=0.9.2,<=0.9.2', # aiomysql 0.0.20 requires PyMySQL<=0.9.2
+		'pymysql>=0.9.2,<=0.9.2',  # aiomysql 0.0.20 requires PyMySQL<=0.9.2
 		'aiomysql>=0.0.20',
 		'mysql-replication>=0.21',
 		'pytz>=2020.1',
@@ -84,9 +85,9 @@ setup(
 		'pymongo>=3.10.1',
 		'motor>=2.1.0',
 		'mongoquery>=1.3.6',
-		'orjson>=3.3.0',
+		'pybind11>=2.6.1',
+		'pysimdjson>=3.1.1',
 		'pywinrm>=0.4.1',
-		'pyarrow>=0.13.0', # `pip install pyarrow` fails on Apline Linux, official bspump alpine images do not include pyarrow
 		'pandas>=0.24.2',
 		'xxhash>=1.4.4',
 	],

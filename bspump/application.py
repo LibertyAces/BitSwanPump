@@ -18,11 +18,10 @@ class BSPumpApplication(asab.Application):
 		# Banner
 		print("BitSwan BSPump version {}".format(__version__))
 
-		from asab.metrics import Module
+		from asab.proactor import Module
 		self.add_module(Module)
 
-		# TODO: Make sure that we don't occupy unnecessary high amount of threads
-		from asab.proactor import Module
+		from asab.metrics import Module
 		self.add_module(Module)
 
 		self.PumpService = BSPumpService(self)

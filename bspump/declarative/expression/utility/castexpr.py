@@ -62,9 +62,7 @@ class CAST(Expression):
 	def __call__(self, context, event, *args, **kwargs):
 		try:
 			return self.Conversion(evaluate(self.Value, context, event, *args, **kwargs))
-		except (ValueError, AttributeError, TypeError) as e:
-			# TODO: Remove eventually when there are more occurrences among other expressions as well
-			L.warning("When performing cast, the following error occurred: '{}'. Using default value.".format(e))
+		except (ValueError, AttributeError, TypeError):
 			if self.Default is None:
 				return None
 			return evaluate(self.Default, context, event, *args, **kwargs)

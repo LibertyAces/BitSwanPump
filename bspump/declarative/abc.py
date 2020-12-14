@@ -11,16 +11,15 @@ L = logging.getLogger(__name__)
 #
 
 
-class Expression(abc.ABC):
+class Expression(object):
 
 	def __init__(self, app=None):
 		self.App = app
 		self.Location = None
 		self.Node = None  # The YAML node, assigned by a builder during YAML parsing
 
-	@abc.abstractmethod
 	def __call__(self, context, event, *args, **kwargs):
-		pass
+		raise RuntimeError("Call of the abstract method")
 
 	def set_location(self, location):
 		self.Location = location

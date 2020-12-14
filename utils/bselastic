@@ -3,6 +3,7 @@ import argparse
 import os
 import json
 import pprint
+import random
 import re
 import datetime
 import time
@@ -89,6 +90,69 @@ def parse_cmdline():
 		help='Indicies with matching prefix will be excluded',
 		default=None)
 	delete_parser.set_defaults(COMMAND='delete')
+
+	# Force merge command
+	forcemerge_parser = subparsers.add_parser('force-merge', help='forces merge and shrinks all indices')
+	forcemerge_parser.add_argument('URL', action='store', help='an ElasticSearch URL')
+	forcemerge_parser.add_argument('--index',
+		action='store',
+		help='Index to force merge')
+	forcemerge_parser.set_defaults(COMMAND='force-merge')
+
+	# Shrink command
+	shrink_parser = subparsers.add_parser('shrink', help='shrink a specified index')
+	shrink_parser.add_argument(
+		'URL',
+		action='store',
+		help='an ElasticSearch URL'
+	)
+	shrink_parser.add_argument(
+		'--index',
+		action='store',
+		help='Index to shrink'
+	)
+	shrink_parser.add_argument(
+		'--target-node',
+		action='store',
+		help='Node to allocate the shrunk index shard to (by default, a warm node is picked at random)',
+		default=None
+	)
+	shrink_parser.add_argument(
+		'--suffix-separator',
+		action='store',
+		help='Prefix of the resulting shrunk index',
+		default='_'
+	)
+	shrink_parser.set_defaults(COMMAND='shrink')
+
+	# Auto shrink command
+	auto_shrink_parser = subparsers.add_parser('auto-shrink', help='shrink a specified index')
+	auto_shrink_parser.add_argument(
+		'URL',
+		action='store',
+		help='an ElasticSearch URL'
+	)
+	auto_shrink_parser.add_argument(
+		'--max-daytime',
+		action='store',
+		help='Maximum time of day (HH:MM). No new shrink process is started after this time.',
+		default='5:00'
+	)
+	auto_shrink_parser.add_argument(
+		'--max-load',
+		action='store',
+		help='Maximum server load. No new shrink process is started while server load is above this threshold.',
+		type=float,
+		default=30
+	)
+	auto_shrink_parser.add_argument(
+		'--min-shards',
+		action='store',
+		help='Minimum number of shards to consider the index eligible for shrink',
+		type=int,
+		default=3
+	)
+	auto_shrink_parser.set_defaults(COMMAND='auto-shrink')
 
 	return parser.parse_args()
 
@@ -292,7 +356,7 @@ def COMMAND_cleanup(URL, args_min_date, args_max_date, exclude_prefix):
 	print("Count of non-green indicies: {}".format(not_green_count))
 
 
-def COMMAND_reopen(URL, args_min_date, args_max_date, exclude_prefix):
+def COMMAND_reopen(URL, args_min_date, args_max_date, exclude_prefix, max_server_load):
 	url = URL
 	if url[-1:] != '/': url += '/'
 
@@ -565,8 +629,6 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 					print("Closing index {}".format(name))
 					result = req_close_index(url, name)
 
-
-
 		except KeyboardInterrupt:
 			return
 
@@ -574,11 +636,203 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 			print("Error in this index:")
 			pprint.pprint(index)
 
-
-
 	print("Original count of indicies: {}".format(len(indices)))
 	print("Count of deleted indicies: {}".format(delete_count))
 	print("Count of reamining indicies: {}".format(len(indices)-delete_count))
+
+
+def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
+	HEALTH_CHECK_PERIOD = 5
+	SHRINK_SUFFIX = "s"
+
+	url = URL
+	if url[-1:] == '/':
+		url = url[:-1]
+
+	# check index health, must be green
+	result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+	if result["status"] != "green":
+		print("Health status of index '{}' is {}. Aborting.".format(index, result["status"]))
+
+	# set shrunk index name
+	parts = index.split(suffix_separator)
+	if re.fullmatch("[0-9]+", parts[-1]):
+		parts.insert(-1, SHRINK_SUFFIX)
+	else:
+		parts.append(SHRINK_SUFFIX)
+	new_index = suffix_separator.join(parts)
+	print(f"Shrunk index name: {new_index}")
+
+	# pick a node for allocation
+	if not target_node:
+		# pick a random warm node
+		r = requests.get("{}/_nodes?filter_path=nodes.*.name,nodes.*.roles".format(url))
+		available_nodes = [node["name"] for node in r.json() if "data_warm" in node["roles"]]
+		if not available_nodes:
+			print("No node with 'data_warm' role. Picking random data node.")
+			available_nodes = [node["name"] for node in r.json() if "data" in node["roles"]]
+		if not available_nodes:
+			print("No data nodes. Stopping.")
+			return False
+		target_node = random.choice(available_nodes)
+
+	print("Using '{}' for allocation.".format(target_node))
+
+	# prepare for shrink
+	prepare_for_shrink = {
+		"settings": {
+			"index.number_of_replicas": 0,
+			"index.routing.allocation.require._name": target_node,
+			"index.blocks.write": True
+		}
+	}
+	r = requests.put("{}/{}/_settings".format(url, index), json=prepare_for_shrink)
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Pre-shrink preparation failed for index '{}': \n{}".format(index, result))
+		return False
+
+	# wait until all shards are allocated to target_node
+	result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+	while result["status"] != "green":
+		print("Health status of index '{}' is {}. Waiting...".format(index, result["status"]))
+		time.sleep(HEALTH_CHECK_PERIOD)
+		result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+
+	# shrink
+	shrink_settings = {
+		"settings": {
+			"index.routing.allocation.require._name": None,
+			# "index.blocks.write": None
+		}
+	}
+	r = requests.post(
+		"{url}/{index}/_shrink/{shrunk_index}".format(url=url, index=index, shrunk_index=new_index),
+		json=shrink_settings
+	)
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Shrink of index '{}' returned error: \n{}".format(index, result))
+		return False
+	print("Index '{}' shrunk successfully.".format(index))
+
+	# wait until all shards are allocated
+	result = requests.get("{}/_cluster/health/{}".format(url, new_index)).json()
+	while result["status"] != "green":
+		print("Health status of index '{}' is {}. Waiting...".format(index, result["status"]))
+		time.sleep(HEALTH_CHECK_PERIOD)
+		result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+
+	# delete old index
+	r = requests.delete("{url}/{index}".format(url=url, index=index))
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Cannot delete index '{}': \n{}".format(index, result))
+		return False
+	print("Index '{}' deleted.".format(index))
+
+	return True
+
+
+def COMMAND_auto_shrink(URL, max_daytime, max_load, min_shards):
+	"""
+	Cycles through warm indices, shrinking each of them, until either:
+	- no more shrinkable indices, or
+	- current time exceeds <alarm_time>.
+	Shrinking is paused if server load exceeds <max_load> and resumes
+	once it's back in safe numbers.
+	"""
+	HEALTH_CHECK_PERIOD = 10
+
+	url = URL
+	if url[-1:] == '/':
+		url = url[:-1]
+
+	hour, minute = map(int, max_daytime.split(":"))
+	max_daytime = datetime.datetime.now().replace(hour=hour, minute=minute)
+	if max_daytime < datetime.datetime.now():
+		max_daytime += datetime.timedelta(days=1)
+
+	# build list of shrink candidates
+	result = requests.get("{}/_settings".format(url)).json()
+	candidates = []
+	for name, index in result.items():
+		index_stage = ""
+		try:
+			index_stage = index["settings"]["index"]["routing"]["allocation"]["require"]["data"] == "warm"
+		except KeyError:
+			pass
+		if index_stage != "warm":
+			continue
+		n_shards = index["settings"]["index"]["number_of_shards"]
+		if n_shards < min_shards:
+			continue
+		candidates.append((n_shards, name))
+
+	# sort so that indices with more shards are processed first
+	candidates.sort()
+
+	failed_indices = []
+	successful_indices = []
+
+	while True:
+		if not candidates:
+			print("No more indices to shrink. Terminating.")
+			break
+		if datetime.datetime.now() > max_daytime:
+			print("Ring ring! It's {}. Terminating.".format(datetime.datetime.now().strftime("%H:%M")))
+			break
+
+		# check if all shards are allocated
+		result = requests.get("{}/_cluster/health".format(url)).json()
+		if result["status"] != "green":
+			print("Cluster health is {}. Waiting...".format(result["status"]))
+			time.sleep(HEALTH_CHECK_PERIOD)
+			continue
+
+		# check CPU load
+		result = requests.get("{}/_cluster/stats?filter_path=nodes.process.cpu".format(url)).json()
+		server_load = result["nodes"]["process"]["cpu"]["percent"]
+		if server_load > max_load:
+			print("Server load is too high ({}%). Waiting...".format(server_load))
+			time.sleep(HEALTH_CHECK_PERIOD)
+			continue
+
+		# perform shrink
+		n_shards, index = candidates.pop()
+		success = COMMAND_shrink(url, index)
+		if success:
+			successful_indices.append(index)
+		else:
+			failed_indices.append(index)
+
+	print("Successfully shrunk indices: {}".format(len(successful_indices)))
+	print("Failed to shrink indices: {}".format(len(failed_indices)))
+	print("Unprocessed shrink candidates: {}".format(len(candidates)))
+
+
+def COMMAND_forcemerge(URL, index):
+	url = URL
+	if url[-1:] == '/':
+		url = url[:-1]
+
+	# From ES docs: Force merge should only be called against an index after you have finished writing to it.
+
+	block_write = {
+		"settings": {
+			"index.blocks.write": True
+		}
+	}
+
+	r = requests.put("{}/{}/_settings".format(url, index), json=block_write)
+	result = r.json()
+	if not result.get("acknowledged"):
+		print("Pre-merge preparation failed for index '{}': {}".format(index, result))
+		return
+
+	r = requests.post("{}/{}/_forcemerge?&max_num_segments=1".format(url, index))
+	result = r.json()
+	print("Index '{}': {}".format(index, result))
 
 
 def main():
@@ -587,7 +841,7 @@ def main():
 
 	# Call the command
 	if 'COMMAND' not in args:
-		print("Please select a command: load_index_template, cleanup, reopen, close.")
+		print("Please select a command: load_index_template, cleanup, reopen, close, shrink, force-merge.")
 		print("For more information see --help")
 		return 1
 
@@ -605,6 +859,15 @@ def main():
 
 	elif args.COMMAND == 'delete':
 		return COMMAND_delete(args.URL, args.min_date, args.max_date, args.exclude)
+
+	elif args.COMMAND == 'force-merge':
+		return COMMAND_forcemerge(args.URL, args.index)
+
+	elif args.COMMAND == 'shrink':
+		return COMMAND_shrink(args.URL, args.index, args.target_node, args.suffix_separator)
+
+	elif args.COMMAND == 'auto-shrink':
+		return COMMAND_auto_shrink(args.URL, args.max_daytime, args.max_load, args.min_shards)
 
 
 if __name__ == '__main__':

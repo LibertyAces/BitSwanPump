@@ -1,5 +1,7 @@
 from netaddr import IPNetwork, IPAddress
 
+import netaddr.core
+
 from bspump.declarative.abc import Expression, evaluate
 
 
@@ -17,11 +19,15 @@ class IP_INSUBNET(Expression):
 		value = evaluate(self.Value, context, event, *args, **kwargs)
 		subnet = evaluate(self.Subnet, context, event, *args, **kwargs)
 
-		if isinstance(subnet, list):
-			for element in subnet:
-				if IPAddress(value) in IPNetwork(element):
-					return True
-		else:
-			return IPAddress(value) in IPNetwork(subnet)
+		try:
+			if isinstance(subnet, list):
+				for element in subnet:
+					if IPAddress(value) in IPNetwork(element):
+						return True
+			else:
+				return IPAddress(value) in IPNetwork(subnet)
+		except netaddr.core.AddrFormatError:
+			# IP address could not be detected
+			return None
 
 		return False

@@ -3,6 +3,7 @@ import logging
 import orjson
 
 from ..abc.sink import Sink
+from .connection import ElasticSearchBulk
 
 #
 
@@ -23,14 +24,15 @@ class ElasticSearchSink(Sink):
 
 	ConfigDefaults = {
 		"index_prefix": "bspump_",  # Obsolete, use 'index'
-		"index": "",
+		"index": "bspump_",
 	}
 
 
-	def __init__(self, app, pipeline, connection, id=None, config=None):
+	def __init__(self, app, pipeline, connection, id=None, config=None, bulk_class=ElasticSearchBulk):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Connection = pipeline.locate_connection(app, connection)
+		self.BulkClass = bulk_class
 
 		self.Index = self.Config.get('index')
 		if self.Index is None or len(self.Index) == 0:
@@ -45,7 +47,8 @@ class ElasticSearchSink(Sink):
 		self.Connection.consume(
 			context.get("es_index", self.Index),
 			event.pop("_id", None),
-			orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
+			orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE),
+			bulk_class=self.BulkClass
 		)
 
 

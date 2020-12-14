@@ -1,4 +1,3 @@
-import abc
 import logging
 import json
 
@@ -11,7 +10,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class Model(abc.ABC, asab.ConfigObject):
+class Model(asab.ConfigObject):
 	'''
 		Generic `Model` object. Loads trained model and parameters.
 
@@ -32,12 +31,11 @@ class Model(abc.ABC, asab.ConfigObject):
 		self.Loop = app.Loop
 
 
-	@abc.abstractmethod
 	def load_model_from_file(self):
 		'''
 		Load model from file.
 		'''
-		pass
+		raise NotImplementedError()
 
 
 	def load_parameters_from_file(self):
@@ -54,7 +52,7 @@ class Model(abc.ABC, asab.ConfigObject):
 		'''
 		pass
 
-	@abc.abstractmethod
+
 	def transform(self, *args):
 		'''
 		Method used to transform data for model input.
@@ -62,7 +60,6 @@ class Model(abc.ABC, asab.ConfigObject):
 		raise NotImplementedError()
 
 
-	@abc.abstractmethod
 	def predict(self, *args):
 		'''
 		Method uses model to predict value from sample.

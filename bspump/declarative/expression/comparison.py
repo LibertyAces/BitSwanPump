@@ -3,11 +3,12 @@ import operator
 from ..abc import SequenceExpression, evaluate
 
 
-def _and_reduce(operator, iterable):
+def _and_reduce(operator, iterable, context, event, *args, **kwargs):
 	it = iter(iterable)
-	a = next(it)
+	a = evaluate(next(it), context, event, *args, **kwargs)
 
 	for b in it:
+		b = evaluate(b, context, event, *args, **kwargs)
 		if not operator(a, b):
 			return False
 		a = b
@@ -21,10 +22,7 @@ class LT(SequenceExpression):
 	'''
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _and_reduce(
-			operator.lt,
-			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
-		)
+		return _and_reduce(operator.lt, self.Items, context, event, *args, **kwargs)
 
 
 class LE(SequenceExpression):
@@ -33,10 +31,7 @@ class LE(SequenceExpression):
 	'''
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _and_reduce(
-			operator.le,
-			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
-		)
+		return _and_reduce(operator.le, self.Items, context, event, *args, **kwargs)
 
 
 class EQ(SequenceExpression):
@@ -45,10 +40,7 @@ class EQ(SequenceExpression):
 	'''
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _and_reduce(
-			operator.eq,
-			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
-		)
+		return _and_reduce(operator.eq, self.Items, context, event, *args, **kwargs)
 
 
 class NE(SequenceExpression):
@@ -57,10 +49,7 @@ class NE(SequenceExpression):
 	'''
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _and_reduce(
-			operator.ne,
-			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
-		)
+		return _and_reduce(operator.ne, self.Items, context, event, *args, **kwargs)
 
 
 class GE(SequenceExpression):
@@ -69,10 +58,7 @@ class GE(SequenceExpression):
 	"""
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _and_reduce(
-			operator.ge,
-			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
-		)
+		return _and_reduce(operator.ge, self.Items, context, event, *args, **kwargs)
 
 
 class GT(SequenceExpression):
@@ -81,10 +67,7 @@ class GT(SequenceExpression):
 	"""
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _and_reduce(
-			operator.gt,
-			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
-		)
+		return _and_reduce(operator.gt, self.Items, context, event, *args, **kwargs)
 
 
 class IS(SequenceExpression):
@@ -93,10 +76,7 @@ class IS(SequenceExpression):
 	"""
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _and_reduce(
-			operator.is_,
-			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
-		)
+		return _and_reduce(operator.is_, self.Items, context, event, *args, **kwargs)
 
 
 class ISNOT(SequenceExpression):
@@ -105,7 +85,4 @@ class ISNOT(SequenceExpression):
 	"""
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _and_reduce(
-			operator.is_not,
-			[evaluate(item, context, event, *args, **kwargs) for item in self.Items]
-		)
+		return _and_reduce(operator.is_not, self.Items, context, event, *args, **kwargs)

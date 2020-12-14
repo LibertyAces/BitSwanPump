@@ -29,10 +29,10 @@ class WarningPipeline(Pipeline):
             self.Sink
         )
 
-    def catch_error(self, exception, event):
+    def handle_error(self, exception, context, event):
         if event == "warning":
-            return False
-        return super().catch_error(exception, event)
+            return True
+        return not super().handle_error(exception, context, event)
 
     def _on_finished(self, event_name, pipeline):
         self.App.stop()
@@ -72,5 +72,4 @@ class TestMetricsService(bspump.unittest.ProcessorTestCase):
             [({}, "ok")],
             self.Pipeline.Sink.Output
         )
-        self.assertEqual(1, self.WarningCount)
-        self.assertEqual(1, self.ErrorCount)
+        self.assertEqual(0, self.ErrorCount)

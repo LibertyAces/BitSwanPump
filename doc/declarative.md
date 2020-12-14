@@ -836,6 +836,8 @@ Parses string, hex number or decimal number to internal IP address integer repre
 !IP.PARSE <...>
 ```
 
+Returns `None` if the IP address could not be detected (f. e. the input field is None).
+
 ### `IP.FORMAT`
 
 Convert IP address to its string representation.
@@ -846,12 +848,15 @@ what: <...>
 format: auto|ipv4|ipv6
 ```
 
+Returns `None` if the IP address could not be detected (f. e. the input field is None).
 
 ### `IP.INSUBNET`
 
 Checks if value (IP Address) is inside the given subnet, which may be a provided list.
 
 Returns `True` / `False` (boolean).
+
+Returns `None` if the IP address could not be detected (f. e. the input field is None).
 
 ```
 !IP.INSUBNET

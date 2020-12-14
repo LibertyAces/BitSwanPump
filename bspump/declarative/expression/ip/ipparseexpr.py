@@ -1,5 +1,7 @@
 from netaddr import IPAddress
 
+import netaddr.core
+
 from bspump.declarative.abc import Expression, evaluate
 
 
@@ -14,5 +16,10 @@ class IP_PARSE(Expression):
 		self.Value = value if value is not None else arg_value
 
 	def __call__(self, context, event, *args, **kwargs):
-		ip = IPAddress(evaluate(self.Value, context, event, *args, **kwargs))
+		try:
+			ip = IPAddress(evaluate(self.Value, context, event, *args, **kwargs))
+		except netaddr.core.AddrFormatError:
+			# IP address could not be detected
+			return None
+
 		return ip.ipv6().value

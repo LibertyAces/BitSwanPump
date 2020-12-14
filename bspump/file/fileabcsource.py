@@ -1,4 +1,3 @@
-import abc
 import asyncio
 import logging
 import os
@@ -79,7 +78,7 @@ class FileABCSource(TriggerSource):
 
 		start_time = time.time()
 		for path in self.path.split(os.pathsep):
-			#Asynchronously call following:
+			# Asynchronously call following:
 			# filename = _glob_scan(path, self.Gauge, self.Loop, exclude=self.exclude, include=self.include)
 			filename = await self.ProactorService.execute(
 				_glob_scan,
@@ -198,7 +197,6 @@ class FileABCSource(TriggerSource):
 			await asyncio.sleep(self.EventIdleTime)
 			self.LinesCounter = 0
 
-	@abc.abstractmethod
 	async def read(self, filename, f):
 		'''
 		Override this method to implement your File Source.

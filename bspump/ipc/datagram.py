@@ -13,11 +13,14 @@ L = logging.getLogger(__name__)
 #
 
 class DatagramSource(Source):
+
+
 	ConfigDefaults = {
 		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
 		'max_packet_size': 64 * 1024,
 		'receiver_buffer_size': 0,
 	}
+
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -55,6 +58,7 @@ class DatagramSource(Source):
 
 		self.MaxPacketSize = int(self.Config['max_packet_size'])
 
+
 	async def main(self):
 		task = asyncio.ensure_future(self._receive(), loop=self.Loop)
 
@@ -64,6 +68,7 @@ class DatagramSource(Source):
 		await task
 
 		self.Socket.close()
+
 
 	async def _receive(self):
 		while True:
@@ -82,11 +87,14 @@ class DatagramSource(Source):
 
 
 class DatagramSink(Sink):
+
+
 	ConfigDefaults = {
 		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
 		'max_packet_size': 64 * 1024,
 		'receiver_buffer_size': 0,
 	}
+
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -123,6 +131,7 @@ class DatagramSink(Sink):
 			self.Socket.connect(self.Address)
 
 		self.MaxPacketSize = int(self.Config['max_packet_size'])
+
 
 	def process(self, context, event):
 		self.Socket.send(event)

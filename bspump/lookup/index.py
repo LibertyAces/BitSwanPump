@@ -1,4 +1,3 @@
-import abc
 import logging
 
 import numpy as np
@@ -10,7 +9,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class Index(abc.ABC):
+class Index(object):
 	def __init__(self, id=None):
 		super().__init__()
 		self.Id = id if id is not None else self.__class__.__name__
@@ -25,9 +24,8 @@ class Index(abc.ABC):
 			'class': self.__class__.__name__,
 		}
 
-	@abc.abstractmethod
 	def search(self, *args) -> set:
-		pass
+		raise NotImplementedError()
 
 
 

@@ -1,5 +1,3 @@
-import abc
-
 from .processor import ProcessorBase
 
 
@@ -60,6 +58,6 @@ class Generator(ProcessorBase):
 		)
 		return None
 
-	@abc.abstractmethod
+
 	async def generate(self, context, event, depth):
 		raise NotImplementedError()
