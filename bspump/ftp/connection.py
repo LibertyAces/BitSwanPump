@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import aioftp
 from ..abc.connection import Connection
@@ -27,7 +26,7 @@ class FTPConnection(Connection):
 		self.Hostname = self.Config.get('hostname')
 		self.Port = self.Config.get('port')
 
-	async def run1(self):
+	async def connect(self):
 		client = aioftp.Client()
 		await client.connect(self.Hostname,21)
 		await client.login(self.Username, self.Password)

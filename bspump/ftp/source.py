@@ -29,7 +29,6 @@ class FTPSource(TriggerSource):
 		self.RemotePath = self.Config['remote_path']
 		self._conn_future = None
 		self.list_future = None
-		self.FinishedWithQueue = False
 
 	async def list_files(self):
 
@@ -37,7 +36,7 @@ class FTPSource(TriggerSource):
 			self.list_future = None
 
 		#conenct to client
-		self.client = await self.Connection.run1()
+		self.client = await self.Connection.connect()
 
 		#if filename is specified then add only filename to queue else add the
 		#full path to queue.
@@ -46,32 +45,28 @@ class FTPSource(TriggerSource):
 			tmp = self.RemotePath + '/'+ self.Filename
 			self.Queue.put_nowait(tmp)
 		else:
-			# if there are directories then don't add them to queue
+			# if there are directories then don't add them to queue.
 			for path, info in (await self.client.list(self.RemotePath)):
 				try:
 					if info['type'] == 'dir':
-						pass
+						continue
 					else:
 						self.Queue.put_nowait(path)
 				except asyncio.queues.QueueFull:
 					L.warning("Queue has reached it's limit")
-		#Indicate that we are done with the queue
-		self.FinishedWithQueue = True
 
 	async def inbound(self):
 		while True:
 			try:
-				#Close connection
-				if(self.FinishedWithQueue):
-					if self.Queue.empty():
-						await self.client.quit()
-						self._conn_future = None
-						break
-
 				path = await self.Queue.get()
 				async with self.client.download_stream(path) as stream:
 					async for block in stream.iter_by_block():
 						await self.process(block)
+
+				if self.Queue.empty():
+					await self.client.quit()
+					self._conn_future = None
+					break
 			except (ConnectionResetError,StatusCodeError) as exception:
 				L.exception(exception)
 
@@ -95,6 +90,7 @@ class FTPSource(TriggerSource):
 				loop=self.Loop
 			)
 			await self._conn_future
+
 
 
 
