@@ -35,11 +35,11 @@ class FTPSource(TriggerSource):
 		if self.Queue.qsize() == 0:
 			self.list_future = None
 
-		#conenct to client
+		#conenct to the client
 		self.client = await self.Connection.connect()
 
-		#if filename is specified then add only filename to queue else add the
-		#full path to queue.
+		#if the filename is specified then add only filename to queue else add the
+		#full path into queue.
 
 		if self.Filename is not None:
 			tmp = self.RemotePath + '/'+ self.Filename
