@@ -1,56 +1,30 @@
-import operator
-
 from ..abc import SequenceExpression, Expression, evaluate
-
-
-def _and_reduce(operator, iterable, context, event, *args, **kwargs):
-	it = iter(iterable)
-	a = evaluate(next(it), context, event, *args, **kwargs)
-	if not a:
-		return False
-
-	for b in it:
-		b = evaluate(b, context, event, *args, **kwargs)
-		if b is None or not operator(a, b):
-			return False
-		a = b
-
-	return True
-
-
-def _or_reduce(operator, iterable, context, event, *args, **kwargs):
-	it = iter(iterable)
-	a = evaluate(next(it), context, event, *args, **kwargs)
-	if a:
-		return True
-
-	for b in it:
-		b = evaluate(b, context, event, *args, **kwargs)
-		if b is None:
-			continue
-		if operator(a, b):
-			return True
-		a = b
-
-	return False
 
 
 class AND(SequenceExpression):
 	"""
-	Checks if all expressions are true
+	Checks if all expressions are true, respectivelly, stop on the first False
 	"""
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _and_reduce(operator.and_, self.Items, context, event, *args, **kwargs)
+		for item in self.Items:
+			v = evaluate(item, context, event, *args, **kwargs)
+			if v is None or not v:
+				return False
+		return True
 
 
 class OR(SequenceExpression):
 	"""
-	Checks if at least one of the expressions is true:
+	Checks if at least one of the expressions is true
 	"""
 
 	def __call__(self, context, event, *args, **kwargs):
-		return _or_reduce(operator.or_, self.Items, context, event, *args, **kwargs)
+		for item in self.Items:
+			v = evaluate(item, context, event, *args, **kwargs)
+			if v is not None and v:
+				return True
+		return False
 
 
 class NOT(Expression):
