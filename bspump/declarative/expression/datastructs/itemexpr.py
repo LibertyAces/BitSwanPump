@@ -64,12 +64,20 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 				arg_default=self.Default
 			)
 		elif isinstance(self.With, CONTEXT) and isinstance(self.Item, VALUE):
-			return ITEM_optimized_CONTEXT_VALUE(
-				self,
-				arg_with=self.With,
-				arg_item=self.Item,
-				arg_default=self.Default
-			)
+			if "." in self.Item.Value:
+				return ITEM_optimized_CONTEXT_VALUE_NESTED(
+					self,
+					arg_with=self.With,
+					arg_item=self.Item,
+					arg_default=self.Default
+				)
+			else:
+				return ITEM_optimized_CONTEXT_VALUE(
+					self,
+					arg_with=self.With,
+					arg_item=self.Item,
+					arg_default=self.Default
+				)
 		return self
 
 
@@ -89,26 +97,6 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			if self.Default is None:
 				return None
 			return evaluate(self.Default, context, event, *args, **kwargs)
-
-
-	def evaluate_CONTEXT(self, with_dict, item):
-
-		if '.' in item:
-			value = with_dict
-			for i in item.split('.'):
-				try:
-					if isinstance(value, list):
-						value = value[int(i)]
-					else:
-						value = value[i]
-				except KeyError as e:
-					raise e
-				except TypeError:
-					return None
-			return value
-
-		else:
-			return with_dict[item]
 
 
 class ITEM_optimized_EVENT_VALUE(ITEM):
@@ -146,26 +134,37 @@ class ITEM_optimized_CONTEXT_VALUE(ITEM):
 
 		self.Key = self.Item.Value
 
-		# TODO: Replace with JSON pointer path
-		if '.' in self.Key:
-			self.KeyList = self.Key.split('.')
-		else:
-			self.KeyList = None
 
 	def __call__(self, context, event, *args, **kwargs):
+		return context.get(self.Key, self.Default)
 
-		if self.KeyList is None:
-			return context.get(self.Key, self.Default)
 
+class ITEM_optimized_CONTEXT_VALUE_NESTED(ITEM):
+
+	def __init__(self, orig, *, arg_with, arg_item, arg_default):
+		super().__init__(orig.App)
+
+		self.With = arg_with
+		self.Item = arg_item
+		if arg_default is None:
+			self.Default = arg_default
 		else:
-			value = context
-			try:
-				for key in self.KeyList:
-					if isinstance(value, list):
-						value = value[int(key)]
-					else:
-						value = value[key]
-			except (TypeError, KeyError):
-				return self.Default
+			# TODO: Default must be statically evaluated
+			raise NotImplementedError("")
 
-			return value
+		# TODO: Replace with JSON pointer path
+		self.KeyList = self.Item.Value.split('.')
+
+
+	def __call__(self, context, event, *args, **kwargs):
+		value = context
+		try:
+			for key in self.KeyList:
+				if isinstance(value, list):
+					value = value[int(key)]
+				else:
+					value = value[key]
+		except (TypeError, KeyError):
+			return self.Default
+
+		return value
