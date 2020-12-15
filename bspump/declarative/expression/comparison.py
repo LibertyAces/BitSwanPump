@@ -1,6 +1,6 @@
 import operator
 
-from ..abc import SequenceExpression, evaluate
+from ..abc import SequenceExpression, Expression, evaluate
 
 
 def _oper_reduce(operator, iterable, context, event, *args, **kwargs):
@@ -41,6 +41,25 @@ class EQ(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.eq, self.Items, context, event, *args, **kwargs)
+
+
+	def optimize(self):
+		if len(self.Items) == 2 and isinstance(self.Items[1], (str, int, float)):
+			return EQ_optimized_simple(self)
+		return self
+
+
+class EQ_optimized_simple(EQ):
+
+	def __init__(self, orig):
+		super().__init__(orig.App, sequence=orig.Items)
+		self.A = self.Items[0]
+		assert isinstance(self.A, Expression)
+		self.B = self.Items[1]
+		assert isinstance(self.B, (str, int, float))
+
+	def __call__(self, context, event, *args, **kwargs):
+		return self.A(context, event, *args, **kwargs) == self.B
 
 
 class NE(SequenceExpression):

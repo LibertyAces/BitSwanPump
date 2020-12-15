@@ -26,6 +26,9 @@ class Expression(object):
 	def get_location(self):
 		return self.Location
 
+	def optimize(self):
+		return self
+
 
 class SequenceExpression(Expression):
 	'''

@@ -55,6 +55,17 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			self.Default = arg_default
 
 
+	def optimize(self):
+		if isinstance(self.With, EVENT) and isinstance(self.Item, VALUE):
+			return ITEM_optimized_EVENT_VALUE(
+				self,
+				arg_with=self.With,
+				arg_item=self.Item,
+				arg_default=self.Default
+			)
+		return self
+
+
 	def __call__(self, context, event, *args, **kwargs):
 		with_dict = evaluate(self.With, context, event, *args, **kwargs)
 		item = evaluate(self.Item, context, event, *args, **kwargs)
@@ -95,3 +106,23 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 
 		else:
 			return with_dict[item]
+
+
+class ITEM_optimized_EVENT_VALUE(ITEM):
+
+	def __init__(self, orig, *, arg_with, arg_item, arg_default):
+		super().__init__(orig.App)
+
+		self.With = arg_with
+		self.Item = arg_item
+		if arg_default is None:
+			self.Default = arg_default
+		else:
+			# TODO: Default must be statically evaluated
+			raise NotImplementedError("")
+
+		self.Key = self.Item.Value
+
+
+	def __call__(self, context, event, *args, **kwargs):
+		return event.get(self.Key, self.Default)
