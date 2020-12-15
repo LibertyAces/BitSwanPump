@@ -121,6 +121,7 @@ class ExpressionBuilder(object):
 				obj = xclass(app=self.App, value=value)
 				obj.set_location(location)
 				obj.Node = node
+				obj = obj.optimize()
 				return obj
 
 			elif isinstance(node, yaml.SequenceNode):
@@ -128,6 +129,7 @@ class ExpressionBuilder(object):
 				obj = xclass(app=self.App, sequence=value)
 				obj.set_location(location)
 				obj.Node = node
+				obj = obj.optimize()
 				return obj
 
 			elif isinstance(node, yaml.MappingNode):
@@ -135,6 +137,7 @@ class ExpressionBuilder(object):
 				obj = xclass(app=self.App, **dict(('arg_' + k, v) for k, v in value.items()))
 				obj.set_location(location)
 				obj.Node = node
+				obj = obj.optimize()
 				return obj
 
 		except TypeError as e:
