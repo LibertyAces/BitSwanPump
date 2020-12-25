@@ -4,8 +4,8 @@ import inspect
 import yaml
 
 from . import expression
-from .libraries import FileDeclarationLibrary
 
+from .libraries import FileDeclarationLibrary
 from .declerror import DeclarationError
 
 ###
@@ -78,8 +78,12 @@ class ExpressionBuilder(object):
 		loader.add_constructor("!INCLUDE", self._construct_include)
 		loader.add_constructor("!CONFIG", self._construct_config)
 
+		expressions = []
 		try:
-			expression = loader.get_single_data()
+			# Build syntax trees for each expression
+			while loader.check_data():
+				expression = loader.get_data()
+				expressions.append(expression)
 
 		except yaml.scanner.ScannerError as e:
 			raise DeclarationError("Syntax error in declaration: {}".format(e))
