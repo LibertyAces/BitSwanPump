@@ -1,0 +1,8 @@
+---
+!AND
+- !ITEM EVENT string1
+- !ITEM EVENT string2
+- True
+- !IN  
+  what: !ITEM EVENT categoryBehavior
+  where: ["/Access", "/Access/Start", "/Communicate"]
