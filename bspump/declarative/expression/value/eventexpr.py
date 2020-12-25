@@ -11,12 +11,17 @@ Usage:
 ``
 	"""
 
+	Attributes = []
+
 	def __init__(self, app, *, value):
 		super().__init__(app)
 		assert(value == "")
 
 	def __call__(self, context, event, *args, **kwargs):
 		return event
+
+	def get_type(self):
+		return dict.__name__
 
 
 class KWARGS(Expression):
@@ -28,6 +33,8 @@ Usage:
 !KWARGS
 ``
 	"""
+
+	Attributes = []
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
@@ -57,6 +64,9 @@ Usage:
 
 
 class ARGS(Expression):
+
+	Attributes = []
+
 	def __init__(self, app, *, value):
 		super().__init__(app)
 		assert(value == '')

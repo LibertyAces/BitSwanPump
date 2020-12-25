@@ -7,6 +7,7 @@ from . import expression
 
 from .libraries import FileDeclarationLibrary
 from .declerror import DeclarationError
+from .abc import Expression
 
 ###
 
@@ -94,7 +95,34 @@ class ExpressionBuilder(object):
 		finally:
 			loader.dispose()
 
-		return expression
+
+		# Optimizations
+		for expression in expressions:
+
+			# We run optimizations till we finish tree walk without any optimization found
+			retry = True
+			while retry:
+				retry = False
+
+				# Walk the syntax tree
+				for parent, key, obj in expression.walk():
+					if not isinstance(obj, Expression):
+						continue
+
+					# Check if the node could be optimized
+					opt_obj = obj.optimize()
+					if opt_obj is None:
+						continue
+
+					# If yes, replace a given node by the optimized variant
+					parent.set(key, opt_obj)
+
+					# ... and start again
+					retry = True
+					break
+
+
+		return expressions
 
 
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):
@@ -123,26 +151,21 @@ class ExpressionBuilder(object):
 			if isinstance(node, yaml.ScalarNode):
 				value = loader.construct_scalar(node)
 				obj = xclass(app=self.App, value=value)
-				obj.set_location(location)
-				obj.Node = node
-				obj = obj.optimize()
-				return obj
 
 			elif isinstance(node, yaml.SequenceNode):
 				value = loader.construct_sequence(node)
 				obj = xclass(app=self.App, sequence=value)
-				obj.set_location(location)
-				obj.Node = node
-				obj = obj.optimize()
-				return obj
 
 			elif isinstance(node, yaml.MappingNode):
 				value = loader.construct_mapping(node)
 				obj = xclass(app=self.App, **dict(('arg_' + k, v) for k, v in value.items()))
-				obj.set_location(location)
-				obj.Node = node
-				obj = obj.optimize()
-				return obj
+
+			else:
+				raise RuntimeError("Unsupported node type '{}'".format(node))
+
+			obj.set_location(location)
+			obj.Node = node
+			return obj
 
 		except TypeError as e:
 			raise DeclarationError("Type error {}\n{}\n".format(e, node.start_mark))

@@ -27,6 +27,8 @@ default: 0
 Scalar form has some limitations (e.g no default value) but it is more compact
 	"""
 
+	Attributes = ["With", "Item", "Default"]
+
 	def __init__(self, app, *, arg_with=None, arg_item=None, arg_default=None, value=None):
 		super().__init__(app)
 
@@ -47,15 +49,20 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 				raise RuntimeError("Invalid item argument '{}' - must be EVENT, CONTEXT, KWARGS, ARG", format(with_))
 
 			self.Item = VALUE(app, value=item)
-			self.Default = None
+			self.Default = VALUE(app, value=None)
 
 		else:
 			self.With = arg_with
 			self.Item = arg_item
-			self.Default = arg_default
+
+			if isinstance(arg_default, Expression):
+				self.Default = arg_default
+			else:
+				self.Default = VALUE(app, value=arg_default)
 
 
 	def optimize(self):
+
 		if isinstance(self.With, EVENT) and isinstance(self.Item, VALUE):
 			return ITEM_optimized_EVENT_VALUE(
 				self,
@@ -63,7 +70,8 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 				arg_item=self.Item,
 				arg_default=self.Default
 			)
-		return self
+
+		return None
 
 
 	def __call__(self, context, event, *args, **kwargs):
@@ -113,16 +121,19 @@ class ITEM_optimized_EVENT_VALUE(ITEM):
 	def __init__(self, orig, *, arg_with, arg_item, arg_default):
 		super().__init__(orig.App)
 
+		assert isinstance(arg_with, EVENT)
 		self.With = arg_with
-		self.Item = arg_item
-		if arg_default is None:
-			self.Default = arg_default
-		else:
-			# TODO: Default must be statically evaluated
-			raise NotImplementedError("")
 
-		self.Key = self.Item.Value
+		assert isinstance(arg_item, VALUE)
+		self.Item = arg_item.Value
 
+		assert isinstance(arg_default, VALUE)
+		self.Default = arg_default.Value
+
+
+	def optimize(self):
+		# This is to prevent re-optimising the class
+		return None
 
 	def __call__(self, context, event, *args, **kwargs):
-		return event.get(self.Key, self.Default)
+		return event.get(self.Item, self.Default)
