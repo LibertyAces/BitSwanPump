@@ -12,6 +12,8 @@ from .libraries import ZooKeeperDeclarationLibrary
 
 from .abc import Expression
 
+from .dot import declaration_to_dot
+
 __all__ = [
 	"DeclarativeProcessor",
 	"DeclarativeGenerator",
@@ -26,4 +28,6 @@ __all__ = [
 	"ZooKeeperDeclarationLibrary",
 
 	"Expression",
+
+	"declaration_to_dot",
 ]
