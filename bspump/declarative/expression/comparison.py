@@ -75,7 +75,7 @@ class EQ(SequenceExpression):
 				return EQ_optimized_EVENT_VALUE(self)
 			else:
 				return EQ_optimized_simple(self)
-		return self
+		return None
 
 	def get_output_type(self):
 		return bool.__name__
