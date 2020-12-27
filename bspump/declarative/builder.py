@@ -97,6 +97,7 @@ class ExpressionBuilder(object):
 
 
 		# Optimizations
+		optimized_expressions = []
 		for expression in expressions:
 
 			# We run optimizations till we finish tree walk without any optimization found
@@ -114,15 +115,20 @@ class ExpressionBuilder(object):
 					if opt_obj is None:
 						continue
 
-					# If yes, replace a given node by the optimized variant
-					parent.set(key, opt_obj)
+					if parent is None:
+						expression = opt_obj
+					else:
+						# If yes, replace a given node by the optimized variant
+						parent.set(key, opt_obj)
 
 					# ... and start again
 					retry = True
 					break
 
+			optimized_expressions.append(expression)
 
-		return expressions
+
+		return optimized_expressions
 
 
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):

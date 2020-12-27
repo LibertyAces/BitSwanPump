@@ -58,6 +58,13 @@ class EQ(SequenceExpression):
 	Operator '=='
 	'''
 
+	Attributes = {
+		"Items": [
+			'si64', 'si8', 'si16', 'si32', 'si64', 'si128', 'si256',
+			'ui8', 'ui16', 'ui32', 'ui64', 'ui128', 'ui256',
+		]
+	}
+
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.eq, self.Items, context, event, *args, **kwargs)
 
@@ -75,11 +82,6 @@ class EQ(SequenceExpression):
 
 
 class EQ_optimized_simple(EQ):
-
-	Attributes = {
-		"A": [],  # TODO: This ...
-		"B": [],  # TODO: This ...
-	}
 
 	def __init__(self, orig):
 		super().__init__(orig.App, sequence=orig.Items)
@@ -177,3 +179,5 @@ class ISNOT(SequenceExpression):
 
 	def get_output_type(self):
 		return bool.__name__
+
+
