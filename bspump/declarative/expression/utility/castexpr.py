@@ -1,6 +1,7 @@
-from bspump.declarative.abc import Expression, evaluate
+from bspump.declarative.abc import Expression
 
 from ..value.eventexpr import ARG
+from ..value.valueexpr import VALUE
 
 import logging
 
@@ -16,53 +17,69 @@ class CAST(Expression):
 	Casts "value" to "type"
 	"""
 
+	Attributes = {
+		"What": ["*"],
+		"Default": ["*"],
+	}
+
+	CastMap = {
+		'bool': (bool, bool.__name__),
+		'int': (int, int.__name__),
+		'float': (float, float.__name__),
+		'str': (str, str.__name__),
+		'dict': (dict, dict.__name__),
+		'list': (list, list.__name__),
+
+		'si8': (int, 'si8'),
+		'si16': (int, 'si16'),
+		'si32': (int, 'si32'),
+		'si64': (int, 'si64'),
+		'si128': (int, 'si128'),
+		'si256': (int, 'si256'),
+		'ui8': (int, 'ui8'),
+		'ui16': (int, 'ui16'),
+		'ui32': (int, 'u32'),
+		'ui64': (int, 'u64'),
+		'ui128': (int, 'ui128'),
+		'ui256': (int, 'ui256'),
+		'i1': (bool, bool.__name__),
+	}
+
+
 	def __init__(self, app, *, arg_what=None, arg_type=None, arg_default=None, value=None):
 		super().__init__(app)
 
 		if value is not None:
 			# Scalar variant
+			# TODO (Dec 2020, AT): This one (scalar variant) is weird, not sure if used anywhere
 
-			self.Value = ARG(app=app, value='')
-
-			# Detect type cast function
-			if value == "int":
-				self.Conversion = int
-			elif value == "float":
-				self.Conversion = float
-			elif value == "str":
-				self.Conversion = str
-			elif value == "dict":
-				self.Conversion = dict
-			elif value == "list":
-				self.Conversion = list
-			else:
-				raise RuntimeError("Unsupported type '{}' found in CAST expression.".format(arg_type))
-
+			self.What = ARG(app=app, value='')
+			self.Conversion, self.OutputType = self.CastMap[value]
 
 		else:
-			self.Value = arg_what
+			if isinstance(arg_what, Expression):
+				self.What = arg_what
+			else:
+				self.What = VALUE(app, value=arg_what)
 
 			# Detect type cast function
-			if arg_type == "int":
-				self.Conversion = int
-			elif arg_type == "float":
-				self.Conversion = float
-			elif arg_type == "str":
-				self.Conversion = str
-			elif arg_type == "dict":
-				self.Conversion = dict
-			elif arg_type == "list":
-				self.Conversion = list
-			else:
-				raise RuntimeError("Unsupported type '{}' found in CAST expression.".format(arg_type))
+			self.Conversion, self.OutputType = self.CastMap[arg_type]
 
-		self.Default = arg_default
+
+		if isinstance(arg_default, Expression):
+			self.Default = arg_default
+		else:
+			self.Default = VALUE(app, value=arg_default)
 
 
 	def __call__(self, context, event, *args, **kwargs):
 		try:
-			return self.Conversion(evaluate(self.Value, context, event, *args, **kwargs))
+			return self.Conversion(self.What(context, event, *args, **kwargs))
 		except (ValueError, AttributeError, TypeError):
 			if self.Default is None:
 				return None
-			return evaluate(self.Default, context, event, *args, **kwargs)
+			return self.Default(context, event, *args, **kwargs)
+
+
+	def get_output_type(self):
+		return self.OutputType

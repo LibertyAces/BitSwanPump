@@ -27,7 +27,11 @@ default: 0
 Scalar form has some limitations (e.g no default value) but it is more compact
 	"""
 
-	Attributes = ["With", "Item", "Default"]
+	Attributes = {
+		"With": ["*"],  # TODO: This ...
+		"Item": ["*"],  # TODO: This ...
+		"Default": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_with=None, arg_item=None, arg_default=None, value=None):
 		super().__init__(app)

@@ -11,7 +11,7 @@ Usage:
 ``
 	"""
 
-	Attributes = []
+	Attributes = {}
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
@@ -20,7 +20,7 @@ Usage:
 	def __call__(self, context, event, *args, **kwargs):
 		return event
 
-	def get_type(self):
+	def get_output_type(self):
 		return dict.__name__
 
 
@@ -34,7 +34,7 @@ Usage:
 ``
 	"""
 
-	Attributes = []
+	Attributes = {}
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
@@ -65,7 +65,7 @@ Usage:
 
 class ARGS(Expression):
 
-	Attributes = []
+	Attributes = {}
 
 	def __init__(self, app, *, value):
 		super().__init__(app)

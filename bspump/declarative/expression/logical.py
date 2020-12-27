@@ -8,6 +8,10 @@ class AND(SequenceExpression):
 	Checks if all expressions are true, respectivelly, stop on the first False
 	"""
 
+	Attributes = {
+		"Items": ['bool']
+	}
+
 	def __call__(self, context, event, *args, **kwargs):
 		for item in self.Items:
 			try:
@@ -19,7 +23,7 @@ class AND(SequenceExpression):
 		return True
 
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
@@ -27,6 +31,10 @@ class OR(SequenceExpression):
 	"""
 	Checks if at least one of the expressions is true
 	"""
+
+	Attributes = {
+		"Items": ['bool']
+	}
 
 	def __call__(self, context, event, *args, **kwargs):
 		for item in self.Items:
@@ -39,7 +47,7 @@ class OR(SequenceExpression):
 		return False
 
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
@@ -48,7 +56,9 @@ class NOT(Expression):
 	Returns inverse value of the expression
 	"""
 
-	Attributes = ['What']
+	Attributes = {
+		'What': 'bool',
+	}
 
 	def __init__(self, app, *, arg_what):
 		super().__init__(app)
@@ -67,5 +77,5 @@ class NOT(Expression):
 			return False
 
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__

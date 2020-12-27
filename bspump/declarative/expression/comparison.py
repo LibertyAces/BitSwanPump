@@ -37,7 +37,7 @@ class LT(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.lt, self.Items, context, event, *args, **kwargs)
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
@@ -49,7 +49,7 @@ class LE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.le, self.Items, context, event, *args, **kwargs)
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
@@ -70,13 +70,16 @@ class EQ(SequenceExpression):
 				return EQ_optimized_simple(self)
 		return self
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
 class EQ_optimized_simple(EQ):
 
-	Attributes = ["A", "B"]
+	Attributes = {
+		"A": [],  # TODO: This ...
+		"B": [],  # TODO: This ...
+	}
 
 	def __init__(self, orig):
 		super().__init__(orig.App, sequence=orig.Items)
@@ -124,7 +127,7 @@ class NE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.ne, self.Items, context, event, *args, **kwargs)
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
@@ -136,7 +139,7 @@ class GE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.ge, self.Items, context, event, *args, **kwargs)
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
@@ -148,7 +151,7 @@ class GT(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.gt, self.Items, context, event, *args, **kwargs)
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
@@ -160,7 +163,7 @@ class IS(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.is_, self.Items, context, event, *args, **kwargs)
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
@@ -172,5 +175,5 @@ class ISNOT(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.is_not, self.Items, context, event, *args, **kwargs)
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__

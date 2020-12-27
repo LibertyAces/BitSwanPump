@@ -8,11 +8,18 @@ class ADD(SequenceExpression):
 	Add all values from expressions.
 	"""
 
+	Attributes = {
+		"Items": [
+			'si64', 'si8', 'si16', 'si32', 'si64', 'si128', 'si256',
+			'ui8', 'ui16', 'ui32', 'ui64', 'ui128', 'ui256',
+		]
+	}
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.add, context, event, *args, **kwargs)
 
-	def get_type(self):
-		return _get_type_from_first(self.Items)
+	def get_output_type(self):
+		return _get_output_type_from_first(self.Items)
 
 
 class DIV(SequenceExpression):
@@ -51,8 +58,8 @@ class MOD(SequenceExpression):
 		return self.reduce(operator.mod, context, event, *args, **kwargs)
 
 
-def _get_type_from_first(items):
+def _get_output_type_from_first(items):
 	if len(items) == 0:
 		return int.__name__
 	# Take the type of the first item in the list
-	return items[0].get_type()
+	return items[0].get_output_type()

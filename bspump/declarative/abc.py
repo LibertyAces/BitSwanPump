@@ -56,7 +56,7 @@ class Expression(object):
 	def set(self, key, value):
 		setattr(self, key, value)
 
-	def get_type(self):
+	def get_output_type(self):
 		return '???'
 
 
@@ -73,7 +73,9 @@ class SequenceExpression(Expression):
 		)
 	'''
 
-	Attributes = ["Items"]
+	Attributes = {
+		"Items": []
+	}
 
 	def __init__(self, app, *, sequence):
 		super().__init__(app)

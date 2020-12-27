@@ -6,7 +6,10 @@ class IN(Expression):
 	Checks if expression is of given list.
 	"""
 
-	Attributes = ["What", "Where"]
+	Attributes = {
+		"What": ["*"],  # TODO: This ...
+		"Where": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_what, arg_where):
 		super().__init__(app)
@@ -26,7 +29,7 @@ class IN(Expression):
 	def __call__(self, context, event, *args, **kwargs):
 		return evaluate(self.What, context, event, *args, **kwargs) in evaluate(self.Where, context, event, *args, **kwargs)
 
-	def get_type(self):
+	def get_output_type(self):
 		return bool.__name__
 
 
