@@ -1,5 +1,6 @@
 from ..abc import SequenceExpression, Expression
 from ..declerror import DeclarationError
+from .value.valueexpr import VALUE
 
 
 class AND(SequenceExpression):
@@ -47,17 +48,23 @@ class NOT(Expression):
 	Returns inverse value of the expression
 	"""
 
+	Attributes = ['What']
+
 	def __init__(self, app, *, arg_what):
 		super().__init__(app)
-		self.Value = arg_what
+		self.What = arg_what
+
+		if isinstance(arg_what, Expression):
+			self.What = arg_what
+		else:
+			self.What = VALUE(app, value=arg_what)
 
 
 	def __call__(self, context, event, *args, **kwargs):
 		try:
-			return not self.Value(context, event, *args, **kwargs)
+			return not self.What(context, event, *args, **kwargs)
 		except TypeError:
-			# Incompatible types included
-			return None
+			return False
 
 
 	def get_type(self):
