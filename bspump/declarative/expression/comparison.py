@@ -37,7 +37,7 @@ class LT(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.lt, self.Items, context, event, *args, **kwargs)
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return bool.__name__
 
 
@@ -49,7 +49,7 @@ class LE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.le, self.Items, context, event, *args, **kwargs)
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return bool.__name__
 
 
@@ -62,6 +62,7 @@ class EQ(SequenceExpression):
 		"Items": [
 			'si64', 'si8', 'si16', 'si32', 'si64', 'si128', 'si256',
 			'ui8', 'ui16', 'ui32', 'ui64', 'ui128', 'ui256',
+			'str'
 		]
 	}
 
@@ -77,8 +78,21 @@ class EQ(SequenceExpression):
 				return EQ_optimized_simple(self)
 		return None
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return bool.__name__
+
+
+	def get_items_inlet_type(self):
+		# Find the first usable type in the items
+		for item in self.Items:
+			outlet_type = item.get_outlet_type()
+			if outlet_type not in frozenset(['^']):
+				return outlet_type
+		raise NotImplementedError("Cannot decide on items inlet type '{}'".format(self))
+
+
+	def consult_inlet_type(self, key, child):
+		return self.get_items_inlet_type()
 
 
 class EQ_optimized_simple(EQ):
@@ -92,8 +106,10 @@ class EQ_optimized_simple(EQ):
 		self.B = self.Items[1].Value
 		assert isinstance(self.B, (bool, str, int, float))
 
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.A(context, event, *args, **kwargs) == self.B
+
 
 	def optimize(self):
 		return None
@@ -129,7 +145,7 @@ class NE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.ne, self.Items, context, event, *args, **kwargs)
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return bool.__name__
 
 
@@ -141,7 +157,7 @@ class GE(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.ge, self.Items, context, event, *args, **kwargs)
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return bool.__name__
 
 
@@ -153,7 +169,7 @@ class GT(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.gt, self.Items, context, event, *args, **kwargs)
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return bool.__name__
 
 
@@ -165,7 +181,7 @@ class IS(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.is_, self.Items, context, event, *args, **kwargs)
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return bool.__name__
 
 
@@ -177,7 +193,5 @@ class ISNOT(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return _oper_reduce(operator.is_not, self.Items, context, event, *args, **kwargs)
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return bool.__name__
-
-

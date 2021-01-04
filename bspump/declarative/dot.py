@@ -36,7 +36,7 @@ def declaration_to_dot(decl, fname):
 
 			fo.write("\t{} [label=\"<{}>\\n{}\",shape=\"{}\"];\n".format(
 				obj.Id,
-				obj.get_output_type(),
+				obj.get_outlet_type(),
 				obj.__class__.__name__,
 				shape
 			))

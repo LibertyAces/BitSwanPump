@@ -36,6 +36,8 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 	def __init__(self, app, *, arg_with=None, arg_item=None, arg_default=None, value=None):
 		super().__init__(app)
 
+		self.OutletType = '^'  # Inlet type is to be set based on the parent advice
+
 		if value is not None:
 			# Scalar value provided
 			with_, item = value.split(' ', 2)
@@ -120,6 +122,15 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			return with_dict[item]
 
 
+	def get_outlet_type(self):
+		return self.OutletType
+
+
+	def set_outlet_type(self, outlet_type):
+		self.OutletType = outlet_type
+
+
+
 class ITEM_optimized_EVENT_VALUE(ITEM):
 
 	def __init__(self, orig, *, arg_with, arg_item, arg_default):
@@ -134,10 +145,13 @@ class ITEM_optimized_EVENT_VALUE(ITEM):
 		assert isinstance(arg_default, VALUE)
 		self.Default = arg_default.Value
 
+		self.OutletType = orig.OutletType
+
 
 	def optimize(self):
 		# This is to prevent re-optimising the class
 		return None
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		return event.get(self.Item, self.Default)

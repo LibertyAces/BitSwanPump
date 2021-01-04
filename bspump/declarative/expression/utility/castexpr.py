@@ -25,10 +25,13 @@ class CAST(Expression):
 	CastMap = {
 		'bool': (bool, bool.__name__),
 		'int': (int, int.__name__),
+
 		'float': (float, float.__name__),
 		'str': (str, str.__name__),
 		'dict': (dict, dict.__name__),
 		'list': (list, list.__name__),
+
+		'ui1': (bool, bool.__name__),
 
 		'si8': (int, 'si8'),
 		'si16': (int, 'si16'),
@@ -42,7 +45,6 @@ class CAST(Expression):
 		'ui64': (int, 'u64'),
 		'ui128': (int, 'ui128'),
 		'ui256': (int, 'ui256'),
-		'i1': (bool, bool.__name__),
 	}
 
 
@@ -54,7 +56,7 @@ class CAST(Expression):
 			# TODO (Dec 2020, AT): This one (scalar variant) is weird, not sure if used anywhere
 
 			self.What = ARG(app=app, value='')
-			self.Conversion, self.OutputType = self.CastMap[value]
+			self.Conversion, self.OutletType = self.CastMap[value]
 
 		else:
 			if isinstance(arg_what, Expression):
@@ -63,7 +65,7 @@ class CAST(Expression):
 				self.What = VALUE(app, value=arg_what)
 
 			# Detect type cast function
-			self.Conversion, self.OutputType = self.CastMap[arg_type]
+			self.Conversion, self.OutletType = self.CastMap[arg_type]
 
 
 		if isinstance(arg_default, Expression):
@@ -81,5 +83,5 @@ class CAST(Expression):
 			return self.Default(context, event, *args, **kwargs)
 
 
-	def get_output_type(self):
-		return self.OutputType
+	def get_outlet_type(self):
+		return self.OutletType

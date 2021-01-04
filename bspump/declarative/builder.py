@@ -8,6 +8,7 @@ from . import expression
 from .libraries import FileDeclarationLibrary
 from .declerror import DeclarationError
 from .abc import Expression
+from .expression.value.valueexpr import VALUE
 
 ###
 
@@ -105,6 +106,9 @@ class ExpressionBuilder(object):
 			while retry:
 				retry = False
 
+				if not isinstance(expression, Expression):
+					expression = VALUE(self.App, value=expression)
+
 				# Walk the syntax tree
 				for parent, key, obj in expression.walk():
 					if not isinstance(obj, Expression):
@@ -126,7 +130,6 @@ class ExpressionBuilder(object):
 					break
 
 			optimized_expressions.append(expression)
-
 
 		return optimized_expressions
 

@@ -56,8 +56,11 @@ class Expression(object):
 	def set(self, key, value):
 		setattr(self, key, value)
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return '???'
+
+	def consult_inlet_type(self, key, child):
+		raise NotImplementedError("Parent consultation at '{}'".format(self))
 
 
 class SequenceExpression(Expression):
@@ -86,7 +89,7 @@ class SequenceExpression(Expression):
 				self.Items.append(i)
 
 			else:
-				assert isinstance(i, (int, str, bytes, bool, tuple, list)) or i is None
+				assert isinstance(i, (int, str, float, bytes, bool, tuple, list)) or i is None
 
 				from .expression import VALUE
 				self.Items.append(
@@ -112,8 +115,16 @@ class SequenceExpression(Expression):
 			else:
 				raise NotImplementedError(":-(")
 
+
 	def set(self, key, value):
 		self.Items[key] = value
+
+
+	def get_items_inlet_type(self):
+		'''
+		This method evaluate the inlet type for `Items` sequence
+		'''
+		return '?'
 
 
 def evaluate(value, context, event, *args, **kwargs):

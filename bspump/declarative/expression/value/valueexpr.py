@@ -21,5 +21,5 @@ class VALUE(Expression):
 		return self.Value
 
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return type(self.Value).__name__

@@ -23,7 +23,11 @@ class AND(SequenceExpression):
 		return True
 
 
-	def get_output_type(self):
+	def get_outlet_type(self):
+		return bool.__name__
+
+
+	def get_items_inlet_type(self):
 		return bool.__name__
 
 
@@ -47,7 +51,11 @@ class OR(SequenceExpression):
 		return False
 
 
-	def get_output_type(self):
+	def get_outlet_type(self):
+		return bool.__name__
+
+
+	def get_items_inlet_type(self):
 		return bool.__name__
 
 
@@ -77,5 +85,5 @@ class NOT(Expression):
 			return False
 
 
-	def get_output_type(self):
+	def get_outlet_type(self):
 		return bool.__name__
