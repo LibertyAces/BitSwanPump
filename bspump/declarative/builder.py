@@ -105,25 +105,52 @@ class ExpressionBuilder(object):
 			while retry:
 				retry = False
 
-				# Walk the syntax tree
-				for parent, key, obj in expression.walk():
-					if not isinstance(obj, Expression):
-						continue
+				# If the first element is not value (like the define, parse section etc.)
+				if isinstance(expression, dict):
 
-					# Check if the node could be optimized
-					opt_obj = obj.optimize()
-					if opt_obj is None:
-						continue
+					for _key, _expression in expression.items():
 
-					if parent is None:
-						expression = opt_obj
-					else:
-						# If yes, replace a given node by the optimized variant
-						parent.set(key, opt_obj)
+						# Walk the syntax tree
+						for parent, key, obj in _expression.walk():
+							if not isinstance(obj, Expression):
+								continue
 
-					# ... and start again
-					retry = True
-					break
+							# Check if the node could be optimized
+							opt_obj = obj.optimize()
+							if opt_obj is None:
+								continue
+
+							if parent is None:
+								expression[_key] = opt_obj
+							else:
+								# If yes, replace a given node by the optimized variant
+								parent.set(key, opt_obj)
+
+							# ... and start again
+							retry = True
+							break
+
+				else:
+
+					# Walk the syntax tree
+					for parent, key, obj in expression.walk():
+						if not isinstance(obj, Expression):
+							continue
+
+						# Check if the node could be optimized
+						opt_obj = obj.optimize()
+						if opt_obj is None:
+							continue
+
+						if parent is None:
+							expression = opt_obj
+						else:
+							# If yes, replace a given node by the optimized variant
+							parent.set(key, opt_obj)
+
+						# ... and start again
+						retry = True
+						break
 
 			optimized_expressions.append(expression)
 

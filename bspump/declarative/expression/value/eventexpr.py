@@ -76,6 +76,9 @@ class ARGS(Expression):
 
 
 class ARG(Expression):
+
+	Attributes = {}
+
 	def __init__(self, app, *, value):
 		super().__init__(app)
 		assert(value == '')
