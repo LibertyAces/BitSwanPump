@@ -110,6 +110,10 @@ class ExpressionBuilder(object):
 
 					for _key, _expression in expression.items():
 
+						# Skip nested dicts
+						if isinstance(_expression, dict):
+							continue
+
 						# Walk the syntax tree
 						for parent, key, obj in _expression.walk():
 							if not isinstance(obj, Expression):
