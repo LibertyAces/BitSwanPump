@@ -53,8 +53,11 @@ class MongoDBSink(Sink):
 
             if not self._conn_future.done():
                 return
-
-            self._conn_future.result()
+            try:
+                self._conn_future.result()
+            except Exception:
+            # Connection future threw an error
+                L.exception("Unexpected connection future error")
 
             self._conn_future = None
 
