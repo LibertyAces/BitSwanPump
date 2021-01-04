@@ -11,6 +11,11 @@ class DATETIME_FORMAT(Expression):
 	Format example: "%Y-%m-%d %H:%M:%S"
 	"""
 
+	Attributes = {
+		"Format": ["*"],  # TODO: This ...
+		"Value": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_format, arg_with=None):
 		super().__init__(app)
 		self.Format = arg_format

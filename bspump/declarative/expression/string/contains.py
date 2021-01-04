@@ -3,6 +3,10 @@ from ...abc import Expression, evaluate
 
 class CONTAINS(Expression):
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Substring": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_what, arg_substring):
 		super().__init__(app)

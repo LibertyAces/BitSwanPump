@@ -3,6 +3,11 @@ from ...abc import Expression, evaluate
 
 class STARTSWITH(Expression):
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Prefix": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_what, arg_prefix):
 		super().__init__(app)
 		self.Value = arg_what

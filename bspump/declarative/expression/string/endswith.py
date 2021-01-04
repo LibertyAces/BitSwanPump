@@ -3,6 +3,11 @@ from ...abc import Expression, evaluate
 
 class ENDSWITH(Expression):
 
+	Attributes = {
+		"What": ["*"],  # TODO: This ...
+		"Postfix": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_what, arg_postfix):
 		super().__init__(app)
 		self.What = arg_what

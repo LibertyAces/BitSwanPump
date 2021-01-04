@@ -3,6 +3,12 @@ from ...abc import Expression, evaluate
 
 class SUBSTRING(Expression):
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"From": ["*"],  # TODO: This ...
+		"To": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_what, arg_from=0, arg_to=-1):
 		super().__init__(app)
 		self.Value = arg_what

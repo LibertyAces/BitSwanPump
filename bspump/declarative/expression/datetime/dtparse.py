@@ -12,6 +12,12 @@ class DATETIME_PARSE(Expression):
 	Format example: "%Y-%m-%d %H:%M:%S"
 	"""
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Format": ["*"],  # TODO: This ...
+		"Timezone": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_what, arg_format, arg_flags='', arg_timezone=None):
 		super().__init__(app)
 		self.Format = arg_format

@@ -3,6 +3,11 @@ from ...abc import Expression, evaluate
 
 class LIST(Expression):
 
+	Attributes = {
+		"With": ["*"],  # TODO: This ...
+		"Append": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_with=None, arg_append=None):
 		super().__init__(app)
 

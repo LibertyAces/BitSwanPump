@@ -3,6 +3,11 @@ from ...abc import Expression, evaluate
 
 class LOOKUP_GET(Expression):
 
+	Attributes = {
+		"Key": ["*"],  # TODO: This ...
+		"LookupID": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_in, arg_what):
 		super().__init__(app)
 		self.PumpService = app.get_service("bspump.PumpService")
@@ -28,6 +33,11 @@ class LOOKUP_GET(Expression):
 
 
 class LOOKUP_CONTAINS(LOOKUP_GET):
+
+	Attributes = {
+		"Key": ["*"],  # TODO: This ...
+		"LookupID": ["*"],  # TODO: This ...
+	}
 
 	def __call__(self, context, event, *args, **kwargs):
 		lookup = self.PumpService.locate_lookup(self.LookupID, context)
