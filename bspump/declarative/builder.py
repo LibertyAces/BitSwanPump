@@ -134,6 +134,34 @@ class ExpressionBuilder(object):
 							retry = True
 							break
 
+				elif isinstance(expression, list):
+
+					for _expression in expression:
+
+						# Skip nested dicts (like triggers, evaluate sections etc.)
+						if isinstance(_expression, (dict, list)):
+							continue
+
+						# Walk the syntax tree
+						for parent, key, obj in _expression.walk():
+							if not isinstance(obj, Expression):
+								continue
+
+							# Check if the node could be optimized
+							opt_obj = obj.optimize()
+							if opt_obj is None:
+								continue
+
+							if parent is None:
+								expression[key] = opt_obj
+							else:
+								# If yes, replace a given node by the optimized variant
+								parent.set(key, opt_obj)
+
+							# ... and start again
+							retry = True
+							break
+
 				else:
 
 					# Walk the syntax tree
