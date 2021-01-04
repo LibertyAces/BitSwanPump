@@ -1,4 +1,5 @@
 from ...abc import Expression, evaluate
+from ..value.valueexpr import VALUE
 
 import logging
 
@@ -49,27 +50,51 @@ This is how to create the empty dictionary:
 
 		self.With = arg_with
 
-		if arg_set is not None:
+		if arg_set is None:
+			self.Set = None
+		else:
 			assert(isinstance(arg_set, dict))
-		self.Set = arg_set
+			self.Set = dict()
+			self._set_value_or_expression_to_attribute(arg_set, self.Set)
 
-		if arg_modify is not None:
+		if arg_modify is None:
+			self.Modify = None
+		else:
 			assert(isinstance(arg_modify, dict))
-		self.Modify = arg_modify
+			self.Modify = dict()
+			self._set_value_or_expression_to_attribute(arg_modify, self.Modify)
 
-		if arg_add is not None:
+		if arg_add is None:
+			self.Add = None
+		else:
 			assert(isinstance(arg_add, dict))
-		self.Add = arg_add
+			self.Add = dict()
+			self._set_value_or_expression_to_attribute(arg_add, self.Add)
 
-		if arg_unset is not None:
-			assert(isinstance(arg_unset, list))
-		self.Unset = arg_unset
+		if arg_unset is None:
+			self.Unset = None
+		else:
+			assert(isinstance(arg_unset, dict))
+			self.Unset = dict()
+			self._set_value_or_expression_to_attribute(arg_unset, self.Unset)
 
-		if arg_mandatory is not None:
-			assert(isinstance(arg_mandatory, list))
-		self.Mandatory = arg_mandatory
+		if arg_mandatory is None:
+			self.Mandatory = None
+		else:
+			assert(isinstance(arg_mandatory, dict))
+			self.Mandatory = dict()
+			self._set_value_or_expression_to_attribute(arg_mandatory, self.Mandatory)
 
 		self.Update = arg_update
+
+	def _set_value_or_expression_to_attribute(self, _from, _to):
+		for key, value in _from.items():
+			if isinstance(value, Expression):
+				_to[key] = value
+			else:
+				assert isinstance(value, (int, str, bytes, bool, tuple, list)) or value is None
+				_to[key] = VALUE(self.App, value=value)
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		if self.With is None:
