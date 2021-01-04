@@ -3,6 +3,12 @@ from ...abc import Expression, evaluate
 
 class JOIN(Expression):
 
+	Attributes = {
+		"Items": [],  # TODO: This ...
+		"Char": ["*"],  # TODO: This ...
+		"Miss": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_items, arg_delimiter=" ", arg_miss=""):
 		super().__init__(app)
 		self.Items = arg_items

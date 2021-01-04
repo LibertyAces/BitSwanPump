@@ -59,7 +59,7 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 
 		else:
 			self.With = arg_with
-			self.Item = arg_item
+			self.Item = VALUE(app, value=arg_item)
 
 			if isinstance(arg_default, Expression):
 				self.Default = arg_default

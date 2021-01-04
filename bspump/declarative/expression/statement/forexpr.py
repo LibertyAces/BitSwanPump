@@ -3,6 +3,10 @@ from ...abc import Expression, evaluate
 
 class FOR(Expression):
 
+	Attributes = {
+		"Each": ["*"],  # TODO: This ...
+		"Do": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_each, arg_do):
 		super().__init__(app)

@@ -21,6 +21,8 @@ class NOW(Expression):
 
 	Datetime = datetime.datetime
 
+	Attributes = {}
+
 	def __init__(self, app, *, value):
 		super().__init__(app)
 		assert(value == "")

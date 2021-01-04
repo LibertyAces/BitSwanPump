@@ -10,6 +10,11 @@ class IP_PARSE(Expression):
 	Parses string, hex number or decimal number to IP address.
 	"""
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Subnet": ["*"],  # TODO: This ...
+	}
+
 	# TODO: IP.PARSE should be able to receive expressions as values natively
 	def __init__(self, app, *, value=None, arg_value=None):
 		super().__init__(app)

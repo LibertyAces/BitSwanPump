@@ -8,6 +8,11 @@ class REGEX(Expression):
 	Checks if `value` matches with the `regex`, returns `hit` / `miss` respectively.
 	"""
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Regex": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_regex, arg_what, arg_hit=True, arg_miss=False):
 		super().__init__(app)
 		self.Value = arg_what
@@ -33,6 +38,12 @@ class REGEX_PARSE(Expression):
 
 	If `fields` are provided, the groups are mapped to provided fields.
 	"""
+
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Regex": ["*"],  # TODO: This ...
+		"Items": [],
+	}
 
 	def __init__(self, app, *, arg_regex, arg_what, arg_items=None, arg_miss=None, arg_set=None, arg_unset=None, arg_update=None):
 		super().__init__(app)

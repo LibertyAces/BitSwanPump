@@ -18,6 +18,11 @@ class MAP(Expression):
 		nothing found
 	"""
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Default": ["*"],  # TODO: This ...
+		"Map": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_what, arg_in, arg_else=None):
 		super().__init__(app)
