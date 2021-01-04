@@ -136,7 +136,7 @@ class ExpressionBuilder(object):
 
 				elif isinstance(expression, list):
 					# We are not optimizing lists of expressions now
-					continue
+					pass
 
 				else:
 
