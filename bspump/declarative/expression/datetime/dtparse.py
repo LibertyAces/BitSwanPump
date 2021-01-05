@@ -2,6 +2,7 @@ import datetime
 import pytz
 
 from ...abc import Expression, evaluate
+from ..value.valueexpr import VALUE
 
 
 class DATETIME_PARSE(Expression):
@@ -20,8 +21,12 @@ class DATETIME_PARSE(Expression):
 
 	def __init__(self, app, *, arg_what, arg_format, arg_flags='', arg_timezone=None):
 		super().__init__(app)
-		self.Format = arg_format
 		self.Value = arg_what
+
+		if not isinstance(arg_format, Expression):
+			self.Format = VALUE(app, value=arg_format)
+		else:
+			self.Format = arg_format
 
 		self.SetCurrentYear = 'Y' in arg_flags
 

@@ -1,4 +1,5 @@
 from ...abc import Expression, evaluate
+from ..value.valueexpr import VALUE
 
 
 class JOIN(Expression):
@@ -13,7 +14,11 @@ class JOIN(Expression):
 		super().__init__(app)
 		self.Items = arg_items
 		self.Char = arg_delimiter
-		self.Miss = arg_miss  # Could be None
+
+		if not isinstance(arg_miss, Expression):
+			self.Miss = VALUE(app, value=arg_miss)
+		else:
+			self.Miss = arg_miss
 
 	def __call__(self, context, event, *args, **kwargs):
 		arr = []

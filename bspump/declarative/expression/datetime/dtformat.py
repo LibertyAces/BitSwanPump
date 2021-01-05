@@ -1,6 +1,7 @@
 import datetime
 
 from ...abc import Expression, evaluate
+from ..value.valueexpr import VALUE
 
 
 class DATETIME_FORMAT(Expression):
@@ -18,8 +19,12 @@ class DATETIME_FORMAT(Expression):
 
 	def __init__(self, app, *, arg_format, arg_with=None):
 		super().__init__(app)
-		self.Format = arg_format
 		self.Value = arg_with if arg_with is not None else datetime.datetime.utcnow()
+
+		if not isinstance(arg_format, Expression):
+			self.Format = VALUE(app, value=arg_format)
+		else:
+			self.Format = arg_format
 
 	def __call__(self, context, event, *args, **kwargs):
 		fmt = evaluate(self.Format, context, event, *args, **kwargs)

@@ -18,12 +18,19 @@ class LOOKUP_GET(Expression):
 	def build_key(self, context, event, *args, **kwargs):
 		if isinstance(self.Key, (list, tuple)):
 			# Compound key
-			return tuple(
-				evaluate(k, context, event, *args, **kwargs) for k in self.Key
-			)
+			result = list()
+			for k in self.Key:
+				if isinstance(k, (str, int, float)):
+					result.append(k)
+				else:
+					result.append(evaluate(k, context, event, **kwargs))
+			return tuple(result)
 		else:
 			# Simple key
-			return evaluate(self.Key, context, event, *args, **kwargs)
+			if isinstance(self.Key, (str, int, float)):
+				return self.Key
+			else:
+				return evaluate(self.Key, context, event, **kwargs)
 
 
 	def __call__(self, context, event, *args, **kwargs):
