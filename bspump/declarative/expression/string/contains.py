@@ -1,4 +1,5 @@
 from ...abc import Expression, evaluate
+from ..value.valueexpr import VALUE
 
 
 class CONTAINS(Expression):
@@ -11,8 +12,11 @@ class CONTAINS(Expression):
 	def __init__(self, app, *, arg_what, arg_substring):
 		super().__init__(app)
 		self.Value = arg_what
-		self.Substring = arg_substring
 
+		if not isinstance(arg_substring, Expression):
+			self.Substring = VALUE(app, value=arg_substring)
+		else:
+			self.Substring = arg_substring
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = evaluate(self.Value, context, event, *args, **kwargs)
