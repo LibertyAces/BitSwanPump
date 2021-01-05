@@ -96,42 +96,7 @@ class ExpressionBuilder(object):
 		finally:
 			loader.dispose()
 
-
-		# Optimizations
-		optimized_expressions = []
-		for expression in expressions:
-
-			# We run optimizations till we finish tree walk without any optimization found
-			retry = True
-			while retry:
-				retry = False
-
-				if not isinstance(expression, Expression):
-					expression = VALUE(self.App, value=expression)
-
-				# Walk the syntax tree
-				for parent, key, obj in expression.walk():
-					if not isinstance(obj, Expression):
-						continue
-
-					# Check if the node could be optimized
-					opt_obj = obj.optimize()
-					if opt_obj is None:
-						continue
-
-					if parent is None:
-						expression = opt_obj
-					else:
-						# If yes, replace a given node by the optimized variant
-						parent.set(key, opt_obj)
-
-					# ... and start again
-					retry = True
-					break
-
-			optimized_expressions.append(expression)
-
-		return optimized_expressions
+		return expressions
 
 
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):
@@ -182,5 +147,3 @@ class ExpressionBuilder(object):
 		except Exception as e:
 			L.exception("Error in expression")
 			raise DeclarationError("Invalid expression at {}\n{}".format(node.start_mark, e))
-
-		raise RuntimeError("Unsupported type '{}'".format(node))
