@@ -70,12 +70,7 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 	def optimize(self):
 
 		if isinstance(self.With, EVENT) and isinstance(self.Item, VALUE):
-			return ITEM_optimized_EVENT_VALUE(
-				self,
-				arg_with=self.With,
-				arg_item=self.Item,
-				arg_default=self.Default
-			)
+			return ITEM_optimized_EVENT_VALUE(self)
 
 		elif isinstance(self.With, CONTEXT) and isinstance(self.Item, VALUE):
 			if "." in self.Item.Value:
@@ -115,16 +110,19 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 
 class ITEM_optimized_EVENT_VALUE(ITEM):
 
-	def __init__(self, orig, *, arg_with, arg_item, arg_default):
+	def __init__(self, orig):
 		super().__init__(orig.App)
 
-		self.With = arg_with
-		self.Item = arg_item
-		if arg_default is None:
-			self.Default = arg_default
+		self.With = orig.With
+		self.Item = orig.Item
+		self.Default = orig.Default
+
+		if self.Default is None:
+			self.DefaultValue = None
+		elif isinstance(self.Default, VALUE):
+			self.DefaultValue = self.Default(None, None)
 		else:
-			# TODO: Default must be statically evaluated
-			raise NotImplementedError("")
+			raise NotImplementedError("Default: {}".format(self.Default))
 
 		self.Key = self.Item.Value
 		self.OutletType = orig.OutletType
@@ -140,7 +138,7 @@ class ITEM_optimized_EVENT_VALUE(ITEM):
 		return None
 
 	def __call__(self, context, event, *args, **kwargs):
-		return event.get(self.Key, self.Default)
+		return event.get(self.Key, self.DefaultValue)
 
 
 class ITEM_optimized_CONTEXT_VALUE(ITEM):
