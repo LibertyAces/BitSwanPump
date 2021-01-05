@@ -74,19 +74,9 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 
 		elif isinstance(self.With, CONTEXT) and isinstance(self.Item, VALUE):
 			if "." in self.Item.Value:
-				return ITEM_optimized_CONTEXT_VALUE_NESTED(
-					self,
-					arg_with=self.With,
-					arg_item=self.Item,
-					arg_default=self.Default
-				)
+				return ITEM_optimized_CONTEXT_VALUE_NESTED(self)
 			else:
-				return ITEM_optimized_CONTEXT_VALUE(
-					self,
-					arg_with=self.With,
-					arg_item=self.Item,
-					arg_default=self.Default
-				)
+				return ITEM_optimized_CONTEXT_VALUE(self)
 		return None
 
 
@@ -143,18 +133,21 @@ class ITEM_optimized_EVENT_VALUE(ITEM):
 
 class ITEM_optimized_CONTEXT_VALUE(ITEM):
 
-	def __init__(self, orig, *, arg_with, arg_item, arg_default):
+	def __init__(self, orig):
 		super().__init__(orig.App)
 
-		assert isinstance(arg_with, EVENT)
-		self.With = arg_with
+		self.With = orig.With
+		self.Item = orig.Item
+		self.Default = orig.Default
 
-		assert isinstance(arg_item, VALUE)
-		self.Item = arg_item
 		self.Key = self.Item.Value
 
-		assert isinstance(arg_default, VALUE)
-		self.Default = arg_default.Value
+		if self.Default is None:
+			self.DefaultValue = None
+		elif isinstance(self.Default, VALUE):
+			self.DefaultValue = self.Default(None, None)
+		else:
+			raise NotImplementedError("Default: {}".format(self.Default))
 
 		self.OutletType = orig.OutletType
 
@@ -174,16 +167,19 @@ class ITEM_optimized_CONTEXT_VALUE(ITEM):
 
 class ITEM_optimized_CONTEXT_VALUE_NESTED(ITEM):
 
-	def __init__(self, orig, *, arg_with, arg_item, arg_default):
+	def __init__(self, orig):
 		super().__init__(orig.App)
 
-		self.With = arg_with
-		self.Item = arg_item
-		if arg_default is None:
-			self.Default = arg_default
+		self.With = orig.With
+		self.Item = orig.Item
+		self.Default = orig.Default
+
+		if self.Default is None:
+			self.DefaultValue = None
+		elif isinstance(self.Default, VALUE):
+			self.DefaultValue = self.Default(None, None)
 		else:
-			# TODO: Default must be statically evaluated
-			raise NotImplementedError("")
+			raise NotImplementedError("Default: {}".format(self.Default))
 
 		# TODO: Replace with JSON pointer path
 		self.KeyList = self.Item.Value.split('.')
