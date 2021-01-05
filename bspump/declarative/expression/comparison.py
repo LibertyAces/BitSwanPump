@@ -3,7 +3,10 @@ import operator
 from ..abc import SequenceExpression, Expression
 from ..declerror import DeclarationError
 from .value.valueexpr import VALUE
-from .datastructs.itemexpr import ITEM_optimized_EVENT_VALUE
+from .datastructs.itemexpr import ITEM, ITEM_optimized_EVENT_VALUE
+
+from .value.eventexpr import EVENT
+from .utility.context import CONTEXT
 
 
 def _oper_reduce(operator, iterable, context, event, *args, **kwargs):
@@ -72,10 +75,20 @@ class EQ(SequenceExpression):
 
 	def optimize(self):
 		if len(self.Items) == 2 and isinstance(self.Items[1], VALUE):
+
 			if isinstance(self.Items[0], ITEM_optimized_EVENT_VALUE):
 				return EQ_optimized_EVENT_VALUE(self)
-			else:
-				return EQ_optimized_simple(self)
+
+			# The nested objects may not be optimized yet when this parent optimization is called
+			if isinstance(self.Items[0], ITEM):
+				if isinstance(self.Items[0].With, EVENT) and isinstance(self.Items[0].Item, VALUE):
+					return EQ_optimized_EVENT_VALUE(self)
+				elif isinstance(self.Items[0].With, CONTEXT) and isinstance(self.Items[0].Item, VALUE) and "." in self.Items[0].Item.Value:
+					# Skip nested context from optimization
+					return None
+				else:
+					return EQ_optimized_simple(self)
+
 		return None
 
 	def get_outlet_type(self):
@@ -121,8 +134,8 @@ class EQ_optimized_EVENT_VALUE(EQ):
 
 	def __init__(self, orig):
 		super().__init__(orig.App, sequence=orig.Items)
-		self.Akey = self.Items[0].Key
-		self.Adefault = self.Items[0].Default
+		self.Akey = self.Items[0].Item.Value
+		self.Adefault = self.Items[0].Default.Value
 
 		assert isinstance(self.Items[1], VALUE)
 		self.B = self.Items[1].Value
