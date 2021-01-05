@@ -62,6 +62,13 @@ class ExpressionBuilder(object):
 
 
 	def parse(self, declaration, source_name=None):
+		"""
+		Returns a list of expression from the loaded declaration.
+		:param declaration:
+		:param source_name:
+		:return:
+		"""
+
 		self.Identifier = None
 		if isinstance(declaration, str) and declaration.startswith('---'):
 			pass
