@@ -17,7 +17,7 @@ class DeclarativeProcessor(Processor):
 		builder = ExpressionBuilder(app, libraries)
 		optimizer = ExpressionOptimizer(app)
 		expressions = builder.parse(declaration)
-		self.Expressions = optimizer.optimize(expressions)
+		self.Expressions = optimizer.optimize_many(expressions)
 
 	def process(self, context, event):
 		for expression in self.Expressions:
