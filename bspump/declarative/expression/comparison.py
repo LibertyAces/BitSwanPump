@@ -9,57 +9,55 @@ from .value.eventexpr import EVENT
 from .utility.context import CONTEXT
 
 
-def _oper_reduce(operator, iterable, context, event, *args, **kwargs):
-	it = iter(iterable)
+class ComparisonExpression(SequenceExpression):
 
-	i = next(it)
-	try:
-		a = i(context, event, *args, **kwargs)
-	except Exception as e:
-		raise DeclarationError(original_exception=e, location=i.get_location())
 
-	for i in it:
+	def __call__(self, context, event, *args, **kwargs):
+		it = iter(self.Items)
 
+		i = next(it)
 		try:
-			b = i(context, event, *args, **kwargs)
+			a = i(context, event, *args, **kwargs)
 		except Exception as e:
 			raise DeclarationError(original_exception=e, location=i.get_location())
 
-		if not operator(a, b):
-			return False
-		a = b
+		for i in it:
 
-	return True
+			try:
+				b = i(context, event, *args, **kwargs)
+			except Exception as e:
+				raise DeclarationError(original_exception=e, location=i.get_location())
+
+			if not self.Operator(a, b):
+				return False
+			a = b
+
+		return True
 
 
-class LT(SequenceExpression):
+	def get_outlet_type(self):
+		return bool.__name__
+
+
+class LT(ComparisonExpression):
 	'''
 	Operator '<'
 	'''
-
-	def __call__(self, context, event, *args, **kwargs):
-		return _oper_reduce(operator.lt, self.Items, context, event, *args, **kwargs)
-
-	def get_outlet_type(self):
-		return bool.__name__
+	Operator = operator.lt
 
 
-class LE(SequenceExpression):
+class LE(ComparisonExpression):
 	'''
 	Operator '<='
 	'''
-
-	def __call__(self, context, event, *args, **kwargs):
-		return _oper_reduce(operator.le, self.Items, context, event, *args, **kwargs)
-
-	def get_outlet_type(self):
-		return bool.__name__
+	Operator = operator.le
 
 
-class EQ(SequenceExpression):
+class EQ(ComparisonExpression):
 	'''
 	Operator '=='
 	'''
+	Operator = operator.eq
 
 	Attributes = {
 		"Items": [
@@ -68,9 +66,6 @@ class EQ(SequenceExpression):
 			'str'
 		]
 	}
-
-	def __call__(self, context, event, *args, **kwargs):
-		return _oper_reduce(operator.eq, self.Items, context, event, *args, **kwargs)
 
 
 	def optimize(self):
@@ -90,9 +85,6 @@ class EQ(SequenceExpression):
 					return EQ_optimized_simple(self)
 
 		return None
-
-	def get_outlet_type(self):
-		return bool.__name__
 
 
 	def get_items_inlet_type(self):
@@ -150,61 +142,101 @@ class EQ_optimized_EVENT_VALUE(EQ):
 		return None
 
 
-class NE(SequenceExpression):
+class NE(ComparisonExpression):
 	'''
 	Operator '!='
 	'''
-
-	def __call__(self, context, event, *args, **kwargs):
-		return _oper_reduce(operator.ne, self.Items, context, event, *args, **kwargs)
-
-	def get_outlet_type(self):
-		return bool.__name__
+	Operator = operator.ne
 
 
-class GE(SequenceExpression):
+class GE(ComparisonExpression):
 	"""
 	Operator '>='
 	"""
-
-	def __call__(self, context, event, *args, **kwargs):
-		return _oper_reduce(operator.ge, self.Items, context, event, *args, **kwargs)
-
-	def get_outlet_type(self):
-		return bool.__name__
+	Operator = operator.ge
 
 
-class GT(SequenceExpression):
+class GT(ComparisonExpression):
 	"""
 	Operator '>'
 	"""
-
-	def __call__(self, context, event, *args, **kwargs):
-		return _oper_reduce(operator.gt, self.Items, context, event, *args, **kwargs)
-
-	def get_outlet_type(self):
-		return bool.__name__
+	Operator = operator.gt
 
 
-class IS(SequenceExpression):
+	def get_items_inlet_type(self):
+		return evaluate_items_inlet_type(self.Items)
+
+
+class IS(ComparisonExpression):
 	"""
 	Operator 'is'
 	"""
-
-	def __call__(self, context, event, *args, **kwargs):
-		return _oper_reduce(operator.is_, self.Items, context, event, *args, **kwargs)
-
-	def get_outlet_type(self):
-		return bool.__name__
+	Operator = operator.is_
 
 
-class ISNOT(SequenceExpression):
+class ISNOT(ComparisonExpression):
 	"""
 	Operator 'is not'
 	"""
+	Operator = operator.is_not
 
-	def __call__(self, context, event, *args, **kwargs):
-		return _oper_reduce(operator.is_not, self.Items, context, event, *args, **kwargs)
 
-	def get_outlet_type(self):
-		return bool.__name__
+def evaluate_items_inlet_type(items):
+
+	strings = False
+	signed_integers = False
+	unsigned_integers = False
+	max_integer_size = 0
+
+	for item in items:
+		outlet_type = item.get_outlet_type()
+		if outlet_type == ['^']:
+			continue
+
+		iti = integer_type_info.get(outlet_type)
+		if iti is not None:
+			if max_integer_size < iti:
+				max_integer_size = iti
+			if outlet_type[:1] == 'u':
+				unsigned_integers = True
+			else:
+				signed_integers = True
+			continue
+
+
+		raise NotImplementedError("Unsupported type '{}' in comparison operator".format(outlet_type))
+
+
+	if strings is False and unsigned_integers is False and signed_integers is True:
+		# Just signed integers found
+		return 'si{}'.format(max_integer_size)
+
+	if strings is False and signed_integers is False and unsigned_integers is True:
+		# Just unsigned integers found
+		return 'ui{}'.format(max_integer_size)
+
+	if strings is False and signed_integers is True and unsigned_integers is True:
+		if max_integer_size == 1:
+			# Booleans are handed differently (this is weird combo anyway)
+			return 'ui1'
+		# Mix of signed and unsigned integers found
+		return 'si{}'.format(max_integer_size << 1)
+
+	return "?"
+
+
+integer_type_info = {
+	'ui1': 1,
+	'si8': 8,
+	'si16': 16,
+	'si32': 32,
+	'si64': 64,
+	'si128': 128,
+	'si256': 256,
+	'ui8': 8,
+	'ui16': 16,
+	'ui32': 32,
+	'ui64': 64,
+	'ui128': 128,
+	'ui256': 256,
+}

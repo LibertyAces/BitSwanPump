@@ -24,6 +24,8 @@ __all__ = [
 	"DeclarationError",
 	"SegmentBuilder",
 
+	"ExpressionOptimizer",
+
 	"DeclarationLibrary",
 	"FileDeclarationLibrary",
 	"ZooKeeperDeclarationLibrary",
