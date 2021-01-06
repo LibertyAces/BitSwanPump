@@ -3,6 +3,7 @@ from .generator import DeclarativeGenerator
 from .timewindowanalyzer import DeclarativeTimeWindowAnalyzer
 
 from .builder import ExpressionBuilder
+from .optimizer import ExpressionOptimizer
 from .declerror import DeclarationError
 from .segmentbuilder import SegmentBuilder
 

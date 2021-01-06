@@ -4,9 +4,11 @@ import inspect
 import yaml
 
 from . import expression
-from .libraries import FileDeclarationLibrary
 
+from .libraries import FileDeclarationLibrary
 from .declerror import DeclarationError
+from .abc import Expression
+from .expression.value.valueexpr import VALUE
 
 ###
 
@@ -60,6 +62,13 @@ class ExpressionBuilder(object):
 
 
 	def parse(self, declaration, source_name=None):
+		"""
+		Returns a list of expression from the loaded declaration.
+		:param declaration:
+		:param source_name:
+		:return:
+		"""
+
 		self.Identifier = None
 		if isinstance(declaration, str) and declaration.startswith('---'):
 			pass
@@ -78,8 +87,12 @@ class ExpressionBuilder(object):
 		loader.add_constructor("!INCLUDE", self._construct_include)
 		loader.add_constructor("!CONFIG", self._construct_config)
 
+		expressions = []
 		try:
-			expression = loader.get_single_data()
+			# Build syntax trees for each expression
+			while loader.check_data():
+				expression = loader.get_data()
+				expressions.append(expression)
 
 		except yaml.scanner.ScannerError as e:
 			raise DeclarationError("Syntax error in declaration: {}".format(e))
@@ -90,7 +103,7 @@ class ExpressionBuilder(object):
 		finally:
 			loader.dispose()
 
-		return expression
+		return expressions
 
 
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):
@@ -119,26 +132,21 @@ class ExpressionBuilder(object):
 			if isinstance(node, yaml.ScalarNode):
 				value = loader.construct_scalar(node)
 				obj = xclass(app=self.App, value=value)
-				obj.set_location(location)
-				obj.Node = node
-				obj = obj.optimize()
-				return obj
 
 			elif isinstance(node, yaml.SequenceNode):
 				value = loader.construct_sequence(node)
 				obj = xclass(app=self.App, sequence=value)
-				obj.set_location(location)
-				obj.Node = node
-				obj = obj.optimize()
-				return obj
 
 			elif isinstance(node, yaml.MappingNode):
 				value = loader.construct_mapping(node)
 				obj = xclass(app=self.App, **dict(('arg_' + k, v) for k, v in value.items()))
-				obj.set_location(location)
-				obj.Node = node
-				obj = obj.optimize()
-				return obj
+
+			else:
+				raise RuntimeError("Unsupported node type '{}'".format(node))
+
+			obj.set_location(location)
+			obj.Node = node
+			return obj
 
 		except TypeError as e:
 			raise DeclarationError("Type error {}\n{}\n".format(e, node.start_mark))
@@ -146,5 +154,3 @@ class ExpressionBuilder(object):
 		except Exception as e:
 			L.exception("Error in expression")
 			raise DeclarationError("Invalid expression at {}\n{}".format(node.start_mark, e))
-
-		raise RuntimeError("Unsupported type '{}'".format(node))

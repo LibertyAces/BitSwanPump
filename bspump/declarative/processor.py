@@ -1,5 +1,6 @@
 from ..abc.processor import Processor
 from .builder import ExpressionBuilder
+from .optimizer import ExpressionOptimizer
 
 
 class DeclarativeProcessor(Processor):
@@ -14,7 +15,13 @@ class DeclarativeProcessor(Processor):
 	def __init__(self, app, pipeline, declaration, libraries=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		builder = ExpressionBuilder(app, libraries)
-		self.Expression = builder.parse(declaration)
+		optimizer = ExpressionOptimizer(app)
+		expressions = builder.parse(declaration)
+		self.Expressions = optimizer.optimize_many(expressions)
 
 	def process(self, context, event):
-		return self.Expression(context, event)
+		for expression in self.Expressions:
+			event = expression(context, event)
+			if event is None:
+				return None
+		return event

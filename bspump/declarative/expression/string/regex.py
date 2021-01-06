@@ -1,6 +1,7 @@
 import re
 
 from ...abc import Expression, evaluate
+from ..value.valueexpr import VALUE
 
 
 class REGEX(Expression):
@@ -8,12 +9,26 @@ class REGEX(Expression):
 	Checks if `value` matches with the `regex`, returns `hit` / `miss` respectively.
 	"""
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Regex": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_regex, arg_what, arg_hit=True, arg_miss=False):
 		super().__init__(app)
 		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
-		self.Hit = arg_hit
-		self.Miss = arg_miss
+
+		if not isinstance(arg_hit, Expression):
+			self.Hit = VALUE(app, value=arg_hit)
+		else:
+			self.Hit = arg_hit
+
+		if not isinstance(arg_miss, Expression):
+			self.Miss = VALUE(app, value=arg_miss)
+		else:
+			self.Miss = arg_miss
+
 		# TODO: Regex flags
 
 	def __call__(self, context, event, *args, **kwargs):
@@ -34,12 +49,22 @@ class REGEX_PARSE(Expression):
 	If `fields` are provided, the groups are mapped to provided fields.
 	"""
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Regex": ["*"],  # TODO: This ...
+		"Items": [],
+	}
+
 	def __init__(self, app, *, arg_regex, arg_what, arg_items=None, arg_miss=None, arg_set=None, arg_unset=None, arg_update=None):
 		super().__init__(app)
 		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
-		self.Miss = arg_miss
 		self.Items = arg_items
+
+		if not isinstance(arg_miss, Expression):
+			self.Miss = VALUE(app, value=arg_miss)
+		else:
+			self.Miss = arg_miss
 
 		if arg_set is not None:
 			assert(isinstance(arg_set, dict))
@@ -128,7 +153,11 @@ class REGEX_REPLACE(Expression):
 		super().__init__(app)
 		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
-		self.Replace = arg_replace
+
+		if not isinstance(arg_replace, Expression):
+			self.Replace = VALUE(app, value=arg_replace)
+		else:
+			self.Replace = arg_replace
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = evaluate(self.Value, context, event, *args, **kwargs)
@@ -142,7 +171,11 @@ class REGEX_SPLIT(Expression):
 		super().__init__(app)
 		self.Value = arg_what
 		self.Regex = re.compile(arg_regex)
-		self.Max = arg_max
+
+		if not isinstance(arg_max, Expression):
+			self.Max = VALUE(app, value=arg_max)
+		else:
+			self.Max = arg_max
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = evaluate(self.Value, context, event, *args, **kwargs)

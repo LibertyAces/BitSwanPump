@@ -6,6 +6,12 @@ import pytz
 
 class DATETIME_GET(Expression):
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"What": ["*"],  # TODO: This ...
+		"Timezone": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_with, arg_what, arg_timezone=None):
 		super().__init__(app)
 

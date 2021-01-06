@@ -3,6 +3,7 @@ from netaddr import IPNetwork, IPAddress
 import netaddr.core
 
 from bspump.declarative.abc import Expression, evaluate
+from ..value.valueexpr import VALUE
 
 
 class IP_INSUBNET(Expression):
@@ -10,10 +11,19 @@ class IP_INSUBNET(Expression):
 	Checks if expression is of given subnet.
 	"""
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Subnet": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_subnet, arg_what):
 		super().__init__(app)
-		self.Subnet = arg_subnet
 		self.Value = arg_what
+
+		if not isinstance(arg_subnet, Expression):
+			self.Subnet = VALUE(app, value=arg_subnet)
+		else:
+			self.Subnet = arg_subnet
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = evaluate(self.Value, context, event, *args, **kwargs)

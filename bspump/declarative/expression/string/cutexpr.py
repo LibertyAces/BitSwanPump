@@ -3,6 +3,11 @@ from ...abc import Expression, evaluate
 
 class CUT(Expression):
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Delimiter": ["*"],  # TODO: This ...
+		"Field": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_what, arg_delimiter, arg_field):
 		super().__init__(app)

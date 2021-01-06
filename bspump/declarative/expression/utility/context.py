@@ -11,6 +11,9 @@ Usage:
 ``
 	"""
 
+	Attributes = {
+	}
+
 	def __init__(self, app, *, value):
 		super().__init__(app)
 		assert(value == "")
@@ -19,8 +22,12 @@ Usage:
 		return context
 
 
-
 class CONTEXT_SET(Expression):
+
+	Attributes = {
+		"What": ["*"],  # TODO: This ...
+		"Set": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_set, arg_what=None):
 		super().__init__(app)
