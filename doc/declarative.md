@@ -12,6 +12,7 @@ sidebar: logmanio
 
 * YAML 1.1
 * Functions are YAML _tags_ (`!TAG`).
+* One file can contain more expressions using YAML separator (`---`)
 
 
 ## Syntax

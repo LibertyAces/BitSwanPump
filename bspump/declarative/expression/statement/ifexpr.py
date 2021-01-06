@@ -6,6 +6,12 @@ class IF(Expression):
 	Checks "if" condition passes - if so, proceeds with "then" expression, otherwise with "else"
 	"""
 
+	Attributes = {
+		"Test": ["*"],  # TODO: This ...
+		"Then": ["*"],  # TODO: This ...
+		"Else": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_test, arg_then=True, arg_else=False):
 		super().__init__(app)
 		self.Test = arg_test

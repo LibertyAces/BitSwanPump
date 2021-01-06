@@ -3,6 +3,9 @@ from ...abc import Expression, evaluate
 
 class LOWER(Expression):
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_what):
 		super().__init__(app)

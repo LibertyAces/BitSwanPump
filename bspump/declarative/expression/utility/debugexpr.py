@@ -15,6 +15,10 @@ class DEBUG(Expression):
 	Transform "string" to lowercase.
 	"""
 
+	Attributes = {
+		"What": ["*"],  # TODO: This ...
+	}
+
 	def __init__(self, app, *, arg_what):
 		super().__init__(app)
 		self.What = arg_what

@@ -1,4 +1,5 @@
 from bspump.declarative.abc import Expression, evaluate
+from ..value.valueexpr import VALUE
 
 
 class MAP(Expression):
@@ -18,11 +19,22 @@ class MAP(Expression):
 		nothing found
 	"""
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Default": ["*"],  # TODO: This ...
+		"Map": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_what, arg_in, arg_else=None):
 		super().__init__(app)
 		self.Value = arg_what
 		self.Default = arg_else
+
+		if not isinstance(arg_else, Expression):
+			self.Default = VALUE(app, value=arg_else)
+		else:
+			self.Default = arg_else
+
 		self.Map = arg_in
 
 
