@@ -111,7 +111,8 @@ class ExpressionBuilder(object):
 
 		identifier = loader.construct_scalar(node)
 		declaration = self.read(identifier)
-		return self.parse(declaration, identifier)
+		# Include can be only one expression
+		return self.parse(declaration, identifier)[0]
 
 
 	def _construct_config(self, loader: yaml.Loader, node: yaml.Node):
