@@ -89,7 +89,11 @@ class SequenceExpression(Expression):
 				self.Items.append(i)
 
 			else:
-				assert isinstance(i, (int, str, float, bytes, bool, tuple, list)) or i is None
+				assert isinstance(i, (int, str, float, bytes, bool, tuple, list, dict)) or i is None
+
+				# So far used in the WHEN expression
+				if isinstance(i, dict):
+					continue
 
 				from .expression import VALUE
 				self.Items.append(

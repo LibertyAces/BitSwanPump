@@ -71,20 +71,8 @@ This is how to create the empty dictionary:
 			self.Add = dict()
 			self._set_value_or_expression_to_attribute(arg_add, self.Add)
 
-		if arg_unset is None:
-			self.Unset = None
-		else:
-			assert(isinstance(arg_unset, dict))
-			self.Unset = dict()
-			self._set_value_or_expression_to_attribute(arg_unset, self.Unset)
-
-		if arg_mandatory is None:
-			self.Mandatory = None
-		else:
-			assert(isinstance(arg_mandatory, dict))
-			self.Mandatory = dict()
-			self._set_value_or_expression_to_attribute(arg_mandatory, self.Mandatory)
-
+		self.Unset = arg_unset
+		self.Mandatory = arg_mandatory
 		self.Update = arg_update
 
 	def _set_value_or_expression_to_attribute(self, _from, _to):
