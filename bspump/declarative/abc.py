@@ -37,6 +37,11 @@ class Expression(object):
 
 	@classmethod
 	def deep(cls):
+		"""
+		Notifies the constructor, if the expression should be constructed in the deep mode,
+		i. e. the complex objects in attributes like dict and list are available in init
+		:return: bool
+		"""
 		return False
 
 	def optimize(self):
