@@ -35,6 +35,10 @@ class Expression(object):
 	def get_location(self):
 		return self.Location
 
+	@classmethod
+	def deep(cls):
+		return False
+
 	def optimize(self):
 		return None
 

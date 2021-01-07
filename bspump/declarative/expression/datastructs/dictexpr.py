@@ -75,6 +75,10 @@ This is how to create the empty dictionary:
 		self.Mandatory = arg_mandatory
 		self.Update = arg_update
 
+	@classmethod
+	def deep(cls):
+		return True
+
 	def _set_value_or_expression_to_attribute(self, _from, _to):
 		for key, value in _from.items():
 			if isinstance(value, Expression):

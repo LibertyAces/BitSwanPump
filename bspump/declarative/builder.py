@@ -131,15 +131,15 @@ class ExpressionBuilder(object):
 
 		try:
 			if isinstance(node, yaml.ScalarNode):
-				value = loader.construct_scalar(node)
+				value = loader.construct_scalar(node, deep=xclass.deep())
 				obj = xclass(app=self.App, value=value)
 
 			elif isinstance(node, yaml.SequenceNode):
-				value = loader.construct_sequence(node)
+				value = loader.construct_sequence(node, deep=xclass.deep())
 				obj = xclass(app=self.App, sequence=value)
 
 			elif isinstance(node, yaml.MappingNode):
-				value = loader.construct_mapping(node)
+				value = loader.construct_mapping(node, deep=xclass.deep())
 				obj = xclass(app=self.App, **dict(('arg_' + k, v) for k, v in value.items()))
 
 			else:
