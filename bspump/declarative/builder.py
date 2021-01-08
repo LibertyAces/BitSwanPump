@@ -124,7 +124,7 @@ class ExpressionBuilder(object):
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
 		elif isinstance(expression, list):
-			for _expression in expression():
+			for _expression in expression:
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
 		else:
