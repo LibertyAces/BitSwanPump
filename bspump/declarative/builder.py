@@ -117,16 +117,26 @@ class ExpressionBuilder(object):
 
 	def _walk(self, expression):
 		if isinstance(expression, Expression):
+
 			for parent, key, obj in expression.walk():
 				yield (parent, key, obj)
+
+				if isinstance(obj, (dict, list)):
+					for _parent, _key, _obj in self._walk(obj):
+						yield (_parent, _key, _obj)
+
 		elif isinstance(expression, dict):
+
 			for _key, _expression in expression.items():
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
+
 		elif isinstance(expression, list):
+
 			for _expression in expression:
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
+
 		else:
 			yield (None, None, None)
 
