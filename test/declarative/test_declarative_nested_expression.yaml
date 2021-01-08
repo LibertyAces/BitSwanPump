@@ -1,0 +1,13 @@
+---
+predicate:
+  !AND
+  - true
+  - !EQ
+    - !ITEM EVENT continue
+    - "yes"
+
+parse:
+  !DICT
+  set:
+    name: "Parse Dict Success"
+
