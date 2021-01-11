@@ -31,6 +31,13 @@ class ExpressionOptimizer(object):
 
 			# Walk the syntax tree
 			for parent, key, obj in expression.walk():
+
+				# Iterate through dict child items
+				if isinstance(obj, dict):
+					for _key, _value in obj.items():
+						obj[_key] = self.optimize(_value)
+					continue
+
 				if not isinstance(obj, Expression):
 					continue
 
