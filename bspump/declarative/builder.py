@@ -140,7 +140,7 @@ class ExpressionBuilder(object):
 		elif isinstance(expression, (str, int, float)):
 			return
 
-		raise NotImplementedError("Initialization not implemented for '{}'.".format(expression))
+		raise NotImplementedError("Walk not implemented for '{}'.".format(expression))
 
 
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):
