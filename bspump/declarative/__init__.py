@@ -12,6 +12,7 @@ from .libraries import FileDeclarationLibrary
 from .libraries import ZooKeeperDeclarationLibrary
 
 from .abc import Expression
+from .abc import SequenceExpression
 
 from .dot import declaration_to_dot
 
@@ -31,6 +32,7 @@ __all__ = [
 	"ZooKeeperDeclarationLibrary",
 
 	"Expression",
+	"SequenceExpression",
 
 	"declaration_to_dot",
 ]
