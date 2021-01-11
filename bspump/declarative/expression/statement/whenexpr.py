@@ -1,7 +1,7 @@
-from ...abc import SequenceExpression, evaluate
+from ...abc import Expression, evaluate
 
 
-class WHEN(SequenceExpression):
+class WHEN(Expression):
 	"""
 	Checks "if" condition passes - it is an `if` on steroids ;-)
 
@@ -23,6 +23,14 @@ class WHEN(SequenceExpression):
 		Nah
 
 	"""
+
+	Attributes = {
+		"Items": [],
+	}
+
+	def __init__(self, app, *, sequence):
+		super().__init__(app)
+		self.Items = sequence
 
 	def __call__(self, context, event, *args, **kwargs):
 		for branch in self.Items:
