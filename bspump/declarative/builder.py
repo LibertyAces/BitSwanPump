@@ -137,8 +137,10 @@ class ExpressionBuilder(object):
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
 
-		else:
-			yield (None, None, None)
+		elif isinstance(expression, (str, int, float)):
+			return
+
+		raise NotImplementedError("Initialization not implemented for '{}'.".format(expression))
 
 
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):
