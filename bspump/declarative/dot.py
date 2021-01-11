@@ -14,11 +14,11 @@ def declaration_to_dot(decl, fname):
 
 			if parent is None:
 				continue
+			nodes.add(parent)
 
 			if isinstance(obj, Expression):
 				fo.write("\t{} -> {} [label=\"{}\"];\n".format(parent.Id, obj.Id, key))
 				nodes.add(obj)
-				nodes.add(parent)
 			else:
 				vid = 'V{}'.format(next(vidgen))
 				fo.write("\t{} -> {} [label=\"{}\"];\n".format(parent.Id, vid, key))
