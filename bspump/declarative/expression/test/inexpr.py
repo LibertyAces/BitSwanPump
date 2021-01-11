@@ -26,6 +26,29 @@ class IN(Expression):
 		return self
 
 
+	def get_items_inlet_type(self):
+
+		# Find the first usable type in the items
+		for item in self.Where:
+
+			if isinstance(item, str):
+				return 'str'
+
+			elif isinstance(item, int):
+				return 'int'
+
+			elif isinstance(item, Expression):
+				outlet_type = item.get_outlet_type()
+				if outlet_type not in frozenset(['^']):
+					return outlet_type
+
+		raise NotImplementedError("Cannot decide on items inlet type '{}'".format(self))
+
+
+	def consult_inlet_type(self, key, child):
+		return self.get_items_inlet_type()
+
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.What(context, event, *args, **kwargs) in self.Where(context, event, *args, **kwargs)
 

@@ -9,5 +9,5 @@ predicate:
 parse:
   !DICT
   set:
+    idea: !ITEM CONTEXT brain.idea
     name: "Parse Dict Success"
-

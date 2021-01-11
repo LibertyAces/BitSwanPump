@@ -9,6 +9,7 @@ class TestDeclarativeNestedExpression(bspump.unittest.TestCase):
 	def setUp(self) -> None:
 		super().setUp()
 		self.Builder = bspump.declarative.ExpressionBuilder(self.App)
+		self.Optimizer = bspump.declarative.ExpressionOptimizer(self.App)
 
 
 	def load(self, decl_fname):
@@ -24,11 +25,30 @@ class TestDeclarativeNestedExpression(bspump.unittest.TestCase):
 			"continue": "yes",
 		}
 
-		res_predicate = decl["predicate"]({}, event)
+		res_predicate = self.Optimizer.optimize(decl["predicate"])({}, event)
 		res_parse = decl["parse"]({}, event)
 
 		self.assertEqual(res_predicate, True)
 
 		self.assertEqual(res_parse, {
-			"name": "Parse Dict Success"
+			"name": "Parse Dict Success",
+		})
+
+
+	def test_02(self):
+		decl = self.load('./test_declarative_nested_expression.yaml')
+
+		event = {
+			"continue": "yes",
+		}
+
+		res_parse = self.Optimizer.optimize(decl["parse"])({
+			"brain": {
+				"idea": "This is beautiful parsing."
+			}
+		}, event)
+
+		self.assertEqual(res_parse, {
+			"name": "Parse Dict Success",
+			"idea": "This is beautiful parsing.",
 		})
