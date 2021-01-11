@@ -35,6 +35,13 @@ class Expression(object):
 	def get_location(self):
 		return self.Location
 
+	def initialize(self):
+		"""
+		Initialize the expression after the syntax tree was build.
+		:return:
+		"""
+		return
+
 	def optimize(self):
 		return None
 

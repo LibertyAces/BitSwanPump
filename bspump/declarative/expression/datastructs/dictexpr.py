@@ -50,30 +50,38 @@ This is how to create the empty dictionary:
 
 		self.With = arg_with
 
-		if arg_set is None:
-			self.Set = None
-		else:
-			assert(isinstance(arg_set, dict))
-			self.Set = dict()
-			self._set_value_or_expression_to_attribute(arg_set, self.Set)
-
-		if arg_modify is None:
-			self.Modify = None
-		else:
-			assert(isinstance(arg_modify, dict))
-			self.Modify = dict()
-			self._set_value_or_expression_to_attribute(arg_modify, self.Modify)
-
-		if arg_add is None:
-			self.Add = None
-		else:
-			assert(isinstance(arg_add, dict))
-			self.Add = dict()
-			self._set_value_or_expression_to_attribute(arg_add, self.Add)
+		self.ArgSet = arg_set
+		self.ArgModify = arg_modify
+		self.ArgAdd = arg_add
+		self.Set = None
+		self.Modify = None
+		self.Add = None
 
 		self.Unset = arg_unset
 		self.Mandatory = arg_mandatory
 		self.Update = arg_update
+
+	def initialize(self):
+		if self.ArgSet is None:
+			self.Set = None
+		else:
+			assert(isinstance(self.ArgSet, dict))
+			self.Set = dict()
+			self._set_value_or_expression_to_attribute(self.ArgSet, self.Set)
+
+		if self.ArgModify is None:
+			self.Modify = None
+		else:
+			assert(isinstance(self.ArgModify, dict))
+			self.Modify = dict()
+			self._set_value_or_expression_to_attribute(self.ArgModify, self.Modify)
+
+		if self.ArgAdd is None:
+			self.Add = None
+		else:
+			assert(isinstance(self.ArgAdd, dict))
+			self.Add = dict()
+			self._set_value_or_expression_to_attribute(self.ArgAdd, self.Add)
 
 	def _set_value_or_expression_to_attribute(self, _from, _to):
 		for key, value in _from.items():
@@ -82,7 +90,6 @@ This is how to create the empty dictionary:
 			else:
 				assert isinstance(value, (int, str, bytes, bool, tuple, list)) or value is None
 				_to[key] = VALUE(self.App, value=value)
-
 
 	def __call__(self, context, event, *args, **kwargs):
 		if self.With is None:

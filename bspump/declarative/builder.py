@@ -92,6 +92,15 @@ class ExpressionBuilder(object):
 			# Build syntax trees for each expression
 			while loader.check_data():
 				expression = loader.get_data()
+
+				# Run initialize for the expression and any instance inside
+				for parent, key, obj in self._walk(expression):
+
+					if not isinstance(obj, Expression):
+						continue
+
+					obj.initialize()
+
 				expressions.append(expression)
 
 		except yaml.scanner.ScannerError as e:
@@ -104,6 +113,35 @@ class ExpressionBuilder(object):
 			loader.dispose()
 
 		return expressions
+
+
+	def _walk(self, expression):
+		if isinstance(expression, Expression):
+
+			for parent, key, obj in expression.walk():
+				yield (parent, key, obj)
+
+				if isinstance(obj, (dict, list)):
+					for _parent, _key, _obj in self._walk(obj):
+						yield (_parent, _key, _obj)
+
+		elif isinstance(expression, dict):
+
+			for _key, _expression in expression.items():
+				for parent, key, obj in self._walk(_expression):
+					yield (parent, key, obj)
+
+		elif isinstance(expression, list):
+
+			for _expression in expression:
+				for parent, key, obj in self._walk(_expression):
+					yield (parent, key, obj)
+
+		elif isinstance(expression, (str, int, float)):
+			return
+
+		else:
+			raise NotImplementedError("Walk not implemented for '{}'.".format(expression))
 
 
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):
