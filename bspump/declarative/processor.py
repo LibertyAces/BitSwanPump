@@ -24,4 +24,8 @@ class DeclarativeProcessor(Processor):
 			event = expression(context, event)
 			if event is None:
 				return None
+
+		if not event:
+			return None
+
 		return event
