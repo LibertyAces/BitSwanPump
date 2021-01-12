@@ -1,4 +1,4 @@
-import datetime
+import time
 from ...abc import Expression
 
 
@@ -6,22 +6,19 @@ class NOW(Expression):
 	"""
 	Unit test usage to mock current time:
 
-		import datetime
-		import bspump.declarative.expression
+		import time
 		import unittest.mock
-
 
 		class MetaTestCase(unittest.TestCase):
 
-			@unittest.mock.patch('bspump.declarative.expression.NOW.Datetime')
-			def runTest(self, mock_datetime):
-				mock_datetime.utcnow.return_value = datetime.datetime(2020, 5, 15) # Mocked date
+			@unittest.mock.patch('bspump.declarative.expression.NOW.Time')
+			def runTest(self, mock_time):
+				mock_time.return_value = 1234567890 # Mocked timestamp
 				...
 	"""
 
-	Datetime = datetime.datetime
-
 	Attributes = {}
+	Time = time.time
 
 
 	def __init__(self, app, *, value):
@@ -30,7 +27,7 @@ class NOW(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.Datetime.utcnow().timestamp()
+		return self.Time()
 
 
 	def get_outlet_type(self):
