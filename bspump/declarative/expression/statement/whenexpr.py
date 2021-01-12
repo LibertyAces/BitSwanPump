@@ -50,13 +50,3 @@ class WHEN(Expression):
 				return evaluate(expr_else, context, event, *args, **kwargs)
 
 		return False
-
-	def walk(self, parent=None, key=None):
-		yield(parent, key, self)
-
-		for key, i in enumerate(self.Items):
-			if isinstance(i, Expression):
-				for x in i.walk(self, key):
-					yield x
-			else:
-				raise NotImplementedError(":-(")
