@@ -116,6 +116,9 @@ class ExpressionBuilder(object):
 
 
 	def _walk(self, expression):
+		if expression is None:
+			return
+
 		if isinstance(expression, Expression):
 
 			for parent, key, obj in expression.walk():
