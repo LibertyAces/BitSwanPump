@@ -41,4 +41,8 @@ class CONTEXT_SET(Expression):
 				if v is not None:
 					context[key] = v
 
+		# TODO: Optimize
+		if self.What is None:
+			return None
+
 		return evaluate(self.What, context, event, *args, **kwargs)
