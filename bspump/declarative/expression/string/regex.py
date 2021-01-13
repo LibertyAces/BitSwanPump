@@ -114,7 +114,7 @@ class REGEX_PARSE(Expression):
 				result = evaluate(item, context, event, group, *args, **kwargs)
 				if result is None:
 					return evaluate(self.Miss, context, event, *args, **kwargs)
-				ret.update(result)
+				ret[result] = group
 
 			elif isinstance(item, dict):
 				if group is None:
