@@ -31,6 +31,11 @@ class ExpressionOptimizer(object):
 					expression[_key] = self.optimize(_value)
 				return expression
 
+			if isinstance(expression, list):
+				for _index in range(0, len(expression)):
+					expression[_index] = self.optimize(expression[_index])
+				return expression
+
 			if not isinstance(expression, Expression):
 				expression = VALUE(self.App, value=expression)
 
