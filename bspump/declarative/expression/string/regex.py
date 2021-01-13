@@ -68,7 +68,8 @@ class REGEX_PARSE(Expression):
 
 		if arg_set is not None:
 			assert(isinstance(arg_set, dict))
-		self.Set = arg_set
+		self.ArgSet = arg_set
+		self.Set = None
 
 		if arg_unset is not None:
 			assert(isinstance(arg_unset, list))
@@ -78,6 +79,21 @@ class REGEX_PARSE(Expression):
 
 		# TODO: Regex flags
 
+	def initialize(self):
+		if self.ArgSet is None:
+			self.Set = None
+		else:
+			assert(isinstance(self.ArgSet, dict))
+			self.Set = dict()
+			self._set_value_or_expression_to_attribute(self.ArgSet, self.Set)
+
+	def _set_value_or_expression_to_attribute(self, _from, _to):
+		for key, value in _from.items():
+			if isinstance(value, Expression):
+				_to[key] = value
+			else:
+				assert isinstance(value, (int, str, bytes, bool, tuple, list)) or value is None
+				_to[key] = VALUE(self.App, value=value)
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = evaluate(self.Value, context, event, *args, **kwargs)
