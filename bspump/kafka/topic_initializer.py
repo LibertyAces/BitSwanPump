@@ -1,8 +1,10 @@
+import json
 import logging
 import re
 import typing
 
 import kafka.admin
+import yaml
 
 from asab import ConfigObject
 
@@ -31,12 +33,13 @@ class KafkaTopicInitializer(ConfigObject):
 
 	ConfigDefaults = {
 		"client_id": "bspump-topic-initializer",
+		"topics_file": None,
 		# Topics syntax: <topic_name>[:<num_partitions>:<replication_factor>]
 		# If the optional values are not specified, they fall back to their default values
 		# Multiple entries are allowed, separated by whitespace
 		# Example:
 		#    cool_topic  great_topic:1:2  neat_topic::3
-		"topics": "example_topic",
+		"topics": "",
 		"num_partitions": 1,
 		"replication_factor": 1,
 	}
@@ -48,10 +51,13 @@ class KafkaTopicInitializer(ConfigObject):
 		self.AdminClient = None
 
 		self.bootstrap_servers = self.get_bootstrap_servers(connection)
-		self.client_id = self.Config["client_id"]
-		self.num_partitions_default = self.Config["num_partitions"]
-		self.replication_factor_default = self.Config["replication_factor"]
-		self.required_topics = self.parse_topics_config(self.Config["topics"])
+		self.client_id = self.Config.get("client_id")
+		topics_file = self.Config.get("topics_file")
+
+		self.required_topics = []
+		self.parse_topics_config(self.Config["topics"])
+		if topics_file is not None:
+			self.load_topics_from_file(topics_file)
 
 	def get_bootstrap_servers(self, connection):
 		return re.split(r"[\s,]+", self.App.BSPumpService.Connections[connection].Config["bootstrap_servers"])
@@ -78,29 +84,48 @@ class KafkaTopicInitializer(ConfigObject):
 		if not config_str.strip():
 			L.info("Topics string is empty")
 			return
+		num_partitions_default = self.Config.get("num_partitions")
+		replication_factor_default = self.Config.get("replication_factor")
 		L.debug(f"Parsing topics string: {config_str}")
-		required_topics = []
 		for topic_entry in re.split(r"\s+", config_str):
 			topic = {}
 			settings = topic_entry.split(":")
 			if len(settings) == 1:
 				topic["name"] = settings[0]
-				topic["num_partitions"] = int(self.num_partitions_default)
-				topic["replication_factor"] = int(self.replication_factor_default)
+				topic["num_partitions"] = int(num_partitions_default)
+				topic["replication_factor"] = int(replication_factor_default)
 			elif len(settings) == 3:
 				topic["name"] = settings[0]
 				if settings[1]:
 					topic["num_partitions"] = int(settings[1])
 				else:
-					topic["num_partitions"] = int(self.num_partitions_default)
+					topic["num_partitions"] = int(num_partitions_default)
 				if settings[2]:
 					topic["replication_factor"] = int(settings[2])
 				else:
-					topic["replication_factor"] = int(self.replication_factor_default)
+					topic["replication_factor"] = int(replication_factor_default)
 			else:
 				raise ValueError(f"Got '{topic_entry}', expected 'topic_name[:num_partitions:replication_factor]'")
-			required_topics.append(topic)
-		return required_topics
+			self.required_topics.append(topic)
+
+	def load_topics_from_file(self, topics_file: str):
+		ext = topics_file.strip().split(".")[-1].lower()
+		if ext == "json":
+			with open(topics_file, "r") as f:
+				data = json.load(f)
+		elif ext in ("yml", "yaml"):
+			with open(topics_file, "r") as f:
+				data = yaml.safe_load(f)
+		else:
+			L.warning("Unsupported extension: '{}'".format(ext))
+
+		for topic in data:
+			for field in ("name", "num_partitions", "replication_factor"):
+				if field not in topic:
+					L.warning("Topic is missing mandatory field '{}'. Skipping.".format(field))
+					break
+			else:
+				self.required_topics.append(topic)
 
 	def get_missing_topics(self) -> typing.List[dict]:
 		L.debug("Retrieving list of existing topics...")
