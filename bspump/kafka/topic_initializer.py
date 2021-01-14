@@ -33,7 +33,7 @@ class KafkaTopicInitializer(ConfigObject):
 
 	ConfigDefaults = {
 		"client_id": "bspump-topic-initializer",
-		"topics_file": None,
+		"topics_file": "",
 		# Topics syntax: <topic_name>[:<num_partitions>:<replication_factor>]
 		# If the optional values are not specified, they fall back to their default values
 		# Multiple entries are allowed, separated by whitespace
@@ -47,20 +47,20 @@ class KafkaTopicInitializer(ConfigObject):
 	def __init__(self, app, connection, id: typing.Optional[str] = None, config: dict = None):
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__(_id, config)
-		self.App = app
 		self.AdminClient = None
 
-		self.bootstrap_servers = self.get_bootstrap_servers(connection)
+		self.get_bootstrap_servers(app, connection)
 		self.client_id = self.Config.get("client_id")
-		topics_file = self.Config.get("topics_file")
 
 		self.required_topics = []
 		self.parse_topics_config(self.Config["topics"])
-		if topics_file is not None:
+		topics_file = self.Config.get("topics_file")
+		if len(topics_file) != 0:
 			self.load_topics_from_file(topics_file)
 
-	def get_bootstrap_servers(self, connection):
-		return re.split(r"[\s,]+", self.App.BSPumpService.Connections[connection].Config["bootstrap_servers"])
+	def get_bootstrap_servers(self, app, connection):
+		svc = app.get_service("bspump.PumpService")
+		self.bootstrap_servers = re.split(r"[\s,]+", svc.Connections[connection].Config["bootstrap_servers"].strip())
 
 	def open_connection(self):
 		try:
@@ -148,8 +148,8 @@ class KafkaTopicInitializer(ConfigObject):
 		if not self.required_topics:
 			L.info("No topics specified.")
 			return
-		self.open_connection()
 		try:
+			self.open_connection()
 			missing_topics = self.get_missing_topics()
 			if missing_topics:
 				self.create_topics(missing_topics)
