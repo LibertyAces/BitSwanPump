@@ -11,3 +11,17 @@ parse:
   set:
     idea: !ITEM CONTEXT brain.idea
     name: "Parse Dict Success"
+
+join:
+  !REGEX.PARSE
+  what: !EVENT
+  regex: '^(.*)$'
+  items:
+    - name
+
+  set:
+    message:
+      !JOIN
+      items:
+        - !ITEM ARG name
+        - "is nice!"

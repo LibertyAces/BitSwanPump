@@ -52,3 +52,19 @@ class TestDeclarativeNestedExpression(bspump.unittest.TestCase):
 			"name": "Parse Dict Success",
 			"idea": "This is beautiful parsing.",
 		})
+
+
+	def test_03(self):
+		"""
+		Test JOIN expression initialization
+		:return:
+		"""
+
+		decl = self.load('./test_declarative_nested_expression.yaml')
+
+		res_parse = self.Optimizer.optimize(decl["join"])({}, "Prema")
+
+		self.assertEqual(res_parse, {
+			"name": "Prema",
+			"message": "Prema is nice!",
+		})
