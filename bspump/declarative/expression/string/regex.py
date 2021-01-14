@@ -12,6 +12,8 @@ class REGEX(Expression):
 	Attributes = {
 		"Value": ["*"],  # TODO: This ...
 		"Regex": ["*"],  # TODO: This ...
+		"Hit": ["*"],
+		"Miss": ["*"],
 	}
 
 	def __init__(self, app, *, arg_regex, arg_what, arg_hit=True, arg_miss=False):
@@ -52,6 +54,9 @@ class REGEX_PARSE(Expression):
 	Attributes = {
 		"Value": ["*"],  # TODO: This ...
 		"Regex": ["*"],  # TODO: This ...
+		"Set": ["*"],
+		"Unset": ["*"],
+		"Update": ["*"],
 		"Items": [],
 	}
 
@@ -165,6 +170,12 @@ class REGEX_REPLACE(Expression):
 	See Python documentation of `re.sub()` for more details.
 	"""
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Regex": ["*"],  # TODO: This ...
+		"Replace": ["*"],
+	}
+
 	def __init__(self, app, *, arg_regex, arg_replace, arg_what):
 		super().__init__(app)
 		self.Value = arg_what
@@ -183,6 +194,12 @@ class REGEX_REPLACE(Expression):
 
 class REGEX_SPLIT(Expression):
 
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Regex": ["*"],  # TODO: This ...
+		"Max": ["*"],
+	}
+
 	def __init__(self, app, *, arg_regex, arg_what, arg_max=0):
 		super().__init__(app)
 		self.Value = arg_what
@@ -200,6 +217,11 @@ class REGEX_SPLIT(Expression):
 
 
 class REGEX_FINDALL(Expression):
+
+	Attributes = {
+		"Value": ["*"],  # TODO: This ...
+		"Regex": ["*"],  # TODO: This ...
+	}
 
 	def __init__(self, app, *, arg_regex, arg_what):
 		super().__init__(app)

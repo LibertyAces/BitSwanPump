@@ -12,6 +12,7 @@ class JOIN(Expression):
 
 	def __init__(self, app, *, arg_items, arg_delimiter=" ", arg_miss=""):
 		super().__init__(app)
+		self.App = app
 		self.Items = arg_items
 		self.Char = arg_delimiter
 
@@ -19,6 +20,11 @@ class JOIN(Expression):
 			self.Miss = VALUE(app, value=arg_miss)
 		else:
 			self.Miss = arg_miss
+
+	def initialize(self):
+		for index in range(0, len(self.Items)):
+			if not isinstance(self.Items[index], Expression):
+				self.Items[index] = VALUE(self.App, value=self.Items[index])
 
 	def __call__(self, context, event, *args, **kwargs):
 		arr = []
