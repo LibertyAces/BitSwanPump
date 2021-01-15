@@ -10,7 +10,7 @@ class ADD(SequenceExpression):
 
 	Attributes = {
 		"Items": [
-			'si64', 'si8', 'si16', 'si32', 'si64', 'si128', 'si256',
+			'si64', 'si8', 'si16', 'si32', 'si128', 'si256',
 			'ui8', 'ui16', 'ui32', 'ui64', 'ui128', 'ui256',
 			'str',
 		]
@@ -62,8 +62,24 @@ class MOD(SequenceExpression):
 	Modules values in expression.
 	"""
 
+	Attributes = {
+		"Items": [
+			'si64', 'si8', 'si16', 'si32', 'si64', 'si128', 'si256',
+			'ui8', 'ui16', 'ui32', 'ui64', 'ui128', 'ui256',
+		]
+	}
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.mod, context, event, *args, **kwargs)
+
+
+	def get_outlet_type(self):
+		return _get_outlet_type_from_first(self.Items)
+
+
+	def get_items_inlet_type(self):
+		return _get_outlet_type_from_first(self.Items)
+
 
 
 def _get_outlet_type_from_first(items):
