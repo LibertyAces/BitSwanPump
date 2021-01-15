@@ -24,27 +24,34 @@ class CAST(Expression):
 
 	CastMap = {
 		'bool': (bool, bool.__name__),
-		'int': (int, int.__name__),
-
-		'float': (float, float.__name__),
-		'str': (str, str.__name__),
-		'dict': (dict, dict.__name__),
-		'list': (list, list.__name__),
-
 		'ui1': (bool, bool.__name__),
+		'si1': (bool, bool.__name__),
 
+		'int': (int, int.__name__),
 		'si8': (int, 'si8'),
 		'si16': (int, 'si16'),
 		'si32': (int, 'si32'),
 		'si64': (int, 'si64'),
 		'si128': (int, 'si128'),
 		'si256': (int, 'si256'),
+
 		'ui8': (int, 'ui8'),
 		'ui16': (int, 'ui16'),
 		'ui32': (int, 'u32'),
 		'ui64': (int, 'u64'),
 		'ui128': (int, 'ui128'),
 		'ui256': (int, 'ui256'),
+
+		'float': (float, float.__name__),
+		'fp16': (float, float.__name__),
+		'fp32': (float, float.__name__),
+		'fp64': (float, float.__name__),
+		'fp128': (float, float.__name__),
+
+		'str': (str, str.__name__),
+		'dict': (dict, dict.__name__),
+		'list': (list, list.__name__),
+
 	}
 
 
