@@ -11,9 +11,6 @@ L = logging.getLogger("bspump.declarative.DEBUG")
 
 
 class DEBUG(Expression):
-	"""
-	Transform "string" to lowercase.
-	"""
 
 	Attributes = {
 		"What": ["*"],  # TODO: This ...

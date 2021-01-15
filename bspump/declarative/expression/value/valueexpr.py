@@ -13,8 +13,9 @@ class VALUE(Expression):
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
+		assert(not isinstance(value, Expression))
+
 		self.Value = value
-		assert(not isinstance(self.Value, Expression))
 
 
 	def __call__(self, context, event, *args, **kwargs):
