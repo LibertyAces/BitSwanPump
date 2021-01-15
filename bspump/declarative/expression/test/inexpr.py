@@ -1,5 +1,7 @@
 from ...abc import Expression
 
+from ..value.valueexpr import VALUE
+
 
 class IN(Expression):
 	"""
@@ -13,16 +15,22 @@ class IN(Expression):
 
 	def __init__(self, app, *, arg_what, arg_where):
 		super().__init__(app)
-		self.What = arg_what
-		self.Where = arg_where
+
+		if isinstance(arg_what, Expression):
+			self.What = arg_what
+		else:
+			self.What = VALUE(app, value=arg_what)
+
+		if isinstance(arg_where, Expression):
+			self.Where = arg_where
+		else:
+			self.Where = VALUE(app, value=arg_where)
 
 
 	def optimize(self):
-		if isinstance(self.What, Expression) and isinstance(self.Where, (list, tuple, set, frozenset)):
-			ok = True
-			for i in self.Where:
-				ok &= isinstance(i, (str, bytes, float, int, bool))
+		if isinstance(self.Where, VALUE):
 			return IN_optimized_simple_where(self)
+
 		return self
 
 
@@ -66,8 +74,7 @@ class IN_optimized_simple_where(IN):
 			arg_where=orig.Where
 		)
 
-		self.Where = frozenset(self.Where)
-
+		self._where_value = frozenset(self.Where({}, {}))
 
 	def optimize(self):
 		# This is to prevent re-optimising the class
@@ -75,4 +82,4 @@ class IN_optimized_simple_where(IN):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.What(context, event, *args, **kwargs) in self.Where
+		return self.What(context, event, *args, **kwargs) in self._where_value

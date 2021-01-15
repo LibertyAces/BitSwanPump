@@ -1,27 +1,36 @@
-from ...abc import Expression, evaluate
+from ...abc import Expression
 from ..value.valueexpr import VALUE
 
 
 class STARTSWITH(Expression):
 
 	Attributes = {
-		"Value": ["*"],  # TODO: This ...
-		"Prefix": ["*"],  # TODO: This ...
+		"What": ["str"],
+		"Prefix": ["str"],
 	}
 
 	def __init__(self, app, *, arg_what, arg_prefix):
 		super().__init__(app)
-		self.Value = arg_what
 
-		if not isinstance(arg_prefix, Expression):
-			self.Prefix = VALUE(app, value=arg_prefix)
+		if isinstance(arg_what, Expression):
+			self.What = arg_what
 		else:
+			self.What = VALUE(app, value=arg_what)
+
+		if isinstance(arg_prefix, Expression):
 			self.Prefix = arg_prefix
+		else:
+			self.Prefix = VALUE(app, value=arg_prefix)
+
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = evaluate(self.Value, context, event, *args, **kwargs)
+		value = self.What(context, event, *args, **kwargs)
 		if value is None:
 			return False
 
-		prefix = evaluate(self.Prefix, context, event, *args, **kwargs)
+		prefix = self.Prefix(context, event, *args, **kwargs)
 		return value.startswith(prefix)
+
+
+	def get_outlet_type(self):
+		return bool.__name__
