@@ -204,7 +204,7 @@ class ITEM_optimized_CONTEXT_VALUE_NESTED(ITEM):
 					value = value[int(key)]
 				else:
 					value = value[key]
-		except (TypeError, KeyError):
+		except (TypeError, KeyError, IndexError):
 			return self.DefaultValue
 
 		return value
