@@ -1,4 +1,4 @@
-from ...abc import Expression, evaluate
+from ...abc import Expression
 
 from ..value.valueexpr import VALUE
 
