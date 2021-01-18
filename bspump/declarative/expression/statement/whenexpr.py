@@ -87,3 +87,10 @@ class WHEN(Expression):
 				return then(context, event, *args, **kwargs)
 
 		return self.Else(context, event, *args, **kwargs)
+
+
+	def get_outlet_type(self):
+		if hasattr(self, 'Then0'):
+			return self.Then0.get_outlet_type()
+		else:
+			return self.Else.get_outlet_type()
