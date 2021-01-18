@@ -92,5 +92,7 @@ class WHEN(Expression):
 	def get_outlet_type(self):
 		if hasattr(self, 'Then0'):
 			return self.Then0.get_outlet_type()
+		elif self.Else is None:
+			return None.__name__
 		else:
 			return self.Else.get_outlet_type()
