@@ -34,3 +34,7 @@ class STARTSWITH(Expression):
 
 	def get_outlet_type(self):
 		return bool.__name__
+
+
+	def consult_inlet_type(self, key, child):
+		return str.__name__

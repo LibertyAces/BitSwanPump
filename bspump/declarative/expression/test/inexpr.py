@@ -26,6 +26,8 @@ class IN(Expression):
 		else:
 			self.Where = VALUE(app, value=arg_where)
 
+		assert(self.Where.get_outlet_type() == 'list')
+
 
 	def optimize(self):
 		if isinstance(self.Where, VALUE):
@@ -37,7 +39,7 @@ class IN(Expression):
 	def get_items_inlet_type(self):
 
 		# Find the first usable type in the items
-		for item in self.Where:
+		for item in self.Where.Value:
 
 			if isinstance(item, str):
 				return 'str'

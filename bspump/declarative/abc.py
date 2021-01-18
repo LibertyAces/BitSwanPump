@@ -21,7 +21,7 @@ class Expression(object):
 		if self.Attributes is None:
 			raise NotImplementedError("Missing 'Attributes' in {}".format(self))
 
-		self.Id = 'E{}'.format(next(_IdGenerator))
+		self.Id = '{}.E{}'.format(self.__class__.__name__, next(_IdGenerator))
 		self.App = app
 		self.Location = None
 		self.Node = None  # The YAML node, assigned by a builder during YAML parsing
