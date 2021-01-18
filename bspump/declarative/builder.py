@@ -8,7 +8,9 @@ from . import expression
 from .libraries import FileDeclarationLibrary
 from .declerror import DeclarationError
 from .abc import Expression
+
 from .expression.value.valueexpr import VALUE
+from .expression.statement.selfexpr import SELF
 
 ###
 
@@ -99,7 +101,11 @@ class ExpressionBuilder(object):
 					if not isinstance(obj, Expression):
 						continue
 
-					obj.initialize()
+					if isinstance(obj, SELF):
+						# Implement a self-reference or Y-Combinator
+						obj.initialize(expression)
+					else:
+						obj.initialize()
 
 				expressions.append(expression)
 

@@ -25,6 +25,7 @@ from .statement.ifexpr import IF
 from .statement.whenexpr import WHEN
 from .statement.forexpr import FOR
 from .statement.firstexpr import FIRST
+from .statement.selfexpr import SELF
 
 # String
 from .string.endswith import ENDSWITH
@@ -87,7 +88,7 @@ __all__ = [
 	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
 	"AND", "OR", "NOT",                                  # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT", "IS", "ISNOT",   # Comparison
-	"IF", "WHEN", "FOR", "FIRST",
+	"IF", "WHEN", "FOR", "FIRST", "SELF",
 	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
 	"DICT_PARSE",
