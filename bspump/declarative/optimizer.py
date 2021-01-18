@@ -26,32 +26,11 @@ class ExpressionOptimizer(object):
 		while retry:
 			retry = False
 
-			if isinstance(expression, dict):
-				for _key, _value in expression.items():
-					expression[_key] = self.optimize(_value)
-				return expression
-
-			if isinstance(expression, list):
-				for _index in range(0, len(expression)):
-					expression[_index] = self.optimize(expression[_index])
-				return expression
-
 			if not isinstance(expression, Expression):
 				expression = VALUE(self.App, value=expression)
 
 			# Walk the syntax tree
 			for parent, key, obj in expression.walk():
-
-				# Iterate through dict child items
-				if isinstance(obj, dict):
-					for _key, _value in obj.items():
-						obj[_key] = self.optimize(_value)
-					continue
-
-				if isinstance(obj, list):
-					for _index in range(0, len(obj)):
-						obj[_index] = self.optimize(obj[_index])
-					continue
 
 				if not isinstance(obj, Expression):
 					continue
