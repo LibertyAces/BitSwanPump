@@ -1,5 +1,7 @@
 from ...abc import Expression, evaluate
 
+from ..value.valueexpr import VALUE
+
 
 class WHEN(Expression):
 	"""
@@ -24,29 +26,64 @@ class WHEN(Expression):
 
 	"""
 
-	Attributes = {
-		"Items": [],
-	}
+	Attributes = False  # Filled during initialize() since attributes are dynamic
+
 
 	def __init__(self, app, *, sequence):
 		super().__init__(app)
 		self.Items = sequence
+		self.ItemsNormalized = []
+		self.Attributes = []
+
+		self.Else = VALUE(self.App, value=None)
+
+
+	def initialize(self):
+		for n, i in enumerate(self.Items):
+
+			# `test/then` branch
+			if 'test' in i and 'then' in i:
+				assert(len(i) == 2)
+
+				vtest = i['test']
+				if not isinstance(vtest, Expression):
+					vtest = VALUE(self.App, value=vtest)
+
+				attr_name = 'Test{}'.format(n)
+				setattr(self, attr_name, vtest)
+				self.Attributes.append(attr_name)
+
+				vthen = i['then']
+				if not isinstance(vthen, Expression):
+					vthen = VALUE(self.App, value=vthen)
+
+				attr_name = 'Then{}'.format(n)
+				setattr(self, attr_name, vthen)
+				self.Attributes.append(attr_name)
+
+				self.ItemsNormalized.append((vtest, vthen))
+
+			# `else` branch
+			elif 'else' in i:
+				assert(len(i) == 1)
+				assert('Else' not in self.Attributes)
+
+				v = i['else']
+				if not isinstance(v, Expression):
+					v = VALUE(self.App, value=v)
+
+				attr_name = 'Else'
+				setattr(self, attr_name, v)
+				self.Attributes.append(attr_name)
+
+			else:
+				raise RuntimeError("Unexpected items in '!WHEN': {}".format(i.keys()))
+
 
 	def __call__(self, context, event, *args, **kwargs):
-		for branch in self.Items:
-			expr_test = branch.get('test')
-			if expr_test is not None:
+		for test, then in self.ItemsNormalized:
+			res = test(context, event, *args, **kwargs)
+			if res:
+				return then(context, event, *args, **kwargs)
 
-				res = evaluate(expr_test, context, event, *args, **kwargs)
-				if res:
-					expr_then = branch.get('then', True)
-					return evaluate(expr_then, context, event, *args, **kwargs)
-
-				else:
-					continue
-
-			expr_else = branch.get('else')
-			if expr_else is not None:
-				return evaluate(expr_else, context, event, *args, **kwargs)
-
-		return False
+		return self.Else(context, event, *args, **kwargs)
