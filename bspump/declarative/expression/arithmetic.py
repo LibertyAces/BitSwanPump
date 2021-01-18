@@ -12,6 +12,7 @@ class ADD(SequenceExpression):
 		"Items": [
 			'si64', 'si8', 'si16', 'si32', 'si128', 'si256',
 			'ui8', 'ui16', 'ui32', 'ui64', 'ui128', 'ui256',
+			'fp64', 'fp16', 'fp32', 'fp128',
 			'str',
 		]
 	}
