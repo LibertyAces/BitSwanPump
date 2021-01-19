@@ -33,12 +33,13 @@ class WHEN(Expression):
 		super().__init__(app)
 		self.Items = sequence
 		self.ItemsNormalized = []
-		self.Attributes = []
-
+		self.Attributes = {}
+		self.OutletType = None  # Will be determined in `initialize()`
 		self.Else = VALUE(self.App, value=None)
 
 
 	def initialize(self):
+
 		for n, i in enumerate(self.Items):
 
 			# `test/then` branch
@@ -51,7 +52,7 @@ class WHEN(Expression):
 
 				attr_name = 'Test{}'.format(n)
 				setattr(self, attr_name, vtest)
-				self.Attributes.append(attr_name)
+				self.Attributes[attr_name] = [bool.__name__]
 
 				vthen = i['then']
 				if not isinstance(vthen, Expression):
@@ -59,7 +60,9 @@ class WHEN(Expression):
 
 				attr_name = 'Then{}'.format(n)
 				setattr(self, attr_name, vthen)
-				self.Attributes.append(attr_name)
+				if self.OutletType is None:
+					self.OutletType = vthen.get_outlet_type()
+				self.Attributes[attr_name] = self.OutletType
 
 				self.ItemsNormalized.append((vtest, vthen))
 
@@ -74,7 +77,10 @@ class WHEN(Expression):
 
 				attr_name = 'Else'
 				setattr(self, attr_name, v)
-				self.Attributes.append(attr_name)
+				if self.OutletType is None:
+					self.OutletType = v.get_outlet_type()
+
+				self.Attributes[attr_name] = self.OutletType
 
 			else:
 				raise RuntimeError("Unexpected items in '!WHEN': {}".format(i.keys()))
@@ -90,9 +96,4 @@ class WHEN(Expression):
 
 
 	def get_outlet_type(self):
-		if hasattr(self, 'Then0'):
-			return self.Then0.get_outlet_type()
-		elif self.Else is None:
-			return None.__name__
-		else:
-			return self.Else.get_outlet_type()
+		return self.OutletType

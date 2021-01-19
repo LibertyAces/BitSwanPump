@@ -10,8 +10,8 @@ class IF(Expression):
 
 	Attributes = {
 		"Test": ["bool"],  # Test expression MUST return boolean
-		"Then": ["*"],     # Then and else expression must return the same type
-		"Else": ["*"],
+		"Then": None,      # Determined in initialize()
+		"Else": None,      # Determined in initialize()
 	}
 
 	def __init__(self, app, *, arg_test, arg_then=True, arg_else=False):
@@ -31,6 +31,15 @@ class IF(Expression):
 			self.Else = arg_else
 		else:
 			self.Else = VALUE(app, value=arg_else)
+
+		self.Attributes = IF.Attributes.copy()
+
+
+	def initialize(self):
+		# Then and else expression must return the same type
+		assert(self.Then.get_outlet_type() == self.Else.get_outlet_type())
+		self.Attributes["Then"] = self.Then.get_outlet_type()
+		self.Attributes["Else"] = self.Else.get_outlet_type()
 
 
 	def __call__(self, context, event, *args, **kwargs):
