@@ -37,8 +37,8 @@ class CAST(Expression):
 
 		'ui8': (int, 'ui8'),
 		'ui16': (int, 'ui16'),
-		'ui32': (int, 'u32'),
-		'ui64': (int, 'u64'),
+		'ui32': (int, 'ui32'),
+		'ui64': (int, 'ui64'),
 		'ui128': (int, 'ui128'),
 		'ui256': (int, 'ui256'),
 
