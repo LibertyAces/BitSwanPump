@@ -14,7 +14,7 @@ class TestDeclarativeJoin(bspump.unittest.TestCase):
 	def load(self, decl_fname):
 		basedir = os.path.dirname(__file__)
 		with open(os.path.join(basedir, decl_fname), 'r') as f:
-			return self.Builder.parse(f.read())
+			return self.Builder.parse(f.read())[0]
 
 
 	def test_join_01(self):
