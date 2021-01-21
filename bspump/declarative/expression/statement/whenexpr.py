@@ -37,9 +37,22 @@ class WHEN(Expression):
 		self.OutletType = None  # Will be determined in `initialize()`
 		self.Else = VALUE(self.App, value=None)
 
+	def set(self, key, value):
+		setattr(self, key, value)
+
+		if "Test" in key:
+			item_normalized = self.ItemsNormalized[int(key[4:])]
+			item_normalized[0] = value
+			self.ItemsNormalized[int(key[4:])] = item_normalized
+
+		if "Then" in key:
+			item_normalized = self.ItemsNormalized[int(key[4:])]
+			item_normalized[0] = value
+			self.ItemsNormalized[int(key[4:])] = item_normalized
 
 	def initialize(self):
 
+		item_counter = 0
 		for n, i in enumerate(self.Items):
 
 			# `test/then` branch
@@ -50,7 +63,7 @@ class WHEN(Expression):
 				if not isinstance(vtest, Expression):
 					vtest = VALUE(self.App, value=vtest)
 
-				attr_name = 'Test{}'.format(n)
+				attr_name = 'Test{}'.format(item_counter)
 				setattr(self, attr_name, vtest)
 				self.Attributes[attr_name] = [bool.__name__]
 
@@ -58,13 +71,14 @@ class WHEN(Expression):
 				if not isinstance(vthen, Expression):
 					vthen = VALUE(self.App, value=vthen)
 
-				attr_name = 'Then{}'.format(n)
+				attr_name = 'Then{}'.format(item_counter)
 				setattr(self, attr_name, vthen)
 				if self.OutletType is None:
 					self.OutletType = vthen.get_outlet_type()
 				self.Attributes[attr_name] = self.OutletType
 
 				self.ItemsNormalized.append((vtest, vthen))
+				item_counter += 1
 
 			# `else` branch
 			elif 'else' in i:

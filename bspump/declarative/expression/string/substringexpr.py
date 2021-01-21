@@ -1,4 +1,4 @@
-from ...abc import Expression, evaluate
+from ...abc import Expression
 from ..value.valueexpr import VALUE
 
 
@@ -24,8 +24,11 @@ class SUBSTRING(Expression):
 		else:
 			self.To = arg_to
 
+	def get_outlet_type(self):
+		return str.__name__
+
 	def __call__(self, context, event, *args, **kwargs):
-		_string = evaluate(self.Value, context, event, *args, **kwargs)
-		_from = evaluate(self.From, context, event, *args, **kwargs)
-		_to = evaluate(self.To, context, event, *args, **kwargs)
+		_string = self.Value(context, event, *args, **kwargs)
+		_from = self.From(context, event, *args, **kwargs)
+		_to = self.To(context, event, *args, **kwargs)
 		return _string[_from:_to]

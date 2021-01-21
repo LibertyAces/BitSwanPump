@@ -1,4 +1,4 @@
-from ...abc import Expression, evaluate
+from ...abc import Expression
 
 
 class UPPER(Expression):
@@ -11,8 +11,14 @@ class UPPER(Expression):
 		super().__init__(app)
 		self.Value = arg_what
 
+	def get_outlet_type(self):
+		return str.__name__
+
+	def consult_inlet_type(self, key, child):
+		return str.__name__
+
 	def __call__(self, context, event, *args, **kwargs):
 		try:
-			return evaluate(self.Value, context, event, *args, **kwargs).upper()
+			return self.Value(context, event, *args, **kwargs).upper()
 		except AttributeError:
 			return None
