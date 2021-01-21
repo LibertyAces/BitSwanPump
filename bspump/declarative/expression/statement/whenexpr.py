@@ -42,13 +42,11 @@ class WHEN(Expression):
 
 		if "Test" in key:
 			item_normalized = self.ItemsNormalized[int(key[4:])]
-			item_normalized[0] = value
-			self.ItemsNormalized[int(key[4:])] = item_normalized
+			self.ItemsNormalized[int(key[4:])] = (value, item_normalized[1])
 
 		if "Then" in key:
 			item_normalized = self.ItemsNormalized[int(key[4:])]
-			item_normalized[0] = value
-			self.ItemsNormalized[int(key[4:])] = item_normalized
+			self.ItemsNormalized[int(key[4:])] = (item_normalized[0], value)
 
 	def initialize(self):
 
