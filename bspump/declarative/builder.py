@@ -146,7 +146,7 @@ class ExpressionBuilder(object):
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
 
-		elif isinstance(expression, (str, int, float)):
+		elif isinstance(expression, (str, int, float, tuple)):
 			return
 
 		else:
