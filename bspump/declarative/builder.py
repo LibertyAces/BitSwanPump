@@ -89,6 +89,25 @@ class ExpressionBuilder(object):
 		loader.add_constructor("!INCLUDE", self._construct_include)
 		loader.add_constructor("!CONFIG", self._construct_config)
 
+		loader.add_constructor("tag:yaml.org,2002:ui256", self._construct_ui256)
+		loader.add_constructor("tag:yaml.org,2002:ui128", self._construct_ui128)
+		loader.add_constructor("tag:yaml.org,2002:ui64", self._construct_ui64)
+		loader.add_constructor("tag:yaml.org,2002:ui32", self._construct_ui32)
+		loader.add_constructor("tag:yaml.org,2002:ui16", self._construct_ui16)
+		loader.add_constructor("tag:yaml.org,2002:ui8", self._construct_ui8)
+
+		loader.add_constructor("tag:yaml.org,2002:si256", self._construct_si256)
+		loader.add_constructor("tag:yaml.org,2002:si128", self._construct_si128)
+		loader.add_constructor("tag:yaml.org,2002:si64", self._construct_si64)
+		loader.add_constructor("tag:yaml.org,2002:si32", self._construct_si32)
+		loader.add_constructor("tag:yaml.org,2002:si16", self._construct_si16)
+		loader.add_constructor("tag:yaml.org,2002:si8", self._construct_si8)
+
+		loader.add_constructor("tag:yaml.org,2002:fp128", self._construct_fp128)
+		loader.add_constructor("tag:yaml.org,2002:fp64", self._construct_fp64)
+		loader.add_constructor("tag:yaml.org,2002:fp32", self._construct_fp32)
+		loader.add_constructor("tag:yaml.org,2002:fp16", self._construct_fp16)
+
 		expressions = []
 		try:
 			# Build syntax trees for each expression
@@ -202,3 +221,52 @@ class ExpressionBuilder(object):
 		except Exception as e:
 			L.exception("Error in expression")
 			raise DeclarationError("Invalid expression at {}\n{}".format(node.start_mark, e))
+
+
+	def _construct_ui256(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='ui256')
+
+	def _construct_ui128(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='ui128')
+
+	def _construct_ui64(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='ui64')
+
+	def _construct_ui32(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='ui32')
+
+	def _construct_ui16(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='ui16')
+
+	def _construct_ui8(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='ui8')
+
+	def _construct_si256(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='si256')
+
+	def _construct_si128(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='si128')
+
+	def _construct_si64(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='si64')
+
+	def _construct_si32(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='si32')
+
+	def _construct_si16(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='si16')
+
+	def _construct_si8(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=int(node.value), outlet_type='si8')
+
+	def _construct_fp128(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=float(node.value), outlet_type='fp128')
+
+	def _construct_fp64(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=float(node.value), outlet_type='fp64')
+
+	def _construct_fp32(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=float(node.value), outlet_type='fp32')
+
+	def _construct_fp16(self, loader: yaml.Loader, node: yaml.Node):
+		return VALUE(self.App, value=float(node.value), outlet_type='fp16')
