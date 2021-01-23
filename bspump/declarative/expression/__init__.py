@@ -61,6 +61,8 @@ from .value.eventexpr import ARG
 from .utility.context import CONTEXT
 from .utility.context import CONTEXT_SET
 
+from .utility.hashexpr import HASH
+
 # Lookup
 from .lookup.lookupexpr import LOOKUP_GET
 from .lookup.lookupexpr import LOOKUP_CONTAINS
@@ -100,6 +102,7 @@ __all__ = [
 	"VALUE",
 	"EVENT",
 	"CONTEXT", "CONTEXT_SET",
+	"HASH",
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
 	"LOOKUP_GET", "LOOKUP_CONTAINS",
