@@ -1,7 +1,7 @@
 import datetime
 import pytz
 
-from ...abc import Expression, evaluate
+from ...abc import Expression
 from ..value.valueexpr import VALUE
 
 
@@ -21,7 +21,10 @@ class DATETIME_PARSE(Expression):
 
 	def __init__(self, app, *, arg_what, arg_format, arg_flags='', arg_timezone=None):
 		super().__init__(app)
-		self.Value = arg_what
+		if not isinstance(arg_what, Expression):
+			self.Value = VALUE(app, value=arg_what)
+		else:
+			self.Value = arg_what
 
 		if not isinstance(arg_format, Expression):
 			self.Format = VALUE(app, value=arg_format)
@@ -37,8 +40,8 @@ class DATETIME_PARSE(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		fmt = evaluate(self.Format, context, event, *args, **kwargs)
-		value = evaluate(self.Value, context, event, *args, **kwargs)
+		fmt = self.Format(context, event, *args, **kwargs)
+		value = self.Value(context, event, *args, **kwargs)
 
 		if isinstance(value, int) or isinstance(value, float):
 			value = datetime.datetime.utcfromtimestamp(value)

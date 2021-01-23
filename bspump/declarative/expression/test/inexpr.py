@@ -26,12 +26,15 @@ class IN(Expression):
 		else:
 			self.Where = VALUE(app, value=arg_where)
 
-		assert(self.Where.get_outlet_type() == 'list')
+		assert(self.Where.get_outlet_type() in ('list', 'set'))
 
 
 	def optimize(self):
 		if isinstance(self.Where, VALUE):
-			return IN_optimized_simple_where(self)
+			if self.Where.get_outlet_type() == 'list':
+				return IN_optimized_list_where(self)
+			if self.Where.get_outlet_type() == 'set':
+				return IN_optimized_set_where(self)
 
 		return self
 
@@ -67,7 +70,7 @@ class IN(Expression):
 		return bool.__name__
 
 
-class IN_optimized_simple_where(IN):
+class IN_optimized_list_where(IN):
 
 	def __init__(self, orig):
 		super().__init__(
@@ -77,6 +80,27 @@ class IN_optimized_simple_where(IN):
 		)
 
 		self._where_value = frozenset(self.Where({}, {}))
+
+	def optimize(self):
+		# This is to prevent re-optimising the class
+		return None
+
+
+	def __call__(self, context, event, *args, **kwargs):
+		return self.What(context, event, *args, **kwargs) in self._where_value
+
+
+class IN_optimized_set_where(IN):
+
+	def __init__(self, orig):
+		super().__init__(
+			orig.App,
+			arg_what=orig.What,
+			arg_where=orig.Where
+		)
+
+		self._where_value = self.Where({}, {})
+
 
 	def optimize(self):
 		# This is to prevent re-optimising the class

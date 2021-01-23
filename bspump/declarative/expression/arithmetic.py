@@ -81,6 +81,15 @@ class MUL(SequenceExpression):
 		return _get_outlet_type_from_first(self.Items)
 
 
+	def get_outlet_type(self):
+		return _get_outlet_type_from_first(self.Items)
+
+
+	def get_items_inlet_type(self):
+		# TODO: This is maybe not true for integer additions
+		return _get_outlet_type_from_first(self.Items)
+
+
 class SUB(SequenceExpression):
 	"""
 	Subtracts values in expression
@@ -103,6 +112,15 @@ class SUB(SequenceExpression):
 
 	def get_items_inlet_type(self):
 		# TODO: Check if there is float among integers
+		return _get_outlet_type_from_first(self.Items)
+
+
+	def get_outlet_type(self):
+		return _get_outlet_type_from_first(self.Items)
+
+
+	def get_items_inlet_type(self):
+		# TODO: This is maybe not true for integer additions
 		return _get_outlet_type_from_first(self.Items)
 
 
