@@ -42,7 +42,7 @@ class HASH(Expression):
 
 	def initialize(self):
 		outlet_type = self.What.get_outlet_type()
-		self.Method = get_hash_method(self.Type, outlet_type)
+		self.Method = get_hash_method(self.Type(None, None), outlet_type)
 
 
 	def __call__(self, context, event, *args, **kwargs):
