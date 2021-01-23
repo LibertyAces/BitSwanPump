@@ -140,7 +140,7 @@ class ExpressionBuilder(object):
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
 
-		elif isinstance(expression, list):
+		elif isinstance(expression, (list, set, frozenset)):
 
 			for _expression in expression:
 				for parent, key, obj in self._walk(_expression):
