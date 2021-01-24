@@ -181,6 +181,20 @@ class ISNOT(ComparisonExpression):
 	Operator = operator.is_not
 
 
+	def get_items_inlet_type(self):
+		# Find the first usable type in the items
+		for item in self.Items:
+			outlet_type = item.get_outlet_type()
+			if outlet_type not in frozenset(['^']):
+				return outlet_type
+		raise NotImplementedError("Cannot decide on items inlet type '{}'".format(self))
+
+
+	def consult_inlet_type(self, key, child):
+		return self.get_items_inlet_type()
+
+
+
 def evaluate_items_inlet_type(items):
 
 	strings = False
