@@ -92,3 +92,7 @@ class CAST(Expression):
 
 	def get_outlet_type(self):
 		return self.OutletType
+
+
+	def consult_inlet_type(self, key, child):
+		return self.OutletType
