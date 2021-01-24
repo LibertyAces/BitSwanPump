@@ -7,7 +7,6 @@ class VALUE(Expression):
 	"""
 
 	Attributes = {
-		"Value": []
 	}
 
 
