@@ -1,5 +1,6 @@
 import logging
 import inspect
+import functools
 
 import yaml
 
@@ -10,6 +11,7 @@ from .declerror import DeclarationError
 from .abc import Expression
 
 from .expression.value.valueexpr import VALUE
+from .expression.utility.castexpr import CAST
 from .expression.statement.selfexpr import SELF
 
 ###
@@ -89,24 +91,26 @@ class ExpressionBuilder(object):
 		loader.add_constructor("!INCLUDE", self._construct_include)
 		loader.add_constructor("!CONFIG", self._construct_config)
 
-		loader.add_constructor("tag:yaml.org,2002:ui256", self._construct_ui256)
-		loader.add_constructor("tag:yaml.org,2002:ui128", self._construct_ui128)
-		loader.add_constructor("tag:yaml.org,2002:ui64", self._construct_ui64)
-		loader.add_constructor("tag:yaml.org,2002:ui32", self._construct_ui32)
-		loader.add_constructor("tag:yaml.org,2002:ui16", self._construct_ui16)
-		loader.add_constructor("tag:yaml.org,2002:ui8", self._construct_ui8)
+		loader.add_constructor("tag:yaml.org,2002:ui256", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui128", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui64", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui32", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui16", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui8", self._construct_scalar)
 
-		loader.add_constructor("tag:yaml.org,2002:si256", self._construct_si256)
-		loader.add_constructor("tag:yaml.org,2002:si128", self._construct_si128)
-		loader.add_constructor("tag:yaml.org,2002:si64", self._construct_si64)
-		loader.add_constructor("tag:yaml.org,2002:si32", self._construct_si32)
-		loader.add_constructor("tag:yaml.org,2002:si16", self._construct_si16)
-		loader.add_constructor("tag:yaml.org,2002:si8", self._construct_si8)
+		loader.add_constructor("tag:yaml.org,2002:si256", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si128", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si64", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si32", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si16", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si8", self._construct_scalar)
 
-		loader.add_constructor("tag:yaml.org,2002:fp128", self._construct_fp128)
-		loader.add_constructor("tag:yaml.org,2002:fp64", self._construct_fp64)
-		loader.add_constructor("tag:yaml.org,2002:fp32", self._construct_fp32)
-		loader.add_constructor("tag:yaml.org,2002:fp16", self._construct_fp16)
+		loader.add_constructor("tag:yaml.org,2002:fp128", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:fp64", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:fp32", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:fp16", self._construct_scalar)
+
+		loader.add_constructor("tag:yaml.org,2002:str", self._construct_scalar)
 
 		expressions = []
 		try:
@@ -223,50 +227,25 @@ class ExpressionBuilder(object):
 			raise DeclarationError("Invalid expression at {}\n{}".format(node.start_mark, e))
 
 
-	def _construct_ui256(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='ui256')
+	def _construct_scalar(self, loader: yaml.Loader, node: yaml.Node):
 
-	def _construct_ui128(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='ui128')
+		if isinstance(node, yaml.ScalarNode):
+			# Variant `!!si 64` (VALUE)
+			outlet_type = node.tag.rsplit(':', 1)[1]
+			if outlet_type == 'str':
+				return node.value
+			elif outlet_type[0] in ('u', 's'):
+				value = int(node.value)
+			elif outlet_type[0] == 'f':
+				value = float(node.value)
+			else:
+				raise NotImplementedError("Unsupport scalar type '{}'".format(outlet_type))
+			return VALUE(self.App, value=value, outlet_type=outlet_type)
 
-	def _construct_ui64(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='ui64')
+		elif isinstance(node, yaml.MappingNode):
+			outlet_type = node.tag.rsplit(':', 1)[1]
+			value = loader.construct_mapping(node)
+			return CAST(self.App, arg_what=value['what'], arg_type=outlet_type)
 
-	def _construct_ui32(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='ui32')
-
-	def _construct_ui16(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='ui16')
-
-	def _construct_ui8(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='ui8')
-
-	def _construct_si256(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='si256')
-
-	def _construct_si128(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='si128')
-
-	def _construct_si64(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='si64')
-
-	def _construct_si32(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='si32')
-
-	def _construct_si16(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='si16')
-
-	def _construct_si8(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=int(node.value), outlet_type='si8')
-
-	def _construct_fp128(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=float(node.value), outlet_type='fp128')
-
-	def _construct_fp64(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=float(node.value), outlet_type='fp64')
-
-	def _construct_fp32(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=float(node.value), outlet_type='fp32')
-
-	def _construct_fp16(self, loader: yaml.Loader, node: yaml.Node):
-		return VALUE(self.App, value=float(node.value), outlet_type='fp16')
+		else:
+			NotImplementedError("Unimplemented for YAML node '{}'".format(node))
