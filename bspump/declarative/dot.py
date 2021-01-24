@@ -1,4 +1,5 @@
 from .abc import Expression, SequenceExpression
+from .expression.value.valueexpr import VALUE
 
 
 def declaration_to_dot(decl, fname):
@@ -6,7 +7,7 @@ def declaration_to_dot(decl, fname):
 	links = set()
 
 	with open(fname, "w") as fo:
-		fo.write("digraph G {\n\trankdir=LR;\n")
+		fo.write("digraph G {\n\trankdir=LR;\n\tgraph [fontname = \"helvetica\"];\n\tnode [fontname = \"helvetica\"];\n\tedge [fontname = \"helvetica\"];\n")
 
 		for parent, key, obj in decl.walk():
 
@@ -38,14 +39,20 @@ def declaration_to_dot(decl, fname):
 
 		for obj in nodes:
 			if isinstance(obj, SequenceExpression):
-				shape = "doubleoctagon"
+				shape = "hexagon"
+				addinfo = ""
+			elif isinstance(obj, VALUE):
+				shape = "box"
+				addinfo = "\\n" + str(obj.Value)
 			else:
 				shape = "octagon"
+				addinfo = ""
 
-			fo.write("\t\"{}\" [label=\"<{}>\\n{}\",shape=\"{}\"];\n".format(
+			fo.write("\t\"{}\" [label=\"<{}>\\n{}{}\",shape=\"{}\",style=filled,fillcolor=lightgray];\n".format(
 				obj.Id,
 				obj.get_outlet_type(),
 				obj.__class__.__name__,
+				addinfo,
 				shape
 			))
 
