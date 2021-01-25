@@ -1,4 +1,4 @@
-from ...abc import Expression, evaluate
+from ...abc import Expression
 
 from ..value.eventexpr import EVENT
 from ..value.eventexpr import KWARGS
@@ -58,8 +58,15 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 			self.Default = VALUE(app, value=None)
 
 		else:
-			self.With = arg_with
-			self.Item = VALUE(app, value=arg_item)
+			if isinstance(arg_with, Expression):
+				self.With = arg_with
+			else:
+				self.With = VALUE(app, value=arg_with)
+
+			if isinstance(arg_item, Expression):
+				self.Item = arg_item
+			else:
+				self.Item = VALUE(app, value=arg_item)
 
 			if isinstance(arg_default, Expression):
 				self.Default = arg_default
@@ -77,25 +84,21 @@ Scalar form has some limitations (e.g no default value) but it is more compact
 				return ITEM_optimized_CONTEXT_VALUE_NESTED(self)
 			else:
 				return ITEM_optimized_CONTEXT_VALUE(self)
+
 		return None
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		with_dict = evaluate(self.With, context, event, *args, **kwargs)
-		item = evaluate(self.Item, context, event, *args, **kwargs)
+		wth = self.With(context, event, *args, **kwargs)
+		item = self.Item(context, event, *args, **kwargs)
 
 		try:
-			return with_dict[item]
+			return wth[item]
 
-		except KeyError:
+		except (KeyError, IndexError):
 			if self.Default is None:
 				return None
-			return evaluate(self.Default, context, event, *args, **kwargs)
-
-		except IndexError:
-			if self.Default is None:
-				return None
-			return evaluate(self.Default, context, event, *args, **kwargs)
+			return self.Default(context, event, *args, **kwargs)
 
 
 class ITEM_optimized_EVENT_VALUE(ITEM):
