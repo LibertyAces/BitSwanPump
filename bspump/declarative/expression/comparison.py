@@ -122,8 +122,6 @@ class EQ_optimized_simple(EQ):
 
 class EQ_optimized_EVENT_VALUE(EQ):
 
-	# TODO: Attributes = [...]
-
 	def __init__(self, orig):
 		super().__init__(orig.App, sequence=orig.Items)
 		self.Akey = self.Items[0].Item.Value
@@ -167,6 +165,7 @@ class GT(ComparisonExpression):
 		return evaluate_items_inlet_type(self.Items)
 
 
+# TODO: This operator is obsoleted and should be removed (AT Jan 2021)
 class IS(ComparisonExpression):
 	"""
 	Operator 'is'
@@ -174,6 +173,7 @@ class IS(ComparisonExpression):
 	Operator = operator.is_
 
 
+# TODO: This operator is obsoleted and should be removed (AT Jan 2021)
 class ISNOT(ComparisonExpression):
 	"""
 	Operator 'is not'
