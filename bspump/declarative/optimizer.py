@@ -23,8 +23,11 @@ class ExpressionOptimizer(object):
 
 		# We run optimizations till we finish tree walk without any optimization found
 		retry = True
+		counter = 0
 		while retry:
 			retry = False
+
+			counter += 1
 
 			if not isinstance(expression, Expression):
 				expression = VALUE(self.App, value=expression)
@@ -40,11 +43,16 @@ class ExpressionOptimizer(object):
 				if opt_obj is None:
 					continue
 
+				assert(obj is not opt_obj)
+
 				if parent is None:
 					expression = opt_obj
 				else:
 					# If yes, replace a given node by the optimized variant
 					parent.set(key, opt_obj)
+
+				if counter > 100000:
+					raise RuntimeError("Optimization likely stucked at '{}'-'{}'-'{}'/'{}'".format(parent, key, obj, opt_obj))
 
 				# ... and start again
 				retry = True
