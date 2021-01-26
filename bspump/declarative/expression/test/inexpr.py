@@ -40,7 +40,6 @@ class IN(Expression):
 				return IN_optimized_set_where(self)
 
 
-		print("IN: ", self.What, self.Where)
 		if isinstance(self.What, VALUE) and isinstance(self.Where, EVENT):
 			return IN_optimized_EVENT_VALUE(self)
 
