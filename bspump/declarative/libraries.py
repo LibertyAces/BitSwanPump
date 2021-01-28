@@ -2,6 +2,13 @@ import abc
 import os
 
 import aiozk
+import logging
+
+#
+
+L = logging.getLogger(__name__)
+
+#
 
 
 class DeclarationLibrary(abc.ABC):
@@ -45,9 +52,12 @@ class ZooKeeperDeclarationLibrary(DeclarationLibrary):
 	async def load(self):
 		try:
 			for document in await self.ZooKeeperClient.get_children(self.ZooKeeperPath):
-				self.ZookeeperData[document] = await self.ZooKeeperClient.get_data(
-					"{}/{}".format(self.ZooKeeperPath, document)
-				)
+				try:
+					self.ZookeeperData[document] = await self.ZooKeeperClient.get_data(
+						"{}/{}".format(self.ZooKeeperPath, document)
+					)
+				except Exception as e:
+					L.warning("Exception occurred during ZooKeeper load: '{}'".format(e))
 		except aiozk.exc.NoNode:
 			pass
 
