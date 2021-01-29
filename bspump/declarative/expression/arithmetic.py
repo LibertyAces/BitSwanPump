@@ -81,15 +81,6 @@ class MUL(SequenceExpression):
 		return _get_outlet_type_from_first(self.Items)
 
 
-	def get_outlet_type(self):
-		return _get_outlet_type_from_first(self.Items)
-
-
-	def get_items_inlet_type(self):
-		# TODO: This is maybe not true for integer additions
-		return _get_outlet_type_from_first(self.Items)
-
-
 class SUB(SequenceExpression):
 	"""
 	Subtracts values in expression
@@ -112,15 +103,6 @@ class SUB(SequenceExpression):
 
 	def get_items_inlet_type(self):
 		# TODO: Check if there is float among integers
-		return _get_outlet_type_from_first(self.Items)
-
-
-	def get_outlet_type(self):
-		return _get_outlet_type_from_first(self.Items)
-
-
-	def get_items_inlet_type(self):
-		# TODO: This is maybe not true for integer additions
 		return _get_outlet_type_from_first(self.Items)
 
 
@@ -147,6 +129,17 @@ class MOD(SequenceExpression):
 	def get_items_inlet_type(self):
 		return _get_outlet_type_from_first(self.Items)
 
+
+class POW(SequenceExpression):
+
+	Attributes = {
+		"Items": [
+			'si64'
+		]
+	}
+
+	def __call__(self, context, event, *args, **kwargs):
+		return self.reduce(operator.pow, context, event, *args, **kwargs)
 
 
 def _get_outlet_type_from_first(items):
