@@ -1,6 +1,6 @@
 import logging
 import inspect
-import functools
+
 
 import yaml
 
@@ -11,6 +11,8 @@ from .declerror import DeclarationError
 from .abc import Expression
 
 from .expression.value.valueexpr import VALUE
+from .expression.statement.funexpr import FUNCTION
+
 from .expression.utility.castexpr import CAST
 from .expression.statement.selfexpr import SELF
 
@@ -67,7 +69,7 @@ class ExpressionBuilder(object):
 
 	def parse(self, declaration, source_name=None):
 		"""
-		Returns a list of expression from the loaded declaration.
+		Returns a list of expressions from the loaded declaration.
 		:param declaration:
 		:param source_name:
 		:return:
@@ -142,6 +144,35 @@ class ExpressionBuilder(object):
 			loader.dispose()
 
 		return expressions
+
+
+	def parse_ext(self, declaration, source_name=None):
+		'''
+		Wrap top-level declaration into a function, value etc.
+		This is likely intermediate (not a final) implementation.
+		'''
+		result = []
+		for expr in self.parse(declaration, source_name=source_name):
+
+			if isinstance(expression, (VALUE, FUNCTION)):
+				result.append(expr)
+				continue
+
+			if isinstance(expr, Expression):
+				result.append(
+					FUNCTION(self.App, arg_do=expr, arg_name="main")
+				)
+				continue
+
+			if isinstance(expr, (bool, int, float, str, set, list, dict)):
+				result.append(
+					VALUE(self.App, value=expr)
+				)
+				continue
+
+			raise NotImplementedError("Top-level type '{}' not supported".format(type(expr)))
+
+		return result
 
 
 	def _walk(self, expression):
