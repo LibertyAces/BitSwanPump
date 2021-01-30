@@ -14,7 +14,7 @@ from .libraries import ZooKeeperDeclarationLibrary
 from .abc import Expression
 from .abc import SequenceExpression
 
-from .dot import declaration_to_dot
+from .dot import declaration_to_dot, declaration_to_dot_stream
 
 __all__ = [
 	"DeclarativeProcessor",
@@ -35,4 +35,5 @@ __all__ = [
 	"SequenceExpression",
 
 	"declaration_to_dot",
+	"declaration_to_dot_stream",
 ]
