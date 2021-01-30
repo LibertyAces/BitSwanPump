@@ -4,6 +4,7 @@ from .arithmetic import DIV
 from .arithmetic import MUL
 from .arithmetic import SUB
 from .arithmetic import MOD
+from .arithmetic import POW
 
 # Logical
 from .logical import AND
@@ -87,7 +88,7 @@ from .datetime.dtparse import DATETIME_PARSE
 from .datetime.dtget import DATETIME_GET
 
 __all__ = [
-	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
+	"ADD", "DIV", "MUL", "SUB", "MOD", "POW",            # Aritmetics
 	"AND", "OR", "NOT",                                  # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT", "IS", "ISNOT",   # Comparison
 	"IF", "WHEN", "FOR", "FIRST", "SELF",
