@@ -38,19 +38,9 @@ class IF(Expression):
 		self.Attributes = IF.Attributes.copy()
 
 
-	def initialize(self):
-		# Then and else expression must return the same type
-		assert(self.Then.get_outlet_type() == self.Else.get_outlet_type())
-		self.Attributes["Then"] = self.Then.get_outlet_type()
-		self.Attributes["Else"] = self.Else.get_outlet_type()
-
-
 	def __call__(self, context, event, *args, **kwargs):
 		if self.Test(context, event, *args, **kwargs):
 			return self.Then(context, event, *args, **kwargs)
 		else:
 			return self.Else(context, event, *args, **kwargs)
 
-
-	def get_outlet_type(self):
-		return self.Then.get_outlet_type()

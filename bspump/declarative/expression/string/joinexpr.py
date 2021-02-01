@@ -26,17 +26,13 @@ class JOIN(Expression):
 		else:
 			self.Miss = arg_miss
 
-	def get_outlet_type(self):
-		return str.__name__
-
-	def consult_inlet_type(self, key, child):
-		return str.__name__
 
 	def set(self, key, value):
 		setattr(self, key, value)
 
 		if "Item" in key:
 			self.ItemsNormalized[int(key[4:])] = value
+
 
 	def initialize(self):
 
@@ -50,6 +46,7 @@ class JOIN(Expression):
 			self.Attributes[attr_name] = str.__name__
 
 			self.ItemsNormalized.append(item)
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		arr = []

@@ -31,7 +31,3 @@ class SELF(Expression):
 	def __call__(self, context, event, *args, **kwargs):
 		new_event = self.Event(context, event, *args, **kwargs)
 		return self.Self(context, new_event, *args, **kwargs)
-
-
-	def get_outlet_type(self):
-		return self.Self.get_outlet_type()

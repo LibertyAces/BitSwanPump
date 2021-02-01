@@ -14,11 +14,6 @@ class UPPER(Expression):
 		super().__init__(app)
 		self.Value = arg_what
 
-	def get_outlet_type(self):
-		return str.__name__
-
-	def consult_inlet_type(self, key, child):
-		return str.__name__
 
 	def __call__(self, context, event, *args, **kwargs):
 		try:

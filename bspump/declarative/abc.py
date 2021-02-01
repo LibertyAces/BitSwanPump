@@ -4,6 +4,8 @@ import itertools
 
 from .declerror import DeclarationError
 
+from .typesystem import Outlet
+
 #
 
 L = logging.getLogger(__name__)
@@ -15,21 +17,37 @@ _IdGenerator = itertools.count(1)
 
 class Expression(object):
 
-	Attributes = None  # Must be a list, if missing, then the Expression class is not complete
-
 	Category = 'Others'
 
-	def __init__(self, app):
-		if self.Attributes is None:
-			raise NotImplementedError("Missing 'Attributes' in {}".format(self))
 
-		self.Id = '{}.E{}'.format(self.__class__.__name__, next(_IdGenerator))
+	def __init__(self, app, outlet=None):
+		self.Id = '{}.F{}'.format(self.__class__.__name__, next(_IdGenerator))
 		self.App = app
 		self.Location = None
 		self.Node = None  # The YAML node, assigned by a builder during YAML parsing
 
+		if outlet is not None:
+			self.Outlet = outlet
+		else:
+			self.Outlet = Outlet()
+
+		self.Inlets = []
+
+
+	def initialize(self):
+		"""
+		Initialize the expression after the syntax tree was build.
+		"""
+		return
+
+
 	def __call__(self, context, event, *args, **kwargs):
 		raise RuntimeError("Call of the abstract method")
+
+
+	def optimize(self):
+		return None
+
 
 	def set_location(self, location):
 		self.Location = location
@@ -37,42 +55,34 @@ class Expression(object):
 	def get_location(self):
 		return self.Location
 
-	def initialize(self):
-		"""
-		Initialize the expression after the syntax tree was build.
-		:return:
-		"""
-		return
 
-	def optimize(self):
-		return None
-
-	def walk(self, parent=None, key=None):
+	def walk(self, parent=None, inlet_name=None):
 		'''
-		key in the Expression is the string, which is a name of the attribute with the child expression
+		Walk the expression tree using Inlets
+
+		`parent` is Expression object
+		`inlet_name` is string or integer with the name of the inlet
 		'''
 
-		yield (parent, key, self)
+		yield (parent, inlet_name, self)
 
-		# Attributes may change during iteration, which could produce an error
-		current_attributes = self.Attributes.copy()
+		for child_inlet_name in self.Inlets:
 
-		for key in current_attributes:
-			v = getattr(self, key, None)
-			if isinstance(v, Expression):
-				for x in v.walk(self, key):
-					yield x
-			else:
-				yield (self, key, v)
+			# Locate inlet in the Expression
+			child_inlet = getattr(self, child_inlet_name)
 
-	def set(self, key, value):
-		setattr(self, key, value)
+			# Inlet has to be Expression
+			assert(isinstance(child_inlet, Expression))
+
+			# Perform the walk
+			for x in child_inlet.walk(self, child_inlet_name):
+				yield x
+
 
 	def get_outlet_type(self):
-		return '???'
-
-	def consult_inlet_type(self, key, child):
-		raise NotImplementedError("Parent consultation at '{}'".format(self))
+		if self.Outlet is None or self.Outlet.Type is None:
+			raise DeclarationError("Failed to resolve type", location=self.Location)
+		return self.Outlet.Type
 
 
 class SequenceExpression(Expression):
@@ -88,29 +98,24 @@ class SequenceExpression(Expression):
 		)
 	'''
 
-	Attributes = {
-		"Items": []
-	}
-
 	def __init__(self, app, *, sequence):
 		super().__init__(app)
 		self.Items = []
+		self.Inlets = []
 
-		for i in sequence:
-			if isinstance(i, Expression):
-				self.Items.append(i)
+		for n, item in enumerate(sequence):
+			if isinstance(item, Expression):
+				self.Items.append(item)
 
 			else:
-				assert isinstance(i, (int, str, float, bytes, bool, tuple, list, dict)) or i is None
-
-				# So far used in the WHEN expression
-				if isinstance(i, dict):
-					continue
+				assert isinstance(item, (int, str, float, bytes, bool, tuple, list, dict)) or item is None
 
 				from .expression import VALUE
 				self.Items.append(
-					VALUE(app, value=i)
+					VALUE(app, value=item)
 				)
+
+			self.Inlets.append(n)
 
 
 	def reduce(self, operator, context, event, *args, **kwargs):
@@ -118,29 +123,20 @@ class SequenceExpression(Expression):
 		return functools.reduce(operator, iterator)
 
 
-	def walk(self, parent=None, key=None):
+	def walk(self, parent: Expression = None, inlet_name=None):
 		'''
-		key in the Sequence expression is the integer, which is a position in self.Items list
+		Walk the expression tree using Inlets
+
+		`parent` is Expression object
+		`inlet_name` is an integer with the "name" of the inlet (aka position in `.Items` array)
 		'''
-		yield(parent, key, self)
 
-		for key, i in enumerate(self.Items):
-			if isinstance(i, Expression):
-				for x in i.walk(self, key):
-					yield x
-			else:
-				raise NotImplementedError(":-(")
+		yield(parent, inlet_name, self)
 
-
-	def set(self, key, value):
-		self.Items[key] = value
-
-
-	def get_items_inlet_type(self):
-		'''
-		This method evaluate the inlet type for `Items` sequence
-		'''
-		return '?'
+		for child_inlet_name, child_inlet in enumerate(self.Items):
+			assert(isinstance(child_inlet, Expression))
+			for x in child_inlet.walk(self, child_inlet_name):
+				yield x
 
 
 def evaluate(value, context, event, *args, **kwargs):

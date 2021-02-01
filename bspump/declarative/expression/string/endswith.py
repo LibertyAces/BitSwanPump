@@ -21,11 +21,6 @@ class ENDSWITH(Expression):
 		else:
 			self.Postfix = arg_postfix
 
-	def get_outlet_type(self):
-		return bool.__name__
-
-	def consult_inlet_type(self, key, child):
-		return str.__name__
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.What(context, event, *args, **kwargs)

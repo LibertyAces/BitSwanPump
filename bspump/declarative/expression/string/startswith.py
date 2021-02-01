@@ -34,10 +34,3 @@ class STARTSWITH(Expression):
 		prefix = self.Prefix(context, event, *args, **kwargs)
 		return value.startswith(prefix)
 
-
-	def get_outlet_type(self):
-		return bool.__name__
-
-
-	def consult_inlet_type(self, key, child):
-		return str.__name__

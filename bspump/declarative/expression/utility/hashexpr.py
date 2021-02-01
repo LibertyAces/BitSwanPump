@@ -51,10 +51,6 @@ class HASH(Expression):
 		return self.Method(what, seed)
 
 
-	def get_outlet_type(self):
-		return 'ui64'
-
-
 def get_hash_method(hash_type, input_type):
 	if hash_type == 'xxhash64':
 		if input_type in (

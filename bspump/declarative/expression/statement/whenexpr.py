@@ -109,6 +109,3 @@ class WHEN(Expression):
 
 		return self.Else(context, event, *args, **kwargs)
 
-
-	def get_outlet_type(self):
-		return self.OutletType

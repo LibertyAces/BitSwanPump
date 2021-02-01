@@ -31,6 +31,3 @@ class NOW(Expression):
 	def __call__(self, context, event, *args, **kwargs):
 		return self.Time()
 
-
-	def get_outlet_type(self):
-		return float.__name__

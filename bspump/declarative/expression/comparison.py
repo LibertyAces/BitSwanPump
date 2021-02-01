@@ -38,10 +38,6 @@ class ComparisonExpression(SequenceExpression):
 		return True
 
 
-	def get_outlet_type(self):
-		return bool.__name__
-
-
 class LT(ComparisonExpression):
 	'''
 	Operator '<'
@@ -88,19 +84,6 @@ class EQ(ComparisonExpression):
 					return EQ_optimized_simple(self)
 
 		return None
-
-
-	def get_items_inlet_type(self):
-		# Find the first usable type in the items
-		for item in self.Items:
-			outlet_type = item.get_outlet_type()
-			if outlet_type not in frozenset(['^']):
-				return outlet_type
-		raise NotImplementedError("Cannot decide on items inlet type '{}'".format(self))
-
-
-	def consult_inlet_type(self, key, child):
-		return self.get_items_inlet_type()
 
 
 class EQ_optimized_simple(EQ):
@@ -164,10 +147,6 @@ class GT(ComparisonExpression):
 	Operator = operator.gt
 
 
-	def get_items_inlet_type(self):
-		return evaluate_items_inlet_type(self.Items)
-
-
 # TODO: This operator is obsoleted and should be removed (AT Jan 2021)
 class IS(ComparisonExpression):
 	"""
@@ -182,20 +161,6 @@ class ISNOT(ComparisonExpression):
 	Operator 'is not'
 	"""
 	Operator = operator.is_not
-
-
-	def get_items_inlet_type(self):
-		# Find the first usable type in the items
-		for item in self.Items:
-			outlet_type = item.get_outlet_type()
-			if outlet_type not in frozenset(['^']):
-				return outlet_type
-		raise NotImplementedError("Cannot decide on items inlet type '{}'".format(self))
-
-
-	def consult_inlet_type(self, key, child):
-		return self.get_items_inlet_type()
-
 
 
 def evaluate_items_inlet_type(items):

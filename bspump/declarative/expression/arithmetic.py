@@ -24,15 +24,6 @@ class ADD(SequenceExpression):
 		return self.reduce(operator.add, context, event, *args, **kwargs)
 
 
-	def get_outlet_type(self):
-		return _get_outlet_type_from_first(self.Items)
-
-
-	def get_items_inlet_type(self):
-		# TODO: This is maybe not true for integer additions
-		return _get_outlet_type_from_first(self.Items)
-
-
 class DIV(SequenceExpression):
 	"""
 	Divides values in expression
@@ -50,14 +41,6 @@ class DIV(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.truediv, context, event, *args, **kwargs)
-
-	def get_outlet_type(self):
-		# TODO: Check if there is float among integers
-		return _get_outlet_type_from_first(self.Items)
-
-	def get_items_inlet_type(self):
-		# TODO: Check if there is float among integers
-		return _get_outlet_type_from_first(self.Items)
 
 
 class MUL(SequenceExpression):
@@ -77,14 +60,6 @@ class MUL(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.mul, context, event, *args, **kwargs)
-
-	def get_outlet_type(self):
-		# TODO: Check if there is float among integers
-		return _get_outlet_type_from_first(self.Items)
-
-	def get_items_inlet_type(self):
-		# TODO: Check if there is float among integers
-		return _get_outlet_type_from_first(self.Items)
 
 
 class SUB(SequenceExpression):
@@ -106,14 +81,6 @@ class SUB(SequenceExpression):
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.sub, context, event, *args, **kwargs)
 
-	def get_outlet_type(self):
-		# TODO: Check if there is float among integers
-		return _get_outlet_type_from_first(self.Items)
-
-	def get_items_inlet_type(self):
-		# TODO: Check if there is float among integers
-		return _get_outlet_type_from_first(self.Items)
-
 
 class MOD(SequenceExpression):
 	"""
@@ -131,14 +98,6 @@ class MOD(SequenceExpression):
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.mod, context, event, *args, **kwargs)
-
-
-	def get_outlet_type(self):
-		return _get_outlet_type_from_first(self.Items)
-
-
-	def get_items_inlet_type(self):
-		return _get_outlet_type_from_first(self.Items)
 
 
 class POW(SequenceExpression):

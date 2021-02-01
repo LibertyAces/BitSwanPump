@@ -118,13 +118,7 @@ class ITEM_optimized_EVENT_VALUE(ITEM):
 			raise NotImplementedError("Default: {}".format(self.Default))
 
 		self.Key = self.Item.Value
-		self.OutletType = orig.OutletType
 
-	def get_outlet_type(self):
-		return self.OutletType
-
-	def set_outlet_type(self, outlet_type):
-		self.OutletType = outlet_type
 
 	def optimize(self):
 		# This is to prevent re-optimising the class
@@ -152,17 +146,11 @@ class ITEM_optimized_CONTEXT_VALUE(ITEM):
 		else:
 			raise NotImplementedError("Default: {}".format(self.Default))
 
-		self.OutletType = orig.OutletType
-
-	def get_outlet_type(self):
-		return self.OutletType
-
-	def set_outlet_type(self, outlet_type):
-		self.OutletType = outlet_type
 
 	def optimize(self):
 		# This is to prevent re-optimising the class
 		return None
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		return context.get(self.Key, self.Default)
@@ -187,13 +175,6 @@ class ITEM_optimized_CONTEXT_VALUE_NESTED(ITEM):
 		# TODO: Replace with JSON pointer path
 		self.KeyList = self.Item.Value.split('.')
 
-		self.OutletType = orig.OutletType
-
-	def get_outlet_type(self):
-		return self.OutletType
-
-	def set_outlet_type(self, outlet_type):
-		self.OutletType = outlet_type
 
 	def optimize(self):
 		# This is to prevent re-optimising the class

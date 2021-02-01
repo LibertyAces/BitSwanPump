@@ -54,7 +54,7 @@ def declaration_to_dot_stream(decl, ostream):
 
 		ostream.write("\t\"{}\" [label=\"<{}>\\n{}{}\",shape=\"{}\",style=filled,fillcolor=lightgray];\n".format(
 			obj.Id,
-			obj.get_outlet_type(),
+			obj.Outlet,
 			obj.__class__.__name__,
 			addinfo,
 			shape

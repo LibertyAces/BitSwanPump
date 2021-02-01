@@ -26,14 +26,6 @@ class AND(SequenceExpression):
 		return True
 
 
-	def get_outlet_type(self):
-		return bool.__name__
-
-
-	def get_items_inlet_type(self):
-		return bool.__name__
-
-
 class OR(SequenceExpression):
 	"""
 	Checks if at least one of the expressions is true
@@ -55,14 +47,6 @@ class OR(SequenceExpression):
 			if v is not None and v:
 				return True
 		return False
-
-
-	def get_outlet_type(self):
-		return bool.__name__
-
-
-	def get_items_inlet_type(self):
-		return bool.__name__
 
 
 class NOT(Expression):
@@ -93,6 +77,3 @@ class NOT(Expression):
 		except TypeError:
 			return False
 
-
-	def get_outlet_type(self):
-		return bool.__name__

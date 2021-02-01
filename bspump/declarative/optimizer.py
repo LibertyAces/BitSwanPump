@@ -34,9 +34,7 @@ class ExpressionOptimizer(object):
 
 			# Walk the syntax tree
 			for parent, key, obj in expression.walk():
-
-				if not isinstance(obj, Expression):
-					continue
+				assert(isinstance(obj, Expression))
 
 				# Check if the node could be optimized
 				opt_obj = obj.optimize()
