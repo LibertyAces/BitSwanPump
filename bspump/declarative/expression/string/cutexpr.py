@@ -4,8 +4,8 @@ from ...abc import Expression
 class CUT(Expression):
 
 	Attributes = {
-		"Value": ["*"],  # TODO: This ...
-		"Delimiter": ["*"],  # TODO: This ...
+		"Value": ["str"],
+		"Delimiter": ["str"],
 		"Field": ["*"],  # TODO: This ...
 	}
 

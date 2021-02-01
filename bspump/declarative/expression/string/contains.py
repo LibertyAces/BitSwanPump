@@ -5,8 +5,8 @@ from ..value.valueexpr import VALUE
 class CONTAINS(Expression):
 
 	Attributes = {
-		"Value": ["*"],  # TODO: This ...
-		"Substring": ["*"],  # TODO: This ...
+		"Value": ["str"],
+		"Substring": ["str"],
 	}
 
 	def __init__(self, app, *, arg_what, arg_substring):

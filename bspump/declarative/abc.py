@@ -142,6 +142,10 @@ class SequenceExpression(Expression):
 
 
 def evaluate(value, context, event, *args, **kwargs):
+	'''
+	This is OBSOLETED method and will be removed.
+	DO NOT USE IT!
+	'''
 	try:
 		return value(context, event, *args, **kwargs)
 	except Exception as e:

@@ -1,10 +1,7 @@
 import logging
 import inspect
 
-
 import yaml
-
-from . import expression
 
 from .libraries import FileDeclarationLibrary
 from .declerror import DeclarationError
@@ -41,6 +38,7 @@ class ExpressionBuilder(object):
 			self.Libraries = libraries
 
 		# Register the common expression module
+		from . import expression
 		self.register_module(expression)
 
 	def register_module(self, module):
@@ -154,20 +152,21 @@ class ExpressionBuilder(object):
 		result = []
 		for expr in self.parse(declaration, source_name=source_name):
 
-			if isinstance(expression, (VALUE, FUNCTION)):
+			if isinstance(expr, (VALUE, FUNCTION)):
 				result.append(expr)
 				continue
 
 			if isinstance(expr, Expression):
-				result.append(
-					FUNCTION(self.App, arg_do=expr, arg_name="main")
-				)
+				fun_expr = FUNCTION(self.App, arg_do=expr, arg_name="main")
+				fun_expr.set_location(expr.Location)
+				result.append(fun_expr)
 				continue
 
 			if isinstance(expr, (bool, int, float, str, set, list, dict)):
-				result.append(
-					VALUE(self.App, value=expr)
-				)
+				expr = VALUE(self.App, value=expr)
+				# Fake the location string
+				expr.set_location('  at line 1, column 1:\n{}\n^'.format(declaration[:20]))
+				result.append(expr)
 				continue
 
 			raise NotImplementedError("Top-level type '{}' not supported".format(type(expr)))
@@ -260,8 +259,13 @@ class ExpressionBuilder(object):
 
 	def _construct_scalar(self, loader: yaml.Loader, node: yaml.Node):
 
+		location = node.start_mark
+		if self.Identifier is not None:
+			# https://github.com/yaml/pyyaml/blob/4c2e993321ad29a02a61c4818f3cef9229219003/lib3/yaml/reader.py
+			location = location.replace("<unicode string>", str(self.Identifier))
+
 		if isinstance(node, yaml.ScalarNode):
-			# Variant `!!si 64` (VALUE)
+			# Value variant e.g.: `!!si 64`
 			outlet_type = node.tag.rsplit(':', 1)[1]
 			if outlet_type == 'str':
 				return node.value
@@ -271,12 +275,18 @@ class ExpressionBuilder(object):
 				value = float(node.value)
 			else:
 				raise NotImplementedError("Unsupport scalar type '{}'".format(outlet_type))
-			return VALUE(self.App, value=value, outlet_type=outlet_type)
+			obj = VALUE(self.App, value=value, outlet_type=outlet_type)
+
 
 		elif isinstance(node, yaml.MappingNode):
+			# Casting variant
 			outlet_type = node.tag.rsplit(':', 1)[1]
 			value = loader.construct_mapping(node)
-			return CAST(self.App, arg_what=value['what'], arg_type=outlet_type)
+			obj = CAST(self.App, arg_what=value['what'], arg_type=outlet_type)
 
 		else:
 			NotImplementedError("Unimplemented for YAML node '{}'".format(node))
+
+		obj.set_location(location)
+		obj.Node = node
+		return obj

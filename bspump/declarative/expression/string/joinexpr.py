@@ -5,7 +5,7 @@ from ..value.valueexpr import VALUE
 class JOIN(Expression):
 
 	Attributes = {
-		"Char": ["*"],  # TODO: This ...
+		"Char": ["str"],
 		"Miss": ["*"],  # TODO: This ...
 	}
 

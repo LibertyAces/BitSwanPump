@@ -16,6 +16,6 @@ class DeclarationError(RuntimeError):
 		if self.Location is None:
 			return super().__str__()
 		else:
-			return "{}\noccurred on location\n{}".format(
+			return "{}\n{}".format(
 				self.OriginalException, self.Location
 			)

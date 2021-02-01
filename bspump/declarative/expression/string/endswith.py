@@ -5,8 +5,8 @@ from ..value.valueexpr import VALUE
 class ENDSWITH(Expression):
 
 	Attributes = {
-		"What": ["*"],  # TODO: This ...
-		"Postfix": ["*"],  # TODO: This ...
+		"What": ["str"],
+		"Postfix": ["str"],
 	}
 
 	def __init__(self, app, *, arg_what, arg_postfix):

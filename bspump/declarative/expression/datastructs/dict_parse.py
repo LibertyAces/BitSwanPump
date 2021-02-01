@@ -78,6 +78,7 @@ class DICT_PARSE(Expression):
 			self.Set = dict()
 			self._set_value_or_expression_to_attribute(self.ArgSet, self.Set, "Set")
 
+
 	def _set_value_or_expression_to_attribute(self, _from, _to, name):
 		for key, value in _from.items():
 
@@ -93,6 +94,7 @@ class DICT_PARSE(Expression):
 			attr_name = '{}{}'.format(name, key)
 			setattr(self, attr_name, value)
 			self.Attributes[attr_name] = value.get_outlet_type()
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.Value(context, event, *args, **kwargs)
