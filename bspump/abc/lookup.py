@@ -10,6 +10,8 @@ import aiohttp
 import asab
 import asab.zookeeper
 
+import provider
+
 ###
 
 L = logging.getLogger(__name__)
@@ -31,7 +33,7 @@ class Lookup(asab.ConfigObject):
 		"master_url": "",  # If not empty, a lookup is in slave mode (will load data from master or cache)
 		"master_lookup_id": "",  # If not empty, it specify the lookup id that will be used for loading from master
 		"master_timeout": 30,  # In secs.
-		"master_url_endpoint": "/bspump/v1/lookup",
+		"master_url_endpoint": "",
 		"zookeeper_section": "",  # Points to where zookeeper connection is defined,
 		"zookeeper_path": "",
 		"supported_extensions": "pkl pkl.gz"
@@ -50,6 +52,16 @@ class Lookup(asab.ConfigObject):
 		self.PubSub = asab.PubSub(app)
 
 		self.ETag = None
+
+		self.ProvidersPath = self.Config.get("providers", "").strip()
+		if len(self.ProvidersPath) == 0:
+			self.ProvidersPath = self.Config.get("master_url", "").strip()  # backwards compatibility
+		self._parse_providers()
+
+		# TODO: only one provider should be expected
+		# TODO: move connection handling to providers
+		# TODO: move load methods to providers
+
 		master_url = self.Config['master_url']
 		if master_url:
 			while master_url[-1] == '/':
@@ -81,6 +93,23 @@ class Lookup(asab.ConfigObject):
 			)
 			zookeeper_svc.register_container(self.ZooKeeperContainer)
 
+	def _parse_providers(self):
+		self.Providers = []
+		if len(self.ProvidersPath) == 0:
+			L.error("No provider specified.")
+			return
+		providers = re.split("\s+", self.ProvidersPath)
+		for provider in providers:
+			self.create_provider(provider)
+
+	def create_provider(self, path: str):
+		if path.startswith("zk:"):
+			self.Providers.append(provider.ZooKeeperProvider(path, self.App))
+		elif path.startswith("http:") or path.startswith("https:"):
+			self.Providers.append(provider.HTTPProvider(path, self.App))
+		else:
+			L.warning("No explicit provider stated in path '{}'. Assuming HTTP.".format(path))
+			self.Providers.append(provider.HTTPProvider(path, self.App))
 
 	def time(self):
 		return self.App.time()
