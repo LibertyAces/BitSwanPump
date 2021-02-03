@@ -8,6 +8,7 @@ import struct
 import aiohttp
 
 import asab
+import asab.zookeeper
 
 ###
 
@@ -18,9 +19,11 @@ L = logging.getLogger(__name__)
 
 class Lookup(asab.ConfigObject):
 	"""
-	Lookups serve for fast data searching in lists of key-value type. They can subsequently be localized and used in pipeline objects (processors and the like). Each lookup requires a statically or dynamically created value list.
+	Lookups serve for fast data searching in lists of key-value type. They can subsequently be localized and used
+	in pipeline objects (processors and the like). Each lookup requires a statically or dynamically created value list.
 
-	If the "lazy" parameter in the constructor is set to True, no load method is called and the user is expected to call it when necessary.
+	If the "lazy" parameter in the constructor is set to True, no load method is called and the user is expected
+	to call it when necessary.
 	"""
 
 
@@ -28,7 +31,10 @@ class Lookup(asab.ConfigObject):
 		"master_url": "",  # If not empty, a lookup is in slave mode (will load data from master or cache)
 		"master_lookup_id": "",  # If not empty, it specify the lookup id that will be used for loading from master
 		"master_timeout": 30,  # In secs.
-		"master_url_endpoint": "/bspump/v1/lookup"
+		"master_url_endpoint": "/bspump/v1/lookup",
+		"zookeeper_section": "",  # Points to where zookeeper connection is defined,
+		"zookeeper_path": "",
+		"supported_extensions": "pkl pkl.gz"
 	}
 
 
@@ -55,6 +61,26 @@ class Lookup(asab.ConfigObject):
 		else:
 			self.MasterURL = None  # No master is defined
 
+		self.SupportedExtensions = None
+		extensions = self.Config.get("supported_extensions", "").strip()
+		if len(extensions) > 0:
+			self.SupportedExtensions = re.split("\s+", extensions)
+
+		self.ZooKeeperContainer = None
+		zookeeper_section = self.Config.get("zookeeper_section", None)
+		zookeeper_path = self.Config.get("zookeeper_path", None)
+		if zookeeper_section is not None and zookeeper_path is not None:
+			zookeeper_svc = app.get_service("asab.ZooKeeperService")
+			config = {
+				"path": zookeeper_path.replace("zk://", "")
+			}
+			self.ZooKeeperContainer = asab.zookeeper.ZooKeeperContainer(
+				app,
+				zookeeper_section,
+				config=config
+			)
+			zookeeper_svc.register_container(self.ZooKeeperContainer)
+
 
 	def time(self):
 		return self.App.time()
@@ -67,6 +93,8 @@ class Lookup(asab.ConfigObject):
 	async def _do_update(self):
 		if self.is_master():
 			updated = await self.load()
+		elif self.ZooKeeperContainer is not None:
+			updated = await self.load_from_zookeeper()
 		else:
 			updated = await self.load_from_master()
 
@@ -183,7 +211,7 @@ class Lookup(asab.ConfigObject):
 				return self.load_from_cache()
 
 			if response.status == 304:
-				L.info("The '{}' lookup is actual.".format(self.Id))
+				L.info("The '{}' lookup is up to date.".format(self.Id))
 				return False
 
 			if response.status == 404:
@@ -206,6 +234,41 @@ class Lookup(asab.ConfigObject):
 		L.info("The '{}' lookup was successfully loaded from master.".format(self.Id))
 
 		self.save_to_cache(data)
+
+		return True
+
+	async def load_from_zookeeper(self) -> bool:
+		# Find the actual file name
+		if self.SupportedExtensions is None:
+			L.warning("No supported file extensions specified.")
+			return False
+
+		file_list = await self.ZooKeeperContainer.get_children()
+		for extension in self.SupportedExtensions:
+			file_name = "{}.{}".format(self.ZoneName, extension)
+			if file_name in file_list:
+				break
+		else:
+			L.warning("Zone file '{}' not found".format(self.ZoneName))
+			return False
+
+		# Load the file
+		L.info("Loading '{}'".format(file_name))
+		try:
+			raw_data = await self.ZooKeeperContainer.get_raw_data(file_name)
+		except Exception as e:
+			L.error("Failed to fetch '{}': {}".format(file_name, e))
+			return False
+
+		try:
+			self.deserialize(raw_data)
+		except Exception as e:
+			L.error("Failed to deserialize '{}': {}".format(file_name, e))
+			return False
+
+		L.log(asab.LOG_NOTICE, "File '{}' successfully loaded".format(file_name))
+
+		self.save_to_cache(raw_data)
 
 		return True
 
