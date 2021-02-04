@@ -78,12 +78,15 @@ class ZooKeeperDeclarationLibrary(DeclarationLibrary):
 
 					document_zookeeper_path = "{}/{}".format(zookeeper_path, document)
 
-					self.ZookeeperData[document] = await self.ZooKeeperClient.get_data(
-						document_zookeeper_path
-					)
-
 					if self.Recursive:
 						await self._load_by_path(document_zookeeper_path)
+
+					try:
+						self.ZookeeperData[document] = await self.ZooKeeperClient.get_data(
+							document_zookeeper_path
+						)
+					except (aiozk.exc.NoNode, IndexError):
+						pass
 
 				except Exception as e:
 					L.warning("Exception occurred during ZooKeeper load: '{}'".format(e))
