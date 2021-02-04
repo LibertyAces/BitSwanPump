@@ -57,7 +57,7 @@ class ZooKeeperDeclarationLibrary(DeclarationLibrary):
 		super().__init__()
 		self.ZooKeeperClient = zookeeper_client
 
-		self.ZooKeeperPath = zookeeper_path
+		self.ZooKeeperPath = zookeeper_path.replace("/**", "")
 		self.Recursive = zookeeper_path.endswith("*")
 
 		if self.Recursive:
