@@ -32,6 +32,8 @@ class FileDeclarationLibrary(DeclarationLibrary):
 		recursive = basedir.endswith("*")
 		if not recursive:
 			self.BaseDir = os.path.join(self.BaseDir, "*")
+		else:
+			self.BaseDir = os.path.join(os.path.join(self.BaseDir[:-2], "**"), "*")
 
 		self.FileNames = glob.iglob(self.BaseDir, recursive=recursive)
 
