@@ -42,11 +42,12 @@ class TestDeclarativeNestedExpression(bspump.unittest.TestCase):
 			"continue": "yes",
 		}
 
-		res_parse = self.Optimizer.optimize(decl["parse"])({
+		context = {
 			"brain": {
 				"idea": "This is beautiful parsing."
 			}
-		}, event)
+		}
+		res_parse = self.Optimizer.optimize(decl["parse"])(context, event)
 
 		self.assertEqual(res_parse, {
 			"name": "Parse Dict Success",

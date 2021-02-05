@@ -12,6 +12,15 @@ parse:
     idea: !ITEM CONTEXT brain.idea
     name: "Parse Dict Success"
 
+  update:
+    !MAP
+    what: !ITEM CONTEXT brain.idea
+    in:
+      "This is beautiful parsing.":
+        !CONTEXT.SET
+        set:
+          target: "parsed"
+
 join:
   !REGEX.PARSE
   what: !EVENT

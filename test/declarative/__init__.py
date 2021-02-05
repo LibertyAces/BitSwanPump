@@ -8,3 +8,4 @@ from .test_declarative_dict_parse import *
 from .test_declarative_and import *
 from .test_declarative_add import *
 from .test_declarative_time import *
+from .test_declarative_nested_expression import *

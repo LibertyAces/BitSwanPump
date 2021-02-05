@@ -21,7 +21,7 @@ set:
 	item1: foo
 	item2: bar
 	item3: ...
-del:
+unset:
 	- item4
 
 ```
@@ -37,9 +37,9 @@ This is how to create the empty dictionary:
 
 	Attributes = {
 		"With": ["*"],  # TODO: This ...
-		"Unset": ["*"],  # TODO: This ...
+		"Update": ["*"],  # TODO: This ...
 		"Mandatory": [],  # TODO: This ...
-		"Update": [],  # TODO: This ...
+		"Unset": [],  # TODO: This ...
 	}
 
 	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_unset=None, arg_add=None, arg_update=None, arg_mandatory=None):
@@ -141,7 +141,10 @@ This is how to create the empty dictionary:
 		if self.Update is not None:
 			update_dict = self.Update(context, event, with_dict, *args, **kwargs)
 			if update_dict is not None and update_dict is not False:
-				with_dict.update(update_dict)
+				try:
+					with_dict.update(update_dict)
+				except TypeError:
+					pass
 
 		if self.Unset is not None:
 			for key in self.Unset:

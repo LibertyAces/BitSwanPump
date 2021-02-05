@@ -35,7 +35,8 @@ class FileDeclarationLibrary(DeclarationLibrary):
 		else:
 			self.BaseDir = os.path.join(os.path.join(self.BaseDir[:-2], "**"), "*")
 
-		self.FileNames = glob.iglob(self.BaseDir, recursive=recursive)
+		file_names = glob.iglob(self.BaseDir, recursive=recursive)
+		self.FileNames = [ file_name for file_name in file_names ]
 
 	def read(self, identifier):
 
