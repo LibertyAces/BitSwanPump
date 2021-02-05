@@ -81,7 +81,8 @@ class WHEN(Expression):
 			# `else` branch
 			elif 'else' in i:
 				assert(len(i) == 1)
-				assert('Else' not in self.Attributes)
+				# TODO: Fix double-initialization when doing INCLUDE
+				# assert('Else' not in self.Attributes)
 
 				v = i['else']
 				if not isinstance(v, Expression):
