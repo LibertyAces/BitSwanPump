@@ -1,11 +1,11 @@
-from ...abc import Expression, evaluate
+from ...abc import Expression
 
 
 class CUT(Expression):
 
 	Attributes = {
-		"Value": ["*"],  # TODO: This ...
-		"Delimiter": ["*"],  # TODO: This ...
+		"Value": ["str"],
+		"Delimiter": ["str"],
 		"Field": ["*"],  # TODO: This ...
 	}
 
@@ -20,8 +20,13 @@ class CUT(Expression):
 		# Must be an integer
 		self.Field = arg_field
 
+	def get_outlet_type(self):
+		return str.__name__
+
+	def consult_inlet_type(self, key, child):
+		return str.__name__
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = evaluate(self.Value, context, event, *args, **kwargs)
+		value = self.Value(context, event, *args, **kwargs)
 		x = value.split(self.Delimiter, self.Field + 1)
 		return x[self.Field]

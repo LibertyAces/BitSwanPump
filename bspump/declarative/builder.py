@@ -3,13 +3,14 @@ import inspect
 
 import yaml
 
-from . import expression
-
 from .libraries import FileDeclarationLibrary
 from .declerror import DeclarationError
 from .abc import Expression
 
 from .expression.value.valueexpr import VALUE
+from .expression.statement.funexpr import FUNCTION
+
+from .expression.utility.castexpr import CAST
 from .expression.statement.selfexpr import SELF
 
 ###
@@ -37,6 +38,7 @@ class ExpressionBuilder(object):
 			self.Libraries = libraries
 
 		# Register the common expression module
+		from . import expression
 		self.register_module(expression)
 
 	def register_module(self, module):
@@ -65,7 +67,7 @@ class ExpressionBuilder(object):
 
 	def parse(self, declaration, source_name=None):
 		"""
-		Returns a list of expression from the loaded declaration.
+		Returns a list of expressions from the loaded declaration.
 		:param declaration:
 		:param source_name:
 		:return:
@@ -88,6 +90,27 @@ class ExpressionBuilder(object):
 
 		loader.add_constructor("!INCLUDE", self._construct_include)
 		loader.add_constructor("!CONFIG", self._construct_config)
+
+		loader.add_constructor("tag:yaml.org,2002:ui256", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui128", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui64", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui32", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui16", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:ui8", self._construct_scalar)
+
+		loader.add_constructor("tag:yaml.org,2002:si256", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si128", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si64", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si32", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si16", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:si8", self._construct_scalar)
+
+		loader.add_constructor("tag:yaml.org,2002:fp128", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:fp64", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:fp32", self._construct_scalar)
+		loader.add_constructor("tag:yaml.org,2002:fp16", self._construct_scalar)
+
+		loader.add_constructor("tag:yaml.org,2002:str", self._construct_scalar)
 
 		expressions = []
 		try:
@@ -121,6 +144,36 @@ class ExpressionBuilder(object):
 		return expressions
 
 
+	def parse_ext(self, declaration, source_name=None):
+		'''
+		Wrap top-level declaration into a function, value etc.
+		This is likely intermediate (not a final) implementation.
+		'''
+		result = []
+		for expr in self.parse(declaration, source_name=source_name):
+
+			if isinstance(expr, (VALUE, FUNCTION)):
+				result.append(expr)
+				continue
+
+			if isinstance(expr, Expression):
+				fun_expr = FUNCTION(self.App, arg_do=expr, arg_name="main")
+				fun_expr.set_location(expr.Location)
+				result.append(fun_expr)
+				continue
+
+			if isinstance(expr, (bool, int, float, str, set, list, dict)):
+				expr = VALUE(self.App, value=expr)
+				# Fake the location string
+				expr.set_location('  at line 1, column 1:\n{}\n^'.format(declaration[:20]))
+				result.append(expr)
+				continue
+
+			raise NotImplementedError("Top-level type '{}' not supported".format(type(expr)))
+
+		return result
+
+
 	def _walk(self, expression):
 		if expression is None:
 			return
@@ -140,13 +193,13 @@ class ExpressionBuilder(object):
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
 
-		elif isinstance(expression, list):
+		elif isinstance(expression, (list, set, frozenset)):
 
 			for _expression in expression:
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
 
-		elif isinstance(expression, (str, int, float)):
+		elif isinstance(expression, (str, int, float, tuple)):
 			return
 
 		else:
@@ -202,3 +255,38 @@ class ExpressionBuilder(object):
 		except Exception as e:
 			L.exception("Error in expression")
 			raise DeclarationError("Invalid expression at {}\n{}".format(node.start_mark, e))
+
+
+	def _construct_scalar(self, loader: yaml.Loader, node: yaml.Node):
+
+		location = node.start_mark
+		if self.Identifier is not None:
+			# https://github.com/yaml/pyyaml/blob/4c2e993321ad29a02a61c4818f3cef9229219003/lib3/yaml/reader.py
+			location = location.replace("<unicode string>", str(self.Identifier))
+
+		if isinstance(node, yaml.ScalarNode):
+			# Value variant e.g.: `!!si 64`
+			outlet_type = node.tag.rsplit(':', 1)[1]
+			if outlet_type == 'str':
+				return node.value
+			elif outlet_type[0] in ('u', 's'):
+				value = int(node.value)
+			elif outlet_type[0] == 'f':
+				value = float(node.value)
+			else:
+				raise NotImplementedError("Unsupport scalar type '{}'".format(outlet_type))
+			obj = VALUE(self.App, value=value, outlet_type=outlet_type)
+
+
+		elif isinstance(node, yaml.MappingNode):
+			# Casting variant
+			outlet_type = node.tag.rsplit(':', 1)[1]
+			value = loader.construct_mapping(node)
+			obj = CAST(self.App, arg_what=value['what'], arg_type=outlet_type)
+
+		else:
+			NotImplementedError("Unimplemented for YAML node '{}'".format(node))
+
+		obj.set_location(location)
+		obj.Node = node
+		return obj

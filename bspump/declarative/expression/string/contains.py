@@ -1,12 +1,12 @@
-from ...abc import Expression, evaluate
+from ...abc import Expression
 from ..value.valueexpr import VALUE
 
 
 class CONTAINS(Expression):
 
 	Attributes = {
-		"Value": ["*"],  # TODO: This ...
-		"Substring": ["*"],  # TODO: This ...
+		"Value": ["str"],
+		"Substring": ["str"],
 	}
 
 	def __init__(self, app, *, arg_what, arg_substring):
@@ -18,10 +18,16 @@ class CONTAINS(Expression):
 		else:
 			self.Substring = arg_substring
 
+	def get_outlet_type(self):
+		return bool.__name__
+
+	def consult_inlet_type(self, key, child):
+		return str.__name__
+
 	def __call__(self, context, event, *args, **kwargs):
-		value = evaluate(self.Value, context, event, *args, **kwargs)
+		value = self.Value(context, event, *args, **kwargs)
 		if value is None:
 			return False
 
-		substr = evaluate(self.Substring, context, event, *args, **kwargs)
+		substr = self.Substring(context, event, *args, **kwargs)
 		return substr in value

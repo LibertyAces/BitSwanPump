@@ -1,7 +1,15 @@
 import abc
 import os
+import glob
 
 import aiozk
+import logging
+
+#
+
+L = logging.getLogger(__name__)
+
+#
 
 
 class DeclarationLibrary(abc.ABC):
@@ -21,12 +29,24 @@ class FileDeclarationLibrary(DeclarationLibrary):
 		super().__init__()
 		self.BaseDir = basedir
 
+		recursive = basedir.endswith("*")
+		if not recursive:
+			self.BaseDir = os.path.join(self.BaseDir, "*")
+		else:
+			self.BaseDir = os.path.join(os.path.join(self.BaseDir[:-2], "**"), "*")
+
+		self.FileNames = glob.iglob(self.BaseDir, recursive=recursive)
+
 	def read(self, identifier):
+
 		# Try to load YAML from a disk
-		fname = os.path.join(self.BaseDir, identifier + '.yaml')
-		if os.path.exists(fname):
-			with open(fname, 'r') as f:
-				return f.read()
+		for file_name in self.FileNames:
+
+			if file_name.endswith(identifier + '.yaml') or file_name.endswith(identifier + '.yml'):
+
+				with open(file_name, 'r') as f:
+					return f.read()
+
 		return None
 
 
@@ -38,16 +58,41 @@ class ZooKeeperDeclarationLibrary(DeclarationLibrary):
 	def __init__(self, zookeeper_client, zookeeper_path, encoding="utf-8"):
 		super().__init__()
 		self.ZooKeeperClient = zookeeper_client
-		self.ZooKeeperPath = zookeeper_path
+
+		self.ZooKeeperPath = zookeeper_path.replace("/**", "")
+		self.Recursive = zookeeper_path.endswith("*")
+
+		if self.Recursive:
+			self.ZooKeeperPath = self.ZooKeeperPath[:-2]
+
 		self.Encoding = encoding
 		self.ZookeeperData = {}
 
 	async def load(self):
+		await self._load_by_path(self.ZooKeeperPath)
+
+	async def _load_by_path(self, zookeeper_path):
 		try:
-			for document in await self.ZooKeeperClient.get_children(self.ZooKeeperPath):
-				self.ZookeeperData[document] = await self.ZooKeeperClient.get_data(
-					"{}/{}".format(self.ZooKeeperPath, document)
-				)
+
+			for document in await self.ZooKeeperClient.get_children(zookeeper_path):
+
+				try:
+
+					document_zookeeper_path = "{}/{}".format(zookeeper_path, document)
+
+					if self.Recursive:
+						await self._load_by_path(document_zookeeper_path)
+
+					try:
+						self.ZookeeperData[document] = await self.ZooKeeperClient.get_data(
+							document_zookeeper_path
+						)
+					except (aiozk.exc.NoNode, IndexError):
+						pass
+
+				except Exception as e:
+					L.warning("Exception occurred during ZooKeeper load: '{}'".format(e))
+
 		except aiozk.exc.NoNode:
 			pass
 

@@ -36,8 +36,24 @@ class DIV(SequenceExpression):
 	Divides values in expression
 	"""
 
+	Attributes = {
+		"Items": [
+			'si64', 'si8', 'si16', 'si32', 'si128', 'si256',
+			'ui8', 'ui16', 'ui32', 'ui64', 'ui128', 'ui256',
+			'fp64', 'fp16', 'fp32', 'fp128',
+		]
+	}
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.truediv, context, event, *args, **kwargs)
+
+	def get_outlet_type(self):
+		# TODO: Check if there is float among integers
+		return _get_outlet_type_from_first(self.Items)
+
+	def get_items_inlet_type(self):
+		# TODO: Check if there is float among integers
+		return _get_outlet_type_from_first(self.Items)
 
 
 class MUL(SequenceExpression):
@@ -45,8 +61,24 @@ class MUL(SequenceExpression):
 	Multiplies values in expression.
 	"""
 
+	Attributes = {
+		"Items": [
+			'si64', 'si8', 'si16', 'si32', 'si128', 'si256',
+			'ui8', 'ui16', 'ui32', 'ui64', 'ui128', 'ui256',
+			'fp64', 'fp16', 'fp32', 'fp128',
+		]
+	}
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.mul, context, event, *args, **kwargs)
+
+	def get_outlet_type(self):
+		# TODO: Check if there is float among integers
+		return _get_outlet_type_from_first(self.Items)
+
+	def get_items_inlet_type(self):
+		# TODO: Check if there is float among integers
+		return _get_outlet_type_from_first(self.Items)
 
 
 class SUB(SequenceExpression):
@@ -54,8 +86,24 @@ class SUB(SequenceExpression):
 	Subtracts values in expression
 	"""
 
+	Attributes = {
+		"Items": [
+			'si64', 'si8', 'si16', 'si32', 'si128', 'si256',
+			'ui8', 'ui16', 'ui32', 'ui64', 'ui128', 'ui256',
+			'fp64', 'fp16', 'fp32', 'fp128',
+		]
+	}
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.sub, context, event, *args, **kwargs)
+
+	def get_outlet_type(self):
+		# TODO: Check if there is float among integers
+		return _get_outlet_type_from_first(self.Items)
+
+	def get_items_inlet_type(self):
+		# TODO: Check if there is float among integers
+		return _get_outlet_type_from_first(self.Items)
 
 
 class MOD(SequenceExpression):
@@ -81,6 +129,17 @@ class MOD(SequenceExpression):
 	def get_items_inlet_type(self):
 		return _get_outlet_type_from_first(self.Items)
 
+
+class POW(SequenceExpression):
+
+	Attributes = {
+		"Items": [
+			'si64'
+		]
+	}
+
+	def __call__(self, context, event, *args, **kwargs):
+		return self.reduce(operator.pow, context, event, *args, **kwargs)
 
 
 def _get_outlet_type_from_first(items):

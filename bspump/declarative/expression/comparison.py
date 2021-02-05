@@ -122,8 +122,6 @@ class EQ_optimized_simple(EQ):
 
 class EQ_optimized_EVENT_VALUE(EQ):
 
-	# TODO: Attributes = [...]
-
 	def __init__(self, orig):
 		super().__init__(orig.App, sequence=orig.Items)
 		self.Akey = self.Items[0].Item.Value
@@ -167,6 +165,7 @@ class GT(ComparisonExpression):
 		return evaluate_items_inlet_type(self.Items)
 
 
+# TODO: This operator is obsoleted and should be removed (AT Jan 2021)
 class IS(ComparisonExpression):
 	"""
 	Operator 'is'
@@ -174,11 +173,26 @@ class IS(ComparisonExpression):
 	Operator = operator.is_
 
 
+# TODO: This operator is obsoleted and should be removed (AT Jan 2021)
 class ISNOT(ComparisonExpression):
 	"""
 	Operator 'is not'
 	"""
 	Operator = operator.is_not
+
+
+	def get_items_inlet_type(self):
+		# Find the first usable type in the items
+		for item in self.Items:
+			outlet_type = item.get_outlet_type()
+			if outlet_type not in frozenset(['^']):
+				return outlet_type
+		raise NotImplementedError("Cannot decide on items inlet type '{}'".format(self))
+
+
+	def consult_inlet_type(self, key, child):
+		return self.get_items_inlet_type()
+
 
 
 def evaluate_items_inlet_type(items):

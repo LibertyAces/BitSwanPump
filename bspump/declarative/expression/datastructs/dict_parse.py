@@ -1,7 +1,8 @@
 import re
 import urllib.parse
 
-from ...abc import Expression, evaluate
+from ..value.valueexpr import VALUE
+from ...abc import Expression
 
 
 class RegexABCParser(object):
@@ -39,8 +40,7 @@ class DICT_PARSE(Expression):
 	Attributes = {
 		"Value": ["*"],  # TODO: This ...
 		"Type": ["*"],  # TODO: This ...
-		"Set": ["*"],  # TODO: This ...
-		"Unset": ["*"],  # TODO: This ...
+		"Unset": [],  # TODO: This ...
 		"Update": ["*"],  # TODO: This ...
 	}
 
@@ -55,9 +55,8 @@ class DICT_PARSE(Expression):
 			'qs': QueryStringParser,
 		}.get(arg_type, 'kvs')(app)
 
-		if arg_set is not None:
-			assert(isinstance(arg_set, dict))
-		self.Set = arg_set
+		self.ArgSet = arg_set
+		self.Set = None
 
 		if arg_unset is not None:
 			assert(isinstance(arg_unset, list))
@@ -65,19 +64,50 @@ class DICT_PARSE(Expression):
 
 		self.Update = arg_update
 
+	def set(self, key, value):
+		setattr(self, key, value)
+
+		if "Set" in key:
+			self.Set[key[3:]] = value
+
+	def initialize(self):
+		if self.ArgSet is None:
+			self.Set = None
+		else:
+			assert(isinstance(self.ArgSet, dict))
+			self.Set = dict()
+			self._set_value_or_expression_to_attribute(self.ArgSet, self.Set, "Set")
+
+
+	def _set_value_or_expression_to_attribute(self, _from, _to, name):
+		for key, value in _from.items():
+
+			# Parse value to attribute, if not expression
+			if isinstance(value, Expression):
+				_to[key] = value
+			else:
+				assert isinstance(value, (int, str, bytes, bool, tuple, list)) or value is None
+				value = VALUE(self.App, value=value)
+				_to[key] = value
+
+			# Set the value to the class attribute
+			attr_name = '{}{}'.format(name, key)
+			setattr(self, attr_name, value)
+			self.Attributes[attr_name] = value.get_outlet_type()
+
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = evaluate(self.Value, context, event, *args, **kwargs)
+		value = self.Value(context, event, *args, **kwargs)
 		ret = self.Parser(context, value)
 
 		if self.Set is not None:
 			for key, value in self.Set.items():
-				v = evaluate(value, context, event, ret, *args, **kwargs)
+				v = value(context, event, ret, *args, **kwargs)
 				if v is not None:
 					ret[key] = v
 
 		if self.Update is not None:
-			update_dict = evaluate(self.Update, context, event, ret, *args, **kwargs)
+			update_dict = self.Update(context, event, ret, *args, **kwargs)
 			if update_dict is not None and update_dict is not False:
 				ret.update(update_dict)
 

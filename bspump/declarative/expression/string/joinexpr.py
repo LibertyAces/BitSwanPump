@@ -1,19 +1,21 @@
-from ...abc import Expression, evaluate
+from ...abc import Expression
 from ..value.valueexpr import VALUE
 
 
 class JOIN(Expression):
 
 	Attributes = {
-		"Items": [],  # TODO: This ...
-		"Char": ["*"],  # TODO: This ...
+		"Char": ["str"],
 		"Miss": ["*"],  # TODO: This ...
 	}
 
 	def __init__(self, app, *, arg_items, arg_delimiter=" ", arg_miss=""):
 		super().__init__(app)
 		self.App = app
+
 		self.Items = arg_items
+		self.ItemsNormalized = []
+
 		self.Char = arg_delimiter
 
 		if not isinstance(arg_miss, Expression):
@@ -21,17 +23,37 @@ class JOIN(Expression):
 		else:
 			self.Miss = arg_miss
 
+	def get_outlet_type(self):
+		return str.__name__
+
+	def consult_inlet_type(self, key, child):
+		return str.__name__
+
+	def set(self, key, value):
+		setattr(self, key, value)
+
+		if "Item" in key:
+			self.ItemsNormalized[int(key[4:])] = value
+
 	def initialize(self):
-		for index in range(0, len(self.Items)):
-			if not isinstance(self.Items[index], Expression):
-				self.Items[index] = VALUE(self.App, value=self.Items[index])
+
+		for n, item in enumerate(self.Items):
+
+			if not isinstance(item, Expression):
+				item = VALUE(self.App, value=item)
+
+			attr_name = 'Item{}'.format(n)
+			setattr(self, attr_name, item)
+			self.Attributes[attr_name] = str.__name__
+
+			self.ItemsNormalized.append(item)
 
 	def __call__(self, context, event, *args, **kwargs):
 		arr = []
-		for item in self.Items:
-			v = evaluate(item, context, event, *args, **kwargs)
+		for item in self.ItemsNormalized:
+			v = item(context, event, *args, **kwargs)
 			if v is None:
-				v = evaluate(self.Miss, context, event, *args, **kwargs)
+				v = self.Miss(context, event, *args, **kwargs)
 				if v is None:
 					return None
 			arr.append(str(v))

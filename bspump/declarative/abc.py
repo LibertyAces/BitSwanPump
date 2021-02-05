@@ -52,7 +52,10 @@ class Expression(object):
 
 		yield (parent, key, self)
 
-		for key in self.Attributes:
+		# Attributes may change during iteration, which could produce an error
+		current_attributes = self.Attributes.copy()
+
+		for key in current_attributes:
 			v = getattr(self, key, None)
 			if isinstance(v, Expression):
 				for x in v.walk(self, key):
@@ -139,6 +142,10 @@ class SequenceExpression(Expression):
 
 
 def evaluate(value, context, event, *args, **kwargs):
+	'''
+	This is OBSOLETED method and will be removed.
+	DO NOT USE IT!
+	'''
 	try:
 		return value(context, event, *args, **kwargs)
 	except Exception as e:

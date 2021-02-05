@@ -7,15 +7,18 @@ class VALUE(Expression):
 	"""
 
 	Attributes = {
-		"Value": []
 	}
 
 
-	def __init__(self, app, *, value):
+	def __init__(self, app, *, value, outlet_type=None):
 		super().__init__(app)
 		assert(not isinstance(value, Expression))
-
 		self.Value = value
+
+		if outlet_type is None:
+			self.OutletType = type(self.Value).__name__
+		else:
+			self.OutletType = outlet_type
 
 
 	def __call__(self, context, event, *args, **kwargs):
@@ -23,4 +26,4 @@ class VALUE(Expression):
 
 
 	def get_outlet_type(self):
-		return type(self.Value).__name__
+		return self.OutletType

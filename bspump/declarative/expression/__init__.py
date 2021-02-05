@@ -4,6 +4,7 @@ from .arithmetic import DIV
 from .arithmetic import MUL
 from .arithmetic import SUB
 from .arithmetic import MOD
+from .arithmetic import POW
 
 # Logical
 from .logical import AND
@@ -26,6 +27,7 @@ from .statement.whenexpr import WHEN
 from .statement.forexpr import FOR
 from .statement.firstexpr import FIRST
 from .statement.selfexpr import SELF
+from .statement.funexpr import FUNCTION
 
 # String
 from .string.endswith import ENDSWITH
@@ -61,6 +63,8 @@ from .value.eventexpr import ARG
 from .utility.context import CONTEXT
 from .utility.context import CONTEXT_SET
 
+from .utility.hashexpr import HASH
+
 # Lookup
 from .lookup.lookupexpr import LOOKUP_GET
 from .lookup.lookupexpr import LOOKUP_CONTAINS
@@ -85,10 +89,10 @@ from .datetime.dtparse import DATETIME_PARSE
 from .datetime.dtget import DATETIME_GET
 
 __all__ = [
-	"ADD", "DIV", "MUL", "SUB", "MOD",                   # Aritmetics
+	"ADD", "DIV", "MUL", "SUB", "MOD", "POW",            # Aritmetics
 	"AND", "OR", "NOT",                                  # Logical
 	"LT", "LE", "EQ", "NE", "GE", "GT", "IS", "ISNOT",   # Comparison
-	"IF", "WHEN", "FOR", "FIRST", "SELF",
+	"IF", "WHEN", "FOR", "FIRST", "SELF", "FUNCTION",
 	"DEBUG",
 	"DICT", "LIST", "TUPLE", "ITEM",
 	"DICT_PARSE",
@@ -100,6 +104,7 @@ __all__ = [
 	"VALUE",
 	"EVENT",
 	"CONTEXT", "CONTEXT_SET",
+	"HASH",
 	"ARGS", "ARG",
 	"KWARGS", "KWARG",
 	"LOOKUP_GET", "LOOKUP_CONTAINS",

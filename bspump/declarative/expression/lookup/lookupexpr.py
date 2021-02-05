@@ -1,4 +1,4 @@
-from ...abc import Expression, evaluate
+from ...abc import Expression
 
 
 class LOOKUP_GET(Expression):
@@ -23,14 +23,14 @@ class LOOKUP_GET(Expression):
 				if isinstance(k, (str, int, float)):
 					result.append(k)
 				else:
-					result.append(evaluate(k, context, event, **kwargs))
+					result.append(k(context, event, **kwargs))
 			return tuple(result)
 		else:
 			# Simple key
 			if isinstance(self.Key, (str, int, float)):
 				return self.Key
 			else:
-				return evaluate(self.Key, context, event, **kwargs)
+				return self.Key(context, event, **kwargs)
 
 
 	def __call__(self, context, event, *args, **kwargs):
