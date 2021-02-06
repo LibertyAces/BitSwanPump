@@ -14,6 +14,9 @@ class IN(Expression):
 		"Where": ["list", "set", "dict"],
 	}
 
+	Category = "Compare"
+
+
 	def __init__(self, app, *, arg_what, arg_where):
 		super().__init__(app)
 

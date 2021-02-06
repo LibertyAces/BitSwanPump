@@ -9,6 +9,9 @@ class CUT(Expression):
 		"Field": ["*"],  # TODO: This ...
 	}
 
+	Category = "String"
+
+
 	def __init__(self, app, *, arg_what, arg_delimiter, arg_field):
 		super().__init__(app)
 

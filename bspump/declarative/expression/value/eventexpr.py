@@ -13,6 +13,8 @@ Usage:
 
 	Attributes = {}
 
+	Category = "Value"
+
 	def __init__(self, app, *, value):
 		super().__init__(app)
 		assert(value == "")
@@ -36,6 +38,10 @@ Usage:
 
 	Attributes = {}
 
+	Category = "Value"
+
+
+
 	def __init__(self, app, *, value):
 		super().__init__(app)
 		assert(value == "")
@@ -55,6 +61,9 @@ Usage:
 ``
 	"""
 
+	Attributes = {}
+	Category = "Value"
+
 	def __init__(self, app, *, value):
 		super().__init__(app)
 		self.ArgName = value
@@ -66,6 +75,7 @@ Usage:
 class ARGS(Expression):
 
 	Attributes = {}
+	Category = "Value"
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
@@ -78,6 +88,7 @@ class ARGS(Expression):
 class ARG(Expression):
 
 	Attributes = {}
+	Category = "Value"
 
 	def __init__(self, app, *, value):
 		super().__init__(app)

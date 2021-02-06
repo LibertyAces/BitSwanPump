@@ -9,6 +9,9 @@ class CONTAINS(Expression):
 		"Substring": ["str"],
 	}
 
+	Category = "String"
+
+
 	def __init__(self, app, *, arg_what, arg_substring):
 		super().__init__(app)
 		self.Value = arg_what

@@ -15,6 +15,9 @@ class IP_PARSE(Expression):
 		"Subnet": ["*"],  # TODO: This ...
 	}
 
+	Category = "IP"
+
+
 	# TODO: IP.PARSE should be able to receive expressions as values natively
 	def __init__(self, app, *, value=None, arg_value=None):
 		super().__init__(app)

@@ -9,6 +9,9 @@ class ENDSWITH(Expression):
 		"Postfix": ["str"],
 	}
 
+	Category = "String"
+
+
 	def __init__(self, app, *, arg_what, arg_postfix):
 		super().__init__(app)
 		self.What = arg_what

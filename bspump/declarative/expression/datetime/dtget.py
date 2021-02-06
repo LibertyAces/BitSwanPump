@@ -12,6 +12,9 @@ class DATETIME_GET(Expression):
 		"Timezone": ["*"],  # TODO: This ...
 	}
 
+	Category = "Date/Time"
+
+
 	def __init__(self, app, *, arg_with, arg_what, arg_timezone=None):
 		super().__init__(app)
 

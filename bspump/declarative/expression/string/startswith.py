@@ -9,6 +9,9 @@ class STARTSWITH(Expression):
 		"Prefix": ["str"],
 	}
 
+	Category = "String"
+
+
 	def __init__(self, app, *, arg_what, arg_prefix):
 		super().__init__(app)
 

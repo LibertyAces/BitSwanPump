@@ -19,6 +19,9 @@ class DATETIME_PARSE(Expression):
 		"Timezone": ["*"],  # TODO: This ...
 	}
 
+	Category = "Date/Time"
+
+
 	def __init__(self, app, *, arg_what, arg_format, arg_flags='', arg_timezone=None):
 		super().__init__(app)
 		if not isinstance(arg_what, Expression):

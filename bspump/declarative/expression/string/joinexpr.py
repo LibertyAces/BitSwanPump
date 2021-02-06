@@ -9,6 +9,9 @@ class JOIN(Expression):
 		"Miss": ["*"],  # TODO: This ...
 	}
 
+	Category = "String"
+
+
 	def __init__(self, app, *, arg_items, arg_delimiter=" ", arg_miss=""):
 		super().__init__(app)
 		self.App = app

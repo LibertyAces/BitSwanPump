@@ -14,6 +14,9 @@ class IF(Expression):
 		"Else": None,      # Determined in initialize()
 	}
 
+	Category = 'Statements'
+
+
 	def __init__(self, app, *, arg_test, arg_then=True, arg_else=False):
 		super().__init__(app)
 
