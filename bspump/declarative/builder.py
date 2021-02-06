@@ -157,7 +157,7 @@ class ExpressionBuilder(object):
 				continue
 
 			if isinstance(expr, Expression):
-				fun_expr = FUNCTION(self.App, arg_do=expr, arg_name="main")
+				fun_expr = FUNCTION(self.App, arg_apply=expr, arg_name="main")
 				fun_expr.set_location(expr.Location)
 				result.append(fun_expr)
 				continue

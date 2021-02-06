@@ -5,19 +5,19 @@ from ..value.valueexpr import VALUE
 class FUNCTION(Expression):
 
 	Attributes = {
-		"Do": ["*"],
+		"Apply": ["*"],
 	}
 
 	Category = 'Statements'
 
 
-	def __init__(self, app, *, arg_do, arg_name: str = None):
+	def __init__(self, app, *, arg_apply, arg_name: str = None):
 		super().__init__(app)
 
-		if isinstance(arg_do, Expression):
-			self.Do = arg_do
+		if isinstance(arg_apply, Expression):
+			self.Apply = arg_apply
 		else:
-			self.Do = VALUE(app, value=arg_do)
+			self.Apply = VALUE(app, value=arg_apply)
 
 		if arg_name is not None:
 			assert(isinstance(arg_name, str))
@@ -27,8 +27,8 @@ class FUNCTION(Expression):
 
 
 	def __call__(self, context, event, *args, **kwargs):
-		return self.Do(context, event, *args, **kwargs)
+		return self.Apply(context, event, *args, **kwargs)
 
 
 	def get_outlet_type(self):
-		return self.Do.get_outlet_type()
+		return self.Apply.get_outlet_type()
