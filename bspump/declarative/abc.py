@@ -17,6 +17,8 @@ class Expression(object):
 
 	Attributes = None  # Must be a list, if missing, then the Expression class is not complete
 
+	Category = 'Others'
+
 	def __init__(self, app):
 		if self.Attributes is None:
 			raise NotImplementedError("Missing 'Attributes' in {}".format(self))

@@ -15,6 +15,9 @@ class IP_FORMAT(Expression):
 		"Subnet": ["*"],  # TODO: This ...
 	}
 
+	Category = "IP"
+
+
 	def __init__(self, app, *, arg_what, arg_format="auto"):
 		super().__init__(app)
 		self.Value = arg_what

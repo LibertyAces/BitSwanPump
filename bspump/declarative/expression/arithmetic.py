@@ -17,6 +17,8 @@ class ADD(SequenceExpression):
 		]
 	}
 
+	Category = "Arithmetic"
+
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.add, context, event, *args, **kwargs)
@@ -44,6 +46,8 @@ class DIV(SequenceExpression):
 		]
 	}
 
+	Category = "Arithmetic"
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.truediv, context, event, *args, **kwargs)
 
@@ -68,6 +72,8 @@ class MUL(SequenceExpression):
 			'fp64', 'fp16', 'fp32', 'fp128',
 		]
 	}
+
+	Category = "Arithmetic"
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.mul, context, event, *args, **kwargs)
@@ -94,6 +100,9 @@ class SUB(SequenceExpression):
 		]
 	}
 
+	Category = "Arithmetic"
+
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.sub, context, event, *args, **kwargs)
 
@@ -118,6 +127,8 @@ class MOD(SequenceExpression):
 		]
 	}
 
+	Category = "Arithmetic"
+
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.mod, context, event, *args, **kwargs)
 
@@ -137,6 +148,8 @@ class POW(SequenceExpression):
 			'si64'
 		]
 	}
+
+	Category = "Arithmetic"
 
 	def __call__(self, context, event, *args, **kwargs):
 		return self.reduce(operator.pow, context, event, *args, **kwargs)

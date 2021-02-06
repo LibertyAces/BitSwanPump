@@ -10,6 +10,9 @@ class SUBSTRING(Expression):
 		"To": ["*"],  # TODO: This ...
 	}
 
+	Category = "String"
+
+
 	def __init__(self, app, *, arg_what, arg_from=0, arg_to=-1):
 		super().__init__(app)
 		self.Value = arg_what

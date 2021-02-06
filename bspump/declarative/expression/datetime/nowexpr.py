@@ -20,6 +20,8 @@ class NOW(Expression):
 	Attributes = {}
 	Time = time.time
 
+	Category = "Date/Time"
+
 
 	def __init__(self, app, *, value):
 		super().__init__(app)

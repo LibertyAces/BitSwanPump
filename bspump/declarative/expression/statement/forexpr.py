@@ -8,6 +8,9 @@ class FOR(Expression):
 		"Do": ["*"],  # TODO: This ...
 	}
 
+	Category = 'Statements'
+
+
 	def __init__(self, app, *, arg_each, arg_do):
 		super().__init__(app)
 		self.Each = arg_each

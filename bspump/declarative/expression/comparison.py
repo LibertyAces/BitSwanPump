@@ -12,6 +12,9 @@ from .utility.context import CONTEXT
 class ComparisonExpression(SequenceExpression):
 
 
+	Category = "Compare"
+
+
 	def __call__(self, context, event, *args, **kwargs):
 		it = iter(self.Items)
 

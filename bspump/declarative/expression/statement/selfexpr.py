@@ -10,6 +10,8 @@ class SELF(Expression):
 		"Event": ["*"],  # Must of the the same type as the whole expression
 	}
 
+	Category = 'Statements'
+
 
 	def __init__(self, app, *, arg_event):
 		super().__init__(app)

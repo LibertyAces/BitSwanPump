@@ -8,6 +8,8 @@ class FUNCTION(Expression):
 		"Do": ["*"],
 	}
 
+	Category = 'Statements'
+
 
 	def __init__(self, app, *, arg_do, arg_name: str = None):
 		super().__init__(app)

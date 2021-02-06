@@ -17,6 +17,9 @@ class DATETIME_FORMAT(Expression):
 		"Value": ["*"],  # TODO: This ...
 	}
 
+	Category = "Date/Time"
+
+
 	def __init__(self, app, *, arg_format, arg_with=None):
 		super().__init__(app)
 		self.Value = arg_with if arg_with is not None else datetime.datetime.utcnow()

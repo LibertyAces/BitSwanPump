@@ -16,6 +16,8 @@ class IP_INSUBNET(Expression):
 		"Subnet": ["*"],  # TODO: This ...
 	}
 
+	Category = "IP"
+
 
 	def __init__(self, app, *, arg_subnet, arg_what):
 		super().__init__(app)

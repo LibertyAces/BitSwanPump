@@ -9,6 +9,8 @@ class VALUE(Expression):
 	Attributes = {
 	}
 
+	Category = "Value"
+
 
 	def __init__(self, app, *, value, outlet_type=None):
 		super().__init__(app)

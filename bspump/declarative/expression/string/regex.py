@@ -16,6 +16,9 @@ class REGEX(Expression):
 		"Miss": ["*"],
 	}
 
+	Category = "Regex"
+
+
 	def __init__(self, app, *, arg_regex, arg_what, arg_hit=True, arg_miss=False):
 		super().__init__(app)
 		self.Value = arg_what
@@ -58,6 +61,9 @@ class REGEX_PARSE(Expression):
 		"Update": ["*"],
 		"Items": [],
 	}
+
+	Category = "Regex"
+
 
 	def __init__(self, app, *, arg_regex, arg_what, arg_items=None, arg_miss=None, arg_set=None, arg_unset=None, arg_update=None):
 		super().__init__(app)
@@ -192,6 +198,9 @@ class REGEX_REPLACE(Expression):
 		"Replace": ["*"],
 	}
 
+	Category = "Regex"
+
+
 	def __init__(self, app, *, arg_regex, arg_replace, arg_what):
 		super().__init__(app)
 		self.Value = arg_what
@@ -216,6 +225,9 @@ class REGEX_SPLIT(Expression):
 		"Max": ["*"],
 	}
 
+	Category = "Regex"
+
+
 	def __init__(self, app, *, arg_regex, arg_what, arg_max=0):
 		super().__init__(app)
 		self.Value = arg_what
@@ -238,6 +250,9 @@ class REGEX_FINDALL(Expression):
 		"Value": ["*"],  # TODO: This ...
 		"Regex": ["*"],  # TODO: This ...
 	}
+
+	Category = "Regex"
+
 
 	def __init__(self, app, *, arg_regex, arg_what):
 		super().__init__(app)

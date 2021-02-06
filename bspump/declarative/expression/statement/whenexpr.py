@@ -28,6 +28,8 @@ class WHEN(Expression):
 
 	Attributes = False  # Filled during initialize() since attributes are dynamic
 
+	Category = 'Statements'
+
 
 	def __init__(self, app, *, sequence):
 		super().__init__(app)

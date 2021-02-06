@@ -7,6 +7,8 @@ class LOWER(Expression):
 		"Value": ["str"],
 	}
 
+	Category = "String"
+
 
 	def __init__(self, app, *, arg_what):
 		super().__init__(app)

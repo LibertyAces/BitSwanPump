@@ -12,6 +12,9 @@ class AND(SequenceExpression):
 		"Items": ['bool']
 	}
 
+	Category = "Logic"
+
+
 	def __call__(self, context, event, *args, **kwargs):
 		for item in self.Items:
 			try:
@@ -40,6 +43,9 @@ class OR(SequenceExpression):
 		"Items": ['bool']
 	}
 
+	Category = "Logic"
+
+
 	def __call__(self, context, event, *args, **kwargs):
 		for item in self.Items:
 			try:
@@ -67,6 +73,9 @@ class NOT(Expression):
 	Attributes = {
 		'What': 'bool',
 	}
+
+	Category = "Logic"
+
 
 	def __init__(self, app, *, arg_what):
 		super().__init__(app)
