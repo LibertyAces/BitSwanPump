@@ -1,6 +1,6 @@
 import logging
 
-import orjson
+import simdjson
 
 from ..abc.sink import Sink
 from .connection import ElasticSearchBulk
@@ -47,7 +47,7 @@ class ElasticSearchSink(Sink):
 		self.Connection.consume(
 			context.get("es_index", self.Index),
 			event.pop("_id", None),
-			orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE),
+			simdjson.dumps(event),
 			bulk_class=self.BulkClass
 		)
 

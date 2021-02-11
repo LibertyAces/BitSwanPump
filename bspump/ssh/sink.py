@@ -30,7 +30,7 @@ class SFTPSink(Sink):
 			self.build(
 				bspump.random.RandomSource(app, self, choice=['ab', 'bc', 'cd', 'de', 'ef', 'fg'], config={'number': 50}
 										).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=60)),
-				bspump.common.DictToJsonBytesParser(app,self),
+				bspump.common.StdDictToJsonParser(app,self),
 				bspump.ssh.SFTPSink(app, self, "SSHConnection", config={'remote_path': '/test_folder/',
 																		'filename': 'myFileToUpload',
 																		'mode': 'a',

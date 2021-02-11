@@ -20,7 +20,7 @@ class SamplePipeline(bspump.Pipeline):
 				'ok_return_codes': '0,1'
 			}),
 			EmptyFilterProcessor(app, self),
-			bspump.common.JsonBytesToDictParser(app, self),
+			bspump.common.JsonToDictParser(app, self),
 			bspump.common.PPrintSink(app, self)
 		)
 

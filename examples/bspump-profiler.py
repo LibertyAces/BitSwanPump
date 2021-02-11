@@ -44,7 +44,7 @@ class ProfilingPipeline(bspump.Pipeline):
 			bspump.http.HTTPClientSource(app, self, config={
 				'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
 			}).on(bspump.trigger.PeriodicTrigger(app, 5)),
-			bspump.common.JsonBytesToDictParser(app, self),
+			bspump.common.JsonToDictParser(app, self),
 			HTTPDelayProcessor(app, self),
 			SleepProcessor(app, self),
 			bspump.common.NullSink(app, self)

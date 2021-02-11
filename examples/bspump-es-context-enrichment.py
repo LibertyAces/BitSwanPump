@@ -35,7 +35,7 @@ class SamplePipeline(bspump.Pipeline):
 				'path': './data/es_sink.json',
 				'post': 'noop',
 			}).on(bspump.trigger.RunOnceTrigger(app)),
-			bspump.common.JsonBytesToDictParser(app, self),
+			bspump.common.JsonToDictParser(app, self),
 			ElasticContextEnricher(app, self),
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
 		)

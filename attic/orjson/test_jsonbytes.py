@@ -66,7 +66,7 @@ class TestJsonBytesToDictParser(bspump.unittest.ProcessorTestCase):
 		events = [
 			(None, "Not a byte"),
 		]
-		self.set_up_processor(bspump.common.JsonBytesToDictParser)
+		self.set_up_processor(bspump.common.JsonToDictParser)
 
 		output = self.execute(events)
 

@@ -90,7 +90,6 @@ setup(
 		'pywinrm>=0.4.1',
 		'pandas>=0.24.2',
 		'xxhash>=1.4.4',
-		'orjson>=3.4.7',
 	],
 	scripts=[
 		'utils/bselastic',
