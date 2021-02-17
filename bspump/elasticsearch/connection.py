@@ -118,8 +118,8 @@ class ElasticSearchBulk(object):
 
 	async def _data_feeder(self):
 		for _id, data in self.Items:
-			yield b'{"create":{}}\n' if _id is None else simdjson.dumps(
-				{"index": {"_id": _id}})
+			yield b'{"create":{}}\n' if _id is None else bytes(simdjson.dumps(
+				{"index": {"_id": _id}}) + "\n", "utf-8")
 			yield data
 
 	def partial_error_callback(self, response_items):

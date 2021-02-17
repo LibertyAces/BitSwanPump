@@ -47,7 +47,7 @@ class ElasticSearchSink(Sink):
 		self.Connection.consume(
 			context.get("es_index", self.Index),
 			event.pop("_id", None),
-			simdjson.dumps(event),
+			bytes(simdjson.dumps(event) + "\n", "utf-8"),
 			bulk_class=self.BulkClass
 		)
 
