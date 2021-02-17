@@ -53,7 +53,7 @@ class SamplePipeline(bspump.Pipeline):
 				'lower_bound': lower_bound,
 				'upper_bound': upper_bound
 			}),
-			bspump.common.DictToJsonBytesParser(app,self),
+			bspump.common.StdDictToJsonParser(app,self),
 			bspump.common.PPrintProcessor(app,self),
 
 			bspump.ssh.SFTPSink(app, self, "SSHConnection2", config={
@@ -83,4 +83,3 @@ if __name__ == '__main__':
 	svc.add_pipeline(pl)
 
 	app.run()
-

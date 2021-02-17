@@ -14,8 +14,8 @@ class FailingPipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.common.InternalSource(app, self),            
-			bspump.common.JsonBytesToDictParser(app, self),
+			bspump.common.InternalSource(app, self),
+			bspump.common.JsonToDictParser(app, self),
 			bspump.common.NullSink(app, self)
 		)
 

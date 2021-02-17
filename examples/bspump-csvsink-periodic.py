@@ -17,7 +17,7 @@ L = logging.getLogger(__name__)
 
 """
 This example illustrates the way how to adjust the CSV sink behavior in a way, that instead of outputting csv just once,
-it instead outputs periodically, with time interval being set up in the TimingProcessor. No modification of the sink 
+it instead outputs periodically, with time interval being set up in the TimingProcessor. No modification of the sink
 itself is needed. This approach can also be used whenever we want to add custom periodicity into the pipeline.
 """
 
@@ -49,7 +49,7 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.http.HTTPClientSource(app, self, config={
 				'url': "http://ip.jsontest.com/"
 			}).on(bspump.trigger.PeriodicTrigger(app, 5)),
-			bspump.common.JsonBytesToDictParser(app, self),
+			bspump.common.JsonToDictParser(app, self),
 			TimingProcessor(app, self),
 			bspump.common.PPrintProcessor(app, self),
 			self.Sink
