@@ -7,7 +7,7 @@ import struct
 
 import asab
 
-import provider
+from ..lookup import provider
 
 ###
 
@@ -27,6 +27,13 @@ class Lookup(asab.ConfigObject):
 
 
 	ConfigDefaults = {
+		"source_url": "",  # Specifies complete url to source file
+		# zk://zookeeper1:2181/base/path/to/config.yaml
+		# zk:///base/path/to/config.yaml  ==  zk:/base/path/to/config.yaml
+		# zk:///./path/to/config.yaml  ==  zk:/./path/to/config.yaml
+		# http://localhost:8080/path/to/config.yaml
+		# file:/root/path/to/config.yaml  ==  /root/path/to/config.yaml
+
 		"master_url": "",  # If not empty, a lookup is in slave mode (will load data from master or cache)
 		"master_lookup_id": "",  # If not empty, it specify the lookup id that will be used for loading from master
 		"master_timeout": 30,  # In secs.
@@ -49,14 +56,15 @@ class Lookup(asab.ConfigObject):
 		self.Provider = None
 		self.Cache = None
 
-		url = self.Config.get("master_url", "").strip()
+
+		url = self.Config.get("source_url", "").strip() or self.Config.get("master_url", "").strip()
 		self._create_provider(url)
 
 		cache_path = os.path.join(
 			os.path.abspath(asab.Config["general"]["var_dir"]),  # TODO: should be configurable?
 			"lookup_{}.cache".format(self.Id)
 		)
-		self.Cache = provider.FileSystemProvider(self.App, cache_path)
+		self.Cache = provider.FileSystemLookupProvider(self.App, cache_path)
 
 		master_url = self.Config.get("master_url", None)
 		if master_url is not None:
@@ -68,14 +76,13 @@ class Lookup(asab.ConfigObject):
 			self.MasterURL = "{}{}/{}".format(master_url, self.Config['master_url_endpoint'], master_lookup_id)
 
 	def _create_provider(self, path: str):
-		if path.startswith("zk://"):
-			self.Provider = provider.ZooKeeperProvider(self.App, path)
-		elif path.startswith("http://"):
-			self.Provider = provider.HTTPProvider(self.App, path)
+		if path.startswith("zk:"):
+			self.Provider = provider.ZooKeeperLookupProvider(self.App, path)
+		elif path.startswith("http:"):
+			self.Provider = provider.HTTPLookupProvider(self.App, path)
 		else:
-			self.Provider = provider.FileSystemProvider(self.App, path)
+			self.Provider = provider.FileSystemLookupProvider(self.App, path)
 
-	# TODO: what service uses this?
 	def time(self):
 		return self.App.time()
 
