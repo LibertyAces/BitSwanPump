@@ -2,8 +2,7 @@ import asyncio
 import collections.abc
 import json
 import logging
-import os
-import struct
+from typing import Optional
 
 import asab
 
@@ -25,7 +24,6 @@ class Lookup(asab.ConfigObject):
 	to call it when necessary.
 	"""
 
-
 	ConfigDefaults = {
 		"source_url": "",  # Specifies complete url to source file
 		# zk://zookeeper1:2181/base/path/to/config.yaml
@@ -34,10 +32,10 @@ class Lookup(asab.ConfigObject):
 		# http://localhost:8080/path/to/config.yaml
 		# file:/root/path/to/config.yaml  ==  /root/path/to/config.yaml
 
-		"master_url": "",  # If not empty, a lookup is in slave mode (will load data from master or cache)
-		"master_lookup_id": "",  # If not empty, it specify the lookup id that will be used for loading from master
-		"master_timeout": 30,  # In secs.
+		# Backwards compatibility
+		"master_url": "",
 		"master_url_endpoint": "",
+		"master_lookup_id": "",  # If not empty, it specify the lookup id that will be used for loading from master
 	}
 
 	def __init__(self, app, id=None, config=None, lazy=False):
@@ -47,46 +45,52 @@ class Lookup(asab.ConfigObject):
 		self.App = app
 		self.Loop = app.Loop
 		self.Lazy = lazy
-		self.IsLoaded = False
 
 		self.PubSub = asab.PubSub(app)
 
-		self.ETag = None  # TODO: is this necessary?
 		self.MasterURL = None
-		self.Provider = None
-		self.Cache = None
+		self.Provider: Optional[provider.LookupProviderABC] = None
 
+		url = self.Config.get("source_url", "").strip()
+		if len(url) > 0:
+			self._create_provider(url)
+		else:
+			url = self.Config.get("master_url", "")
+			if len(url) > 0:
+				url = url.rstrip("/")
+				master_lookup_id = self.Config["master_lookup_id"]
+				if master_lookup_id == "":
+					master_lookup_id = self.Id
+				self.MasterURL = "{}{}/{}".format(url, self.Config["master_url_endpoint"], master_lookup_id)
+				self.Provider = provider.HTTPBatchProvider(self, self.MasterURL)
 
-		url = self.Config.get("source_url", "").strip() or self.Config.get("master_url", "").strip()
-		self._create_provider(url)
+	def __getitem__(self, key):
+		raise NotImplementedError("Lookup '{}' __getitem__() method not implemented".format(self.Id))
 
-		cache_path = os.path.join(
-			os.path.abspath(asab.Config["general"]["var_dir"]),  # TODO: should be configurable?
-			"lookup_{}.cache".format(self.Id)
-		)
-		self.Cache = provider.FileSystemLookupProvider(self.App, cache_path)
+	def __iter__(self):
+		raise NotImplementedError("Lookup '{}' __iter__() method not implemented".format(self.Id))
 
-		master_url = self.Config.get("master_url", None)
-		if master_url is not None:
-			while master_url[-1] == '/':
-				master_url = master_url[:-1]
-			master_lookup_id = self.Config['master_lookup_id']
-			if master_lookup_id == "":
-				master_lookup_id = self.Id
-			self.MasterURL = "{}{}/{}".format(master_url, self.Config['master_url_endpoint'], master_lookup_id)
+	def __len__(self):
+		raise NotImplementedError("Lookup '{}' __len__() method not implemented".format(self.Id))
+
+	def __contains__(self, item):
+		raise NotImplementedError("Lookup '{}' __contains__() method not implemented".format(self.Id))
 
 	def _create_provider(self, path: str):
 		if path.startswith("zk:"):
-			self.Provider = provider.ZooKeeperLookupProvider(self.App, path)
-		elif path.startswith("http:"):
-			self.Provider = provider.HTTPLookupProvider(self.App, path)
+			self.Provider = provider.ZooKeeperBatchProvider(self, path)
+			self.MasterURL = path
+		elif path.startswith("http:") or path.startswith("https:"):
+			self.Provider = provider.HTTPBatchProvider(self, path)
+			self.MasterURL = path
 		else:
-			self.Provider = provider.FileSystemLookupProvider(self.App, path)
+			# Local file source -> lookup is considered master
+			self.Provider = provider.FileBatchProvider(self, path)
+			self.MasterURL = None
 
 	def time(self):
 		return self.App.time()
 
-	# TODO: where is this called from?
 	def ensure_future_update(self, loop):
 		return asyncio.ensure_future(self._do_update(), loop=loop)
 
@@ -97,36 +101,28 @@ class Lookup(asab.ConfigObject):
 
 	async def load(self) -> bool:
 		data = self.Provider.load()
-		if data is not None:
-			try:
-				await self.Cache.save(data)
-			except Exception as e:
-				L.warning("Error writing data to cache: {}".format(e))
-		else:
-			# Load from cache only the first time, when no data is loaded
-			if self.IsLoaded:
-				return False
-			L.warning("No data loaded from {}. Loading from cache.".format(self.Provider.Id))
-			data = await self.Cache.load()
-			if data is None:
-				L.warning("No data loaded from cache {}".format(self.Provider.Id))
-				return False
+		if data is None:
+			L.warning("No data loaded from {}.".format(self.Provider.Id))
+			return False
 		self.deserialize(data)
 		return True
 
 	def serialize(self):
+		# TODO: probably not necessary since Lookup is read only
 		raise NotImplementedError("Lookup '{}' serialize() method not implemented".format(self.Id))
 
 	def deserialize(self, data):
 		raise NotImplementedError("Lookup '{}' deserialize() method not implemented".format(self.Id))
 
-	# TODO: what service uses this?
 	def rest_get(self):
-		return {
-			"Id": self.Id,
-			"ETag": self.ETag,
-			"MasterURL": self.MasterURL,
+		response = {
+			"Id": self.Id
 		}
+		if self.Provider.ETag is not None:
+			response["ETag"] = self.Provider.ETag
+		if self.MasterURL is not None:
+			response["MasterURL"] = self.MasterURL
+		return response
 
 	def is_master(self):
 		return self.MasterURL is None

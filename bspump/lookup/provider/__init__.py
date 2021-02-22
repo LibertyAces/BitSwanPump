@@ -1,9 +1,12 @@
-from .http import HTTPLookupProvider
-from .zookeeper import ZooKeeperLookupProvider
-from .file import FileSystemLookupProvider
+from .http import HTTPBatchProvider
+from .zookeeper import ZooKeeperBatchProvider
+from .file import FileBatchProvider
+from .abc import LookupProviderABC, LookupBatchProviderABC
 
 __all__ = (
-	'HTTPLookupProvider',
-	'ZooKeeperLookupProvider',
-	'FileSystemLookupProvider',
+	'HTTPBatchProvider',
+	'ZooKeeperBatchProvider',
+	'FileBatchProvider',
+	'LookupProviderABC',
+	'LookupBatchProviderABC',
 )
