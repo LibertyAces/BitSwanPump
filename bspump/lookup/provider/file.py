@@ -11,6 +11,10 @@ L = logging.getLogger(__name__)
 
 
 class FileBatchProvider(LookupBatchProviderABC):
+	"""
+	Loads lookup data from given file on local filesystem.
+	"""
+
 	def __init__(self, lookup, url, id=None, config=None):
 		super().__init__(lookup, url, id, config)
 

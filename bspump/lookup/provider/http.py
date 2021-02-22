@@ -17,6 +17,11 @@ L = logging.getLogger(__name__)
 
 
 class HTTPBatchProvider(LookupBatchProviderABC):
+	"""
+	Fetches lookup data from given URL over HTTP. This provider embeds loading and caching functions of the
+	original bspump.Lookup in "slave" mode.
+	"""
+
 	ConfigDefaults = {
 		"master_timeout": 30,
 		"use_cache": "yes",

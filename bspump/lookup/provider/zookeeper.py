@@ -13,7 +13,7 @@ L = logging.getLogger(__name__)
 
 
 def _build_client(url):
-	# simplified, will be replaced with with asab.zookeeper.build_client
+	# TODO: simplified, should be replaced with with asab.zookeeper.build_client() once it's ready
 	parsed = urllib.parse.urlparse(url)
 	zk_client = aiozk.ZKClient(parsed.netloc)
 	path = parsed.path
@@ -21,9 +21,12 @@ def _build_client(url):
 
 
 class ZooKeeperBatchProvider(LookupBatchProviderABC):
+	"""
+	Fetches lookup data from given zookeeper URL.
+	"""
+
 	def __init__(self, lookup, url, id=None, config=None):
 		super().__init__(lookup, url, id, config)
-		# TODO: use the dedicated function once it's ready
 		# self.ZKClient, self.Path = asab.zookeeper.build_client(url)
 		self.ZKClient, self.Path = _build_client(self.URL)
 
