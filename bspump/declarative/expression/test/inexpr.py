@@ -30,8 +30,6 @@ class IN(Expression):
 		else:
 			self.Where = VALUE(app, value=arg_where)
 
-		assert(self.Where.get_outlet_type() in ('list', 'set', 'dict'))
-
 
 	def optimize(self):
 		if isinstance(self.Where, VALUE):
