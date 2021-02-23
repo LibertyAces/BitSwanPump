@@ -342,7 +342,7 @@ def COMMAND_cleanup(URL, args_min_date, args_max_date, exclude_prefix):
 
 				continue
 
-		
+
 		except KeyboardInterrupt:
 			return
 
@@ -667,10 +667,12 @@ def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
 	if not target_node:
 		# pick a random warm node
 		r = requests.get("{}/_nodes?filter_path=nodes.*.name,nodes.*.roles".format(url))
-		available_nodes = [node["name"] for node in r.json() if "data_warm" in node["roles"]]
-		if not available_nodes:
-			print("No node with 'data_warm' role. Picking random data node.")
-			available_nodes = [node["name"] for node in r.json() if "data" in node["roles"]]
+		available_nodes = []
+		for i in r.json()["nodes"]:
+			if "data" in r.json()["nodes"][i]["roles"]:
+				available_nodes.append(r.json()["nodes"][i]["name"])
+			elif "data_warm" in r.json()["nodes"][i]["roles"]:
+				available_nodes.append(r.json()["nodes"][i]["name"])
 		if not available_nodes:
 			print("No data nodes. Stopping.")
 			return False
@@ -693,17 +695,16 @@ def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
 		return False
 
 	# wait until all shards are allocated to target_node
-	result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
-	while result["status"] != "green":
-		print("Health status of index '{}' is {}. Waiting...".format(index, result["status"]))
+	while "RELOCATING" in requests.get("{}/_cat/shards/{}".format(url, index)).text:
+		print("Shard relocation of {} in progress. Waiting...".format(index))
 		time.sleep(HEALTH_CHECK_PERIOD)
-		result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
 
 	# shrink
 	shrink_settings = {
 		"settings": {
-			"index.routing.allocation.require._name": None,
-			# "index.blocks.write": None
+		"index.number_of_replicas": 0,
+		"index.routing.allocation.require._name": None,
+		"index.blocks.write": None
 		}
 	}
 	r = requests.post(
