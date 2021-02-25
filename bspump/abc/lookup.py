@@ -6,7 +6,7 @@ from typing import Optional
 
 import asab
 
-from ..lookup import provider
+from bspump.abc import lookupprovider
 
 ###
 
@@ -49,7 +49,7 @@ class Lookup(asab.ConfigObject):
 		self.PubSub = asab.PubSub(app)
 
 		self.MasterURL = None
-		self.Provider: Optional[provider.LookupProviderABC] = None
+		self.Provider: Optional[lookupprovider.LookupProviderABC] = None
 
 		url = self.Config.get("source_url", "").strip()
 		if len(url) > 0:
@@ -62,7 +62,7 @@ class Lookup(asab.ConfigObject):
 				if master_lookup_id == "":
 					master_lookup_id = self.Id
 				self.MasterURL = "{}{}/{}".format(url, self.Config["master_url_endpoint"], master_lookup_id)
-				self.Provider = provider.HTTPBatchProvider(self, self.MasterURL)
+				self.Provider = lookupprovider.HTTPBatchProvider(self, self.MasterURL)
 
 	def __getitem__(self, key):
 		raise NotImplementedError("Lookup '{}' __getitem__() method not implemented".format(self.Id))
@@ -78,14 +78,14 @@ class Lookup(asab.ConfigObject):
 
 	def _create_provider(self, path: str):
 		if path.startswith("zk:"):
-			self.Provider = provider.ZooKeeperBatchProvider(self, path)
+			self.Provider = lookupprovider.ZooKeeperBatchProvider(self, path)
 			self.MasterURL = path
 		elif path.startswith("http:") or path.startswith("https:"):
-			self.Provider = provider.HTTPBatchProvider(self, path)
+			self.Provider = lookupprovider.HTTPBatchProvider(self, path)
 			self.MasterURL = path
 		else:
 			# Local file source -> lookup is considered master
-			self.Provider = provider.FileBatchProvider(self, path)
+			self.Provider = lookupprovider.FileBatchProvider(self, path)
 			self.MasterURL = None
 
 	def time(self):
@@ -100,7 +100,7 @@ class Lookup(asab.ConfigObject):
 			self.PubSub.publish("bspump.Lookup.changed!")
 
 	async def load(self) -> bool:
-		data = self.Provider.load()
+		data = await self.Provider.load()
 		if data is None:
 			L.warning("No data loaded from {}.".format(self.Provider.Id))
 			return False
@@ -152,6 +152,11 @@ class DictionaryLookup(MappingLookup):
 
 	def __getitem__(self, key):
 		return self.Dictionary.__getitem__(key)
+
+	def get(self, key):
+		if key in self.Dictionary:
+			return self.__getitem__(key)
+		return None
 
 	def __iter__(self):
 		return self.Dictionary.__iter__()

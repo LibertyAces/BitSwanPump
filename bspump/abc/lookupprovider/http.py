@@ -18,7 +18,7 @@ L = logging.getLogger(__name__)
 
 class HTTPBatchProvider(LookupBatchProviderABC):
 	"""
-	Fetches lookup data from given URL over HTTP. This provider embeds loading and caching functions of the
+	Fetches lookup data from given URL over HTTP. This lookupprovider embeds loading and caching functions of the
 	original bspump.Lookup in "slave" mode.
 	"""
 
@@ -36,11 +36,11 @@ class HTTPBatchProvider(LookupBatchProviderABC):
 		self.CachePath = None
 		if self.Config.getboolean("use_cache"):
 			cache_path = self.Config.get("cache_dir", "").strip()
-			if len(cache_path) == 0:
-				cache_path = os.path.abspath(asab.Config.get("general", "var_dir", ""))
-			if len(cache_path) == 0:
+			if len(cache_path) == 0 and "general" in asab.Config and "var_dir" in asab.Config["general"]:
+				cache_path = os.path.abspath(asab.Config["general"]["var_dir"])
+				self.CachePath = os.path.join(cache_path, "lookup_{}.cache".format(self.Id))
+			else:
 				L.warning("No cache path specified. Cache disabled.")
-			self.CachePath = os.path.join(cache_path, "lookup_{}.cache".format(self.Id))
 
 	async def load(self):
 		headers = {}
@@ -66,7 +66,7 @@ class HTTPBatchProvider(LookupBatchProviderABC):
 				return False
 
 			if response.status == 404:
-				L.warning("Lookup '{}' was not found at the provider.".format(self.Id))
+				L.warning("Lookup '{}' was not found at the lookup provider.".format(self.Id))
 				return self.load_from_cache()
 
 			if response.status == 501:
