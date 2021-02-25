@@ -153,11 +153,6 @@ class DictionaryLookup(MappingLookup):
 	def __getitem__(self, key):
 		return self.Dictionary.__getitem__(key)
 
-	def get(self, key):
-		if key in self.Dictionary:
-			return self.__getitem__(key)
-		return None
-
 	def __iter__(self):
 		return self.Dictionary.__iter__()
 
