@@ -8,6 +8,7 @@ import re
 import datetime
 import time
 import requests
+from requests.auth import HTTPBasicAuth
 
 def parse_cmdline():
 	# Parse args
@@ -106,6 +107,16 @@ def parse_cmdline():
 		action='store',
 		help='an ElasticSearch URL'
 	)
+	shrink_parser.add_argument(
+		'--username',
+		action='store',
+		help='an ElasticSearch username'
+		)
+	shrink_parser.add_argument(
+		'--password',
+		action='store',
+		help='an ElasticSearch password'
+		)
 	shrink_parser.add_argument(
 		'--index',
 		action='store',
@@ -641,16 +652,20 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 	print("Count of reamining indicies: {}".format(len(indices)-delete_count))
 
 
-def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
+def COMMAND_shrink(URL, index, username, password, target_node=None, suffix_separator="_"):
 	HEALTH_CHECK_PERIOD = 5
 	SHRINK_SUFFIX = "s"
-
+	print(username)
+	print(password)
 	url = URL
 	if url[-1:] == '/':
 		url = url[:-1]
 
 	# check index health, must be green
-	result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+	result = requests.get(
+							"{}/_cluster/health/{}".format(url, index),
+							auth=HTTPBasicAuth(username, password)
+							).json()
 	if result["status"] != "green":
 		print("Health status of index '{}' is {}. Aborting.".format(index, result["status"]))
 
@@ -666,7 +681,10 @@ def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
 	# pick a node for allocation
 	if not target_node:
 		# pick a random warm node
-		r = requests.get("{}/_nodes?filter_path=nodes.*.name,nodes.*.roles".format(url))
+		r = requests.get(
+						"{}/_nodes?filter_path=nodes.*.name,nodes.*.roles".format(url),
+						auth=HTTPBasicAuth(username, password)
+						)
 		available_nodes = []
 		for i in r.json()["nodes"]:
 			if "data" in r.json()["nodes"][i]["roles"]:
@@ -688,14 +706,21 @@ def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
 			"index.blocks.write": True
 		}
 	}
-	r = requests.put("{}/{}/_settings".format(url, index), json=prepare_for_shrink)
+	r = requests.put(
+					"{}/{}/_settings".format(url, index),
+					json=prepare_for_shrink,
+					auth=HTTPBasicAuth(username, password)
+					)
 	result = r.json()
 	if not result.get("acknowledged"):
 		print("Pre-shrink preparation failed for index '{}': \n{}".format(index, result))
 		return False
 
 	# wait until all shards are allocated to target_node
-	while "RELOCATING" in requests.get("{}/_cat/shards/{}".format(url, index)).text:
+	while "RELOCATING" in requests.get(
+										"{}/_cat/shards/{}".format(url, index),
+										auth=HTTPBasicAuth(username, password)
+										).text:
 		print("Shard relocation of {} in progress. Waiting...".format(index))
 		time.sleep(HEALTH_CHECK_PERIOD)
 
@@ -709,7 +734,8 @@ def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
 	}
 	r = requests.post(
 		"{url}/{index}/_shrink/{shrunk_index}".format(url=url, index=index, shrunk_index=new_index),
-		json=shrink_settings
+		json=shrink_settings,
+		auth=HTTPBasicAuth(username, password)
 	)
 	result = r.json()
 	if not result.get("acknowledged"):
@@ -718,14 +744,23 @@ def COMMAND_shrink(URL, index, target_node=None, suffix_separator="_"):
 	print("Index '{}' shrunk successfully.".format(index))
 
 	# wait until all shards are allocated
-	result = requests.get("{}/_cluster/health/{}".format(url, new_index)).json()
+	result = requests.get(
+							"{}/_cluster/health/{}".format(url, new_index),
+							auth=HTTPBasicAuth(username, password)
+							).json()
 	while result["status"] != "green":
 		print("Health status of index '{}' is {}. Waiting...".format(index, result["status"]))
 		time.sleep(HEALTH_CHECK_PERIOD)
-		result = requests.get("{}/_cluster/health/{}".format(url, index)).json()
+		result = requests.get(
+								"{}/_cluster/health/{}".format(url, index),
+								auth=HTTPBasicAuth(username, password)
+								).json()
 
 	# delete old index
-	r = requests.delete("{url}/{index}".format(url=url, index=index))
+	r = requests.delete(
+						"{url}/{index}".format(url=url, index=index),
+						auth=HTTPBasicAuth(username, password)
+						)
 	result = r.json()
 	if not result.get("acknowledged"):
 		print("Cannot delete index '{}': \n{}".format(index, result))
@@ -865,7 +900,8 @@ def main():
 		return COMMAND_forcemerge(args.URL, args.index)
 
 	elif args.COMMAND == 'shrink':
-		return COMMAND_shrink(args.URL, args.index, args.target_node, args.suffix_separator)
+		return COMMAND_shrink(args.URL, args.index, args.target_node,
+							args.suffix_separator, args.username, args.password)
 
 	elif args.COMMAND == 'auto-shrink':
 		return COMMAND_auto_shrink(args.URL, args.max_daytime, args.max_load, args.min_shards)
