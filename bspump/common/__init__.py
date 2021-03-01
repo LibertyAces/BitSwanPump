@@ -13,6 +13,7 @@ from .json import StdDictToJsonParser
 from .json import StdJsonToDictParser
 from .json import JsonToDictParser as JSONParser  # For backward compatability
 from .json import JsonToDictParser as JSONParserProcessor  # For backward compatability
+from .json import DictToJsonBytesParser
 from .mapping import MappingKeysGenerator, MappingValuesGenerator, MappingItemsGenerator
 from .mapping import MappingKeysProcessor, MappingValuesProcessor, MappingItemsProcessor
 from .null import NullSink
@@ -38,6 +39,7 @@ __all__ = (
 	'SimdJsonParser',
 	'StdDictToJsonParser',
 	'StdJsonToDictParser',
+	'DictToJsonBytesParser',
 	'JSONParser',
 	'JSONParserProcessor',
 	'MappingKeysGenerator',
