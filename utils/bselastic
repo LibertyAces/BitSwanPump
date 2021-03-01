@@ -655,8 +655,6 @@ def COMMAND_delete(URL, args_min_date, args_max_date, exclude_prefix):
 def COMMAND_shrink(URL, index, username, password, target_node=None, suffix_separator="_"):
 	HEALTH_CHECK_PERIOD = 5
 	SHRINK_SUFFIX = "s"
-	print(username)
-	print(password)
 	url = URL
 	if url[-1:] == '/':
 		url = url[:-1]
@@ -900,8 +898,8 @@ def main():
 		return COMMAND_forcemerge(args.URL, args.index)
 
 	elif args.COMMAND == 'shrink':
-		return COMMAND_shrink(args.URL, args.index, args.target_node,
-							args.suffix_separator, args.username, args.password)
+		return COMMAND_shrink(args.URL, args.index, args.username, args.password, args.target_node,
+							args.suffix_separator)
 
 	elif args.COMMAND == 'auto-shrink':
 		return COMMAND_auto_shrink(args.URL, args.max_daytime, args.max_load, args.min_shards)
