@@ -29,20 +29,25 @@ class HTTPBatchProvider(LookupBatchProviderABC):
 	}
 
 	def __init__(self, lookup, url, id=None, config=None):
-		super().__init__(lookup, url, id, config)
+		super().__init__(lookup, url, id, config=config)
 		self.Timeout = self.Config.get("master_timeout")
+		self.UseCache = self.Config.getboolean("use_cache")
 		if self.Timeout is not None:
 			self.Timeout = float(self.Timeout)
 		self.CachePath = None
-		if self.Config.getboolean("use_cache"):
+		if self.UseCache is True:
 			cache_path = self.Config.get("cache_dir", "").strip()
 			if len(cache_path) == 0 and "general" in asab.Config and "var_dir" in asab.Config["general"]:
 				cache_path = os.path.abspath(asab.Config["general"]["var_dir"])
 				self.CachePath = os.path.join(cache_path, "lookup_{}.cache".format(self.Id))
 			else:
+				self.UseCache = False
 				L.warning("No cache path specified. Cache disabled.")
+		L.warning(self.UseCache)
+		L.warning(self.CachePath)
 
 	async def load(self):
+		print("HTTP LOAD", self.URL)
 		headers = {}
 		if self.ETag is not None:
 			headers['ETag'] = self.ETag
@@ -55,10 +60,10 @@ class HTTPBatchProvider(LookupBatchProviderABC):
 					timeout=float(self.Config['master_timeout'])
 				)
 			except aiohttp.ClientConnectorError as e:
-				L.warning("Failed to contact lookup master at '{}': {}".format(self.URL, e))
+				L.warning("{}: Failed to contact lookup master at '{}': {}".format(self.Id, self.URL, e))
 				return self.load_from_cache()
 			except asyncio.TimeoutError as e:
-				L.warning("Failed to contact lookup master at '{}' (timeout): {}".format(self.URL, e))
+				L.warning("{}: Failed to contact lookup master at '{}' (timeout): {}".format(self.Id, self.URL, e))
 				return self.load_from_cache()
 
 			if response.status == 304:
@@ -86,11 +91,15 @@ class HTTPBatchProvider(LookupBatchProviderABC):
 		"""
 		Load the lookup data (bytes) from cache.
 		"""
+		if self.UseCache is False:
+			return False
 		# Load the ETag from cached file, if have one
 		if not os.path.isfile(self.CachePath):
+			L.warning("Cache '{}': not a file".format(self.CachePath))
 			return False
 
 		if not os.access(self.CachePath, os.R_OK):
+			L.warning("Cannot read cache from '{}'".format(self.CachePath))
 			return False
 
 		try:
@@ -107,6 +116,8 @@ class HTTPBatchProvider(LookupBatchProviderABC):
 		return False
 
 	def save_to_cache(self, data):
+		if self.UseCache is False:
+			return
 		dirname = os.path.dirname(self.CachePath)
 		if not os.path.isdir(dirname):
 			os.makedirs(dirname)

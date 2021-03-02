@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import logging
 
 import bspump
@@ -50,7 +51,7 @@ class SamplePipeline(bspump.Pipeline):
 
 
 class MyDictionaryLookup(bspump.DictionaryLookup):
-
+	# pass
 	async def load(self):
 		# Called only when we are master (no master_url provided)
 		self.set(bspump.load_json_file('./data/country_names.json'))
@@ -80,10 +81,16 @@ if __name__ == '__main__':
 	svc = app.get_service("bspump.PumpService")
 
 	# Construct lookups (in master/slave configuration)
-	lkp = svc.add_lookup(MyDictionaryLookup(app, "MyDictionaryMasterLookup"))
+	# lkp = svc.add_lookup(MyDictionaryLookup(app, "MyDictionaryMasterLookup"))
+	lkp = svc.add_lookup(MyDictionaryLookup(app, "MyDictionaryMasterLookup", config={
+		# 'source_url': "zk://10.17.164.239:2181/lookuptest/country_names.json",
+		'source_url': "./data/country_names.json",
+		"use_cache": "no"
+	}))
 	lkps = svc.add_lookup(MyDictionaryLookup(app, "MyDictionarySlaveLookup", config={
 		'master_url': 'http://localhost:8083/',
-		'master_lookup_id': 'MyDictionaryMasterLookup'
+		'master_lookup_id': 'MyDictionaryMasterLookup',
+		"use_cache": "no"
 	}))
 
 	# Construct and register Pipeline

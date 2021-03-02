@@ -23,15 +23,19 @@ class FileBatchProvider(LookupBatchProviderABC):
 		self.ProactorService = self.App.get_service("asab.ProactorService")
 
 	async def load(self):
+		print("FILE LOAD", self.URL)
 		result = await self.ProactorService.execute(
 			self.load_on_thread,
 		)
 		return result
 
 	def load_on_thread(self):
+		print("FILE LOAD-ON-THREAD", self.URL)
 		if not os.path.isfile(self.URL):
+			L.warning("Source '{}' is not a file".format(self.URL))
 			return None
 		if not os.access(self.URL, os.R_OK):
+			L.warning("Insufficient permissions: '{}'".format(self.URL))
 			return None
 		try:
 			with open(self.URL, 'rb') as f:
