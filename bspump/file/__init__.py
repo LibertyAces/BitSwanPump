@@ -5,6 +5,7 @@ from .filecsvsource import FileCSVSource
 from .filejsonsource import FileJSONSource
 from .filelinesource import FileLineSource
 from .filelinesource import FileMultiLineSource
+from .lookupprovider import FileBatchProvider
 
 __all__ = (
 	'FileBlockSink',
@@ -14,4 +15,5 @@ __all__ = (
 	'FileJSONSource',
 	'FileLineSource',
 	'FileMultiLineSource',
+	'FileBatchProvider',
 )

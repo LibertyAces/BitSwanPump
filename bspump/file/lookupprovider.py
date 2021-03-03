@@ -3,7 +3,7 @@ import os
 
 import asab.proactor
 
-from .abc import LookupBatchProviderABC
+from bspump.abc.lookupprovider import LookupBatchProviderABC
 
 ###
 

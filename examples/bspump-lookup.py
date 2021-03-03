@@ -6,6 +6,7 @@ import time
 import bspump
 import bspump.common
 import bspump.file
+import bspump.http
 import bspump.trigger
 
 ###
@@ -96,7 +97,6 @@ if __name__ == '__main__':
 
 	svc = app.get_service("bspump.PumpService")
 
-	# Construct lookups (in master/slave configuration)
 	lkp = svc.add_lookup(bspump.DictionaryLookup(app, "MyDictionaryMasterLookup", config={
 		"source_url": "./data/country_names.json",
 		"use_cache": "no"
@@ -104,6 +104,7 @@ if __name__ == '__main__':
 
 	lkps = svc.add_lookup(bspump.DictionaryLookup(app, "MyDictionarySlaveLookup", config={
 		"source_url": "http://localhost:8083/bspump/v1/lookup/MyDictionaryMasterLookup",
+
 		# Backwards-compatible configuration:
 		# "master_url": "http://localhost:8083/",
 		# "master_url_endpoint": "/bspump/v1/lookup",

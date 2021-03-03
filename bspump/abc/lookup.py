@@ -6,7 +6,7 @@ from typing import Optional
 
 import asab
 
-from bspump.abc import lookupprovider
+from .lookupprovider import LookupProviderABC
 
 ###
 
@@ -49,25 +49,24 @@ class Lookup(asab.ConfigObject):
 		self.PubSub = asab.PubSub(app)
 
 		self.MasterURL = None
-		self.Provider: Optional[lookupprovider.LookupProviderABC] = None
+		self.Provider: Optional[LookupProviderABC] = None
 
 		url = self.Config.get("source_url", "").strip()
-		if len(url) > 0:
-			self._create_provider(url)
-		else:
-			url = self.Config.get("master_url", "")
-			if len(url) > 0:
-				url = url.rstrip("/")
-				master_lookup_id = self.Config["master_lookup_id"]
-				if master_lookup_id == "":
-					master_lookup_id = self.Id
-				self.MasterURL = "{}{}/{}".format(url, self.Config["master_url_endpoint"], master_lookup_id)
-				config = {}
-				if "use_cache" in self.Config:
-					config["use_cache"] = self.Config.getboolean("use_cache")
-				if "cache_dir" in self.Config:
-					config["cache_dir"] = self.Config.get("source_url", None)
-				self.Provider = lookupprovider.HTTPBatchProvider(self, self.MasterURL, config=config)
+		if len(url) == 0:
+			# Construct URL from the old "master_" params
+			server = self.Config.get("master_url", "").strip()
+			if len(server) == 0:
+				L.error("Neither `source_url` nor `master_url` specified in lookup {} config.".format(self.Id))
+				return
+			if not server.startswith("http:"):
+				server = "http://{}".format(server)
+			server = server.strip("/")
+			master_url_endpoint = self.Config["master_url_endpoint"].strip("/")
+			master_lookup_id = self.Config["master_lookup_id"]
+			if master_lookup_id == "":
+				master_lookup_id = self.Id
+			url = "{}/{}/{}".format(server, master_url_endpoint, master_lookup_id)
+		self._create_provider(url)
 
 	def __getitem__(self, key):
 		raise NotImplementedError("Lookup '{}' __getitem__() method not implemented".format(self.Id))
@@ -83,19 +82,22 @@ class Lookup(asab.ConfigObject):
 
 	def _create_provider(self, path: str):
 		if path.startswith("zk:"):
-			self.Provider = lookupprovider.ZooKeeperBatchProvider(self, path)
+			from bspump.zookeeper import ZooKeeperBatchProvider
+			self.Provider = ZooKeeperBatchProvider(self, path)
 			self.MasterURL = path
 		elif path.startswith("http:") or path.startswith("https:"):
+			from bspump.http import HTTPBatchProvider
 			config = {}
 			if "use_cache" in self.Config:
 				config["use_cache"] = self.Config.getboolean("use_cache")
 			if "cache_dir" in self.Config:
 				config["cache_dir"] = self.Config.get("source_url", None)
-			self.Provider = lookupprovider.HTTPBatchProvider(self, path, config=config)
+			self.Provider = HTTPBatchProvider(self, path, config=config)
 			self.MasterURL = path
 		else:
+			from bspump.file import FileBatchProvider
 			# Local file source -> lookup is considered master
-			self.Provider = lookupprovider.FileBatchProvider(self, path)
+			self.Provider = FileBatchProvider(self, path)
 			self.MasterURL = None
 
 	def time(self):
