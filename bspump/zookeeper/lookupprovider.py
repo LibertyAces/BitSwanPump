@@ -11,7 +11,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class ZooKeeperBatchProvider(LookupBatchProviderABC):
+class ZooKeeperBatchLookupProvider(LookupBatchProviderABC):
 	"""
 	Fetches lookup data from given zookeeper URL.
 	"""

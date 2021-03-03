@@ -12,7 +12,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class FileBatchProvider(LookupBatchProviderABC):
+class FileBatchLookupProvider(LookupBatchProviderABC):
 	"""
 	Loads lookup data from a file on local filesystem.
 	"""

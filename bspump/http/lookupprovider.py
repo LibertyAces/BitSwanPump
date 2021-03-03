@@ -16,7 +16,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class HTTPBatchProvider(LookupBatchProviderABC):
+class HTTPBatchLookupProvider(LookupBatchProviderABC):
 	"""
 	Fetches lookup data from given URL over HTTP. This lookupprovider embeds loading and caching functions of the
 	original bspump.Lookup in "slave" mode.

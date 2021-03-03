@@ -16,5 +16,5 @@ class LookupProviderABC(abc.ABC, asab.ConfigObject):
 		raise NotImplementedError()
 
 
-class LookupBatchProviderABC(LookupProviderABC):
+class LookupBatchProviderABC(LookupProviderABC, abc.ABC):
 	pass

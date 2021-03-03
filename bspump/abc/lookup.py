@@ -82,22 +82,22 @@ class Lookup(asab.ConfigObject):
 
 	def _create_provider(self, path: str):
 		if path.startswith("zk:"):
-			from bspump.zookeeper import ZooKeeperBatchProvider
-			self.Provider = ZooKeeperBatchProvider(self, path)
+			from bspump.zookeeper import ZooKeeperBatchLookupProvider
+			self.Provider = ZooKeeperBatchLookupProvider(self, path)
 			self.MasterURL = path
 		elif path.startswith("http:") or path.startswith("https:"):
-			from bspump.http import HTTPBatchProvider
+			from bspump.http import HTTPBatchLookupProvider
 			config = {}
 			if "use_cache" in self.Config:
 				config["use_cache"] = self.Config.getboolean("use_cache")
 			if "cache_dir" in self.Config:
 				config["cache_dir"] = self.Config.get("source_url", None)
-			self.Provider = HTTPBatchProvider(self, path, config=config)
+			self.Provider = HTTPBatchLookupProvider(self, path, config=config)
 			self.MasterURL = path
 		else:
-			from bspump.file import FileBatchProvider
+			from bspump.file import FileBatchLookupProvider
 			# Local file source -> lookup is considered master
-			self.Provider = FileBatchProvider(self, path)
+			self.Provider = FileBatchLookupProvider(self, path)
 			self.MasterURL = None
 
 	def time(self):

@@ -1,5 +1,5 @@
-from .lookupprovider import ZooKeeperBatchProvider
+from .lookupprovider import ZooKeeperBatchLookupProvider
 
 __all__ = (
-	'ZooKeeperBatchProvider',
+	'ZooKeeperBatchLookupProvider',
 )
