@@ -11,7 +11,6 @@ class LookupProviderABC(abc.ABC, asab.ConfigObject):
 		self.App = lookup.App
 		self.URL = url
 		self.ETag = None
-		print("PROVIDER INIT", self.__class__.__name__, self.URL)
 
 	async def load(self):
 		raise NotImplementedError()

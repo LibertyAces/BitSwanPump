@@ -43,11 +43,8 @@ class HTTPBatchProvider(LookupBatchProviderABC):
 			else:
 				self.UseCache = False
 				L.warning("No cache path specified. Cache disabled.")
-		L.warning(self.UseCache)
-		L.warning(self.CachePath)
 
 	async def load(self):
-		print("HTTP LOAD", self.URL)
 		headers = {}
 		if self.ETag is not None:
 			headers['ETag'] = self.ETag
@@ -67,19 +64,19 @@ class HTTPBatchProvider(LookupBatchProviderABC):
 				return self.load_from_cache()
 
 			if response.status == 304:
-				L.info("Lookup '{}' is up to date.".format(self.Id))
+				L.info("Lookup '{}' is up to date.".format(self.Id, self.URL))
 				return False
 
 			if response.status == 404:
-				L.warning("Lookup '{}' was not found at the lookup provider.".format(self.Id))
+				L.warning("{}: lookup was not found at the lookup provider {}".format(self.Id, self.URL))
 				return self.load_from_cache()
 
 			if response.status == 501:
-				L.warning("Lookup '{}' method does not support serialization.".format(self.Id))
+				L.warning("{}: master '{}' does not support serialization.".format(self.Id, self.URL))
 				return False
 
 			if response.status != 200:
-				L.warning("Failed to get '{}' lookup from '{}' master.".format(self.Id, self.URL))
+				L.warning("{}: Failed to get lookup from master {}".format(self.Id, self.URL))
 				return self.load_from_cache()
 			data = await response.read()
 			self.ETag = response.headers.get('ETag')

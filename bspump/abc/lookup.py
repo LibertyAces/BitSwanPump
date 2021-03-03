@@ -33,8 +33,8 @@ class Lookup(asab.ConfigObject):
 		# file:/root/path/to/config.yaml  ==  /root/path/to/config.yaml
 
 		# Backwards compatibility
-		"master_url": "",
-		"master_url_endpoint": "",
+		"master_url": "http://localhost:8080",
+		"master_url_endpoint": "/bspump/v1/lookup/",
 		"master_lookup_id": "",  # If not empty, it specify the lookup id that will be used for loading from master
 	}
 
@@ -63,13 +63,11 @@ class Lookup(asab.ConfigObject):
 					master_lookup_id = self.Id
 				self.MasterURL = "{}{}/{}".format(url, self.Config["master_url_endpoint"], master_lookup_id)
 				config = {}
-				L.warning(self.Config)
 				if "use_cache" in self.Config:
 					config["use_cache"] = self.Config.getboolean("use_cache")
 				if "cache_dir" in self.Config:
 					config["cache_dir"] = self.Config.get("source_url", None)
 				self.Provider = lookupprovider.HTTPBatchProvider(self, self.MasterURL, config=config)
-		L.warning("INIT. master url: {}".format(self.MasterURL))
 
 	def __getitem__(self, key):
 		raise NotImplementedError("Lookup '{}' __getitem__() method not implemented".format(self.Id))
@@ -84,13 +82,11 @@ class Lookup(asab.ConfigObject):
 		raise NotImplementedError("Lookup '{}' __contains__() method not implemented".format(self.Id))
 
 	def _create_provider(self, path: str):
-		L.warning(path)
 		if path.startswith("zk:"):
 			self.Provider = lookupprovider.ZooKeeperBatchProvider(self, path)
 			self.MasterURL = path
 		elif path.startswith("http:") or path.startswith("https:"):
 			config = {}
-			L.warning(self.Config)
 			if "use_cache" in self.Config:
 				config["use_cache"] = self.Config.getboolean("use_cache")
 			if "cache_dir" in self.Config:
@@ -111,10 +107,10 @@ class Lookup(asab.ConfigObject):
 	async def _do_update(self):
 		updated = await self.load()
 		if updated:
+			L.warning(f"{self.Id} bspump.Lookup.changed!")
 			self.PubSub.publish("bspump.Lookup.changed!")
 
 	async def load(self) -> bool:
-		L.warning("loading. master url: {}".format(self.MasterURL))
 		data = await self.Provider.load()
 		if data is None or data is False:
 			L.warning("No data loaded from {}.".format(self.Provider.Id))
@@ -136,7 +132,6 @@ class Lookup(asab.ConfigObject):
 			response["ETag"] = self.Provider.ETag
 		if self.MasterURL is not None:
 			response["MasterURL"] = self.MasterURL
-		L.warning("REST_GET", struct_data=response)
 		return response
 
 	def is_master(self):
