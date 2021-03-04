@@ -5,6 +5,7 @@ from .client.wssink import HTTPClientWebSocketSink
 from .web.sink import WebServiceSink
 from .web.source import WebServiceSource
 from .web.wssource import WebSocketSource
+from .lookupprovider import HTTPBatchLookupProvider
 
 __all__ = (
 	'HTTPClientSource',
@@ -14,4 +15,5 @@ __all__ = (
 	'WebServiceSource',
 	'WebServiceSink',
 	'WebSocketSource',
+	'HTTPBatchLookupProvider',
 )
