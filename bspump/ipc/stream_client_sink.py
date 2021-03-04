@@ -57,10 +57,25 @@ class StreamClientSink(Sink):
 	async def _health_check(self, message):
 		if self.Reader:
 			if self.Reader.at_eof():
-				L.warning("Connection lost. Closing StreamSink")
+				L.warning("Connection lost. Closing StreamClientSink.")
 				await self._close_connection(message, self.Pipeline)
+
 		elif self.Writer is None:
 			await self._open_connection(message, self.Pipeline)
+
+		# Check that socket is able to send data to the server
+		if self.Writer is not None:
+			sock = self.Writer.get_extra_info('socket')
+
+			# Socket is established (also, when using TCP/UDP, there is no socket)
+			if sock is not None:
+				try:
+					sock.send(b"")
+				except Exception as e:
+					L.warning("Health check on socket failed with following exception: '{}'. Restarting".format(
+						e
+					))
+					await self._close_connection(message, self.Pipeline)
 
 
 	def process(self, context, event):
