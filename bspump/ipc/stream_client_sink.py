@@ -40,8 +40,8 @@ class StreamClientSink(Sink):
 		else:
 			self.Reader, self.Writer = await asyncio.open_unix_connection(self.Address)
 
-			# Manual adding of asyncio fix to asyncio.transport._SelectorSocketTransport
-			self.Writer.transport.write = types.MethodType(write, self.Writer.transport)
+		# Manual adding of asyncio fix to asyncio.transport._SelectorSocketTransport
+		self.Writer.transport.write = types.MethodType(write, self.Writer.transport)
 
 		pipeline.throttle(self, enable=False)
 
