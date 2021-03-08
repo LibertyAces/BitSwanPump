@@ -121,7 +121,6 @@ class KafkaSource(Source):
 		self.Partitions = None
 		self.ConsumerParams = consumer_params
 		self.Consumer = None
-		self.create_consumer()
 
 		self.Retry = int(self.Config['retry'])
 		self.Pipeline = pipeline
@@ -159,6 +158,9 @@ class KafkaSource(Source):
 			)
 
 	async def initialize_consumer(self):
+		# Create consumer after the loop is running
+		self.create_consumer()
+
 		await self.Consumer.start()
 		self.Partitions = self.Consumer.assignment()
 		self.Pipeline.PubSub.subscribe("bspump.pipeline.not_ready!", self._not_ready_handler)
