@@ -249,7 +249,6 @@ class KafkaSource(Source):
 					except Exception as e:
 						L.exception("Error {} during closing consumer's client after Kafka commit".format(e))
 					await asyncio.sleep(5)
-					self.create_consumer()
 					await self.initialize_consumer()
 			except Exception as e:
 				# Hard errors
