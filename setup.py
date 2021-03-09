@@ -68,7 +68,7 @@ setup(
 		'asab>=20.7.28',
 		'aiohttp>=3.6.2',
 		'requests>=2.24.0',
-		'aiokafka>=0.6.0',
+		'aiokafka>=0.7.0',
 		"dataclasses>=0.5; python_version<'3.7'",  # This is for aiokafka
 		'aiozk>=0.25.0',
 		'aiosmtplib>=1.1.3',
