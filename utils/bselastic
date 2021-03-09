@@ -678,44 +678,52 @@ def COMMAND_shrink(URL, index, username, password, target_node=None, suffix_sepa
 
 	# pick a node for allocation
 	if not target_node:
-		# pick a random warm node
+		# check if allocation is needed
 		r = requests.get(
-						"{}/_nodes?filter_path=nodes.*.name,nodes.*.roles,nodes.*.attributes.data".format(url),
+						"{}/_cat/shards/{}?h=n".format(url, index),
 						auth=HTTPBasicAuth(username, password)
-						).json()
-		available_nodes = {
-							"has_specialized_nodes": [],
-							"no_specialized_nodes": [],
-							}
-
-		for i in r["nodes"]:
-			if "data" in r["nodes"][i]["roles"] and "cold" in r["nodes"][i].get("attributes", {}).get("data", {}):
-				available_nodes["has_specialized_nodes"].append(r["nodes"][i]["name"])
-
-			elif "data" in r["nodes"][i]["roles"]:
-				available_nodes["no_specialized_nodes"].append(r["nodes"][i]["name"])
-		if available_nodes["has_specialized_nodes"]:
-			target_node = random.choice(available_nodes["has_specialized_nodes"])
-			prepare_for_shrink = {
-				"settings": {
-					"index.number_of_replicas": 0,
-					"index.routing.allocation.require._name": target_node,
-					"index.routing.allocation.require.data": "cold",
-					"index.blocks.write": True
-				}
-			}
-		elif available_nodes["no_specialized_nodes"]:
-			target_node = random.choice(available_nodes["no_specialized_nodes"])
-			prepare_for_shrink = {
-				"settings": {
-					"index.number_of_replicas": 0,
-					"index.routing.allocation.require._name": target_node,
-					"index.blocks.write": True
-				}
-			}
+						).text.split("\n")[:-1]
+		if r.count(r[0]) == len(r):
+			target_node = r[0]
+		# if allocation is needed, pick a random warm node
 		else:
-			print("No data nodes. Stopping.")
-			return False
+			r = requests.get(
+							"{}/_nodes?filter_path=nodes.*.name,nodes.*.roles,nodes.*.attributes.data".format(url),
+							auth=HTTPBasicAuth(username, password)
+							).json()
+			available_nodes = {
+								"has_specialized_nodes": [],
+								"no_specialized_nodes": [],
+								}
+
+			for i in r["nodes"]:
+				if "data" in r["nodes"][i]["roles"] and "cold" in r["nodes"][i].get("attributes", {}).get("data", {}):
+					available_nodes["has_specialized_nodes"].append(r["nodes"][i]["name"])
+
+				elif "data" in r["nodes"][i]["roles"]:
+					available_nodes["no_specialized_nodes"].append(r["nodes"][i]["name"])
+			if available_nodes["has_specialized_nodes"]:
+				target_node = random.choice(available_nodes["has_specialized_nodes"])
+				prepare_for_shrink = {
+					"settings": {
+						"index.number_of_replicas": 0,
+						"index.routing.allocation.require._name": target_node,
+						"index.routing.allocation.require.data": "cold",
+						"index.blocks.write": True
+					}
+				}
+			elif available_nodes["no_specialized_nodes"]:
+				target_node = random.choice(available_nodes["no_specialized_nodes"])
+				prepare_for_shrink = {
+					"settings": {
+						"index.number_of_replicas": 0,
+						"index.routing.allocation.require._name": target_node,
+						"index.blocks.write": True
+					}
+				}
+			else:
+				print("No data nodes. Stopping.")
+				return False
 
 	print("Using '{}' for allocation.".format(target_node))
 
