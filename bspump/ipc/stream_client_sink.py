@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import socket
+import types
 
 from ..abc.sink import Sink
 
@@ -39,6 +40,9 @@ class StreamClientSink(Sink):
 		else:
 			self.Reader, self.Writer = await asyncio.open_unix_connection(self.Address)
 
+		# Manual adding of asyncio fix to asyncio.transport._SelectorSocketTransport
+		self.Writer.transport.write = types.MethodType(write, self.Writer.transport)
+
 		pipeline.throttle(self, enable=False)
 
 
@@ -57,11 +61,55 @@ class StreamClientSink(Sink):
 	async def _health_check(self, message):
 		if self.Reader:
 			if self.Reader.at_eof():
-				L.warning("Connection lost. Closing StreamSink")
+				L.warning("Connection lost. Closing StreamClientSink.")
 				await self._close_connection(message, self.Pipeline)
+
 		elif self.Writer is None:
 			await self._open_connection(message, self.Pipeline)
 
-
 	def process(self, context, event):
 		self.Writer.write(event)
+
+
+# Custom implementation of write method of private class asyncio.transport._SelectorSocketTransport
+def write(self, data):
+	if not isinstance(data, (bytes, bytearray, memoryview)):
+		raise TypeError('data argument must be byte-ish (%r)',
+						type(data))
+	if self._eof:
+		raise RuntimeError('Cannot call write() after write_eof()')
+	if not data:
+		return
+
+	if self._conn_lost:
+		if self._conn_lost >= asyncio.constants.LOG_THRESHOLD_FOR_CONNLOST_WRITES:
+			# Custom implementation starts
+			# Instead of printing the warning, end the connection with fatal error
+			# Requires implementation of custom health check of the connection
+			self._fatal_error(
+				RuntimeError("Log threshold for connection lost writes exceeded."),
+				'Fatal error when writing in socket.send().'
+			)
+			# Custom implementation ends
+		self._conn_lost += 1
+		return
+
+	if not self._buffer:
+		# Optimization: try to send now.
+		try:
+			n = self._sock.send(data)
+		except (BlockingIOError, InterruptedError):
+			pass
+		except Exception as exc:
+			self._fatal_error(exc, 'Fatal write error on socket transport')
+			return
+		else:
+			data = data[n:]
+			if not data:
+				return
+		# Not all was written; register write handler.
+		self._loop.add_writer(self._sock_fd, self._write_ready)
+
+	# Add it to the buffer.
+	self._buffer.extend(data)
+	self._maybe_pause_protocol()
