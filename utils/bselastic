@@ -680,30 +680,46 @@ def COMMAND_shrink(URL, index, username, password, target_node=None, suffix_sepa
 	if not target_node:
 		# pick a random warm node
 		r = requests.get(
-						"{}/_nodes?filter_path=nodes.*.name,nodes.*.roles".format(url),
+						"{}/_nodes?filter_path=nodes.*.name,nodes.*.roles,nodes.*.attributes.data".format(url),
 						auth=HTTPBasicAuth(username, password)
-						)
-		available_nodes = []
-		for i in r.json()["nodes"]:
-			if "data" in r.json()["nodes"][i]["roles"]:
-				available_nodes.append(r.json()["nodes"][i]["name"])
-			elif "data_warm" in r.json()["nodes"][i]["roles"]:
-				available_nodes.append(r.json()["nodes"][i]["name"])
-		if not available_nodes:
+						).json()
+		available_nodes = {
+							"has_specialized_nodes": [],
+							"no_specialized_nodes": [],
+							}
+
+		for i in r["nodes"]:
+			if "data" in r["nodes"][i]["roles"] and "cold" in r["nodes"][i].get("attributes", {}).get("data", {}):
+				available_nodes["has_specialized_nodes"].append(r["nodes"][i]["name"])
+
+			elif "data" in r["nodes"][i]["roles"]:
+				available_nodes["no_specialized_nodes"].append(r["nodes"][i]["name"])
+		if available_nodes["has_specialized_nodes"]:
+			target_node = random.choice(available_nodes["has_specialized_nodes"])
+			prepare_for_shrink = {
+				"settings": {
+					"index.number_of_replicas": 0,
+					"index.routing.allocation.require._name": target_node,
+					"index.routing.allocation.require.data": "cold",
+					"index.blocks.write": True
+				}
+			}
+		elif available_nodes["no_specialized_nodes"]:
+			target_node = random.choice(available_nodes["no_specialized_nodes"])
+			prepare_for_shrink = {
+				"settings": {
+					"index.number_of_replicas": 0,
+					"index.routing.allocation.require._name": target_node,
+					"index.blocks.write": True
+				}
+			}
+		else:
 			print("No data nodes. Stopping.")
 			return False
-		target_node = random.choice(available_nodes)
 
 	print("Using '{}' for allocation.".format(target_node))
 
 	# prepare for shrink
-	prepare_for_shrink = {
-		"settings": {
-			"index.number_of_replicas": 0,
-			"index.routing.allocation.require._name": target_node,
-			"index.blocks.write": True
-		}
-	}
 	r = requests.put(
 					"{}/{}/_settings".format(url, index),
 					json=prepare_for_shrink,
