@@ -114,7 +114,7 @@ More at: [YAML specs, 10.2. Mapping Styles](https://yaml.org/spec/1.1/#id932806)
 ## Expressions
 
 
-### Arithmetics : `ADD`, `DIV`, `MUL`, `SUB`
+### Arithmetics `ADD`, `DIV`, `MUL`, `SUB`, `POW`
 
 Type: _Sequence_.
 
@@ -125,6 +125,12 @@ Type: _Sequence_.
 - 2
 - 3
 ```
+
+ * `ADD` addition
+ * `SUB` substraction
+ * `MUL` multiplication
+ * `DIV` division
+ * `POW` power (exponent)
 
 
 ### Logicals `AND`, `OR`
@@ -436,7 +442,7 @@ first=this+is+a+field&second=was+it+clear+%28already%29%3F
 
 
 
-### String tests "STARTSWITH", "ENDSWITH", "CONTAINS"
+### String tests "STARTSWITH", "ENDSWITH"
 
 Type: _Mapping_.
 
@@ -452,11 +458,8 @@ what: <...>
 postfix: <...>
 ```
 
-```
-!CONTAINS
-what: <...>
-substring: <...>
-```
+_Note: You can use `!IN` for substring test._
+
 
 ### String cut "CUT"
 
@@ -814,7 +817,7 @@ It only allows to specify the `type` argument, the value is taken from `!ARG`.
 
 ### Test "IN"
 
-Checks if `where` (list, tuple, dictionary, etc.) contains the result `what` expression. 
+Checks if `where` (list, tuple, dictionary, string etc.) contains the result `what` expression. 
 
 Type: _Mapping_.
 
@@ -945,6 +948,32 @@ weekday|isoweekday]
 
 `timezone` is optional, if not provided, UTC time is assumed.
 The details about format of timezone can be found at http://pytz.sourceforge.net/
+
+
+### Hash calculation `HASH`
+
+Calculate the hash from the input.
+
+Type: _Mapping_.
+
+```
+!HASH
+what: ....
+seed: 44
+type: xxhash64
+```
+
+`what` specifies the input that will be hashed.
+
+`seed` is an optional argument (default is `0`) that is used to initialise the hash function.
+
+`type` specifies the type of the hash function to be used.
+
+The output of the hash function is the 64bit integer.
+
+Hash function types:
+
+ * `xxhash64` (default), the very fast, non-cryptographic hash functions
 
 
 ### Debug output `DEBUG`
