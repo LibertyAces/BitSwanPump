@@ -18,8 +18,10 @@ if platform.system() == "Windows":
 		return False
 else:
 	def _is_file_open(fname):
-		result = subprocess.run(['lsof', fname], stdout=subprocess.PIPE)
-		return len(result.stdout) != 0
+		# TODO: Provide implementation of _is_file_open() for Linux
+		# result = subprocess.run(['lsof', fname], stdout=subprocess.PIPE)
+		# return len(result.stdout) != 0
+		return False
 
 
 def _glob_scan(path, gauge, loop, exclude='', include=''):

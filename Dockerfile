@@ -5,8 +5,8 @@ RUN set -ex \
 	&& apt-get -y update \
 	&& apt-get -y upgrade
 
-RUN set -ex \
-	&& apt-get -y install lsof
+# RUN set -ex \
+# 	&& apt-get -y install lsof
 
 RUN apt-get -y install \
 	git \
