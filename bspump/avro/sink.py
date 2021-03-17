@@ -1,8 +1,10 @@
-from fastavro import writer, parse_schema
-from fastavro.validation import validate_many
 import json
 import logging
 import os
+
+import fastavro
+import fastavro.validation
+
 from bspump.abc.sink import Sink
 
 L = logging.getLogger(__name__)
@@ -47,12 +49,11 @@ class AvroSink(Sink):
 
 		self.SchemaFile = self.Config.get('schema_file')
 		if self.SchemaFile is None:
-			L.error('schema is not defined')
-			raise FileNotFoundError
+			raise FileNotFoundError('Avro schema is not defined')
 
 		if self.SchemaFile is not None:
 			schema = json.load(open(self.SchemaFile, 'r'))
-			self.Schema = parse_schema(schema)
+			self.Schema = fastavro.parse_schema(schema)
 			'''with open(self.SchemaFile) as json_data:
 				schema = json.loads(json_data.read())
 				self.Schema = parse_schema(schema)'''
@@ -99,10 +100,10 @@ class AvroSink(Sink):
 		if len(self.Events) != 0:
 			if self.SchemaFile is not None:
 				try:
-					is_valid = validate_many(self.Events, self.Schema)
+					is_valid = fastavro.validation.validate_many(self.Events, self.Schema)
 					if is_valid is True:
 						with open(self.build_filename('-open'), self._filemode) as out:
-							writer(out, self.Schema, self.Events)
+							fastavro.writer(out, self.Schema, self.Events)
 						if self._filemode == 'wb':
 							self._filemode = 'a+b'
 				except Exception as e:
