@@ -64,7 +64,7 @@ class LocationEnricher(bspump.Generator):
 
 		# Inject a new event into a next depth of the pipeline
 		await self.Pipeline.inject(context, event, depth)
-	
+
 
 	def process(self, context, event):
 		if 'user' not in event:
@@ -73,7 +73,7 @@ class LocationEnricher(bspump.Generator):
 		info = self.Lookup.get(event['user'])
 		if info is not None:
 			event['L'] = info.get('L')
-		
+
 		return event
 
 
