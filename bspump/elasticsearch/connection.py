@@ -3,7 +3,7 @@ import logging
 import random
 import re
 
-import simdjson
+import orjson
 import aiohttp
 
 from ..abc.connection import Connection
@@ -118,8 +118,9 @@ class ElasticSearchBulk(object):
 
 	async def _data_feeder(self):
 		for _id, data in self.Items:
-			yield b'{"create":{}}\n' if _id is None else bytes(simdjson.dumps(
-				{"index": {"_id": _id}}) + "\n", "utf-8")
+			yield b'{"create":{}}\n' if _id is None else orjson.dumps(
+				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+			)
 			yield data
 
 	def partial_error_callback(self, response_items):

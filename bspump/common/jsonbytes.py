@@ -7,12 +7,12 @@ except ModuleNotFoundError:
 
 from ..abc.processor import Processor
 
-class JsonBytesToDictParser(Processor):
+
+class DictToJsonBytesParser(Processor):
 	"""
-	JsonBytesToDictParser transforms a JSON-string encoded in bytes to a dictionary.
+	DictToJsonBytesParser transforms a dictionary to JSON-string encoded in bytes.
 	The encoding charset can be specified in the configuration in `encoding` field.
 	"""
-
 	ConfigDefaults = {
 		'encoding': 'utf-8',
 	}
@@ -22,5 +22,5 @@ class JsonBytesToDictParser(Processor):
 		self.Encoding = self.Config['encoding']
 
 	def process(self, context, event):
-		assert isinstance(event, bytes)
-		return orjson.loads(event)
+		assert isinstance(event, dict)
+		return orjson.dumps(event)
