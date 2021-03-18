@@ -39,7 +39,7 @@ class AvroSerializer(bspump.Generator):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Schema = load_avro_schema(self.Config)
 
-		self.MaxBlockSize = 10  # TODO: Read this from config
+		self.MaxBlockSize = self.Config['max_block_size']
 		self.Records = []
 
 
