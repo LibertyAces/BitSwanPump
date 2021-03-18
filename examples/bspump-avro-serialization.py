@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 import logging
-from bspump.avro.serializer import AvroSerializer
-from bspump.avro.deserializer import AvroDeserializer
-import bspump
 import bspump.avro
+import bspump
 import bspump.common
 import bspump.file
 import bspump.trigger
@@ -29,10 +27,10 @@ class SamplePipeline(bspump.Pipeline):
 			}).on(bspump.trigger.PubSubTrigger(
 				app, "go!", pubsub=self.PubSub
 			)),
-			AvroSerializer(app, self, config={
+			bspump.avro.AvroSerializer(app, self, config={
 				'schema_file': './data/sample-for-avro-schema.avsc',
 			}),
-			AvroDeserializer(app, self, config={
+			bspump.avro.AvroDeserializer(app, self, config={
 				'schema_file': './data/sample-for-avro-schema.avsc',
 			}),
 			bspump.common.PPrintSink(app, self)

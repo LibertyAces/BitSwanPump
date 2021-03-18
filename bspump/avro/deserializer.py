@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import io
-import bspump.avro.serializer
+import bspump.avro
 import fastavro
 import bspump.trigger
 
