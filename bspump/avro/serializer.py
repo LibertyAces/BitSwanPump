@@ -11,7 +11,7 @@ L = logging.getLogger(__name__)
 
 ###
 
-# Move this into a dedicate module and use it in Source, Sink, Serialized, Deserializer
+
 def load_avro_schema(config):
 	schema = config.get('schema')
 	if schema == '':
