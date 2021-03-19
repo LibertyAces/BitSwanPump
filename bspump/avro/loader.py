@@ -21,6 +21,6 @@ def load_avro_schema(config):
                 schema = json.load(fi)
 
     if schema == '':
-        raise RuntimeError("Avro scheme not read")
+        raise RuntimeError("AVRO schema is not configured.")
 
     return fastavro.parse_schema(schema)
