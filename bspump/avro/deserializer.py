@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import logging
 import io
-import bspump.avro
 import fastavro
-import bspump.trigger
+from ..avro import loader
+from .. import Generator
+
+
 
 ###
 
@@ -11,7 +13,7 @@ L = logging.getLogger(__name__)
 
 ###
 
-class AvroDeserializer(bspump.Generator):
+class AvroDeserializer(Generator):
 
 	ConfigDefaults = {
 		'schema': '',
@@ -21,7 +23,7 @@ class AvroDeserializer(bspump.Generator):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		self.Schema = bspump.avro.serializer.load_avro_schema(self.Config)
+		self.Schema = loader.load_avro_schema(self.Config)
 
 
 	async def generate(self, context, event, depth):
@@ -29,5 +31,3 @@ class AvroDeserializer(bspump.Generator):
 		for record in fastavro.reader(fi, self.Schema):
 			self.Pipeline.inject(context, record, depth)
 
-
-###
