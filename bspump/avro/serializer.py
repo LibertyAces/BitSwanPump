@@ -2,8 +2,8 @@
 import logging
 import io
 import fastavro
-from bspump.avro import loader
-from .. import Generator
+from ..avro import loader
+from ..abc.generator import Generator
 
 L = logging.getLogger(__name__)
 
