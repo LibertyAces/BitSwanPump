@@ -3,7 +3,7 @@ import logging
 import io
 import fastavro
 from ..avro import loader
-from .. import Generator
+from ..abc.generator import Generator
 
 
 
