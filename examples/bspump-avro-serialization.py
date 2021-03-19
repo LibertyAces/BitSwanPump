@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import logging
-import bspump.avro
 import bspump
 import bspump.common
 import bspump.file
 import bspump.trigger
+
+import bspump.avro
+
 
 ###
 
