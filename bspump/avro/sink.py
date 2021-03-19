@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 
@@ -52,11 +51,7 @@ class AvroSink(Sink):
 			raise FileNotFoundError('Avro schema is not defined')
 
 		if self.SchemaFile is not None:
-			schema = json.load(open(self.SchemaFile, 'r'))
-			self.Schema = fastavro.parse_schema(schema)
-			'''with open(self.SchemaFile) as json_data:
-				schema = json.loads(json_data.read())
-				self.Schema = parse_schema(schema)'''
+			self.Schema = loader.load_avro_schema(self.Config)
 
 		self.RolloverMechanism = self.Config.get('rollover_mechanism')
 		self.FileNameTemplate = self.Config['file_name_template']
