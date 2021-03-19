@@ -3,14 +3,14 @@ import logging
 import io
 import fastavro
 from bspump.avro import loader
-import bspump.trigger
+from .. import Generator
 
 L = logging.getLogger(__name__)
 
 ###
 
 
-class AvroSerializer(bspump.Generator):
+class AvroSerializer(Generator):
 
 	ConfigDefaults = {
 		'schema': '',
