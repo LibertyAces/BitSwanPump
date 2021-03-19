@@ -3,7 +3,7 @@ import os
 
 import fastavro
 import fastavro.validation
-
+from ..avro import loader
 from bspump.abc.sink import Sink
 
 L = logging.getLogger(__name__)
