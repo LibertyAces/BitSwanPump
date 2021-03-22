@@ -18,7 +18,6 @@ class AvroSerializer(Generator):
 		'max_block_size': 10,
 	}
 
-	# TODO: Flush of the Records (in regular time interval and before the processor is finished)
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
