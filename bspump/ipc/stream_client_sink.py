@@ -65,6 +65,9 @@ class StreamClientSink(Sink):
 				await self._close_connection(message, self.Pipeline)
 
 		elif self.Writer is None:
+			# Hotfix: Make sure the connection is always closed before reopening,
+			# so asyncio does not remember the previous socket descriptor
+			await self._close_connection(message, self.Pipeline)
 			await self._open_connection(message, self.Pipeline)
 
 	def process(self, context, event):
