@@ -35,8 +35,10 @@ class ElasticSearchSink(Sink):
 		self.BulkClass = bulk_class
 
 		self.Index = self.Config.get('index')
-		if self.Index is None or len(self.Index) == 0:
-			L.warning("The 'index_prefix' has been renamed to 'index', adjust the configuration.")
+
+		# intex_prefix is obsolete. It is supported currently ensure backward compatibility
+		if self.Index == "bspump_" and self.Config.get('index_prefix') != "bspump_" and len(self.Config.get('index_prefix')) > 0:
+			L.warning("The 'index_prefix' has been renamed to 'index', please adjust the configuration.")
 			self.Index = self.Config.get('index_prefix')
 
 		app.PubSub.subscribe("ElasticSearchConnection.pause!", self._connection_throttle)
