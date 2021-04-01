@@ -175,7 +175,7 @@ class ElasticSearchConnection(Connection):
 		'precise_error_handling': False,
 	}
 
-	def __init__(self, app, id=None, config=None, custom_data_feeder=None):
+	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
