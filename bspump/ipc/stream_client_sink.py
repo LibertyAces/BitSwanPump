@@ -72,25 +72,35 @@ class StreamClientSink(Sink):
 				L.warning("Connection lost. Closing StreamClientSink.")
 				await self._close_connection(message, self.Pipeline)
 
-		if self.Writer is None:
+		elif self.Writer is None:
 			# Hotfix: Make sure the connection is always closed before reopening,
 			# so asyncio does not remember the previous socket descriptor
 			await self._close_connection(message, self.Pipeline)
 			await self._open_connection(message, self.Pipeline)
 
+
 	def process(self, context, event):
 		try:
 			self.Writer.write(event)
 
-		except RuntimeError as e:
+		except Exception as e:
 			# Hotfix for: RuntimeError: File descriptor 7 is used by transport
 			L.error("During sending event, the following RuntimeError occurred: '{}'.".format(e))
 			self.LastEvent = event
 
 			# Health check will recreate the connection
 			if self.Writer is not None:
+
+				try:
+					_socket = self.Writer.get_extra_info('socket')
+					_socket.close()
+				except Exception as e:
+					L.warning("The following exception occurred when closing socket manually: '{}'.".format(e))
+
 				self.Writer.close()
 				self.Writer = None
+				self.Pipeline.throttle(self, enable=True)
+
 			if self.Reader is not None:
 				self.Reader = None
 
