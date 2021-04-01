@@ -10,7 +10,6 @@ class AvroSource(FileABCSource):
 		'post': 'noop',  # one of 'delete', 'noop' and 'move'
 	}
 
-	# TODO: Use the schema
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Schema = loader.load_avro_schema(self.Config)
