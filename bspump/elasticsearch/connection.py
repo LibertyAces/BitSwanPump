@@ -17,7 +17,7 @@ L = logging.getLogger(__name__)
 
 class ElasticSearchBulk(object):
 
-	def __init__(self, connection, index, max_size):
+	def __init__(self, connection, index, max_size, data_feeder):
 		self.Index = index
 		self.Aging = 0
 		self.Capacity = max_size
@@ -25,6 +25,7 @@ class ElasticSearchBulk(object):
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
+		self.DataFeeder = data_feeder
 
 	def consume(self, _id, data):
 		self.Items.append((_id, data))
@@ -42,7 +43,7 @@ class ElasticSearchBulk(object):
 		try:
 			resp = await session.post(
 				url,
-				data=self._data_feeder(),
+				data=self.DataFeeder(self.Items),
 				headers={
 					'Content-Type': 'application/json'
 				},
@@ -115,14 +116,6 @@ class ElasticSearchBulk(object):
 
 		return True
 
-
-	async def _data_feeder(self):
-		for _id, data in self.Items:
-			yield b'{"create":{}}\n' if _id is None else orjson.dumps(
-				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
-			)
-			yield data
-
 	def partial_error_callback(self, response_items):
 		"""
 		When an upload to ElasticSearch fails for error items (document could not be inserted),
@@ -167,6 +160,18 @@ class ElasticSearchConnection(Connection):
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
 	)
 
+	When specifying action: custom in the configuration,
+	custom_data_feeder coroutine needs to be provided,
+	which accepts items as its only parameter and yields data as Python generator.
+	The example implementation is:
+
+	async def my_data_feeder(items):
+		for _id, data in items:
+			yield b'{"create":{}}\n' if _id is None else orjson.dumps(
+				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+			)
+			yield data
+
 	"""
 
 	ConfigDefaults = {
@@ -180,9 +185,10 @@ class ElasticSearchConnection(Connection):
 		'timeout': 300,
 		'fail_log_max_size': 20,
 		'precise_error_handling': False,
+		'action': 'create',  # create, index, update, delete, custom
 	}
 
-	def __init__(self, app, id=None, config=None):
+	def __init__(self, app, id=None, config=None, custom_data_feeder=None):
 		super().__init__(app, id=id, config=config)
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
@@ -234,6 +240,24 @@ class ElasticSearchConnection(Connection):
 		else:
 			self.FilterPath = "errors,took,items.*.error"
 
+		# Data feeder selection based on action
+
+		self.DataFeederMap = {
+			"create": self._data_feeder_create,
+			"index": self._data_feeder_index,
+			"update": self._data_feeder_update,
+			"delete": self._data_feeder_delete,
+			"custom": custom_data_feeder,
+		}
+
+		action = self.Config["action"]
+		self.DataFeeder = self.DataFeederMap.get(action)
+		if self.DataFeeder is None:
+			if action == "custom":
+				raise RuntimeError("When specifying '{}' action, custom_data_feeder needs to be set.".format(action))
+			else:
+				raise RuntimeError("Action '{}' is not supported.".format(action))
+
 		# Create metrics counters
 		metrics_service = app.get_service('asab.MetricsService')
 		self.InsertMetric = metrics_service.create_counter(
@@ -250,6 +274,36 @@ class ElasticSearchConnection(Connection):
 			}
 		)
 
+
+	async def _data_feeder_create(self, items):
+		for _id, data in items:
+			yield b'{"create":{}}\n' if _id is None else orjson.dumps(
+				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+			)
+			yield data
+
+	async def _data_feeder_index(self, items):
+		for _id, data in items:
+			yield b'{"index":{}}\n' if _id is None else orjson.dumps(
+				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+			)
+			yield data
+
+	async def _data_feeder_update(self, items):
+		for _id, data in items:
+			yield b'{"update":{}}\n' if _id is None else orjson.dumps(
+				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+			)
+			yield data
+
+	async def _data_feeder_delete(self, items):
+		for _id, data in items:
+			yield b'{"delete":{}}\n' if _id is None else orjson.dumps(
+				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+			)
+			yield data
+
+
 	def get_url(self):
 		return random.choice(self.node_urls)
 
@@ -259,7 +313,7 @@ class ElasticSearchConnection(Connection):
 	def consume(self, index, _id, data, bulk_class=ElasticSearchBulk):
 		bulk = self._bulks.get(index)
 		if bulk is None:
-			bulk = bulk_class(self, index, self._bulk_out_max_size)
+			bulk = bulk_class(self, index, self._bulk_out_max_size, self.DataFeeder)
 			self._bulks[index] = bulk
 
 		if bulk.consume(_id, data):

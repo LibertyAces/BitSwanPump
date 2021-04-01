@@ -22,8 +22,9 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.file.FileLineSource(app, self, config={
 				'path': './data/es_sink.json',
 				'post': 'noop',
-			}).on(bspump.trigger.RunOnceTrigger(app)),
+			}).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
 			bspump.common.JsonToDictParser(app, self),
+			bspump.common.PPrintProcessor(app, self),
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
 		)
 
@@ -36,11 +37,14 @@ if __name__ == '__main__':
 	svc.add_connection(
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection", config={
 			"bulk_out_max_size": 100,
-			# 'url': 'http://es01:9200 http://es02:9200 http://es03:9200 http://es04:9200',
+			# 'url': 'http://es01:9200 http://es02:9200 http://es03:9200',
+			'action': 'create',
 		}))
 
 	# Construct and register Pipeline
 	pl = SamplePipeline(app, 'SamplePipeline')
 	svc.add_pipeline(pl)
+
+	pl.PubSub.publish("go!")
 
 	app.run()
