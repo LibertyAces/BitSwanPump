@@ -26,7 +26,7 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.common.JsonToDictParser(app, self),
 			bspump.common.PPrintProcessor(app, self),
 			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection", config={
-				'action': 'delete',
+				'action': 'create',
 			})
 		)
 
