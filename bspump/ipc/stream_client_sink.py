@@ -21,6 +21,7 @@ class StreamClientSink(Sink):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
+		self.LastEvent = None
 		self.Writer = self.Reader = None
 		self.Pipeline.throttle(self, enable=True)
 
@@ -43,6 +44,13 @@ class StreamClientSink(Sink):
 		# Manual adding of asyncio fix to asyncio.transport._SelectorSocketTransport
 		self.Writer.transport.write = types.MethodType(write, self.Writer.transport)
 
+		if self.LastEvent is not None:
+			try:
+				self.Writer.write(self.LastEvent)
+				self.LastEvent = None
+			except Exception as e:
+				L.error("Exception occurred while sending last event in open connection '{}'.".format(e))
+
 		pipeline.throttle(self, enable=False)
 
 
@@ -64,14 +72,27 @@ class StreamClientSink(Sink):
 				L.warning("Connection lost. Closing StreamClientSink.")
 				await self._close_connection(message, self.Pipeline)
 
-		elif self.Writer is None:
+		if self.Writer is None:
 			# Hotfix: Make sure the connection is always closed before reopening,
 			# so asyncio does not remember the previous socket descriptor
 			await self._close_connection(message, self.Pipeline)
 			await self._open_connection(message, self.Pipeline)
 
 	def process(self, context, event):
-		self.Writer.write(event)
+		try:
+			self.Writer.write(event)
+
+		except RuntimeError as e:
+			# Hotfix for: RuntimeError: File descriptor 7 is used by transport
+			L.error("During sending event, the following RuntimeError occurred: '{}'.".format(e))
+			self.LastEvent = event
+
+			# Health check will recreate the connection
+			if self.Writer is not None:
+				self.Writer.close()
+				self.Writer = None
+			if self.Reader is not None:
+				self.Reader = None
 
 
 # Custom implementation of write method of private class asyncio.transport._SelectorSocketTransport
