@@ -18,7 +18,7 @@ class AvroSource(FileABCSource):
 
 	async def read(self, filename, f):
 		while True:
-			avro_reader = fastavro.reader(f)
+			avro_reader = fastavro.reader(f,self.Schema)
 			for record in avro_reader:
 				await self.process(record, {
 					"filename": filename
