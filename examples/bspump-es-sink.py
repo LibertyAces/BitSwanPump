@@ -25,7 +25,9 @@ class SamplePipeline(bspump.Pipeline):
 			}).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
 			bspump.common.JsonToDictParser(app, self),
 			bspump.common.PPrintProcessor(app, self),
-			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
+			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection", config={
+				'action': 'delete',
+			})
 		)
 
 
@@ -37,8 +39,7 @@ if __name__ == '__main__':
 	svc.add_connection(
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection", config={
 			"bulk_out_max_size": 100,
-			# 'url': 'http://es01:9200 http://es02:9200 http://es03:9200',
-			'action': 'create',
+			# 'url': 'http://es01:9200',
 		}))
 
 	# Construct and register Pipeline
