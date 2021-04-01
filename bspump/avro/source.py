@@ -8,6 +8,7 @@ class AvroSource(FileABCSource):
 	ConfigDefaults = {
 		'path': './*.avro',
 		'post': 'noop',  # one of 'delete', 'noop' and 'move'
+		'schema_file': '',
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
