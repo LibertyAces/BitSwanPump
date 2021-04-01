@@ -13,7 +13,6 @@ L = logging.getLogger(__name__)
 
 ###
 
-
 class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
@@ -25,9 +24,10 @@ class SamplePipeline(bspump.Pipeline):
 			}).on(bspump.trigger.PubSubTrigger(app, "go!", pubsub=self.PubSub)),
 			bspump.common.JsonToDictParser(app, self),
 			bspump.common.PPrintProcessor(app, self),
-			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection", config={
-				'action': 'create',
-			})
+			bspump.elasticsearch.ElasticSearchSink(
+				app, self, "ESConnection",
+				data_feeder=bspump.elasticsearch.data_feeder.data_feeder_index
+			)
 		)
 
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 	svc.add_connection(
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection", config={
 			"bulk_out_max_size": 100,
-			# 'url': 'http://es01:9200',
+			# 'url': 'http://es01:9200/',
 		}))
 
 	# Construct and register Pipeline
