@@ -9,7 +9,7 @@ class AvroSource(FileABCSource):
 		'path': './*.avro',
 		'post': 'noop',  # one of 'delete', 'noop' and 'move'
 		'schema': '',
-		'schema_file': '',
+		'schema_file': '', # Used if 'schema is not present'
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
