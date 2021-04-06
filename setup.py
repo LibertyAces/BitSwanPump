@@ -81,7 +81,7 @@ setup(
 		'mysql-replication>=0.21',
 		'pytz>=2020.1',
 		'netaddr>=0.7.20',
-		'pyyaml>=5.3.1',
+		'pyyaml>=5.4',
 		'pymongo>=3.10.1',
 		'motor>=2.1.0',
 		'mongoquery>=1.3.6',
