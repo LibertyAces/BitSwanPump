@@ -5,43 +5,65 @@ Data feeders to be used in ElasticSearchSink.
 """
 
 
-async def data_feeder_create_or_index(items):
-	for _id, data in items:
-		yield b'{"create":{}}\n' if _id is None else orjson.dumps(
+def data_feeder_create_or_index(event):
+	_id = event.pop("_id", None)
+
+	if _id is None:
+		yield b'{"create":{}}\n'
+	else:
+		yield orjson.dumps(
 			{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
 		)
-		yield data
+
+	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-async def data_feeder_create(items):
-	for _id, data in items:
-		yield b'{"create":{}}\n' if _id is None else orjson.dumps(
+def data_feeder_create(event):
+	_id = event.pop("_id", None)
+
+	if _id is None:
+		yield b'{"create":{}}\n'
+	else:
+		yield orjson.dumps(
 			{"create": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
 		)
-		yield data
+
+	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-async def data_feeder_index(items):
-	for _id, data in items:
-		yield b'{"index":{}}\n' if _id is None else orjson.dumps(
+def data_feeder_index(event):
+	_id = event.pop("_id", None)
+
+	if _id is None:
+		yield b'{"index":{}}\n'
+	else:
+		yield orjson.dumps(
 			{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
 		)
-		yield data
+
+	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-async def data_feeder_update(items):
-	for _id, data in items:
-		yield orjson.dumps(
-			{"update": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
-		)
-		update_data = b'{"doc":' + data[:-1] + b'}\n'
-		yield update_data
+def data_feeder_update(event):
+	_id = event.pop("_id", None)
+
+	assert _id is not None, "_id must be present in the event when updating a document in ElasticSearch"
+
+	yield orjson.dumps(
+		{"update": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+	)
+
+	yield orjson.dumps({"doc": event}, option=orjson.OPT_APPEND_NEWLINE)
 
 
-async def data_feeder_delete(items):
-	for _id, data in items:
-		yield orjson.dumps(
-			{"delete": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
-		)
-		assert data is None or data == b'{}\n',\
-			"When deleting items from ElasticSearch, no data should be provide, but '{}' found.".format(data)
+def data_feeder_delete(event):
+	_id = event.pop("_id", None)
+
+	assert _id is not None, "_id must be present in the event when deleting a document from ElasticSearch"
+
+	yield orjson.dumps(
+		{"delete": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+	)
+
+	assert len(event) == 0,\
+		"When deleting items from ElasticSearch, no data should be provide, but '{}' found.".format(event)

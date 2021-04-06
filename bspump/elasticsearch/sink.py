@@ -1,7 +1,5 @@
 import logging
 
-import orjson
-
 from ..abc.sink import Sink
 from .connection import ElasticSearchBulk
 
@@ -23,15 +21,20 @@ class ElasticSearchSink(Sink):
 
 	es_index (STRING): ElasticSearch index name
 
-	data_feeder accepts items as its only parameter and yields data as Python generator
+	data_feeder accepts the event as its only parameter and yields data as Python generator
 	The example implementation is:
 
-	async def my_data_feeder(items):
-		for _id, data in items:
-			yield b'{"create":{}}\n' if _id is None else orjson.dumps(
+	def data_feeder_create_or_index(event):
+		_id = event.pop("_id", None)
+
+		if _id is None:
+			yield b'{"create":{}}\n'
+		else:
+			yield orjson.dumps(
 				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
 			)
-			yield data
+
+		yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 	"""
 
@@ -65,9 +68,7 @@ class ElasticSearchSink(Sink):
 	def process(self, context, event):
 		self.Connection.consume(
 			context.get("es_index", self.Index),
-			event.pop("_id", None),
-			orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE),
-			data_feeder=self.DataFeeder,
+			self.DataFeeder(event),
 			bulk_class=self.BulkClass,
 		)
 

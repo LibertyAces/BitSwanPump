@@ -3,7 +3,6 @@ import logging
 import random
 import re
 
-import orjson
 import aiohttp
 
 from ..abc.connection import Connection
@@ -17,7 +16,7 @@ L = logging.getLogger(__name__)
 
 class ElasticSearchBulk(object):
 
-	def __init__(self, connection, index, max_size, data_feeder):
+	def __init__(self, connection, index, max_size):
 		self.Index = index
 		self.Aging = 0
 		self.Capacity = max_size
@@ -25,13 +24,18 @@ class ElasticSearchBulk(object):
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
-		self.DataFeeder = data_feeder
 
-	def consume(self, _id, data):
-		self.Items.append((_id, data))
-		self.Capacity -= len(data)
+	def consume(self, data):
+		for item in data:
+			self.Items.append(item)
+			self.Capacity -= len(item)
+
 		self.Aging = 0
 		return self.Capacity <= 0
+
+	async def _get_data_from_items(self):
+		for item in self.Items:
+			yield item
 
 	async def upload(self, url, session, timeout):
 		items_count = len(self.Items)
@@ -43,7 +47,7 @@ class ElasticSearchBulk(object):
 		try:
 			resp = await session.post(
 				url,
-				data=self.DataFeeder(self.Items),
+				data=self._get_data_from_items(),
 				headers={
 					'Content-Type': 'application/json'
 				},
@@ -249,18 +253,21 @@ class ElasticSearchConnection(Connection):
 	def get_session(self):
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
-	def consume(self, index, _id, data, data_feeder, bulk_class=ElasticSearchBulk):
+	def consume(self, index, data, bulk_class=ElasticSearchBulk):
+		if data is None:
+			return
+
 		bulk = self._bulks.get(index)
 		if bulk is None:
-			bulk = bulk_class(self, index, self._bulk_out_max_size, data_feeder)
+			bulk = bulk_class(self, index, self._bulk_out_max_size)
 			self._bulks[index] = bulk
 
-		if bulk.consume(_id, data):
+		if bulk.consume(data):
 			# Bulk is ready, schedule to be send
 			del self._bulks[index]
 			self.enqueue(bulk)
 
-	def _start(self, event_type):
+	def _start(self, event_name):
 		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
 
