@@ -836,9 +836,14 @@ IPv4 are mapped into the IPv4 space as prescribed by [RFC 4291 section 2.5.5.2. 
 
 Parses string, hex number or decimal number to internal IP address integer representation.
 
+Example usage:
+
 ```
-!IP.PARSE <...>
+!IP.PARSE
+value: <...>
 ```
+
+where `value` is the IP address representation, like 192.168.1.1
 
 Returns `None` if the IP address could not be detected (f. e. the input field is None).
 
