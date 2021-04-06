@@ -25,8 +25,8 @@ class ElasticSearchBulk(object):
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
 
-	def consume(self, data):
-		for item in data:
+	def consume(self, data_feeder_generator):
+		for item in data_feeder_generator:
 			self.Items.append(item)
 			self.Capacity -= len(item)
 
@@ -253,8 +253,8 @@ class ElasticSearchConnection(Connection):
 	def get_session(self):
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
-	def consume(self, index, data, bulk_class=ElasticSearchBulk):
-		if data is None:
+	def consume(self, index, data_feeder_generator, bulk_class=ElasticSearchBulk):
+		if data_feeder_generator is None:
 			return
 
 		bulk = self._bulks.get(index)
@@ -262,7 +262,7 @@ class ElasticSearchConnection(Connection):
 			bulk = bulk_class(self, index, self._bulk_out_max_size)
 			self._bulks[index] = bulk
 
-		if bulk.consume(data):
+		if bulk.consume(data_feeder_generator):
 			# Bulk is ready, schedule to be send
 			del self._bulks[index]
 			self.enqueue(bulk)
