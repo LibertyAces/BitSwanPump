@@ -3,7 +3,6 @@ import logging
 import random
 import re
 
-import orjson
 import aiohttp
 
 from ..abc.connection import Connection
@@ -26,11 +25,17 @@ class ElasticSearchBulk(object):
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
 
-	def consume(self, _id, data):
-		self.Items.append((_id, data))
-		self.Capacity -= len(data)
+	def consume(self, data_feeder_generator):
+		for item in data_feeder_generator:
+			self.Items.append(item)
+			self.Capacity -= len(item)
+
 		self.Aging = 0
 		return self.Capacity <= 0
+
+	async def _get_data_from_items(self):
+		for item in self.Items:
+			yield item
 
 	async def upload(self, url, session, timeout):
 		items_count = len(self.Items)
@@ -42,7 +47,7 @@ class ElasticSearchBulk(object):
 		try:
 			resp = await session.post(
 				url,
-				data=self._data_feeder(),
+				data=self._get_data_from_items(),
 				headers={
 					'Content-Type': 'application/json'
 				},
@@ -114,14 +119,6 @@ class ElasticSearchBulk(object):
 			return self.full_error_callback(self.Items, resp.status)
 
 		return True
-
-
-	async def _data_feeder(self):
-		for _id, data in self.Items:
-			yield b'{"create":{}}\n' if _id is None else orjson.dumps(
-				{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
-			)
-			yield data
 
 	def partial_error_callback(self, response_items):
 		"""
@@ -256,18 +253,21 @@ class ElasticSearchConnection(Connection):
 	def get_session(self):
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
-	def consume(self, index, _id, data, bulk_class=ElasticSearchBulk):
+	def consume(self, index, data_feeder_generator, bulk_class=ElasticSearchBulk):
+		if data_feeder_generator is None:
+			return
+
 		bulk = self._bulks.get(index)
 		if bulk is None:
 			bulk = bulk_class(self, index, self._bulk_out_max_size)
 			self._bulks[index] = bulk
 
-		if bulk.consume(_id, data):
+		if bulk.consume(data_feeder_generator):
 			# Bulk is ready, schedule to be send
 			del self._bulks[index]
 			self.enqueue(bulk)
 
-	def _start(self, event_type):
+	def _start(self, event_name):
 		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
 

@@ -123,11 +123,18 @@ This is how to create the empty dictionary:
 
 		if self.Modify is not None:
 			for key, value in self.Modify.items():
+				# Obtain the original value and pass it to the modify expression
 				try:
 					orig = with_dict[key]
 				except KeyError:
-					continue
-				with_dict[key] = value(context, event, orig, *args, **kwargs)
+					orig = None
+
+				modified_value = value(context, event, orig, *args, **kwargs)
+
+				# Only if modification is successful, store it
+				# Unsetting values should be done via unset
+				if modified_value is not None:
+					with_dict[key] = modified_value
 
 		if self.Add is not None:
 			for key, value in self.Add.items():

@@ -136,10 +136,14 @@ def write(self, data):
 			# Custom implementation starts
 			# Instead of printing the warning, end the connection with fatal error
 			# Requires implementation of custom health check of the connection
-			self._fatal_error(
-				RuntimeError("Log threshold for connection lost writes exceeded."),
-				'Fatal error when writing in socket.send().'
-			)
+			try:
+				self._fatal_error(
+					RuntimeError("Log threshold for connection lost writes exceeded."),
+					'Fatal error when writing in socket.send().'
+				)
+			except AttributeError:
+				# When there is an issue with the loop, just finish
+				self.write_eof()
 			# Custom implementation ends
 		self._conn_lost += 1
 		return
