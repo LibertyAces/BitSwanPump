@@ -16,7 +16,7 @@ class Generator(ProcessorBase):
 		class MyGenerator(bspump.Generator):
 
 			async def generate(self, context, event, depth):
-				for item in event.items:
+				for item in event.items():
 					self.Pipeline.inject(context, item, depth)
 
 	2.) Generator can in the same way also generate completely independent events, if necessary.
