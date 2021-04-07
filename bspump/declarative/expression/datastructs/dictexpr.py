@@ -124,10 +124,7 @@ This is how to create the empty dictionary:
 		if self.Modify is not None:
 			for key, value in self.Modify.items():
 				# Obtain the original value and pass it to the modify expression
-				try:
-					orig = with_dict[key]
-				except KeyError:
-					orig = None
+				orig = with_dict.pop(key, None)
 
 				modified_value = value(context, event, orig, *args, **kwargs)
 
