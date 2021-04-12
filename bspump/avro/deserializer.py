@@ -16,7 +16,6 @@ L = logging.getLogger(__name__)
 class AvroDeserializer(Generator):
 
 	ConfigDefaults = {
-		'schema': '',
 		'schema_file': '',  # Used if 'schema is not present'
 	}
 

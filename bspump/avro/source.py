@@ -8,14 +8,12 @@ class AvroSource(FileABCSource):
 	ConfigDefaults = {
 		'path': './*.avro',
 		'post': 'noop',  # one of 'delete', 'noop' and 'move'
-		'schema': '',
 		'schema_file': '', # Used if 'schema is not present'
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Schema = loader.load_avro_schema(self.Config)
-
 
 	async def read(self, filename, f):
 		while True:

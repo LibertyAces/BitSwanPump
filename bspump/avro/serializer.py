@@ -13,7 +13,6 @@ L = logging.getLogger(__name__)
 class AvroSerializer(Generator):
 
 	ConfigDefaults = {
-		'schema': '',
 		'schema_file': '',  # Used if 'schema is not present'
 		'max_block_size': 10,
 	}
