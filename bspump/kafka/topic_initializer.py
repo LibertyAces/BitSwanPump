@@ -3,6 +3,7 @@ import logging
 import re
 import typing
 
+import asab
 import kafka.admin
 import yaml
 
@@ -105,7 +106,7 @@ class KafkaTopicInitializer(ConfigObject):
 		topics_to_create = [
 			kafka.admin.NewTopic(**topic) for topic in topics]
 		self.AdminClient.create_topics(topics_to_create)
-		L.info("Missing topics created: {}".format(" ".join([topic["name"] for topic in topics])))
+		L.log(asab.LOG_NOTICE, "Missing topics created: {}".format(" ".join([topic["name"] for topic in topics])))
 
 	def check_and_initialize(self):
 		if not self.required_topics:
