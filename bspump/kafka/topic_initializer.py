@@ -3,6 +3,7 @@ import logging
 import re
 import typing
 
+import asab
 import kafka.admin
 import yaml
 
@@ -34,14 +35,6 @@ class KafkaTopicInitializer(ConfigObject):
 	ConfigDefaults = {
 		"client_id": "bspump-topic-initializer",
 		"topics_file": "",
-		# Topics syntax: <topic_name>[:<num_partitions>:<replication_factor>]
-		# If the optional values are not specified, they fall back to their default values
-		# Multiple entries are allowed, separated by whitespace
-		# Example:
-		#    cool_topic  great_topic:1:2  neat_topic::3
-		"topics": "",
-		"num_partitions": 1,
-		"replication_factor": 1,
 	}
 
 	def __init__(self, app, connection, id: typing.Optional[str] = None, config: dict = None):
@@ -53,7 +46,6 @@ class KafkaTopicInitializer(ConfigObject):
 		self.client_id = self.Config.get("client_id")
 
 		self.required_topics = []
-		self.parse_topics_config(self.Config["topics"])
 		topics_file = self.Config.get("topics_file")
 		if len(topics_file) != 0:
 			self.load_topics_from_file(topics_file)
@@ -79,34 +71,6 @@ class KafkaTopicInitializer(ConfigObject):
 			L.debug("KafkaAdminClient connection closed.")
 		else:
 			L.warning("No open KafkaAdminClient connection.")
-
-	def parse_topics_config(self, config_str: str) -> typing.Optional[typing.List[dict]]:
-		if not config_str.strip():
-			L.info("Topics string is empty")
-			return
-		num_partitions_default = self.Config.get("num_partitions")
-		replication_factor_default = self.Config.get("replication_factor")
-		L.debug(f"Parsing topics string: {config_str}")
-		for topic_entry in re.split(r"\s+", config_str):
-			topic = {}
-			settings = topic_entry.split(":")
-			if len(settings) == 1:
-				topic["name"] = settings[0]
-				topic["num_partitions"] = int(num_partitions_default)
-				topic["replication_factor"] = int(replication_factor_default)
-			elif len(settings) == 3:
-				topic["name"] = settings[0]
-				if settings[1]:
-					topic["num_partitions"] = int(settings[1])
-				else:
-					topic["num_partitions"] = int(num_partitions_default)
-				if settings[2]:
-					topic["replication_factor"] = int(settings[2])
-				else:
-					topic["replication_factor"] = int(replication_factor_default)
-			else:
-				raise ValueError(f"Got '{topic_entry}', expected 'topic_name[:num_partitions:replication_factor]'")
-			self.required_topics.append(topic)
 
 	def load_topics_from_file(self, topics_file: str):
 		ext = topics_file.strip().split(".")[-1].lower()
@@ -142,7 +106,7 @@ class KafkaTopicInitializer(ConfigObject):
 		topics_to_create = [
 			kafka.admin.NewTopic(**topic) for topic in topics]
 		self.AdminClient.create_topics(topics_to_create)
-		L.info("Missing topics created: {}".format(" ".join([topic["name"] for topic in topics])))
+		L.log(asab.LOG_NOTICE, "Missing topics created: {}".format(" ".join([topic["name"] for topic in topics])))
 
 	def check_and_initialize(self):
 		if not self.required_topics:
