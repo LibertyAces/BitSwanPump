@@ -11,6 +11,12 @@ L = logging.getLogger(__name__)
 
 ###
 
+"""
+This module returns a 'schema' if 'schema_file' key is passed in the configuration.
+
+In the case schema_file is absent it returns 'None'.
+"""
+
 
 def load_avro_schema(config):
     schema_file = config.get('schema_file')
