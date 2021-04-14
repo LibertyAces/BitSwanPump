@@ -21,7 +21,6 @@ class AvroSerializer(Generator):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Schema = loader.load_avro_schema(self.Config)
-
 		self.MaxBlockSize = self.Config['max_block_size']
 		self.Records = []
 
@@ -36,6 +35,8 @@ class AvroSerializer(Generator):
 		self.Records = []
 
 		fo = io.BytesIO()
+		if self.Schema is None:
+			L.warning("Schema file is not provided , using schema from the AVRO")
 		fastavro.writer(fo, self.Schema, records)
 		self.Pipeline.inject(context, fo.getbuffer(), depth)
 
