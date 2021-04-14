@@ -23,8 +23,12 @@ def load_avro_schema(config):
     if schema_file == '':
         return None
     else:
-        with open(schema_file, 'r') as fi:
-            schema = json.load(fi)
-        return fastavro.parse_schema(schema)
+        try:
+            with open(schema_file, 'r') as fi:
+                schema = json.load(fi)
+            return fastavro.parse_schema(schema)
+        except Exception as e:
+            L.error("Schema file is incorrect")
+
 
 
