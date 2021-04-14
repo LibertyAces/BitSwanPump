@@ -30,7 +30,7 @@ def load_avro_schema(config):
                 schema = json.load(fi)
             return fastavro.parse_schema(schema)
         except Exception as e:
-            L.error("Schema file passed is incorrect")
+            L.error("Schema file passed is incorrect {}".format(e))
 
 
 
