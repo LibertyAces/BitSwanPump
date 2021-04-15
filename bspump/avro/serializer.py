@@ -35,8 +35,12 @@ class AvroSerializer(Generator):
 		self.Records = []
 
 		fo = io.BytesIO()
+
 		if self.Schema is None:
 			L.warning("Schema file is not provided , using schema from the AVRO")
+		else:
+			L.warning("Schema file is used.")
+
 		fastavro.writer(fo, self.Schema, records)
 		self.Pipeline.inject(context, fo.getbuffer(), depth)
 
