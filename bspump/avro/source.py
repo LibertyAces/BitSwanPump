@@ -29,7 +29,6 @@ class AvroSource(FileABCSource):
 			if self.Schema is None:
 				L.warning("Schema file is not provided.")
 			else:
-				pass
 				L.warning("Schema file is used.")
 
 			avro_reader = fastavro.reader(f,self.Schema)
