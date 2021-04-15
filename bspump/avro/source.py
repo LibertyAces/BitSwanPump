@@ -23,9 +23,9 @@ class AvroSource(FileABCSource):
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Schema = loader.load_avro_schema(self.Config)
+
 	async def read(self, filename, f):
 		while True:
-
 			if self.Schema is None:
 				L.warning("Schema file is not provided.")
 			else:
