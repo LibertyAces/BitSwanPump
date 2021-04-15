@@ -37,7 +37,7 @@ class AvroSerializer(Generator):
 		fo = io.BytesIO()
 
 		if self.Schema is None:
-			L.warning("Schema file is not provided , using schema from the AVRO")
+			L.warning("Schema file is not provided.")
 		else:
 			L.warning("Schema file is used.")
 
