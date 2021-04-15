@@ -27,9 +27,12 @@ class AvroDeserializer(Generator):
 
 	async def generate(self, context, event, depth):
 		fi = io.BytesIO(event)
-		# use sch
+
 		if self.Schema is None:
-			L.warning("Schema file is not provided , using schema from the AVRO")
+			L.warning("Schema file is not provided.")
+		else:
+			L.warning("Schema file is used.")
+
 		for record in fastavro.reader(fi, self.Schema):
 			self.Pipeline.inject(context, record, depth)
 
