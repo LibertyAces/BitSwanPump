@@ -13,14 +13,24 @@ L = logging.getLogger(__name__)
 
 
 def load_avro_schema(config):
-    schema = config.get('schema')
-    if schema == '':
-        schema_file = config.get('schema_file')
-        if schema_file != '':
+
+    """
+    This module returns a 'schema' if 'schema_file' key is passed in the configuration.
+
+    In the case schema_file is absent it returns 'None'.
+    """
+
+    schema_file = config.get('schema_file')
+
+    if schema_file == '':
+        return None
+    else:
+        try:
             with open(schema_file, 'r') as fi:
                 schema = json.load(fi)
+            return fastavro.parse_schema(schema)
+        except Exception as e:
+            L.error("Schema file passed is incorrect {}".format(e))
 
-    if schema == '':
-        raise RuntimeError("AVRO schema is not configured.")
 
-    return fastavro.parse_schema(schema)
+
