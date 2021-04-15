@@ -26,7 +26,7 @@ class AvroSource(FileABCSource):
 	async def read(self, filename, f):
 		while True:
 			if self.Schema is None:
-				L.warning("Schema file is not provided , using schema from the AVRO")
+				L.warning("Schema file is not provided.")
 			avro_reader = fastavro.reader(f,self.Schema)
 			for record in avro_reader:
 				await self.process(record, {
