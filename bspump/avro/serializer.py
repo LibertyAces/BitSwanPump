@@ -40,9 +40,6 @@ class AvroSerializer(Generator):
 		await self.do_generate()
 
 	async def do_generate(self):
-		if self.Context == None and self.Depth == None:
-			return None
-
 		self.Records.append(self.Event)
 		if len(self.Records) < self.MaxBlockSize:
 			return None
