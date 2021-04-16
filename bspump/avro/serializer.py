@@ -40,9 +40,8 @@ class AvroSerializer(Generator):
 		await self.do_generate()
 
 	async def do_generate(self):
-
 		if self.Context == None and self.Depth == None:
-			return
+			return None
 
 		self.Records.append(self.Event)
 		if len(self.Records) < self.MaxBlockSize:
@@ -57,10 +56,7 @@ class AvroSerializer(Generator):
 			L.warning("Schema file is not provided.")
 		else:
 			L.warning("Schema file is used.")
-		try:
-			fastavro.writer(fo, self.Schema, records)
-		except ValueError as e:
-			L.warning(e)
 
+		fastavro.writer(fo, self.Schema, records)
 		self.Pipeline.inject(self.Context, fo.getbuffer(), self.Depth)
 
