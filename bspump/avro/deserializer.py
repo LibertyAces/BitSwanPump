@@ -16,8 +16,7 @@ L = logging.getLogger(__name__)
 class AvroDeserializer(Generator):
 
 	ConfigDefaults = {
-		'schema': '',
-		'schema_file': '',  # Used if 'schema is not present'
+		'schema_file': '',
 	}
 
 
@@ -28,6 +27,12 @@ class AvroDeserializer(Generator):
 
 	async def generate(self, context, event, depth):
 		fi = io.BytesIO(event)
+
+		if self.Schema is None:
+			L.warning("Schema file is not provided.")
+		else:
+			L.warning("Schema file is used.")
+
 		for record in fastavro.reader(fi, self.Schema):
 			self.Pipeline.inject(context, record, depth)
 
