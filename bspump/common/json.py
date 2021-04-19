@@ -1,5 +1,5 @@
 import json
-import simdjson
+import cysimdjson
 from ..abc.processor import Processor
 
 
@@ -15,15 +15,15 @@ class JsonToDictParser(Processor):
 		return simdjson.loads(event)
 
 
-class SimdJsonParser(Processor):
+class CySimdJsonParser(Processor):
 	'''
 	Fast JSON parser.
-	Based on https://github.com/TkTech/pysimdjson
+	Based on https://github.com/TeskaLabs/cysimdjson
 	'''
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
-		self._parser = simdjson.Parser()
+		self._parser = cysimdjson.JSONParser()
 
 	def process(self, context, event: bytes):
 		return self._parser.parse(event)
