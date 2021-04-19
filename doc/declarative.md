@@ -745,6 +745,13 @@ what: <...>
 in: <...>
 ```
 
+Obtain meta information from the lookup:
+
+```
+!GET
+what: description_title
+from: lookup.meta:morekeyslookup5
+```
 
 ### Utility
 
