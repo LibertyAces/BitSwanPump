@@ -8,7 +8,7 @@ from .iterator import IteratorGenerator
 from .iterator import IteratorSource
 from .json import DictToJsonParser
 from .json import JsonToDictParser
-from .json import SimdJsonParser
+from .json import CySimdJsonParser
 from .json import StdDictToJsonParser
 from .json import StdJsonToDictParser
 from .json import JsonToDictParser as JSONParser  # For backward compatability
@@ -37,7 +37,7 @@ __all__ = (
 	'IteratorSource',
 	'DictToJsonParser',
 	'JsonToDictParser',
-	'SimdJsonParser',
+	'CySimdJsonParser',
 	'StdDictToJsonParser',
 	'StdJsonToDictParser',
 	'DictToJsonBytesParser',
