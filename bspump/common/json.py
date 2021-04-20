@@ -17,7 +17,7 @@ class JsonToDictParser(Processor):
 
 class CySimdJsonParser(Processor):
 	'''
-	Fast JSON parser.
+	Fast JSON parser. Expects json bytes represented as bytes as input
 	Based on https://github.com/TeskaLabs/cysimdjson
 	'''
 
