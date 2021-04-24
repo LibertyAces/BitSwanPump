@@ -14,6 +14,21 @@ L = logging.getLogger(__name__)
 ###
 
 
+class RandomSource(bspump.TriggerSource):
+
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+
+	async def cycle(self):
+		for i in range(0, 100_000):
+			event = {
+				'station': "Prague",
+				'time': 123,
+				'temp': 14,
+			}
+			await self.process(event)
+
+
 class SamplePipeline(bspump.Pipeline):
 
 	def __init__(self, app, pipeline_id):
@@ -25,20 +40,17 @@ class SamplePipeline(bspump.Pipeline):
 		})
 
 		self.build(
-			bspump.file.FileJSONSource(app, self, config={
-				'path': './data/sample_to_avro.json',
-				'post': 'noop',
-			}).on(bspump.trigger.RunOnceTrigger(app)),
+			RandomSource(app, self).on(bspump.trigger.PubSubTrigger(
+				app, "Application.run!", pubsub=self.App.PubSub
+			)),
 			self.sink
 		)
 
 		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
 
 	def on_cycle_end(self, event_name, pipeline):
-		'''
-		This ensures that at the end of the file scan, the target file is closed
-		'''
 		self.sink.rotate()
+		self.App.stop()
 
 
 if __name__ == '__main__':
