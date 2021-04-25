@@ -75,7 +75,7 @@ class TLSStream(object):
 				self.Socket.close()
 				return False
 
-		# Flush output buffer to complete the handshake on the client side as well
+		# Flush output buffer to complete the handshake
 		if self.OutBuffer.pending > 0:
 			data = self.OutBuffer.read()
 			await self.Loop.sock_sendall(self.Socket, data)
