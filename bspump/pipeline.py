@@ -396,9 +396,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		future = asyncio.ensure_future(coro, loop=self.Loop)
 		future.add_done_callback(self._future_done)
 		self.AsyncFutures.append(future)
+
 		# Throttle when the number of futures exceeds the max count
 		if len(self.AsyncFutures) == self.AsyncConcurencyLimit:
 			self.throttle(self.AsyncFuturesThrottler, True)
+
 
 	def _future_done(self, future):
 		"""
