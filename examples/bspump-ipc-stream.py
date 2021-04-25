@@ -14,10 +14,10 @@ class StreamSinkPipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.socket.TCPSource(app, self, config={'address': '127.0.0.1:8082'}),
+			bspump.socket.TCPSource(app, self, config={'address': '127.0.0.1 8082'}),
 			bspump.common.PPrintProcessor(app, self),
 			# bspump.ipc.StreamSink(app, self, config={"address": "/tmp/bspump-ipc-stream.sock"}),
-			bspump.ipc.StreamSink(app, self, config={'address': '127.0.0.1:8083'}),
+			bspump.ipc.StreamSink(app, self, config={'address': '127.0.0.1 8083'}),
 		)
 
 
@@ -27,7 +27,7 @@ class StreamSourcePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			# bspump.ipc.StreamSource(app, self, config={"address": "/tmp/bspump-ipc-stream.sock"}),
-			bspump.ipc.StreamSource(app, self, config={'address': '127.0.0.1:8083'}),
+			bspump.ipc.StreamSource(app, self, config={'address': '127.0.0.1 8083'}),
 			bspump.common.PPrintSink(app, self),
 		)
 
