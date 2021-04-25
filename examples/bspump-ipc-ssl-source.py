@@ -22,7 +22,7 @@ class EchoPipeline(bspump.Pipeline):
 
 	'''
 	To test this pipeline, use:
-	socat STDIO TCP:127.0.0.1:8082
+	socat STDIO SSL:127.0.0.1:8082
 	'''
 
 	def __init__(self, app, pipeline_id):

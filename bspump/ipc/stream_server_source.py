@@ -144,14 +144,29 @@ class StreamServerSource(Source):
 		# This allows to send a reply to a client
 		context['stream'] = stream
 
-		try:
-			await self.Protocol.handle(self, stream, context)
-		except asyncio.CancelledError:
-			pass
-		except Exception:
-			L.exception("Error when handling client socket")
-		finally:
-			await stream.close()
+		inbound = self.Protocol.handle(self, stream, context)
+		outbound = stream.outbound()
+		done, active = await asyncio.wait(
+			{inbound, outbound},
+			return_when=asyncio.FIRST_COMPLETED
+		)
+
+		for t in active:
+			# TODO: There could be outstanding data in the outbound queue
+			#       Consider flushing them
+			# Cancel remaining active tasks
+			t.cancel()
+
+		for t in done:
+			try:
+				await t
+			except asyncio.CancelledError:
+				pass
+			except Exception:
+				L.exception("Error when handling client socket")
+
+		# Close the stream
+		await stream.close()
 
 
 	def _on_tick(self, event_name):

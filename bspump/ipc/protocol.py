@@ -71,6 +71,8 @@ class LineSourceProtocol(SourceProtocolABC):
 				await pipeline.ready()
 				await source.process(line, context=context.copy())
 
+			# TODO: HIGH PRIORITY This definitively doesn't cover all possible cases
+
 			# If the '\n' is at the end of the buffer, reset the buffer position
 			if last_eol_pos == input_buffer_pos:
 				input_buffer_pos = 0

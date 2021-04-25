@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import ssl
 
@@ -14,17 +15,32 @@ class Stream(object):
 	It is unencrypted STREAM socket.
 	'''
 
-	def __init__(self, loop, socket):
+	def __init__(self, loop, socket, outbound_queue=None):
 		self.Loop = loop
 		self.Socket = socket
-
+		if outbound_queue is None:
+			self.OutboundQueue = asyncio.Queue()
+		else:
+			self.OutboundQueue = outbound_queue
 
 	async def recv_into(self, buf):
 		return await self.Loop.sock_recv_into(self.Socket, buf)
 
+
 	def send(self, data):
-		# Handle WOULDBLOCK situations ...
-		self.Socket.send(data)
+		self.OutboundQueue.put_nowait(data)
+
+
+	async def outbound(self):
+		'''
+		Handle outbound direction
+		'''
+		while True:
+			data = await self.OutboundQueue.get()
+			if data is None:
+				break
+			await self.Loop.sock_sendall(self.Socket, data)
+
 
 	async def close(self):
 		self.Socket.close()
@@ -44,6 +60,7 @@ class TLSStream(object):
 
 		self.InBuffer = ssl.MemoryBIO()
 		self.OutBuffer = ssl.MemoryBIO()
+		self.OutboundQueue = asyncio.Queue()
 
 		self.SSLSocket = sslcontext.wrap_bio(self.InBuffer, self.OutBuffer, server_side=server_side)
 
@@ -74,11 +91,6 @@ class TLSStream(object):
 				L.exception("SSL handshake failed")
 				self.Socket.close()
 				return False
-
-		# Flush output buffer to complete the handshake
-		if self.OutBuffer.pending > 0:
-			data = self.OutBuffer.read()
-			await self.Loop.sock_sendall(self.Socket, data)
 
 		return True
 
@@ -112,9 +124,25 @@ class TLSStream(object):
 
 
 	def send(self, data):
-		self.SSLSocket.write(data)
-		# Handle WOULDBLOCK situations ...
+		self.OutboundQueue.put_nowait(data)
+
+
+	async def outbound(self):
+		'''
+		Handle outbound direction
+		'''
+		while True:
+			data = await self.OutboundQueue.get()
+			if data is None:
+				break
+
+			self.SSLSocket.write(data)
+
+			while self.OutBuffer.pending > 0:
+				data = self.OutBuffer.read()
+				await self.Loop.sock_sendall(self.Socket, data)
 
 
 	async def close(self):
+		self.OutboundQueue.put_nowait(None)
 		self.Socket.close()
