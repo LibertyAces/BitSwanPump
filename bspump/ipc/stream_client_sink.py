@@ -31,73 +31,92 @@ class StreamClientSink(Sink):
 
 		self.Pipeline.PubSub.subscribe("bspump.pipeline.start!", self._open_connection)
 		self.Pipeline.PubSub.subscribe("bspump.pipeline.stop!", self._close_connection)
+		app.PubSub.subscribe("Application.tick!", self._on_tick)
 
 
 	async def _open_connection(self, message, pipeline):
+		# Connection is established
+		if self.Task is not None:
+			await self._close_connection(message, pipeline)
+
+		self.Task = self.Pipeline.Loop.create_task(
+			self._client_connected_task()
+		)
+
+
+	async def _close_connection(self, message, pipeline):
+		self.Pipeline.throttle(self, enable=True)
+		if self.Task is not None:
+			self.Task.cancel()
+			self.Task = None
+
+
+	def _on_tick(self, event_name):
+		if self.Task is not None and self.Task.done():
+			# We should be connected but we are not
+			# Let's do a bit of clean-up and commence reconnection
+
+			try:
+				self.Task.result()
+			except Exception:
+				L.exception("Error when handling client socket")
+
+
+			self.Task = self.Pipeline.Loop.create_task(
+				self._client_connected_task()
+			)
+
+
+	async def _client_connected_task(self):
 		loop = self.Pipeline.Loop
 
 		addr = self.Config['address']
 		host, port = addr.rsplit(" ", maxsplit=1)
 		addrinfo = await loop.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM)
 
-		s = None
+		client_sock = None
 		connection_exception = ''
 		for family, socktype, proto, canonname, sockaddr in addrinfo:
-			s = socket.socket(family, socktype, proto)
-			s.setblocking(False)
+			client_sock = socket.socket(family, socktype, proto)
+			client_sock.setblocking(False)
 			try:
-				await loop.sock_connect(s, sockaddr)
+				await loop.sock_connect(client_sock, sockaddr)
 			except Exception as e:
 				connection_exception = e
-				s = None
+				client_sock = None
 				continue
 
-		if s is None:
+		if client_sock is None:
 			L.warning("Connection to '{}' failed: {}".format(addr, connection_exception))
 			return
 
-		# Connection is established
-		if self.Task is not None:
-			L.warning("There is existing task")
-			self.Task.cancel()
-
-		self.Task = loop.create_task(
-			self._client_connected_task(s)
-		)
-
-		# Untrottle
-		self.Pipeline.throttle(self, enable=False)
-
-
-	async def _close_connection(self, message, pipeline):
-
-		# Trottle
-		self.Pipeline.throttle(self, enable=True)
-
-		if self.Task is not None:
-			self.Task.cancel()
-			self.Task = None
-
-
-	async def _client_connected_task(self, client_sock):
 		# TODO: Support also TLSStream ...
 		stream = Stream(self.Pipeline.Loop, client_sock, outbound_queue=self.OutboundQueue)
 
-		outbound = stream.outbound()
-		inbound = self._client_inbound_task(client_sock)
-		done, active = await asyncio.wait(
-			{outbound, inbound},
-			return_when=asyncio.FIRST_COMPLETED
-		)
+		outbound = loop.create_task(stream.outbound())
+		inbound = loop.create_task(self._client_inbound_task(client_sock))
 
-		self.Pipeline.throttle(self, enable=True)
+		self.Pipeline.throttle(self, enable=False)
+		try:
+			done, active = await asyncio.wait(
+				{outbound, inbound},
+				return_when=asyncio.FIRST_COMPLETED
+			)
 
+		except asyncio.CancelledError:
+			active = {outbound, inbound}
+			done = {}
+
+		finally:
+			self.Pipeline.throttle(self, enable=True)
+
+		# Cancel remaining active tasks
 		for t in active:
 			# TODO: There could be outstanding data in the outbound queue
 			#       Consider flushing them
-			# Cancel remaining active tasks
 			t.cancel()
 
+		# Collect results from completed tasks
 		for t in done:
 			try:
 				await t
