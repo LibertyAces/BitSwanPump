@@ -29,7 +29,7 @@ class StreamSinkPipeline(bspump.Pipeline):
 			PeriodicSource(app, self),
 			bspump.common.PPrintProcessor(app, self),
 			# bspump.ipc.StreamSink(app, self, config={"address": "/tmp/bspump-ipc-stream.sock"}),
-			bspump.ipc.StreamSink(app, self, config={'address': '127.0.0.1 8083'}),
+			bspump.ipc.StreamClientSink(app, self, config={'address': '127.0.0.1 8083'}),
 		)
 
 

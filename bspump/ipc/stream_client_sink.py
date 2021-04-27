@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import socket
+import re
 
 from ..abc.sink import Sink
 
@@ -71,7 +72,18 @@ class StreamClientSink(Sink):
 		loop = self.Pipeline.Loop
 
 		addr = self.Config['address']
-		host, port = addr.rsplit(" ", maxsplit=1)
+
+		if ' ' in addr:
+			addr = re.split(r"\s+", addr)
+		else:
+			# This line allows the (obsolete) format of IPv4 with ':'
+			# such as "0.0.0.0:8001"
+			addr = re.split(r"[:\s]", addr, 1)
+
+		host = addr.pop(0).strip()
+		port = addr.pop(0).strip()
+		port = int(port)
+
 		addrinfo = await loop.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM)
 
 		client_sock = None

@@ -20,13 +20,13 @@ class EchoPipeline(bspump.Pipeline):
 
 	'''
 	To test this pipeline, use:
-	socat STDIO TCP:127.0.0.1:8082
+	socat STDIO TCP:127.0.0.1:8083
 	'''
 
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.ipc.StreamServerSource(app, self, config={'address': ':: 8082'}),
+			bspump.ipc.StreamServerSource(app, self, config={'address': '0.0.0.0 8083'}),
 			EchoSink(app, self)
 		)
 
