@@ -18,6 +18,7 @@ class StreamClientSink(Sink):
 
 	ConfigDefaults = {
 		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
+		'outbound_queue_max_size': 100,  # Maximum size of the output queue before throttling
 	}
 
 
@@ -27,6 +28,10 @@ class StreamClientSink(Sink):
 
 		# Throttle till we are connected
 		self.Pipeline.throttle(self, enable=True)
+
+		# Maximum size for the queue
+		self.OutboundQueueMaxSize = int(self.Config['outbound_queue_max_size'])
+		assert (self.OutboundQueueMaxSize >= 1)
 
 		self.Task = None
 
@@ -53,6 +58,11 @@ class StreamClientSink(Sink):
 
 
 	def _on_tick(self, event_name):
+		# Unthrottle the queue if needed
+		if self.OutboundQueue in self.Pipeline.get_throttles() and self.OutboundQueue.qsize() < self.OutboundQueueMaxSize:
+			print("Unthrottling")
+			self.Pipeline.throttle(self.OutboundQueue, False)
+
 		if self.Task is not None and self.Task.done():
 			# We should be connected but we are not
 			# Let's do a bit of clean-up and commence reconnection
@@ -156,4 +166,7 @@ class StreamClientSink(Sink):
 
 	def process(self, context, event):
 		self.OutboundQueue.put_nowait(event)
-		# TODO: Throttle the pipeline if the queue is full
+
+		if self.OutboundQueue.qsize() == self.OutboundQueueMaxSize:
+			print("Throttling")
+			self.Pipeline.throttle(self.OutboundQueue, True)

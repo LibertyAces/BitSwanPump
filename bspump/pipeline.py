@@ -134,6 +134,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 	def time(self):
 		return self.App.time()
 
+	def get_throttles(self):
+		return self._throttles
+
 
 	def _on_metrics_flush(self, event_type, metric, values):
 		if metric != self.MetricsCounter:
