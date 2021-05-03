@@ -45,7 +45,7 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
-			bspump.avro.AvroSource(app, self, config={'path': './data/sink.avro'}).on(bspump.trigger.PeriodicTrigger(app,1)),
+			bspump.avro.AvroSource(app, self, config={'path': '../data/sink.avro'}).on(bspump.trigger.PeriodicTrigger(app,1)),
 			PerfSink(app, self)
 		)
 
