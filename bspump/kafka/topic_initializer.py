@@ -17,6 +17,50 @@ L = logging.getLogger(__name__)
 #
 
 
+def initialize_topics(connection: object, topics_config: list):
+	"""
+	Initializes missing Kafka topics with specified configuration.
+
+	`topics_config` needs to match the following schema:
+	[
+		{
+			"name": string,
+			"num_partitions": int,
+			"replication_factor": int,
+			(optional) "topic_configs": {
+				...
+			}
+		},
+		...
+	]
+	"""
+
+	# Get connection details from the connection object
+	bootstrap_servers = connection.get_bootstrap_servers()
+	admin_client = kafka.admin.KafkaAdminClient(bootstrap_servers=bootstrap_servers)
+
+	# TODO: add option to modify the configuration of existing topics
+
+	existing_topics = admin_client.list_topics()
+	missing_topics = [
+		topic
+		for topic in topics_config
+		if topic["name"] not in existing_topics
+	]
+
+	if len(missing_topics) == 0:
+		return
+
+	topics_to_create = [
+		kafka.admin.NewTopic(**topic)
+		for topic
+		in missing_topics
+	]
+	admin_client.create_topics(topics_to_create)
+
+	admin_client.close()
+
+
 class KafkaTopicInitializer(ConfigObject):
 	"""
 	KafkaTopicInitializer purpose:
@@ -29,7 +73,10 @@ class KafkaTopicInitializer(ConfigObject):
 	the connection module from BSPump.
 
 	Usage:
-	KafkaTopicInitializer("KafkaTopicInitializer").check_and_initialize()
+	topic_initializer = KafkaTopicInitializer(app, "KafkaConnection")
+	topic_initializer.extract_topics(asab.Config, "pipeline:EnrichersPipeline:KafkaSink")
+	topic_initializer.extract_topics(asab.Config, "pipeline:EnrichersPipeline:KafkaSource")
+	topic_initializer.run()
 	"""
 
 	ConfigDefaults = {
