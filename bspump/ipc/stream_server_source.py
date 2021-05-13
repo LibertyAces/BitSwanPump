@@ -1,9 +1,11 @@
+import ssl
 import socket
 import asyncio
 import logging
 
 from ..abc.source import Source
 
+from .stream import Stream, TLSStream
 from .protocol import LineSourceProtocol
 
 #
@@ -16,96 +18,171 @@ L = logging.getLogger(__name__)
 class StreamServerSource(Source):
 
 	ConfigDefaults = {
-		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
+		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
+		'backlog': ''
 		# Specify 'cert' or 'key' to enable SSL / TLS mode
 	}
 
-	def __init__(self, app, pipeline, id=None, config=None):
+	def __init__(self, app, pipeline, id=None, config=None, protocol_class=LineSourceProtocol):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self.Writers = set()
-
-		self.Address = str(self.Config['address'])
+		self.Address = self.Config['address']
 
 		if 'cert' in self.Config or 'key' in self.Config:
-			import ssl
 			import asab.net
 			sslbuilder = asab.net.SSLContextBuilder('[none]', config=self.Config)
-			self.SSL = sslbuilder.build(protocol=ssl.PROTOCOL_TLS_SERVER)
+			self.SSL = sslbuilder.build(protocol=ssl.PROTOCOL_SSLv23)
 		else:
 			self.SSL = None
 
-		# TODO: Allow to specify other protocols such as BlockSourceProtocol, BytesSourceProtocol
-		self.Protocol = LineSourceProtocol(self, app, pipeline, config)
+		self.AcceptingSockets = []
+		self.ConnectedClients = set()  # Set of active _client_connected_task()
+
+		self.Protocol = protocol_class(app, pipeline, config)
+
+		app.PubSub.subscribe("Application.tick!", self._on_tick)
 
 
-	async def _on_connection(self, reader, writer):
+	def start(self, loop):
+		if self.Task is not None:
+			return
 
-		# Prepare the context
-		sock = writer.transport.get_extra_info('socket')
+		# Create all required sockets, bind them to specific ports and start listening
+		for addrline in self.Address.split('\n'):
+			addrline = addrline.strip()
+			if " " in addrline:
+				# IP server socket server
+				host, port = addrline.rsplit(" ", maxsplit=1)
+				addrinfo = socket.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
+				for family, socktype, proto, canonname, sockaddr in addrinfo:
+					s = socket.socket(family, socktype, proto)
+					try:
+						s.bind(sockaddr)
+					except OSError as e:
+						L.warning("Failed to start listening at '{}': {}".format(addrline, e))
+						continue
 
-		# Peer
-		peer_name = writer.transport.get_extra_info('peername')
-		sock_name = writer.transport.get_extra_info('sockname')
-		if sock.family is socket.AF_INET:
-			me = '{}:{}'.format(sock_name[0], sock_name[1])
-			peer = '{}:{}'.format(peer_name[0], peer_name[1])
-		elif sock.family is socket.AF_INET6:
-			me = '[{}]:{}'.format(sock_name[0], sock_name[1])
-			peer = '[{}]:{}'.format(peer_name[0], peer_name[1])
-		else:
-			me = sock_name
-			peer = peer_name
+					backlog = self.Config['backlog']
+					if backlog == '':
+						s.listen()
+					else:
+						s.listen(int(backlog))
 
-		context = {
-			'stream_type': sock.family.name,
-			'stream_dir': 'in',
-			'stream_peer': peer,
-			'stream_me': me
-		}
+					s.setblocking(False)
+					self.AcceptingSockets.append(s)
 
-		self.Writers.add(writer)
+			# TODO elif: unix sockets
 
-		try:
-			await self.Protocol.inbound(self, reader, context)
+			else:
+				L.error("Invalid address specification: '{}'".format(addrline))
 
-		finally:
-			writer.close()
-			self.Writers.remove(writer)
+		super().start(loop)
+
+
+	async def stop(self):
+		# Close client connections
+		for t in self.ConnectedClients:
+			t.cancel()
+		self.ConnectedClients = set()
+
+		# The main() will be canceled in the parent class
+		await super().stop()
 
 
 	async def main(self):
-		# Start server
-		if ":" in self.Address:
-			host, port = self.Address.rsplit(":", maxsplit=1)
-			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
-			host, port = sockaddr
-			server = await asyncio.start_server(
-				self._on_connection,
-				host, port,
-				loop=self.Pipeline.App.Loop,
-				ssl=self.SSL,
+		if len(self.AcceptingSockets) == 0:
+			L.warning("No listening socket configured")
+			return
+
+		await asyncio.gather(
+			*[
+				self._handle_accept(sock)
+				for sock in self.AcceptingSockets
+			],
+			return_exceptions=True
+		)
+
+
+	async def _handle_accept(self, sock):
+		loop = self.Pipeline.App.Loop
+		server_addr = sock.getsockname()
+		while True:
+			client_sock, client_addr = await loop.sock_accept(sock)
+			t = loop.create_task(
+				self._client_connected_task(client_sock, client_addr, server_addr)
 			)
+			self.ConnectedClients.add(t)
+
+
+	async def _client_connected_task(self, client_sock, client_addr, server_addr):
+		client_sock.setblocking(False)
+
+		if client_sock.family is socket.AF_INET:
+			me = '{} {}'.format(server_addr[0], server_addr[1])
+			peer = '{} {}'.format(client_addr[0], client_addr[1])
+		elif client_sock.family is socket.AF_INET6:
+			me = '{} {}'.format(server_addr[0], server_addr[1])
+			peer = '{} {}'.format(client_addr[0], client_addr[1])
 		else:
-			server = await asyncio.start_unix_server(
-				self._on_connection,
-				path=self.Address,
-				loop=self.Pipeline.App.Loop,
-				ssl=self.SSL,
-			)
+			me = server_addr
+			peer = client_addr
 
-		await self.stopped()
+		context = {
+			'stream_type': client_sock.family.name,
+			'stream_dir': 'in',
+			'stream_peer': peer,
+			'stream_me': me,
+		}
+		if self.SSL is not None:
+			stream = TLSStream(self.Pipeline.App.Loop, self.SSL, client_sock, server_side=True)
+			ok = await stream.handshake()
+			if not ok:
+				return
+		else:
+			stream = Stream(self.Pipeline.App.Loop, client_sock)
 
-		# Close server
-		server.close()
-		await server.wait_closed()
+		# This allows to send a reply to a client
+		context['stream'] = stream
 
-		# Close peer connections
-		for writer in self.Writers:
-			L.warning("'{}' closes connection to '{}'".format(
-				self.Id,
-				writer.transport.get_extra_info('peername'))
-			)
-			if writer.can_write_eof():
-				writer.write_eof()
-			writer.close()
+		inbound = self.Protocol.handle(self, stream, context)
+		outbound = stream.outbound()
+		done, active = await asyncio.wait(
+			{inbound, outbound},
+			return_when=asyncio.FIRST_COMPLETED
+		)
+
+		for t in active:
+			# TODO: There could be outstanding data in the outbound queue
+			#       Consider flushing them
+			# Cancel remaining active tasks
+			t.cancel()
+
+		for t in done:
+			try:
+				await t
+			except asyncio.CancelledError:
+				pass
+			except Exception:
+				L.exception("Error when handling client socket")
+
+		# Close the stream
+		await stream.close()
+
+
+	def _on_tick(self, event_name):
+
+		# Remove clients that disconnected
+		disconnected_client_tasks = [*filter(
+			lambda task: task.done(),
+			self.ConnectedClients
+		)]
+		for task in disconnected_client_tasks:
+			if task.done():
+				self.ConnectedClients.remove(task)
+
+				try:
+					task.result()
+				except asyncio.CancelledError:
+					pass
+				except Exception:
+					L.exception("Exception when handling client socket")

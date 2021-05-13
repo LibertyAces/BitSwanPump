@@ -27,14 +27,6 @@ class BSPumpApplication(asab.Application):
 		self.PumpService = BSPumpService(self)
 		self.WebContainer = None
 
-		# Conditionally activate LogMan.io service
-		if asab.Config.has_section("logman.io"):
-			from asab.logman import Module
-			self.add_module(Module)
-			logman_service = self.get_service('asab.LogManIOService')
-			logman_service.configure_metrics(self.get_service('asab.MetricsService'))
-			logman_service.configure_logging(self)
-
 		try:
 			# Signals are not available on Windows
 			self.Loop.add_signal_handler(signal.SIGUSR1, self._on_signal_usr1)
@@ -51,7 +43,6 @@ class BSPumpApplication(asab.Application):
 		if web_listen is not None and len(web_listen) > 0:
 			from .web import _initialize_web
 			self.WebContainer = _initialize_web(self, web_listen)
-
 
 
 	def create_argument_parser(self):
@@ -83,9 +74,6 @@ build: {} [{}]
 
 	async def main(self):
 		print("{} pipeline(s) ready.".format(len(self.PumpService.Pipelines)))
-		# TODO: Come up with solution how to reconsile this with unittests, maybe as follows?
-		# L.log(31, "{} pipeline(s) ready.".format(len(self.PumpService.Pipelines)))
-		pass
 
 
 	def _on_signal_usr1(self):

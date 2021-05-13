@@ -51,7 +51,7 @@ It is acomplished by `await self.Pipeline.ready()` call.
 				self.Pipeline.set_error(None, None, e)
 				L.exception("Exception in the source '{}'".format(self.Id))
 
-		self.Task = asyncio.ensure_future(_main(), loop=loop)
+		self.Task = loop.create_task(_main())
 
 
 	async def stop(self):
