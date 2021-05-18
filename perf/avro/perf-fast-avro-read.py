@@ -1,32 +1,42 @@
 #!/usr/bin/env python3
 import logging
-
+import time
 import bspump
 import bspump.avro
 import bspump.common
 import bspump.file
 import bspump.trigger
-
+import asab
 ###
 
 L = logging.getLogger(__name__)
 
 ###
 
+class PerfSink(bspump.Sink):
 
-class RandomSource(bspump.TriggerSource):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-	async def cycle(self):
-		for i in range(0, 100_000):
-			event = {
-				'station': "Prague",
-				'time': 123,
-				'temp': 14,
-			}
-			await self.process(event)
+		self.Counter = 0
+		self.Mark = time.time()
+
+		app.PubSub.subscribe_all(self)
+
+
+	def process(self, context, event):
+		self.Counter += 1
+
+
+	@asab.subscribe("Application.tick!")
+	def _on_tick(self, event_name):
+		now = time.time()
+
+		print("EPS: {:.0f}".format(self.Counter / (now - self.Mark)))
+
+		self.Counter = 0
+		self.Mark = now
 
 
 class SamplePipeline(bspump.Pipeline):
@@ -34,23 +44,15 @@ class SamplePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 
-		self.sink = bspump.avro.AvroSink(app, self, config={
-			'schema_file': './data/avro_schema.avsc',
-			'file_name_template': './data/sink{index}.avro',
-		})
-
 		self.build(
-			RandomSource(app, self).on(bspump.trigger.PubSubTrigger(
-				app, "Application.run!", pubsub=self.App.PubSub
-			)),
-			self.sink
+			bspump.avro.AvroSource(app, self, config={'path': '../data/sink.avro'}).on(bspump.trigger.PeriodicTrigger(app,1)),
+			PerfSink(app, self)
 		)
 
-		self.PubSub.subscribe("bspump.pipeline.cycle_end!", self.on_cycle_end)
-
 	def on_cycle_end(self, event_name, pipeline):
-		self.sink.rotate()
-		self.App.stop()
+		'''
+		This ensures that at the end of the file scan, the target file is closed
+		'''
 
 
 if __name__ == '__main__':

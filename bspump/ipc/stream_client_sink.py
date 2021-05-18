@@ -1,9 +1,11 @@
 import asyncio
 import logging
 import socket
-import types
+import re
 
 from ..abc.sink import Sink
+
+from .stream import Stream, TLSStream
 
 #
 
@@ -15,155 +17,156 @@ L = logging.getLogger(__name__)
 class StreamClientSink(Sink):
 
 	ConfigDefaults = {
-		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
+		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
+		'outbound_queue_max_size': 100,  # Maximum size of the output queue before throttling
 	}
+
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
+		self.OutboundQueue = asyncio.Queue()
 
-		self.LastEvent = None
-		self.Writer = self.Reader = None
+		# Throttle till we are connected
 		self.Pipeline.throttle(self, enable=True)
 
-		self.Address = str(self.Config['address'])
+		# Maximum size for the queue
+		self.OutboundQueueMaxSize = int(self.Config['outbound_queue_max_size'])
+		assert (self.OutboundQueueMaxSize >= 1)
+
+		self.Task = None
+
 		self.Pipeline.PubSub.subscribe("bspump.pipeline.start!", self._open_connection)
 		self.Pipeline.PubSub.subscribe("bspump.pipeline.stop!", self._close_connection)
-		app.PubSub.subscribe("Application.tick!", self._health_check)
+		app.PubSub.subscribe("Application.tick!", self._on_tick)
 
 
 	async def _open_connection(self, message, pipeline):
-		assert self.Writer is None
-		if ":" in self.Address:
-			host, port = self.Address.rsplit(":", maxsplit=1)
-			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
-			host, port = sockaddr
-			self.Reader, self.Writer = await asyncio.open_connection(host, port)
-		else:
-			self.Reader, self.Writer = await asyncio.open_unix_connection(self.Address)
+		# Connection is established
+		if self.Task is not None:
+			await self._close_connection(message, pipeline)
 
-		# Manual adding of asyncio fix to asyncio.transport._SelectorSocketTransport
-		self.Writer.transport.write = types.MethodType(write, self.Writer.transport)
-
-		if self.LastEvent is not None:
-			try:
-				self.Writer.write(self.LastEvent)
-				self.LastEvent = None
-			except Exception as e:
-				L.error("Exception occurred while sending last event in open connection '{}'.".format(e))
-
-		pipeline.throttle(self, enable=False)
+		self.Task = self.Pipeline.Loop.create_task(
+			self._client_connected_task()
+		)
 
 
 	async def _close_connection(self, message, pipeline):
+		self.Pipeline.throttle(self, enable=True)
+		if self.Task is not None:
+			self.Task.cancel()
+			self.Task = None
 
-		if self.Reader:
-			self.Reader = None
 
-		if self.Writer:
-			# Close the socket manually
+	def _on_tick(self, event_name):
+		# Unthrottle the queue if needed
+		if self.OutboundQueue in self.Pipeline.get_throttles() and self.OutboundQueue.qsize() < self.OutboundQueueMaxSize:
+			print("Unthrottling")
+			self.Pipeline.throttle(self.OutboundQueue, False)
+
+		if self.Task is not None and self.Task.done():
+			# We should be connected but we are not
+			# Let's do a bit of clean-up and commence reconnection
+
 			try:
-				_socket = self.Writer.get_extra_info('socket')
-				_socket.close()
+				self.Task.result()
+			except Exception:
+				L.exception("Error when handling client socket")
+
+
+			self.Task = self.Pipeline.Loop.create_task(
+				self._client_connected_task()
+			)
+
+
+	async def _client_connected_task(self):
+		loop = self.Pipeline.Loop
+
+		addr = self.Config['address']
+
+		if ' ' in addr:
+			addr = re.split(r"\s+", addr)
+		else:
+			# This line allows the (obsolete) format of IPv4 with ':'
+			# such as "0.0.0.0:8001"
+			addr = re.split(r"[:\s]", addr, 1)
+
+		host = addr.pop(0).strip()
+		port = addr.pop(0).strip()
+		port = int(port)
+
+		addrinfo = await loop.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM)
+
+		client_sock = None
+		connection_exception = ''
+		for family, socktype, proto, canonname, sockaddr in addrinfo:
+			client_sock = socket.socket(family, socktype, proto)
+			client_sock.setblocking(False)
+			try:
+				await loop.sock_connect(client_sock, sockaddr)
 			except Exception as e:
-				L.warning("The following exception occurred when closing socket manually: '{}'.".format(e))
+				connection_exception = e
+				client_sock = None
+				continue
 
-			# Make sure the transport is closed (no file descriptor)
-			self.Writer.transport.close()
+		if client_sock is None:
+			L.warning("Connection to '{}' failed: {}".format(addr, connection_exception))
+			return
 
-			# Close the writer object
-			self.Writer.close()
-			await self.Writer.wait_closed()
+		# TODO: Support also TLSStream ...
+		stream = Stream(self.Pipeline.Loop, client_sock, outbound_queue=self.OutboundQueue)
 
-			self.Writer = None
-			pipeline.throttle(self, enable=True)
+		outbound = loop.create_task(stream.outbound())
+		inbound = loop.create_task(self._client_inbound_task(client_sock))
 
-		assert not self.Writer
+		self.Pipeline.throttle(self, enable=False)
+		try:
+			done, active = await asyncio.wait(
+				{outbound, inbound},
+				return_when=asyncio.FIRST_COMPLETED
+			)
+
+		except asyncio.CancelledError:
+			active = {outbound, inbound}
+			done = {}
+
+		finally:
+			self.Pipeline.throttle(self, enable=True)
+
+		# Cancel remaining active tasks
+		for t in active:
+			# TODO: There could be outstanding data in the outbound queue
+			#       Consider flushing them
+			t.cancel()
+
+		# Collect results from completed tasks
+		for t in done:
+			try:
+				await t
+			except asyncio.CancelledError:
+				pass
+			except Exception:
+				L.exception("Error when handling client socket")
+
+		# Close the stream
+		await stream.close()
 
 
-	async def _health_check(self, message):
-		if self.Reader:
-			if self.Reader.at_eof():
-				L.warning("Connection lost. Closing StreamClientSink.")
-				await self._close_connection(message, self.Pipeline)
+	async def _client_inbound_task(self, client_sock):
+		'''
+		This is the monitor of the client connection.
+		'''
+		while True:
+			data = await self.Pipeline.Loop.sock_recv(client_sock, 4096)
+			if len(data) == 0:
+				# Client closed the connection
+				return
 
-		if self.Writer is None:
-			await self._open_connection(message, self.Pipeline)
+			# Incoming data are discarted ...
 
 
 	def process(self, context, event):
-		try:
-			self.Writer.write(event)
+		self.OutboundQueue.put_nowait(event)
 
-		except RuntimeError as e:
-			# Hotfix for: RuntimeError: File descriptor 7 is used by transport
-			# This should however never happen, because the transport is closed by self.Writer.transport.close()
-			L.error("During sending event, the following RuntimeError occurred: '{}'.".format(e))
-			self.LastEvent = event
-
-			# Health check will recreate the connection
-			if self.Writer is not None:
-
-				# Close the socket manually
-				try:
-					_socket = self.Writer.get_extra_info('socket')
-					_socket.close()
-				except Exception as e:
-					L.warning("The following exception occurred when closing socket manually: '{}'.".format(e))
-
-				# Make sure the transport is closed (no file descriptor)
-				self.Writer.transport.close()
-
-				self.Writer.close()
-				self.Writer = None
-				self.Pipeline.throttle(self, enable=True)
-
-			if self.Reader is not None:
-				self.Reader = None
-
-
-# Custom implementation of write method of private class asyncio.transport._SelectorSocketTransport
-def write(self, data):
-	if not isinstance(data, (bytes, bytearray, memoryview)):
-		raise TypeError('data argument must be byte-ish (%r)',
-						type(data))
-	if self._eof:
-		raise RuntimeError('Cannot call write() after write_eof()')
-	if not data:
-		return
-
-	if self._conn_lost:
-		if self._conn_lost >= asyncio.constants.LOG_THRESHOLD_FOR_CONNLOST_WRITES:
-			# Custom implementation starts
-			# Instead of printing the warning, end the connection with fatal error
-			# Requires implementation of custom health check of the connection
-			try:
-				self._fatal_error(
-					RuntimeError("Log threshold for connection lost writes exceeded."),
-					'Fatal error when writing in socket.send().'
-				)
-			except AttributeError:
-				# When there is an issue with the loop, just finish
-				self.write_eof()
-			# Custom implementation ends
-		self._conn_lost += 1
-		return
-
-	if not self._buffer:
-		# Optimization: try to send now.
-		try:
-			n = self._sock.send(data)
-		except (BlockingIOError, InterruptedError):
-			pass
-		except Exception as exc:
-			self._fatal_error(exc, 'Fatal write error on socket transport')
-			return
-		else:
-			data = data[n:]
-			if not data:
-				return
-		# Not all was written; register write handler.
-		self._loop.add_writer(self._sock_fd, self._write_ready)
-
-	# Add it to the buffer.
-	self._buffer.extend(data)
-	self._maybe_pause_protocol()
+		if self.OutboundQueue.qsize() == self.OutboundQueueMaxSize:
+			print("Throttling")
+			self.Pipeline.throttle(self.OutboundQueue, True)

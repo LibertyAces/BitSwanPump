@@ -43,6 +43,7 @@ from .string.lowerexpr import LOWER
 from .string.substringexpr import SUBSTRING
 from .string.cutexpr import CUT
 from .string.contains import CONTAINS
+from .string.split import SPLIT
 
 # Data structures
 from .datastructs.dictexpr import DICT

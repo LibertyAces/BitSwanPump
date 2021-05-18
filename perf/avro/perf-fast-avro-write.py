@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import logging
-
+import time
 import bspump
 import bspump.avro
 import bspump.common
@@ -14,19 +14,22 @@ L = logging.getLogger(__name__)
 ###
 
 
-class RandomSource(bspump.TriggerSource):
+class LoadSource(bspump.TriggerSource):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
+		self.Number = 100000
 
 	async def cycle(self):
-		for i in range(0, 100_000):
+		stime = time.time()
+		for i in range(0, 1000000):
 			event = {
-				'station': "Prague",
-				'time': 123,
-				'temp': 14,
+				'Country': "CZ",
+				'Position': "1",
 			}
 			await self.process(event)
+		etime = time.time()
+		print("EPS: {:.0f}".format(self.Number / (etime - stime)))
 
 
 class SamplePipeline(bspump.Pipeline):
@@ -35,12 +38,12 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.sink = bspump.avro.AvroSink(app, self, config={
-			'schema_file': './data/avro_schema.avsc',
-			'file_name_template': './data/sink{index}.avro',
+			'schema_file': '../data/sample-for-avro-schema.avsc',
+			'file_name_template': '../data/sink_million{index}.avro',
 		})
 
 		self.build(
-			RandomSource(app, self).on(bspump.trigger.PubSubTrigger(
+			LoadSource(app, self).on(bspump.trigger.PubSubTrigger(
 				app, "Application.run!", pubsub=self.App.PubSub
 			)),
 			self.sink
