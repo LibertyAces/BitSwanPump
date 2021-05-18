@@ -3,18 +3,6 @@ import cysimdjson
 from ..abc.processor import Processor
 
 
-class DictToJsonParser(Processor):
-
-	def process(self, context, event):
-		return simdjson.dumps(event)
-
-
-class JsonToDictParser(Processor):
-
-	def process(self, context, event):
-		return simdjson.loads(event)
-
-
 class CySimdJsonParser(Processor):
 	'''
 	Fast JSON parser. Expects json bytes represented as bytes as input

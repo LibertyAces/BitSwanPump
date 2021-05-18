@@ -11,7 +11,7 @@ class NetFlowPipeline(bspump.Pipeline):
 			bspump.subprocess.SubProcessSource(app, self, config={
 				'command': 'tshark -l -n -T ek -i wlan0'
 			}),
-			bspump.common.JsonToDictParser(app, self),
+			bspump.common.StdJsonToDictParser(app, self),
 			bspump.common.PPrintSink(app, self),
 		)
 

@@ -50,7 +50,7 @@ class TestJsonToDictParser(bspump.unittest.ProcessorTestCase):
 			(None, '{"key": "3"}'),
 		}
 
-		self.set_up_processor(bspump.common.JsonToDictParser)
+		self.set_up_processor(bspump.common.StdJsonToDictParser)
 
 		output = self.execute(
 			events
@@ -66,7 +66,7 @@ class TestJsonToDictParser(bspump.unittest.ProcessorTestCase):
 		events = [
 			(None, {"Not a": "string"}),
 		]
-		self.set_up_processor(bspump.common.JsonToDictParser)
+		self.set_up_processor(bspump.common.StdJsonToDictParser)
 
 		output = self.execute(events)
 

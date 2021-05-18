@@ -53,7 +53,7 @@ class SamplePipeline(bspump.Pipeline):
 				'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
 			}).on(bspump.trigger.PeriodicTrigger(app, 1)),
 			bspump.common.BytesToStringParser(app, self),
-			bspump.common.JsonToDictParser(app, self),
+			bspump.common.StdJsonToDictParser(app, self),
 			SampleOOBGenerator(app, self),
 			bspump.common.PPrintSink(app, self),
 		)

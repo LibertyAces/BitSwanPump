@@ -12,7 +12,7 @@ class MongoDBPipeline(bspump.Pipeline):
 			bspump.http.HTTPClientSource(app, self, config={
 				'url': "http://ip.jsontest.com/"
 			}).on(bspump.trigger.PeriodicTrigger(app, 5)),
-			bspump.common.JsonToDictParser(app, self),
+			bspump.common.StdJsonToDictParser(app, self),
 			bspump.common.PPrintProcessor(app, self),
 			# MongoDB sink can accept dict or list of dicts
 			bspump.mongodb.MongoDBSink(app, self, "MongoDBConnection", config={'collection': 'specific_collection'}),

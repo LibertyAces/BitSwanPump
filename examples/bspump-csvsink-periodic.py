@@ -49,7 +49,7 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.http.HTTPClientSource(app, self, config={
 				'url': "http://ip.jsontest.com/"
 			}).on(bspump.trigger.PeriodicTrigger(app, 5)),
-			bspump.common.JsonToDictParser(app, self),
+			bspump.common.StdJsonToDictParser(app, self),
 			TimingProcessor(app, self),
 			bspump.common.PPrintProcessor(app, self),
 			self.Sink

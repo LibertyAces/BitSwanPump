@@ -167,7 +167,7 @@ class SymptomPipeline(bspump.Pipeline):
 				'post': 'noop',
 			}).on(bspump.trigger.OpportunisticTrigger(app)),
 			bspump.common.BytesToStringParser(app, self),
-			bspump.common.JsonToDictParser(app, self),
+			bspump.common.StdJsonToDictParser(app, self),
 			# Map the symptom to anomalies based on their key dimensions
 			bspump.anomaly.AnomalyAnalyzer(app, self, config={
 				"key_dimensions": "default:user_id;network_down:server_id"

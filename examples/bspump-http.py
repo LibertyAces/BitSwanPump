@@ -22,7 +22,7 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.http.HTTPClientSource(app, self, config={
 				'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
 			}).on(bspump.trigger.PeriodicTrigger(app, 1)),
-			bspump.common.JsonToDictParser(app, self),
+			bspump.common.StdJsonToDictParser(app, self),
 			bspump.common.PPrintSink(app, self),
 		)
 
