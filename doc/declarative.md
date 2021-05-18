@@ -498,6 +498,27 @@ from: (int, default 0)
 to: (int, default -1)
 ```
 
+### String split "SPLIT"
+
+Splits a string into a list based on the separator.
+
+Type: _Mapping_.
+
+```
+!SPLIT
+value: <...>
+separator: <...>
+```
+
+Example:
+
+```
+!SPLIT
+value: "Hello, world"
+separator: ","
+```
+
+output: `["Hello", " world"]`
 
 ### Join items in a string "!JOIN"
 
