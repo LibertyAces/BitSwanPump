@@ -6,13 +6,9 @@ from .flatten import FlattenDictProcessor
 from .hexlify import HexlifyProcessor
 from .iterator import IteratorGenerator
 from .iterator import IteratorSource
-from .json import DictToJsonParser
-from .json import JsonToDictParser
 from .json import CySimdJsonParser
 from .json import StdDictToJsonParser
 from .json import StdJsonToDictParser
-from .json import JsonToDictParser as JSONParser  # For backward compatability
-from .json import JsonToDictParser as JSONParserProcessor  # For backward compatability
 from .json import DictToJsonBytesParser
 from .mapping import MappingKeysGenerator, MappingValuesGenerator, MappingItemsGenerator
 from .mapping import MappingKeysProcessor, MappingValuesProcessor, MappingItemsProcessor
