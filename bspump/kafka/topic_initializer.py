@@ -13,52 +13,36 @@ from asab import ConfigObject
 
 L = logging.getLogger(__name__)
 
-
 #
 
-
-def initialize_topics(connection: object, topics_config: list):
-	"""
-	Initializes missing Kafka topics with specified configuration.
-
-	`topics_config` needs to match the following schema:
-	[
-		{
-			"name": string,
-			"num_partitions": int,
-			"replication_factor": int,
-			(optional) "topic_configs": {
-				...
-			}
-		},
-		...
-	]
-	"""
-
-	# Get connection details from the connection object
-	bootstrap_servers = connection.get_bootstrap_servers()
-	admin_client = kafka.admin.KafkaAdminClient(bootstrap_servers=bootstrap_servers)
-
-	# TODO: add option to modify the configuration of existing topics
-
-	existing_topics = admin_client.list_topics()
-	missing_topics = [
-		topic
-		for topic in topics_config
-		if topic["name"] not in existing_topics
-	]
-
-	if len(missing_topics) == 0:
-		return
-
-	topics_to_create = [
-		kafka.admin.NewTopic(**topic)
-		for topic
-		in missing_topics
-	]
-	admin_client.create_topics(topics_to_create)
-
-	admin_client.close()
+_TOPIC_CONFIG_OPTIONS = {
+	'compression.type',
+	'leader.replication.throttled.replicas',
+	'message.downconversion.enable',
+	'min.insync.replicas',
+	'segment.jitter.ms',
+	'cleanup.policy',
+	'flush.ms',
+	'follower.replication.throttled.replicas',
+	'segment.bytes',
+	'retention.ms',
+	'flush.messages',
+	'message.format.version',
+	'max.compaction.lag.ms',
+	'file.delete.delay.ms',
+	'max.message.bytes',
+	'min.compaction.lag.ms',
+	'message.timestamp.type',
+	'preallocate',
+	'min.cleanable.dirty.ratio',
+	'index.interval.bytes',
+	'unclean.leader.election.enable',
+	'retention.bytes',
+	'delete.retention.ms',
+	'segment.ms',
+	'message.timestamp.difference.max.ms',
+	'segment.index.bytes'
+}
 
 
 class KafkaTopicInitializer(ConfigObject):
@@ -74,52 +58,38 @@ class KafkaTopicInitializer(ConfigObject):
 
 	Usage:
 	topic_initializer = KafkaTopicInitializer(app, "KafkaConnection")
-	topic_initializer.extract_topics(asab.Config, "pipeline:EnrichersPipeline:KafkaSink")
-	topic_initializer.extract_topics(asab.Config, "pipeline:EnrichersPipeline:KafkaSource")
+	topic_initializer.extract_topics("pipeline:EnrichersPipeline:KafkaSink")
+	topic_initializer.extract_topics("pipeline:EnrichersPipeline:KafkaSource")
 	topic_initializer.run()
 	"""
 
 	ConfigDefaults = {
 		"client_id": "bspump-topic-initializer",
 		"topics_file": "",
+		"num_partitions_default": 2,
+		"replication_factor_default": 3,
 	}
 
 	def __init__(self, app, connection, id: typing.Optional[str] = None, config: dict = None):
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__(_id, config)
-		self.AdminClient = None
-
-		self.get_bootstrap_servers(app, connection)
-		self.client_id = self.Config.get("client_id")
 
 		self.required_topics = []
+		self.bootstrap_servers = None
+		self.client_id = self.Config.get("client_id")
+
+		self._get_bootstrap_servers(app, connection)
+
 		topics_file = self.Config.get("topics_file")
 		if len(topics_file) != 0:
 			self.load_topics_from_file(topics_file)
 
-	def get_bootstrap_servers(self, app, connection):
+	def _get_bootstrap_servers(self, app, connection):
 		svc = app.get_service("bspump.PumpService")
 		self.bootstrap_servers = re.split(r"[\s,]+", svc.Connections[connection].Config["bootstrap_servers"].strip())
 
-	def open_connection(self):
-		try:
-			L.debug("Opening KafkaAdminClient connection...")
-			self.AdminClient = kafka.admin.KafkaAdminClient(
-				bootstrap_servers=self.bootstrap_servers,
-				client_id=self.client_id)
-			L.debug("Connected to '{}' as '{}'".format(self.bootstrap_servers, self.client_id))
-		except Exception as e:
-			L.error("Cannot connect to '{}'".format(self.bootstrap_servers))
-			raise e
-
-	def close_connection(self):
-		if self.AdminClient:
-			self.AdminClient.close()
-			L.debug("KafkaAdminClient connection closed.")
-		else:
-			L.warning("No open KafkaAdminClient connection.")
-
 	def load_topics_from_file(self, topics_file: str):
+		# Support yaml and json input
 		ext = topics_file.strip().split(".")[-1].lower()
 		if ext == "json":
 			with open(topics_file, "r") as f:
@@ -133,39 +103,63 @@ class KafkaTopicInitializer(ConfigObject):
 		for topic in data:
 			for field in ("name", "num_partitions", "replication_factor"):
 				if field not in topic:
-					L.warning("Topic is missing mandatory field '{}'. Skipping.".format(field))
+					L.warning("Topic declaration is missing mandatory field '{}'. Skipping.".format(field))
 					break
 			else:
 				self.required_topics.append(topic)
 
-	def get_missing_topics(self) -> typing.List[dict]:
-		L.debug("Retrieving list of existing topics...")
-		existing_topics = self.AdminClient.list_topics()
-		missing_topics = [
-			topic
-			for topic in self.required_topics
-			if topic["name"] not in existing_topics
-		]
-		return missing_topics
+	def extract_topics(self, topic_section):
+		# Every kafka topic needs to have: name, num_partitions and replication_factor
+		topic_names = asab.Config.get("topic").split(",")
+		num_partitions = asab.Config.get(
+			"num_partitions",
+			self.Config.get("num_partitions_default")
+		)
+		replication_factor = asab.Config.get(
+			"replication_factor",
+			self.Config.get("replication_factor_default")
+		)
 
-	def create_topics(self, topics: typing.Iterable[dict]):
-		L.debug("Creating topics...")
-		topics_to_create = [
-			kafka.admin.NewTopic(**topic) for topic in topics]
-		self.AdminClient.create_topics(topics_to_create)
-		L.log(asab.LOG_NOTICE, "Missing topics created: {}".format(" ".join([topic["name"] for topic in topics])))
+		# Additional configs are optional
+		topic_configs = {}
+		for config_option in asab.Config.options(topic_section):
+			if config_option in _TOPIC_CONFIG_OPTIONS:
+				topic_configs[config_option] = asab.Config.get(config_option)
+
+		# Create topic objects
+		for name in topic_names:
+			self.required_topics.append(kafka.admin.NewTopic(
+				name,
+				num_partitions,
+				replication_factor,
+				topic_configs=topic_configs
+			))
 
 	def check_and_initialize(self):
-		if not self.required_topics:
-			L.info("No topics specified.")
-			return
 		try:
-			self.open_connection()
-			missing_topics = self.get_missing_topics()
-			if missing_topics:
-				self.create_topics(missing_topics)
-			else:
-				L.debug("All topics are initialized already.")
+			admin_client = kafka.admin.KafkaAdminClient(
+				bootstrap_servers=self.bootstrap_servers,
+				client_id=self.client_id
+			)
+
+			# Filter out the topics that already exist
+			existing_topics = admin_client.list_topics()
+			missing_topics = [
+				topic
+				for topic in self.required_topics
+				if topic.name not in existing_topics
+			]
+
+			# Create topics
+			# TODO: update configs of existing topics using `admin_client.alter_configs()`
+			admin_client.create_topics(missing_topics)
+			L.log(
+				asab.LOG_NOTICE,
+				"Kafka topics created",
+				struct_data=[topic.name for topic in missing_topics]
+			)
+		except Exception as e:
+			L.error("Kafka topic initialization failed: {}".format(e))
 		finally:
-			if self.AdminClient:
-				self.close_connection()
+			if admin_client is not None:
+				admin_client.close()
