@@ -47,11 +47,8 @@ _TOPIC_CONFIG_OPTIONS = {
 
 class KafkaTopicInitializer(ConfigObject):
 	"""
-	KafkaTopicInitializer purpose:
-	- get bootstrap_servers from app.BSPumpService.
-	- connect to Kafka server using kafka.KafkaAdminClient
-	- check if required topics exist
-	- if not, create them
+	KafkaTopicInitializer reads topic configs from file or from Kafka sink/source configs,
+	checks if they exists and creates them if they don't.
 
 	KafkaAdminClient requires blocking connection, which is why this class doesn't use
 	the connection module from BSPump.
@@ -136,6 +133,10 @@ class KafkaTopicInitializer(ConfigObject):
 			))
 
 	def check_and_initialize(self):
+		L.warning("`check_and_initialize()` is obsoleted, use `run()` instead")
+
+	def run(self):
+		admin_client = None
 		try:
 			admin_client = kafka.admin.KafkaAdminClient(
 				bootstrap_servers=self.bootstrap_servers,
