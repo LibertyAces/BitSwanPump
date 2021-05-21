@@ -107,21 +107,23 @@ class KafkaTopicInitializer(ConfigObject):
 
 	def extract_topics(self, topic_section):
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
-		topic_names = asab.Config.get("topic").split(",")
-		num_partitions = asab.Config.get(
+		topic_names = asab.Config.get(topic_section, "topic").split(",")
+		num_partitions = asab.Config.getint(
+			topic_section,
 			"num_partitions",
-			self.Config.get("num_partitions_default")
+			fallback=self.Config.get("num_partitions_default")
 		)
-		replication_factor = asab.Config.get(
+		replication_factor = asab.Config.getint(
+			topic_section,
 			"replication_factor",
-			self.Config.get("replication_factor_default")
+			fallback=self.Config.get("replication_factor_default")
 		)
 
 		# Additional configs are optional
 		topic_configs = {}
 		for config_option in asab.Config.options(topic_section):
 			if config_option in _TOPIC_CONFIG_OPTIONS:
-				topic_configs[config_option] = asab.Config.get(config_option)
+				topic_configs[config_option] = asab.Config.get(topic_section, config_option)
 
 		# Create topic objects
 		for name in topic_names:
@@ -157,7 +159,7 @@ class KafkaTopicInitializer(ConfigObject):
 			L.log(
 				asab.LOG_NOTICE,
 				"Kafka topics created",
-				struct_data=[topic.name for topic in missing_topics]
+				struct_data={"topics": [topic.name for topic in missing_topics]}
 			)
 		except Exception as e:
 			L.error("Kafka topic initialization failed: {}".format(e))
