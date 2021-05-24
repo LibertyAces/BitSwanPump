@@ -60,7 +60,7 @@ class IntegrityEnricher(Processor):
 
 		# Hash event using key, value, key, value ... sequence
 		h = hashlib.new(self.Algorithm)
-		h.update(orjson.dumps(event, sort_keys=True).encode("utf-8"))
+		h.update(orjson.dumps(event, option=orjson.OPT_SORT_KEYS))
 		hash_base64 = h.hexdigest()
 
 		# Store the hash as base64 string

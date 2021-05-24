@@ -27,7 +27,7 @@ class SamplePipeline(bspump.Pipeline):
 				'post': 'noop'
 			}).on(bspump.trigger.RunOnceTrigger(app)),
 
-			bspump.common.DictToJsonParser(app, self),
+			bspump.common.StdDictToJsonParser(app, self),
 			bspump.common.StdJsonToDictParser(app, self),
 			bspump.common.NullSink(app, self)
 		)
