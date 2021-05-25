@@ -55,16 +55,16 @@ class KafkaTopicInitializer(ConfigObject):
 
 	Usage:
 	topic_initializer = KafkaTopicInitializer(app, "KafkaConnection")
-	topic_initializer.extract_topics("pipeline:EnrichersPipeline:KafkaSink")
-	topic_initializer.extract_topics("pipeline:EnrichersPipeline:KafkaSource")
+	topic_initializer.include_topics("pipeline:EnrichersPipeline:KafkaSink")
+	topic_initializer.include_topics("pipeline:EnrichersPipeline:KafkaSource")
 	topic_initializer.run()
 	"""
 
 	ConfigDefaults = {
 		"client_id": "bspump-topic-initializer",
 		"topics_file": "",
-		"num_partitions_default": 2,
-		"replication_factor_default": 3,
+		"num_partitions_default": 1,
+		"replication_factor_default": 1,
 	}
 
 	def __init__(self, app, connection, id: typing.Optional[str] = None, config: dict = None):
@@ -105,7 +105,7 @@ class KafkaTopicInitializer(ConfigObject):
 			else:
 				self.required_topics.append(topic)
 
-	def extract_topics(self, topic_section):
+	def include_topics(self, topic_section):
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
 		topic_names = asab.Config.get(topic_section, "topic").split(",")
 		num_partitions = asab.Config.getint(
