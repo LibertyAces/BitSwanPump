@@ -109,9 +109,10 @@ class KafkaTopicInitializer(ConfigObject):
 
 	def include_topics(self, bspump_component):
 		# Get topics from Kafka Source or Sink
-		# generic typechecking (because fastkafka doesn't subclass bspump.kafka modules)
-		if isinstance(bspump_component, bspump.abc.source.Source) \
-				or isinstance(bspump_component, bspump.abc.sink.Sink):
+		# TODO: better solution
+		# (fastkafka components don't inherit from bspump.kafka components)
+		if bspump_component.__class__.__name__.endswith("KafkaSink") \
+				or bspump_component.__class__.__name__.endswith("KafkaSource"):
 			L.info("Including topics from {}".format(bspump_component.Id))
 			self.include_topics_from_config(bspump_component.Config)
 			return
@@ -119,13 +120,13 @@ class KafkaTopicInitializer(ConfigObject):
 		# Scan the pipeline for KafkaSource(s) or KafkaSink
 		if isinstance(bspump_component, bspump.Pipeline):
 			for source in bspump_component.Sources:
-				if isinstance(bspump_component, bspump.kafka.KafkaSource):
-					L.info("Including topics from {}".format(bspump_component.Id))
-					self.include_topics_from_config(bspump_component.Config)
+				if source.__class__.__name__.endswith("KafkaSource"):
+					L.info("Including topics from {}".format(source.Id))
+					self.include_topics_from_config(source.Config)
 			sink = bspump_component.Processors[-1]
-			if isinstance(bspump_component, bspump.kafka.KafkaSink):
-				L.info("Including topics from {}".format(bspump_component.Id))
-				self.include_topics_from_config(bspump_component.Config)
+			if sink.__class__.__name__.endswith("KafkaSink"):
+				L.info("Including topics from {}".format(sink.Id))
+				self.include_topics_from_config(sink.Config)
 			return
 
 		L.error("Unsupported topic source: {}".format(bspump_component.__class__))
