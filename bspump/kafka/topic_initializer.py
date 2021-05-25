@@ -10,6 +10,7 @@ import yaml
 from asab import ConfigObject
 
 #
+import bspump
 
 L = logging.getLogger(__name__)
 
@@ -105,25 +106,50 @@ class KafkaTopicInitializer(ConfigObject):
 			else:
 				self.required_topics.append(topic)
 
-	def include_topics(self, topic_section):
+	def include_topics(
+			self,
+			bspump_component: typing.Union[
+				bspump.Pipeline,
+				bspump.kafka.KafkaSource,
+				bspump.kafka.KafkaSink
+			]
+	):
+		if isinstance(bspump_component, bspump.Source) \
+				or isinstance(bspump_component, bspump.Sink):
+			L.info("Including topics from {}".format(bspump_component.Id))
+			self.include_topics_from_config(bspump_component.Config)
+			return
+
+		if isinstance(bspump_component, bspump.Pipeline):
+			for source in bspump_component.Sources:
+				if isinstance(bspump_component, bspump.kafka.KafkaSource):
+					L.info("Including topics from {}".format(bspump_component.Id))
+					self.include_topics_from_config(bspump_component.Config)
+			sink = bspump_component.Processors
+			if isinstance(bspump_component, bspump.kafka.KafkaSink):
+				L.info("Including topics from {}".format(bspump_component.Id))
+				self.include_topics_from_config(bspump_component.Config)
+			return
+
+		L.error("Unsupported topic source: {}".format(bspump_component.__class__))
+
+	def include_topics_from_config(self, config_object):
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
-		topic_names = asab.Config.get(topic_section, "topic").split(",")
-		num_partitions = asab.Config.getint(
-			topic_section,
+		topic_names = config_object.get("topic").split(",")
+		num_partitions = config_object.getint(
 			"num_partitions",
-			fallback=self.Config.get("num_partitions_default")
+			self.Config.get("num_partitions_default")
 		)
-		replication_factor = asab.Config.getint(
-			topic_section,
+		replication_factor = config_object.getint(
 			"replication_factor",
-			fallback=self.Config.get("replication_factor_default")
+			self.Config.get("replication_factor_default")
 		)
 
 		# Additional configs are optional
 		topic_configs = {}
-		for config_option in asab.Config.options(topic_section):
+		for config_option in config_object:
 			if config_option in _TOPIC_CONFIG_OPTIONS:
-				topic_configs[config_option] = asab.Config.get(topic_section, config_option)
+				topic_configs[config_option] = config_object.get(config_option)
 
 		# Create topic objects
 		for name in topic_names:
