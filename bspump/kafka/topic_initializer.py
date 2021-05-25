@@ -11,6 +11,8 @@ from asab import ConfigObject
 
 #
 import bspump
+import bspump.abc.sink
+import bspump.abc.source
 
 L = logging.getLogger(__name__)
 
@@ -56,8 +58,7 @@ class KafkaTopicInitializer(ConfigObject):
 
 	Usage:
 	topic_initializer = KafkaTopicInitializer(app, "KafkaConnection")
-	topic_initializer.include_topics("pipeline:EnrichersPipeline:KafkaSink")
-	topic_initializer.include_topics("pipeline:EnrichersPipeline:KafkaSource")
+	topic_initializer.include_topics(MyPipeline)
 	topic_initializer.run()
 	"""
 
@@ -106,26 +107,22 @@ class KafkaTopicInitializer(ConfigObject):
 			else:
 				self.required_topics.append(topic)
 
-	def include_topics(
-			self,
-			bspump_component: typing.Union[
-				bspump.Pipeline,
-				bspump.kafka.KafkaSource,
-				bspump.kafka.KafkaSink
-			]
-	):
-		if isinstance(bspump_component, bspump.Source) \
-				or isinstance(bspump_component, bspump.Sink):
+	def include_topics(self, bspump_component):
+		# Get topics from Kafka Source or Sink
+		# generic typechecking (because fastkafka doesn't subclass bspump.kafka modules)
+		if isinstance(bspump_component, bspump.abc.source.Source) \
+				or isinstance(bspump_component, bspump.abc.sink.Sink):
 			L.info("Including topics from {}".format(bspump_component.Id))
 			self.include_topics_from_config(bspump_component.Config)
 			return
 
+		# Scan the pipeline for KafkaSource(s) or KafkaSink
 		if isinstance(bspump_component, bspump.Pipeline):
 			for source in bspump_component.Sources:
 				if isinstance(bspump_component, bspump.kafka.KafkaSource):
 					L.info("Including topics from {}".format(bspump_component.Id))
 					self.include_topics_from_config(bspump_component.Config)
-			sink = bspump_component.Processors
+			sink = bspump_component.Processors[-1]
 			if isinstance(bspump_component, bspump.kafka.KafkaSink):
 				L.info("Including topics from {}".format(bspump_component.Id))
 				self.include_topics_from_config(bspump_component.Config)
@@ -136,20 +133,22 @@ class KafkaTopicInitializer(ConfigObject):
 	def include_topics_from_config(self, config_object):
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
 		topic_names = config_object.get("topic").split(",")
-		num_partitions = config_object.getint(
-			"num_partitions",
-			self.Config.get("num_partitions_default")
-		)
-		replication_factor = config_object.getint(
-			"replication_factor",
-			self.Config.get("replication_factor_default")
-		)
+
+		if "num_partitions" in config_object:
+			num_partitions = int(config_object.pop("num_partitions"))
+		else:
+			num_partitions = int(self.Config.get("num_partitions_default"))
+
+		if "replication_factor" in config_object:
+			replication_factor = int(config_object.pop("replication_factor"))
+		else:
+			replication_factor = int(self.Config.get("replication_factor_default"))
 
 		# Additional configs are optional
 		topic_configs = {}
 		for config_option in config_object:
 			if config_option in _TOPIC_CONFIG_OPTIONS:
-				topic_configs[config_option] = config_object.get(config_option)
+				topic_configs[config_option] = config_object.pop(config_option)
 
 		# Create topic objects
 		for name in topic_names:
