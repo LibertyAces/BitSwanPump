@@ -73,9 +73,9 @@ class KafkaTopicInitializer(ConfigObject):
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__(_id, config)
 
-		self.required_topics = []
-		self.bootstrap_servers = None
-		self.client_id = self.Config.get("client_id")
+		self.RequiredTopics = []
+		self.BootstrapServers = None
+		self.ClientId = self.Config.get("client_id")
 
 		self._get_bootstrap_servers(app, connection)
 
@@ -85,7 +85,7 @@ class KafkaTopicInitializer(ConfigObject):
 
 	def _get_bootstrap_servers(self, app, connection):
 		svc = app.get_service("bspump.PumpService")
-		self.bootstrap_servers = re.split(r"[\s,]+", svc.Connections[connection].Config["bootstrap_servers"].strip())
+		self.BootstrapServers = re.split(r"[\s,]+", svc.Connections[connection].Config["bootstrap_servers"].strip())
 
 	def load_topics_from_file(self, topics_file: str):
 		# Support yaml and json input
@@ -105,7 +105,7 @@ class KafkaTopicInitializer(ConfigObject):
 					L.warning("Topic declaration is missing mandatory field '{}'. Skipping.".format(field))
 					break
 			else:
-				self.required_topics.append(topic)
+				self.RequiredTopics.append(topic)
 
 	def include_topics(self, bspump_component):
 		# Get topics from Kafka Source or Sink
@@ -153,7 +153,7 @@ class KafkaTopicInitializer(ConfigObject):
 
 		# Create topic objects
 		for name in topic_names:
-			self.required_topics.append(kafka.admin.NewTopic(
+			self.RequiredTopics.append(kafka.admin.NewTopic(
 				name,
 				num_partitions,
 				replication_factor,
@@ -167,15 +167,15 @@ class KafkaTopicInitializer(ConfigObject):
 		admin_client = None
 		try:
 			admin_client = kafka.admin.KafkaAdminClient(
-				bootstrap_servers=self.bootstrap_servers,
-				client_id=self.client_id
+				bootstrap_servers=self.BootstrapServers,
+				client_id=self.ClientId
 			)
 
 			# Filter out the topics that already exist
 			existing_topics = admin_client.list_topics()
 			missing_topics = [
 				topic
-				for topic in self.required_topics
+				for topic in self.RequiredTopics
 				if topic.name not in existing_topics
 			]
 
