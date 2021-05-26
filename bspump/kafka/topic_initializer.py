@@ -76,7 +76,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 	Usage:
 	topic_initializer = KafkaTopicInitializer(app, "KafkaConnection")
 	topic_initializer.include_topics(MyPipeline)
-	topic_initializer.run()
+	topic_initializer.initialize_topics()
 	"""
 
 	ConfigDefaults = {
@@ -175,9 +175,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			))
 
 	def check_and_initialize(self):
-		L.warning("`check_and_initialize()` is obsoleted, use `run()` instead")
+		L.warning("`check_and_initialize()` is obsoleted, use `initialize_topics()` instead")
+		self.initialize_topics()
 
-	def run(self):
+	def initialize_topics(self):
 		admin_client = None
 		try:
 			admin_client = kafka.admin.KafkaAdminClient(
