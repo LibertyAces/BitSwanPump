@@ -135,7 +135,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 				if _is_kafka_component(source):
 					L.info("Including topics from {}".format(source.Id))
 					self.include_topics_from_config(source.Config)
-			sink = bspump_component.Processors[-1]
+			sink = bspump_component.Processors[0][-1]
 			if _is_kafka_component(sink):
 				L.info("Including topics from {}".format(sink.Id))
 				self.include_topics_from_config(sink.Config)
@@ -159,7 +159,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 		# Additional configs are optional
 		topic_configs = {}
-		for config_option in config_object:
+		for config_option in set(config_object.keys()):
 			if config_option in _TOPIC_CONFIG_OPTIONS:
 				topic_configs[config_option] = config_object.pop(config_option)
 
