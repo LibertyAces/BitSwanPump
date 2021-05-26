@@ -11,6 +11,8 @@ import bspump
 import bspump.abc.sink
 import bspump.abc.source
 
+# Fastkafka module is required only to support including topics from FastKafkaSource/Sink
+# If it is not available, topics from FastKafkaSource/Sink objects will be ignored
 try:
     import fastkafka
 except ImportError:
