@@ -1,18 +1,23 @@
 import json
+import yaml
 import logging
 import re
 import typing
 
-import asab
 import kafka.admin
-import yaml
 
-from asab import ConfigObject
-
-#
+import asab
 import bspump
 import bspump.abc.sink
 import bspump.abc.source
+
+try:
+    import fastkafka
+except ImportError:
+    fastkafka = None
+
+
+#
 
 L = logging.getLogger(__name__)
 
@@ -48,7 +53,17 @@ _TOPIC_CONFIG_OPTIONS = {
 }
 
 
-class KafkaTopicInitializer(ConfigObject):
+def _is_kafka_component(component):
+	if isinstance(component, bspump.kafka.KafkaSource) \
+		   or isinstance(component, bspump.kafka.KafkaSink):
+		return True
+	if fastkafka is not None:
+		return isinstance(component, fastkafka.FastKafkaSource) \
+			   or isinstance(component, fastkafka.FastKafkaSink)
+	return False
+
+
+class KafkaTopicInitializer(asab.ConfigObject):
 	"""
 	KafkaTopicInitializer reads topic configs from file or from Kafka sink/source configs,
 	checks if they exists and creates them if they don't.
@@ -109,10 +124,7 @@ class KafkaTopicInitializer(ConfigObject):
 
 	def include_topics(self, bspump_component):
 		# Get topics from Kafka Source or Sink
-		# TODO: better solution
-		# (fastkafka components don't inherit from bspump.kafka components)
-		if bspump_component.__class__.__name__.endswith("KafkaSink") \
-				or bspump_component.__class__.__name__.endswith("KafkaSource"):
+		if _is_kafka_component(bspump_component):
 			L.info("Including topics from {}".format(bspump_component.Id))
 			self.include_topics_from_config(bspump_component.Config)
 			return
@@ -120,11 +132,11 @@ class KafkaTopicInitializer(ConfigObject):
 		# Scan the pipeline for KafkaSource(s) or KafkaSink
 		if isinstance(bspump_component, bspump.Pipeline):
 			for source in bspump_component.Sources:
-				if source.__class__.__name__.endswith("KafkaSource"):
+				if _is_kafka_component(source):
 					L.info("Including topics from {}".format(source.Id))
 					self.include_topics_from_config(source.Config)
 			sink = bspump_component.Processors[-1]
-			if sink.__class__.__name__.endswith("KafkaSink"):
+			if _is_kafka_component(sink):
 				L.info("Including topics from {}".format(sink.Id))
 				self.include_topics_from_config(sink.Config)
 			return
