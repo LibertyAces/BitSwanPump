@@ -22,6 +22,7 @@ class TimeDriftAnalyzer(Analyzer):
 		'analyze_period': 5 * 60,  # once per 5 minutes
 		'history_size': 100,  # keep maximum 100 array members
 		'sparse_count': 1,  # process every single event
+		'timestamp_attr': '@timestamp',  # timestamp attribute present in the event to perform the drift analyzer on
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -51,11 +52,13 @@ class TimeDriftAnalyzer(Analyzer):
 		self.EventCount = 0
 		self.SparseCount = int(self.Config['sparse_count'])
 
+		self.TimestampAttr = self.Config['timestamp_attr']
+
 		self.App = app
 
 
 	def predicate(self, context, event):
-		if "@timestamp" not in event:
+		if self.TimestampAttr not in event:
 			return False
 
 		self.EventCount += 1
@@ -74,7 +77,7 @@ class TimeDriftAnalyzer(Analyzer):
 
 
 	def evaluate(self, context, event):
-		timestamp = event["@timestamp"]
+		timestamp = event[self.TimestampAttr]
 		diff = self.get_diff(timestamp)
 
 		if diff < 0:
