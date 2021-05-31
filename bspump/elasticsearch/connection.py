@@ -381,3 +381,7 @@ class ElasticSearchConnection(Connection):
 					self.enqueue(bulk)
 					await asyncio.sleep(5)  # Throttle a bit before next try
 					break  # Exit the loader (new will be started automatically)
+
+
+				# Make sure the memory is emptied
+				bulk.Items = []
