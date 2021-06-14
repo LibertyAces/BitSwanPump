@@ -31,12 +31,12 @@ class LineSourceProtocol(SourceProtocolABC):
 
 		# Line decoder
 		decode_codec = config['decode']
-		if len(decode_codec) > 0:
+		if decode_codec == "bytes":
+			self.Codec = None
+			self.LineDecoder = self._line_bytes_decoder
+		else:
 			self.Codec = codecs.lookup(decode_codec)
 			self.LineDecoder = self._line_codec_decoder
-		else:
-			self.Codec = None
-			self.LineDecoder = self._line_none_decoder
 
 
 	async def handle(self, source, stream, context):
@@ -93,5 +93,5 @@ class LineSourceProtocol(SourceProtocolABC):
 		)
 		return line
 
-	def _line_none_decoder(self, line_bytes):
-			return line_bytes
+	def _line_bytes_decoder(self, line_bytes):
+		return line_bytes
