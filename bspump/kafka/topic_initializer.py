@@ -124,26 +124,26 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			else:
 				self.RequiredTopics.append(topic)
 
-	def include_topics(self, bspump_component):
+	def include_topics(self, *, topic_config=None, kafka_component=None, pipeline=None):
+		# Include topic from config or dict object
+		if topic_config is not None:
+			self.include_topics_from_config(topic_config)
+
 		# Get topics from Kafka Source or Sink
-		if _is_kafka_component(bspump_component):
-			L.info("Including topics from {}".format(bspump_component.Id))
-			self.include_topics_from_config(bspump_component.Config)
-			return
+		if kafka_component is not None:
+			L.info("Including topics from {}".format(kafka_component.Id))
+			self.include_topics_from_config(kafka_component.Config)
 
 		# Scan the pipeline for KafkaSource(s) or KafkaSink
-		if isinstance(bspump_component, bspump.Pipeline):
-			for source in bspump_component.Sources:
+		if pipeline is not None:
+			for source in pipeline.Sources:
 				if _is_kafka_component(source):
 					L.info("Including topics from {}".format(source.Id))
 					self.include_topics_from_config(source.Config)
-			sink = bspump_component.Processors[0][-1]
+			sink = pipeline.Processors[0][-1]
 			if _is_kafka_component(sink):
 				L.info("Including topics from {}".format(sink.Id))
 				self.include_topics_from_config(sink.Config)
-			return
-
-		L.error("Unsupported topic source: {}".format(bspump_component.__class__))
 
 	def include_topics_from_config(self, config_object):
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
