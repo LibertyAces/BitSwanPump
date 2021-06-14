@@ -19,8 +19,12 @@ class StreamServerSource(Source):
 
 	ConfigDefaults = {
 		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
-		'backlog': ''
+		'backlog': '',
 		# Specify 'cert' or 'key' to enable SSL / TLS mode
+
+		# An encoding a line is going to be decoded from
+		# - Pass '' (empty string) to prevent decoding
+		'decode': 'utf-8',
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None, protocol_class=LineSourceProtocol):
@@ -38,7 +42,7 @@ class StreamServerSource(Source):
 		self.AcceptingSockets = []
 		self.ConnectedClients = set()  # Set of active _client_connected_task()
 
-		self.Protocol = protocol_class(app, pipeline, config)
+		self.Protocol = protocol_class(app, pipeline, config=self.Config)
 
 		app.PubSub.subscribe("Application.tick!", self._on_tick)
 

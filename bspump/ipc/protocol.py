@@ -27,8 +27,16 @@ class LineSourceProtocol(SourceProtocolABC):
 
 		# TODO: All following values could be read from configuration
 		self.EOL = b'\n'
-		self.Codec = codecs.lookup('utf-8')
 		self.SaneBufferSize = 64 * 1024  # The maximum buffer size considered as sane
+
+		# Line decoder
+		decode_codec = config['decode']
+		if len(decode_codec) > 0:
+			self.Codec = codecs.lookup(decode_codec)
+			self.LineDecoder = self._line_codec_decoder
+		else:
+			self.Codec = None
+			self.LineDecoder = self._line_none_decoder
 
 
 	async def handle(self, source, stream, context):
@@ -63,8 +71,8 @@ class LineSourceProtocol(SourceProtocolABC):
 				if eol_pos == -1:
 					break
 
-				line, _ = self.Codec.decode(
-					input_buffer[last_eol_pos:eol_pos]
+				line = self.LineDecoder(
+					line_bytes=input_buffer[last_eol_pos:eol_pos]
 				)
 				last_eol_pos = eol_pos + 1
 
@@ -78,3 +86,12 @@ class LineSourceProtocol(SourceProtocolABC):
 				input_buffer_pos = 0
 				last_eol_pos = 0
 				continue
+
+	def _line_codec_decoder(self, line_bytes):
+		line, _ = self.Codec.decode(
+			line_bytes
+		)
+		return line
+
+	def _line_none_decoder(self, line_bytes):
+			return line_bytes
