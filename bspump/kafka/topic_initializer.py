@@ -98,36 +98,20 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 		topics_file = self.Config.get("topics_file")
 		if len(topics_file) != 0:
-			self.load_topics_from_file(topics_file)
+			self.include_topics_from_file(topics_file)
 
 	def _get_bootstrap_servers(self, app, connection):
 		svc = app.get_service("bspump.PumpService")
 		self.BootstrapServers = re.split(r"[\s,]+", svc.Connections[connection].Config["bootstrap_servers"].strip())
 
-	def load_topics_from_file(self, topics_file: str):
-		# Support yaml and json input
-		ext = topics_file.strip().split(".")[-1].lower()
-		if ext == "json":
-			with open(topics_file, "r") as f:
-				data = json.load(f)
-		elif ext in ("yml", "yaml"):
-			with open(topics_file, "r") as f:
-				data = yaml.safe_load(f)
-		else:
-			L.warning("Unsupported extension: '{}'".format(ext))
-
-		for topic in data:
-			for field in ("name", "num_partitions", "replication_factor"):
-				if field not in topic:
-					L.warning("Topic declaration is missing mandatory field '{}'. Skipping.".format(field))
-					break
-			else:
-				self.RequiredTopics.append(topic)
-
-	def include_topics(self, *, topic_config=None, kafka_component=None, pipeline=None):
+	def include_topics(self, *, topic_config=None, kafka_component=None, pipeline=None, config_file=None):
 		# Include topic from config or dict object
 		if topic_config is not None:
 			self.include_topics_from_config(topic_config)
+
+		# Include topic from config file
+		if config_file is not None:
+			self.include_topics_from_file(config_file)
 
 		# Get topics from Kafka Source or Sink
 		if kafka_component is not None:
@@ -144,6 +128,25 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			if _is_kafka_component(sink):
 				L.info("Including topics from {}".format(sink.Id))
 				self.include_topics_from_config(sink.Config)
+
+	def include_topics_from_file(self, topics_file: str):
+		# Support yaml and json input
+		ext = topics_file.strip().split(".")[-1].lower()
+		if ext == "json":
+			with open(topics_file, "r") as f:
+				data = json.load(f)
+		elif ext in ("yml", "yaml"):
+			with open(topics_file, "r") as f:
+				data = yaml.safe_load(f)
+		else:
+			L.warning("Unsupported extension: '{}'".format(ext))
+
+		for topic in data:
+			if "num_partitions" not in topic:
+				topic["num_partitions"] = int(self.Config.get("num_partitions_default"))
+			if "replication_factor" not in topic:
+				topic["replication_factor"] = int(self.Config.get("replication_factor_default"))
+			self.RequiredTopics.append(kafka.admin.NewTopic(**topic))
 
 	def include_topics_from_config(self, config_object):
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
