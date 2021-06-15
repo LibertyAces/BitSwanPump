@@ -107,10 +107,12 @@ class KafkaTopicInitializer(asab.ConfigObject):
 	def include_topics(self, *, topic_config=None, kafka_component=None, pipeline=None, config_file=None):
 		# Include topic from config or dict object
 		if topic_config is not None:
+			L.info("Including topics from dictionary")
 			self.include_topics_from_config(topic_config)
 
 		# Include topic from config file
 		if config_file is not None:
+			L.info("Including topics from '{}'".format(config_file))
 			self.include_topics_from_file(config_file)
 
 		# Get topics from Kafka Source or Sink
@@ -182,6 +184,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		self.initialize_topics()
 
 	def initialize_topics(self):
+		if len(self.RequiredTopics) == 0:
+			L.info("No Kafka topics were required.")
+			return
+		
 		admin_client = None
 		try:
 			admin_client = kafka.admin.KafkaAdminClient(
@@ -196,6 +202,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 				for topic in self.RequiredTopics
 				if topic.name not in existing_topics
 			]
+			
+			if len(missing_topics) == 0:
+				L.info("No missing Kafka topics to be initialized.")
+				return
 
 			# Create topics
 			# TODO: update configs of existing topics using `admin_client.alter_configs()`
