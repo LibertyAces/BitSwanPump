@@ -90,7 +90,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__(_id, config)
 
-		self.RequiredTopics = []
+		self.RequiredTopics = {}
 		self.BootstrapServers = None
 		self.ClientId = self.Config.get("client_id")
 
@@ -148,7 +148,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 				topic["num_partitions"] = int(self.Config.get("num_partitions_default"))
 			if "replication_factor" not in topic:
 				topic["replication_factor"] = int(self.Config.get("replication_factor_default"))
-			self.RequiredTopics.append(kafka.admin.NewTopic(**topic))
+			self.RequiredTopics[topic["name"]] = kafka.admin.NewTopic(**topic)
 
 	def include_topics_from_config(self, config_object):
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
@@ -172,12 +172,12 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 		# Create topic objects
 		for name in topic_names:
-			self.RequiredTopics.append(kafka.admin.NewTopic(
+			self.RequiredTopics[name] = kafka.admin.NewTopic(
 				name,
 				num_partitions,
 				replication_factor,
 				topic_configs=topic_configs
-			))
+			)
 
 	def check_and_initialize(self):
 		L.warning("`check_and_initialize()` is obsoleted, use `initialize_topics()` instead")
@@ -199,7 +199,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			existing_topics = admin_client.list_topics()
 			missing_topics = [
 				topic
-				for topic in self.RequiredTopics
+				for topic in self.RequiredTopics.values()
 				if topic.name not in existing_topics
 			]
 			
@@ -210,6 +210,8 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			# Create topics
 			# TODO: update configs of existing topics using `admin_client.alter_configs()`
 			admin_client.create_topics(missing_topics)
+			# Clean up
+			self.RequiredTopics = {}
 			L.log(
 				asab.LOG_NOTICE,
 				"Kafka topics created",
