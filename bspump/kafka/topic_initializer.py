@@ -90,7 +90,12 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__(_id, config)
 
+		# Keeps the topic objects that need to be checked/initialized
 		self.RequiredTopics = {}
+
+		# Caches the names of existing topics
+		self.ExistingTopics: typing.Optional[set] = None
+
 		self.BootstrapServers = None
 		self.ClientId = self.Config.get("client_id")
 
@@ -179,6 +184,14 @@ class KafkaTopicInitializer(asab.ConfigObject):
 				topic_configs=topic_configs
 			)
 
+	def fetch_existing_topics(self):
+		admin_client = kafka.admin.KafkaAdminClient(
+			bootstrap_servers=self.BootstrapServers,
+			client_id=self.ClientId
+		)
+		self.ExistingTopics = set(admin_client.list_topics())
+		admin_client.close()
+
 	def check_and_initialize(self):
 		L.warning("`check_and_initialize()` is obsoleted, use `initialize_topics()` instead")
 		self.initialize_topics()
@@ -187,36 +200,47 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		if len(self.RequiredTopics) == 0:
 			L.info("No Kafka topics were required.")
 			return
-		
+
+		# Fetch topics if not cached
+		if self.ExistingTopics is None:
+			try:
+				self.fetch_existing_topics()
+			except Exception as e:
+				L.error("Failed to fetch Kafka topics: {}".format(e))
+				return
+
+		# Filter out the topics that already exist
+		missing_topics = [
+			topic
+			for topic in self.RequiredTopics.values()
+			if topic.name not in self.ExistingTopics
+		]
+
+		if len(missing_topics) == 0:
+			L.info("No missing Kafka topics to be initialized.")
+			return
+
 		admin_client = None
+
 		try:
 			admin_client = kafka.admin.KafkaAdminClient(
 				bootstrap_servers=self.BootstrapServers,
 				client_id=self.ClientId
 			)
 
-			# Filter out the topics that already exist
-			existing_topics = admin_client.list_topics()
-			missing_topics = [
-				topic
-				for topic in self.RequiredTopics.values()
-				if topic.name not in existing_topics
-			]
-			
-			if len(missing_topics) == 0:
-				L.info("No missing Kafka topics to be initialized.")
-				return
-
 			# Create topics
 			# TODO: update configs of existing topics using `admin_client.alter_configs()`
 			admin_client.create_topics(missing_topics)
-			# Clean up
-			self.RequiredTopics = {}
+
+			# Update existing topic cache
+			self.ExistingTopics.update(self.RequiredTopics.keys())
+
 			L.log(
 				asab.LOG_NOTICE,
 				"Kafka topics created",
 				struct_data={"topics": [topic.name for topic in missing_topics]}
 			)
+
 		except Exception as e:
 			L.error("Kafka topic initialization failed: {}".format(e))
 		finally:
