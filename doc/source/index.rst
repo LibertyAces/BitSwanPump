@@ -10,8 +10,11 @@ Welcome to BSPump reference documentation!
    :maxdepth: 1
    :caption: Contents:
 
+**Core BSPump**
+=============
+
 Application
-==========================================================
+--------------
 .. py:currentmodule:: bspump
 .. py:class:: BSPumpApplication()
 
@@ -70,7 +73,90 @@ Anomaly TBD
 .. py:currentmodule:: bspump
 .. py:class:: Anomaly()
 
-OLD REFERENCE
+**Technologies**
+================
+
+Kafka
+-----
+
+connection
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: KafkaConnection()
+
+Source
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: KafkaSource()
+
+Sink
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: KafkaSink()
+
+topic initializer
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: KafkaTopicInitializer()
+
+ElasticSearch
+---------
+
+Connection
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: ElasticSearchBulk()
+
+
+Lookup
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: ElasticSearchLookup()
+
+Sink
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: ElasticSearchSink()
+
+Source
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: ElasticSearchSource()
+
+Files
+----------
+
+CSV
+^^^^^^^^^^
+
+
+JSON
+^^^^^^^^^^
+
+
+AMQP
+-----------
+
+InfluxDB
+-----------
+
+Connection
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: InfluxDBConnection()
+
+Sink
+^^^^^^^^^^
+.. py:currentmodule:: bspump
+.. py:class:: InfluxDBSink()
+
+Sockets/IPC
+------------
+
+others
+------------
+
+**OLD REFERENCE**
 ========
 
 BSpump
