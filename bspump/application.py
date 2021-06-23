@@ -13,6 +13,9 @@ class BSPumpApplication(asab.Application):
 	"""
 
 	def __init__(self, args=None, web_listen=None):
+		'''
+		Bude tohle nekde videt.
+		'''
 		super().__init__(args=args)
 
 		# Banner

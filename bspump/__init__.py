@@ -1,4 +1,5 @@
 from .application import BSPumpApplication
+from .service import BSPumpService
 from .pipeline import Pipeline
 from .pumpbuilder import PumpBuilder
 from .abc.source import Source
@@ -24,6 +25,7 @@ from .__version__ import __version__, __build__
 
 __all__ = (
 	"BSPumpApplication",
+	"BSPumpService",
 	"Pipeline",
 	"PumpBuilder",
 	"Source",
