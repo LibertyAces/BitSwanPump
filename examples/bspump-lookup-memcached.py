@@ -25,7 +25,7 @@ class FileCSVEnricher(bspump.Processor):
         current_time = int(self.App.time())
         # get memcached
         mem = Memcachedookup(self.App)
-
+        # enrich with  time
         city = event["city"]
         if mem.rest_get(city) is None:
             L.debug("Setting data to memcached")
