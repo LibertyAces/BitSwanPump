@@ -24,7 +24,7 @@ class Memcached():
 		if memcache:
 			self.Client = base.Client(tuple(memcache.split(":")))
 		else:
-			L.error("Memcache service path not set.")
+			raise Exception("Memcache service path not set.")
 
 		self.App = app
 		self.MaxSize = max_size
