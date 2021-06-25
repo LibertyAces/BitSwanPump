@@ -34,7 +34,7 @@ class Memcachedookup(Lookup):
 		if memcache:
 			self.Client = base.Client(tuple(memcache.split(":")))
 		else:
-			L.error("Memcache service path not set.")
+			raise Exception("Memcache service path not set.")
 
 
 	def rest_get(self, to_chache: dict):
