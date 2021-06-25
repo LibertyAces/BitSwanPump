@@ -38,7 +38,7 @@ class Memcachedookup(Lookup):
 
 
 	def rest_get(self, to_chache: dict):
-		for key, value in to_chache:
+		for key, value in to_chache.items():
 			returned = self.Client.set(key, value, expire=self.Expiration)
 		if returned is not True:
 			L.warning("Setting a memcached key-value failed")
