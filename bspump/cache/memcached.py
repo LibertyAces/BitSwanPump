@@ -11,7 +11,14 @@ class Memcached():
 	Parameters:
 		memcache - ip:port of memcache service
 	"""
-	def __init__(self, app, max_size=1000, expiry_seconds=0, memcache=None ):
+
+	ConfigDefaults = {
+		'max_size': '',
+		'expiry_seconds': 3600,
+		'memcache': '127.0.0.1:11211',
+	}
+
+	def __init__(self, app, max_size, expiry_seconds, memcache):
 		super().__init__()
 
 		if memcache:
