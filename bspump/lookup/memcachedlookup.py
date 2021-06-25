@@ -43,7 +43,7 @@ class Memcachedookup(Lookup):
 			L.warning("Setting a memcached key-value failed")
 		L.debug("Successfully set key-value")
 
-	def get(self, key):
+	def rest_get(self, key):
 		return self.Client.get(key)
 
 	def delete(self ,key):
