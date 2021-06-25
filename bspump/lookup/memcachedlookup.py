@@ -7,15 +7,11 @@ L = logging.getLogger(__name__)
 
 ###
 
-L = logging.getLogger(__name__)
-
-###
-
 
 class Memcachedookup(Lookup):
 
 	ConfigDefaults = {
-		'max_size': '1000',
+		'max_size': 1000,
 		'expiry_seconds': 3600,
 		'memcache': '127.0.0.1:11211',
 	}
