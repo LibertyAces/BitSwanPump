@@ -16,6 +16,11 @@ L = logging.getLogger(__name__)
 
 class Memcachedookup(Lookup):
 
+	ConfigDefaults = {
+		'max_size': '',
+		'expiry_seconds': 3600,
+		'memcache': '127.0.0.1:11211',
+	}
 
 
 	def __init__(self, app, max_size=1000, expiry_seconds=0, memcache = None):
