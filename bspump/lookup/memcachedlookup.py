@@ -22,7 +22,7 @@ class Memcachedookup(Lookup):
 
 
 	def __init__(self, app, id=None, config=None):
-		super().__init__(app, id=None, config=None)
+		super().__init__(app, id=id, config=config)
 
 		self.App = app
 		self.MaxSize = self.Config['max_size']
