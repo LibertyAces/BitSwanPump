@@ -15,6 +15,8 @@ from .abc.lookup import MappingLookup
 from .abc.lookup import DictionaryLookup
 from .fileloader import load_json_file
 
+from.analyzer.analyzer import Analyzer
+
 from .matrix.matrix import Matrix, PersistentMatrix
 from .matrix.namedmatrix import NamedMatrix, PersistentNamedMatrix
 from .model.model import Model
@@ -34,6 +36,8 @@ __all__ = (
 	"Processor",
 	"Generator",
 	"Connection",
+
+	"Analyzer",
 
 	"ProcessingError",
 	"Lookup",
