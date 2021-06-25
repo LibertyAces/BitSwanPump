@@ -10,15 +10,7 @@ Welcome to BSPump reference documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
-
-   Application
-   BSPumpService
-
-*****
-**Core BSPump**
-*****
-
+   :caption: Reference
 
 Application
 #############
@@ -624,20 +616,108 @@ Generator
 .. py:currentmodule:: bspump
 .. py:class:: Generator()
 
+init
+^^^^^^^^
+
+.. py:method:: Generator.__init__()
+
+set_depth
+^^^^^^^^
+
+.. py:method:: Generator.set_depth()
+
+process
+^^^^^^^^
+
+.. py:method:: Generator.set_depth()
+
+process
+^^^^^^^^
+
+.. py:method:: Generator.process()
+
+generate
+^^^^^^^^
+
+.. py:method:: Generator.generate()
+
 Connection
 ##########
 .. py:currentmodule:: bspump
 .. py:class:: Connection()
+
+init
+^^^^^^^^
+
+.. py:method:: Connection.__init__()
+
+time
+^^^^^^^^
+
+.. py:method:: Connection.time()
+
+construct
+^^^^^^^^
+
+.. py:classmethod:::: Connection.consturct()
 
 Lookup Provider
 ##########
 .. py:currentmodule:: bspump
 .. py:class:: LookupProviderABC()
 
+load
+^^^^^^^^
+
+.. py:method:: LookupProviderABC.load()
+
+LookupBatchProviderABC
+^^^^^^^^
+
+.. py:currentmodule:: bspump
+.. py:class:: LookupBatchProviderABC()
+
 Analyzer
 ##########
 .. py:currentmodule:: bspump
 .. py:class:: Analyzer()
+
+init
+^^^^^^^^
+
+.. py:method:: Analyzer.__init__()
+
+start_timer
+^^^^^^^^
+
+.. py:method:: Analyzer.start_timer()
+
+analyze
+^^^^^^^^
+
+.. py:method:: Analyzer.analyze()
+
+evaluate
+^^^^^^^^
+
+.. py:method:: Analyzer.evaluate()
+
+predicate
+^^^^^^^^
+
+.. py:method:: Analyzer.predicate()
+
+process
+^^^^^^^^
+
+.. py:method:: Analyzer.process()
+
+on_clock_tick
+^^^^^^^^
+
+.. py:method:: Analyzer.on_clock_tick()
+
+
 
 Anomaly TBD
 ##########
