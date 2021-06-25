@@ -18,6 +18,8 @@ Application
 .. py:currentmodule:: bspump
 .. py:class:: BSPumpApplication()
 
+info about application
+
 init
 ^^^^^^^^
 
@@ -728,7 +730,7 @@ Anomaly TBD
 ================
 
 Kafka
------
+#####
 
 connection
 ^^^^^^^^^^
