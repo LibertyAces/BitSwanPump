@@ -12,28 +12,28 @@ Welcome to BSPump reference documentation!
    :maxdepth: 1
    :caption: Reference
 
-   bspump_doc/application
-   bspump_doc/pipeline
-   bspump_doc/pipelinelog
-   bspump_doc/lookup
-   bspump_doc/source
-   bspump_doc/processor
-   bspump_doc/generator
-   bspump_doc/connection
-   bspump_doc/lookupprovider
-   bspump_doc/analyzer
-   bspump_doc/anomalytbd
+   bspump_doc/core/application
+   bspump_doc/core/pipeline
+   bspump_doc/core/pipelinelog
+   bspump_doc/core/lookup
+   bspump_doc/core/source
+   bspump_doc/core/processor
+   bspump_doc/core/generator
+   bspump_doc/core/connection
+   bspump_doc/core/lookupprovider
+   bspump_doc/core/analyzer
+   bspump_doc/core/anomalytbd
 
 .. toctree::
    :maxdepth: 1
    :caption: Technologies
 
-   bspump_doc/kafka
-   bspump_doc/files/csv
-   bspump_doc/files/json
-   bspump_doc/amqp
-   bspump_doc/influxdb
-   bspump_doc/sockets
-   bspump_doc/ipc
+   bspump_doc/technologies/kafka
+   bspump_doc/technologies/files/csv
+   bspump_doc/technologies/files/json
+   bspump_doc/technologies/amqp
+   bspump_doc/technologies/influxdb
+   bspump_doc/technologies/sockets
+   bspump_doc/technologies/ipc
 
 
