@@ -8,8 +8,23 @@ from .__version__ import __version__, __build__
 
 
 class BSPumpApplication(asab.Application):
+
+
 	"""
-	Application object for BSPump.
+	-
+	-
+
+	BSPumpApplication is **class** used for .....
+
+	-
+	-
+
+    init
+--------
+
+
+
+
 	"""
 
 	def __init__(self, args=None, web_listen=None):
@@ -49,6 +64,9 @@ class BSPumpApplication(asab.Application):
 
 
 	def create_argument_parser(self):
+		'''
+		create agrument parser is a method responsible for ....
+		'''
 		prog = sys.argv[0]
 		if prog[-11:] == '__main__.py':
 			prog = sys.executable + " -m bspump"
@@ -70,6 +88,9 @@ build: {} [{}]
 
 
 	def parse_arguments(self, args=None):
+		'''
+		parse arguments is a method which does....
+		'''
 		args = super().parse_arguments(args=args)
 		self._web_listen = args.web_api
 		return args
