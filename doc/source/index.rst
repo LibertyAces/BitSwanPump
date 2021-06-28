@@ -16,22 +16,20 @@ Application
 ===========
 
 .. py:currentmodule:: bspump
-.. py:class:: BSPumpApplication()
+.. autoclass:: BSPumpApplication()
+   :members: __init__, create_argument_parser, parse_arguments
 
-info about application
 
 init
 --------
-
-.. py:currentmodule:: bspump
-.. autofunction:: BSPumpApplication.__init__
-
-.. py:method:: BSPumpApplication.__init__()
+.. automodule:: bspump.application
+.. autofunction:: __init__()
+   :members:
 
 create_argument_parser
 --------
 
-.. py:method:: BSPumpApplication.create_argument_parser()
+.. autofunction:: create_argument_parser
 
 parse_arguments
 --------
