@@ -1,5 +1,5 @@
-Application
-===========
+BSPump Application
+=======================
 
 .. py:currentmodule:: bspump
 .. autoclass:: BSPumpApplication()
@@ -33,7 +33,7 @@ _on_signal_usr1
 .. py:method:: BSPumpApplication._on_signal_usr1()
 
 BSPumpService
-===========
+==============
 .. py:currentmodule:: bspump
 .. py:class:: BSPumpService()
 
