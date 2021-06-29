@@ -1,2 +1,2 @@
-AMQP
+RabbitMQ / AMQP
 -----------
