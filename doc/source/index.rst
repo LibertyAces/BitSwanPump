@@ -5,30 +5,46 @@
 
 
 
-Welcome to BSPump reference documentation!
-==========================================================
+BSPump core classes
+--------------------
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :caption: Basics
+
+   reference/core/pipeline
+   reference/core/source
+   reference/core/processor
+   reference/core/connection
+   reference/core/sink
+   reference/core/anomalytbd
 
 .. toctree::
    :maxdepth: 1
-   :caption: Core Clases
+   :caption: Advanced
 
-   reference/core/bspump_application
-   reference/core/pipeline
-   reference/core/lookup
-   reference/core/source
-   reference/core/processor
    reference/core/generator
-   reference/core/connection
    reference/core/analyzer
-   reference/core/anomalytbd
+   reference/core/lookup
+
+.. toctree::
+   :maxdepth: 1
+   :caption: BSPump core classes
+
+   reference/core/basics/index
+   reference/core/advanced/index
+   reference/core/top_level_objects/index
+
 
 .. toctree::
    :maxdepth: 1
    :caption: Technologies
 
-   reference/technologies/apache_kafka
-   reference/technologies/files/csv
-   reference/technologies/files/json
+
+   reference/technologies/kafka/index
+   reference/technologies/elastic/index
+   reference/technologies/files/index
    reference/technologies/rabbitmq_amqp
    reference/technologies/influxdb
    reference/technologies/sockets
