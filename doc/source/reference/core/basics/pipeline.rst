@@ -99,6 +99,16 @@ ensure_future
 
 .. py:method:: Pipeline.ensure_future()
 
+You can use this method to schedule a future task that will be executed in a context of the pipeline.
+		The pipeline also manages a whole lifecycle of the future/task, which means,
+		it will collect the future result, trash it, and mainly it will capture any possible exception,
+		which will then block the pipeline via set_error().
+
+		If the number of futures exceeds the configured limit, the pipeline is throttled.
+
+		:param coro:
+		:return:
+
 _future_done
 --------
 
