@@ -2,7 +2,7 @@ InfluxDB
 ===========
 
 Connection
-----------
+-----------
 .. py:currentmodule:: bspump
 .. py:class:: InfluxDBConnection()
 

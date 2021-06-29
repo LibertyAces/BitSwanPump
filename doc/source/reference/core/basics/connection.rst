@@ -14,6 +14,6 @@ time
 .. py:method:: Connection.time()
 
 construct
---------
+-----------
 
 .. py:classmethod:::: Connection.consturct()

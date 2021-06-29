@@ -39,17 +39,17 @@ main
 .. py:method:: Source.main()
 
 stopped
---------
+---------
 
 .. py:method:: Source.stopped()
 
 locate_address
---------
+---------------
 
 .. py:method:: Source.locate_address()
 
 rest_get
---------
+---------
 
 .. py:method:: Source.rest_get()
 
@@ -59,12 +59,12 @@ repr
 .. py:method:: Source.__repr__()
 
 consturct
---------
+----------
 
 .. py:classmethod:: Source.construct()
 
 TrigerSource
---------
+-------------
 .. py:currentmodule:: bspump
 .. py:class:: TriggerSource()
 
@@ -94,6 +94,6 @@ cycle
 .. py:method:: TriggerSource.cycle()
 
 rest_get
---------
+-----------
 
 .. py:method:: TriggerSource.rest_get()

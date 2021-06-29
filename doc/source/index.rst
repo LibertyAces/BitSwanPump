@@ -11,30 +11,23 @@ BSPump core classes
 .. toctree::
    :titlesonly:
    :maxdepth: 1
-   :caption: Basics
+   :caption: BSPump Core classes
 
-   reference/core/pipeline
-   reference/core/source
-   reference/core/processor
-   reference/core/connection
-   reference/core/sink
-   reference/core/anomalytbd
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Advanced
-
-   reference/core/generator
-   reference/core/analyzer
-   reference/core/lookup
-
-.. toctree::
-   :maxdepth: 1
-   :caption: BSPump core classes
 
    reference/core/basics/index
+
+.. toctree::
+   :maxdepth: 1
+
    reference/core/advanced/index
+
+
+.. toctree::
+   :maxdepth: 1
+
+
    reference/core/top_level_objects/index
+
 
 
 .. toctree::
