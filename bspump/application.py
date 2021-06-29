@@ -11,25 +11,17 @@ class BSPumpApplication(asab.Application):
 
 
 	"""
-	-
-	-
 
 	BSPumpApplication is **class** used for .....
 
 	-
 	-
-
-    init
---------
-
-
-
-
 	"""
 
 	def __init__(self, args=None, web_listen=None):
 		'''
 		Bude tohle nekde videt.
+
 		'''
 		super().__init__(args=args)
 
