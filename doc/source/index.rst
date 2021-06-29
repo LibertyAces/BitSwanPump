@@ -10,30 +10,28 @@ Welcome to BSPump reference documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Reference
+   :caption: Core Clases
 
-   bspump_doc/core/application
-   bspump_doc/core/pipeline
-   bspump_doc/core/pipelinelog
-   bspump_doc/core/lookup
-   bspump_doc/core/source
-   bspump_doc/core/processor
-   bspump_doc/core/generator
-   bspump_doc/core/connection
-   bspump_doc/core/lookupprovider
-   bspump_doc/core/analyzer
-   bspump_doc/core/anomalytbd
+   reference/core/bspump_application
+   reference/core/pipeline
+   reference/core/lookup
+   reference/core/source
+   reference/core/processor
+   reference/core/generator
+   reference/core/connection
+   reference/core/analyzer
+   reference/core/anomalytbd
 
 .. toctree::
    :maxdepth: 1
    :caption: Technologies
 
-   bspump_doc/technologies/kafka
-   bspump_doc/technologies/files/csv
-   bspump_doc/technologies/files/json
-   bspump_doc/technologies/amqp
-   bspump_doc/technologies/influxdb
-   bspump_doc/technologies/sockets
-   bspump_doc/technologies/ipc
+   reference/technologies/apache_kafka
+   reference/technologies/files/csv
+   reference/technologies/files/json
+   reference/technologies/rabbitmq_amqp
+   reference/technologies/influxdb
+   reference/technologies/sockets
+   reference/technologies/ipc
 
 
