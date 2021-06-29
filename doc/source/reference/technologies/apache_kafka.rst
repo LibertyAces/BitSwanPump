@@ -1,4 +1,4 @@
-Kafka
+Apache Kafka
 ===========
 
 connection
