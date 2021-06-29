@@ -1,15 +1,15 @@
 Pipeline
-===========
+===============
 
 .. py:currentmodule:: bspump
 .. py:class:: Pipeline()
 
-init
---------
+Init
+---------------------
 
 .. py:method:: Pipeline.__init__()
 
-time
+Time
 --------
 
 .. py:method:: Pipeline.time()
@@ -34,12 +34,12 @@ set_error
 
 .. py:method:: Pipeline.set_error()
 
-handle_error
+Handle_error
 --------
 
 .. py:method:: Pipeline.handle_error()
 
-link
+Link
 --------
 
 .. py:method:: Pipeline.link()
@@ -109,12 +109,12 @@ set_source
 
 .. py:method:: Pipeline.set_source()
 
-append_processor
+Append_processor
 --------
 
 .. py:method:: Pipeline.append_processor()
 
-remove_processor
+Remove_processor
 --------
 
 .. py:method:: Pipeline.remove_procesor()
@@ -173,3 +173,24 @@ rest_get
 --------
 
 .. py:method:: Pipeline.rest_get()
+
+PipeLineLogger
+---------------
+.. py:currentmodule:: bspump
+.. py:class:: PipeLineLogger()
+
+init
+--------
+
+.. py:method:: PipelineLogger.__init__()
+
+handle
+--------
+
+.. py:method:: PipelineLogger.handle()
+
+_format_time
+--------
+
+.. py:method:: PipelineLogger._format_time()
+
