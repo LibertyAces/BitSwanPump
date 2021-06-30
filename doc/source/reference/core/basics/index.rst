@@ -4,199 +4,204 @@ Basics
 Pipeline
 --------
 
-.. py:currentmodule:: bspump
-.. py:class:: Pipeline()
 
-.. py:method:: Pipeline.__init__()
+.. py:currentmodule:: bspump
+
+.. autoclass:: Pipeline
+    :special-members: __init__
+    :show-inheritance:
 
 
 Pipeline construction
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. py:method:: Pipeline.set_source(self, source)
+.. autoclass:: Pipeline
+    :members: set_source, append_processor, remove_processor, insert_before, insert_after, build, iter_processors
+    :show-inheritance:
+    :undoc-members:
+    :hideclass::
+    :exclude-members: Pipeline
 
-.. py:method:: Pipeline.append_processor()
+.. automodule:: bspump
+.. autofunction:: bspump.Pipeline.set_source
 
-.. py:method:: Pipeline.remove_procesor()
-
-.. py:method:: Pipeline.insert_before()
-
-.. py:method:: Pipeline.insert_after()
-
-.. py:method:: Pipeline.build()
-
-.. py:method:: Pipeline.inter_processor()
+.. automethod:: bspump.Pipeline.set_source
 
 
 Other pipeline methods
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:method:: Pipeline.time()
+.. automethod:: bspump.Pipeline.time()
 
-.. py:method:: Pipeline.get_throttles()
+.. automethod:: bspump.Pipeline.get_throttles()
 
-.. py:method:: Pipeline._on_metrics_flush()
+.. automethod:: bspump.Pipeline._on_metrics_flush()
 
-.. py:method:: Pipeline.is_error()
+.. automethod:: bspump.Pipeline.is_error()
 
-.. py:method:: Pipeline.set_error()
+.. automethod:: bspump.Pipeline.set_error()
 
-.. py:method:: Pipeline.handle_error()
+.. automethod:: bspump.Pipeline.handle_error()
 
-.. py:method:: Pipeline.link()
+.. automethod:: bspump.Pipeline.link()
 
-.. py:method:: Pipeline.unlink()
+.. automethod:: bspump.Pipeline.unlink()
 
-.. py:method:: Pipeline.throttle()
+.. automethod:: bspump.Pipeline.throttle()
 
-.. py:method:: Pipeline._evaluate_ready()
+.. automethod:: bspump.Pipeline._evaluate_ready()
 
-.. py:method:: Pipeline._evaluate_ready()
+.. automethod:: bspump.Pipeline._evaluate_ready()
 
-.. py:method:: Pipeline.ready()
+.. automethod:: bspump.Pipeline.ready()
 
-.. py:method:: Pipeline.is_ready()
+.. automethod:: bspump.Pipeline.is_ready()
 
-.. py:method:: Pipeline._do_process()
+.. automethod:: bspump.Pipeline._do_process()
 
-.. py:method:: Pipeline.inject()
+.. automethod:: bspump.Pipeline.inject()
 
-.. py:method:: Pipeline.process()
+.. automethod:: bspump.Pipeline.process()
 
-.. py:method:: Pipeline.create_eps_counter()
+.. automethod:: bspump.Pipeline.create_eps_counter()
 
-.. py:method:: Pipeline.ensure_future()
+.. automethod:: bspump.Pipeline.ensure_future()
 
-You can use this method to schedule a future task that will be executed in a context of the pipeline.
-        The pipeline also manages a whole lifecycle of the future/task, which means,
-        it will collect the future result, trash it, and mainly it will capture any possible exception,
-        which will then block the pipeline via set_error().
+.. automethod:: bspump.Pipeline.locate_source()
 
-        If the number of futures exceeds the configured limit, the pipeline is throttled.
+.. automethod:: bspump.Pipeline.locate_connection()
 
-        :param coro:
-        :return:
+.. automethod:: bspump.Pipeline.locate_processor()
+
+.. automethod:: bspump.Pipeline.start()
+
+.. automethod:: bspump.Pipeline.stop()
+
+.. automethod:: bspump.Pipeline.rest_get()
 
 
-.. py:method:: Pipeline.locate_source()
 
-.. py:method:: Pipeline.locate_connection()
-
-.. py:method:: Pipeline.locate_processor()
-
-.. py:method:: Pipeline.start()
-
-.. py:method:: Pipeline.stop()
-
-.. py:method:: Pipeline.rest_get()
 
 Connection
 ----------
 
 .. py:currentmodule:: bspump
-.. py:class:: Connection()
 
-.. py:method:: Connection.__init__()
-
+.. autoclass:: Connection
+    :special-members: __init__
+    :show-inheritance:
 
 Connection construction
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:method:: Connection.time()
+.. automethod:: bspump.Pipeline.time()
 
 .. py:classmethod:::: Connection.consturct()
+
 
 
 Source
 ------
 
 .. py:currentmodule:: bspump
-.. py:class:: Source()
 
-.. py:method:: Source.__init__()
+.. autoclass:: Source
+    :special-members: __init__
+    :show-inheritance:
 
 
 Source construction
 ~~~~~~~~~~~~~~~~~~~
 
-.. py:method:: Source.process()
+.. automethod:: bspump.Pipeline.process()
 
-.. py:method:: Source.start()
+.. automethod:: bspump.Pipeline.start()
 
-.. py:method:: Source._main()
+.. automethod:: bspump.Pipeline._main()
 
-.. py:method:: Source.stop()
+.. automethod:: bspump.Pipeline.stop()
 
-.. py:method:: Source.restart()
+.. automethod:: bspump.Pipeline.restart()
 
-.. py:method:: Source.main()
+.. automethod:: bspump.Pipeline.main()
 
-.. py:method:: Source.stopped()
+.. automethod:: bspump.Pipeline.stopped()
 
-.. py:method:: Source.locate_address()
+.. automethod:: bspump.Pipeline.locate_address()
 
-.. py:method:: Source.rest_get()
+.. automethod:: bspump.Pipeline.rest_get()
 
-.. py:method:: Source.__repr__()
+.. automethod:: bspump.Pipeline.__repr__()
 
-.. py:classmethod:: Source.construct()
+.. automethod:: bspump.Pipeline.construct()
 
 Triger source
 ~~~~~~~~~~~~~
 
 .. py:currentmodule:: bspump
-.. py:class:: TriggerSource()
+
+.. autoclass:: TriggerSource
+    :special-members: __init__
+    :show-inheritance:
+
 
 Triger source methods
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. py:method:: TriggerSource.__init__()
+.. automethod:: bspump.Pipeline.__init__()
 
-.. py:method:: TriggerSource.time()
+.. automethod:: bspump.Pipeline.time()
 
-.. py:method:: TriggerSource.on()
+.. automethod:: bspump.Pipeline.on()
 
-.. py:method:: TriggerSource.main()
+.. automethod:: bspump.Pipeline.main()
 
-.. py:method:: TriggerSource.cycle()
+.. automethod:: bspump.Pipeline.cycle()
 
-.. py:method:: TriggerSource.rest_get()
+.. automethod:: bspump.Pipeline.rest_get()
 
 
 Sink
 ----
 
 .. py:currentmodule:: bspump
-.. py:class:: Sink()
+
+.. autoclass:: Sink
+    :special-members: __init__
+    :show-inheritance:
 
 
 Processor
 ---------
 
 .. py:currentmodule:: bspump
-.. py:class:: ProcessorBase()
 
-.. py:method:: ProcessorBase.__init__()
+.. autoclass:: ProcessorBase
+    :special-members: __init__
+    :show-inheritance:
 
 
 Processor construction
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:method:: ProcessorBase.time()
+.. automethod:: bspump.Pipeline.time()
 
-.. py:classmethod:::: ProcessorBase.construct()
+.. automethod:: bspump.Pipeline.construct()
 
-.. py:method:: ProcessorBase.process()
+.. automethod:: bspump.Pipeline.process()
 
-.. py:method:: ProcessorBase.locate_address()
+.. automethod:: bspump.Pipeline.locate_address()
 
-.. py:method:: ProcessorBase.rest_get()
+.. automethod:: bspump.Pipeline.rest_get()
 
-.. py:method:: ProcessorBase.__repr__()
+.. automethod:: bspump.Pipeline.__repr__()
 
 
 Processor class
 ~~~~~~~~~~~~~~~
 
 .. py:currentmodule:: bspump
-.. py:class:: Processor
+
+.. autoclass:: Processor
+    :special-members: __init__
+    :show-inheritance:
