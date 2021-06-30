@@ -15,27 +15,31 @@ Pipeline
 Pipeline construction
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: Pipeline
-    :members: set_source, append_processor, remove_processor, insert_before, insert_after, build, iter_processors
-    :show-inheritance:
-    :undoc-members:
-    :hideclass::
-    :exclude-members: Pipeline
-
-.. automodule:: bspump
-.. autofunction:: bspump.Pipeline.set_source
-
 .. automethod:: bspump.Pipeline.set_source
+
+.. automethod:: bspump.Pipeline.append_processor
+
+.. automethod:: bspump.Pipeline.remove_processor
+
+.. automethod:: bspump.Pipeline.insert_before
+
+.. automethod:: bspump.Pipeline.insert_after
+
+.. automethod:: bspump.Pipeline.build
+
+.. automethod:: bspump.Pipeline.iter_processors
 
 
 Other pipeline methods
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.Pipeline.time()
+.. automodule:: bspump
 
-.. automethod:: bspump.Pipeline.get_throttles()
+.. automethod:: bspump.Pipeline.time
 
-.. automethod:: bspump.Pipeline._on_metrics_flush()
+.. automethod:: bspump.Pipeline.get_throttles
+
+.. automethod:: bspump.Pipeline._on_metrics_flush
 
 .. automethod:: bspump.Pipeline.is_error()
 
@@ -94,7 +98,7 @@ Connection
 Connection construction
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.Pipeline.time()
+.. automethod:: bspump.Connection.time()
 
 .. py:classmethod:::: Connection.consturct()
 
@@ -113,30 +117,30 @@ Source
 Source construction
 ~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.Pipeline.process()
+.. automethod:: bspump.Source.process()
 
-.. automethod:: bspump.Pipeline.start()
+.. automethod:: bspump.Source.start()
 
-.. automethod:: bspump.Pipeline._main()
+.. automethod:: bspump.Source._main()
 
-.. automethod:: bspump.Pipeline.stop()
+.. automethod:: bspump.Source.stop()
 
-.. automethod:: bspump.Pipeline.restart()
+.. automethod:: bspump.Source.restart()
 
-.. automethod:: bspump.Pipeline.main()
+.. automethod:: bspump.Source.main()
 
-.. automethod:: bspump.Pipeline.stopped()
+.. automethod:: bspump.Source.stopped()
 
-.. automethod:: bspump.Pipeline.locate_address()
+.. automethod:: bspump.Source.locate_address()
 
-.. automethod:: bspump.Pipeline.rest_get()
+.. automethod:: bspump.Source.rest_get()
 
-.. automethod:: bspump.Pipeline.__repr__()
+.. automethod:: bspump.Source.__repr__()
 
-.. automethod:: bspump.Pipeline.construct()
+.. automethod:: bspump.Source.construct()
 
-Triger source
-~~~~~~~~~~~~~
+Trigger source
+~~~~~~~~~~~~~~
 
 .. py:currentmodule:: bspump
 
@@ -145,20 +149,18 @@ Triger source
     :show-inheritance:
 
 
-Triger source methods
-~~~~~~~~~~~~~~~~~~~~~
+Trigger source methods
+~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.Pipeline.__init__()
+.. automethod:: bspump.TriggerSource.time()
 
-.. automethod:: bspump.Pipeline.time()
+.. automethod:: bspump.TriggerSource.on()
 
-.. automethod:: bspump.Pipeline.on()
+.. automethod:: bspump.TriggerSource.main()
 
-.. automethod:: bspump.Pipeline.main()
+.. automethod:: bspump.TriggerSource.cycle()
 
-.. automethod:: bspump.Pipeline.cycle()
-
-.. automethod:: bspump.Pipeline.rest_get()
+.. automethod:: bspump.TriggerSource.rest_get()
 
 
 Sink
@@ -184,17 +186,17 @@ Processor
 Processor construction
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.Pipeline.time()
+.. automethod:: bspump.Processor.time()
 
-.. automethod:: bspump.Pipeline.construct()
+.. automethod:: bspump.Processor.construct()
 
-.. automethod:: bspump.Pipeline.process()
+.. automethod:: bspump.Processor.process()
 
-.. automethod:: bspump.Pipeline.locate_address()
+.. automethod:: bspump.Processor.locate_address()
 
-.. automethod:: bspump.Pipeline.rest_get()
+.. automethod:: bspump.Processor.rest_get()
 
-.. automethod:: bspump.Pipeline.__repr__()
+.. automethod:: bspump.Processor.__repr__()
 
 
 Processor class
