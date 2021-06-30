@@ -13,7 +13,7 @@ Pipeline
 Pipeline construction
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. py:method:: Pipeline.set_source()
+.. py:method:: Pipeline.set_source(self, source)
 
 .. py:method:: Pipeline.append_processor()
 
@@ -89,3 +89,114 @@ You can use this method to schedule a future task that will be executed in a con
 .. py:method:: Pipeline.stop()
 
 .. py:method:: Pipeline.rest_get()
+
+Connection
+----------
+
+.. py:currentmodule:: bspump
+.. py:class:: Connection()
+
+.. py:method:: Connection.__init__()
+
+
+Connection construction
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. py:method:: Connection.time()
+
+.. py:classmethod:::: Connection.consturct()
+
+
+Source
+------
+
+.. py:currentmodule:: bspump
+.. py:class:: Source()
+
+.. py:method:: Source.__init__()
+
+
+Source construction
+~~~~~~~~~~~~~~~~~~~
+
+.. py:method:: Source.process()
+
+.. py:method:: Source.start()
+
+.. py:method:: Source._main()
+
+.. py:method:: Source.stop()
+
+.. py:method:: Source.restart()
+
+.. py:method:: Source.main()
+
+.. py:method:: Source.stopped()
+
+.. py:method:: Source.locate_address()
+
+.. py:method:: Source.rest_get()
+
+.. py:method:: Source.__repr__()
+
+.. py:classmethod:: Source.construct()
+
+Triger source
+~~~~~~~~~~~~~
+
+.. py:currentmodule:: bspump
+.. py:class:: TriggerSource()
+
+Triger source methods
+~~~~~~~~~~~~~~~~~~~~~
+
+.. py:method:: TriggerSource.__init__()
+
+.. py:method:: TriggerSource.time()
+
+.. py:method:: TriggerSource.on()
+
+.. py:method:: TriggerSource.main()
+
+.. py:method:: TriggerSource.cycle()
+
+.. py:method:: TriggerSource.rest_get()
+
+
+Sink
+----
+
+.. py:currentmodule:: bspump
+.. py:class:: Sink()
+
+
+Processor
+---------
+
+.. py:currentmodule:: bspump
+.. py:class:: ProcessorBase()
+
+.. py:method:: ProcessorBase.__init__()
+
+
+Processor construction
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. py:method:: ProcessorBase.time()
+
+.. py:classmethod:::: ProcessorBase.construct()
+
+.. py:method:: ProcessorBase.process()
+
+.. py:method:: ProcessorBase.locate_address()
+
+.. py:method:: ProcessorBase.rest_get()
+
+.. py:method:: ProcessorBase.__repr__()
+
+
+Processor class
+~~~~~~~~~~~~~~~
+
+.. py:currentmodule:: bspump
+.. py:class:: Processor
