@@ -44,6 +44,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				]
 				bspump.common.NullSink(app, self),
 			)
+	:meta private:
 	"""
 
 	ConfigDefaults = {
@@ -432,6 +433,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 	# Construction
 
 	def set_source(self, source):
+		"""
+		set_source is a method responsible for...
+		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
 		else:
