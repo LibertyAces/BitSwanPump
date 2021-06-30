@@ -109,7 +109,7 @@ html_theme = "alabaster"
 
 html_sticky_navigation = True
 html_collapse_navigation = True
-html_titles_only = True
+html_titles_only = False
 html_includehidden = True
 html_navigation_depth = 4
 
@@ -127,7 +127,7 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'] }
+html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'searchbox.html'] }
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -206,3 +206,7 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
+
+autodoc_member_order = 'bysource'
+add_module_names = False
+add_class_names = False
