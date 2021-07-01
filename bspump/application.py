@@ -14,8 +14,6 @@ class BSPumpApplication(asab.Application):
 
 	BSPumpApplication is **class** used for .....
 
-	-
-	-
 	"""
 
 	def __init__(self, args=None, web_listen=None):
