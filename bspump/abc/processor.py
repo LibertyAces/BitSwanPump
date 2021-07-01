@@ -2,7 +2,9 @@ import asab
 
 
 class ProcessorBase(asab.ConfigObject):
-
+	"""
+	test comment
+	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
@@ -30,6 +32,9 @@ class ProcessorBase(asab.ConfigObject):
 
 
 	def process(self, context, event):
+		"""
+		process is a method which...
+		"""
 		raise NotImplementedError()
 
 
