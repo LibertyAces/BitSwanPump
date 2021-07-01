@@ -178,7 +178,7 @@ Processor
 
 .. py:currentmodule:: bspump
 
-.. autoclass:: ProcessorBase
+.. autoclass:: Processor
     :special-members: __init__
     :show-inheritance:
 
@@ -198,12 +198,3 @@ Processor construction
 
 .. automethod:: bspump.Processor.__repr__()
 
-
-Processor class
-~~~~~~~~~~~~~~~
-
-.. py:currentmodule:: bspump
-
-.. autoclass:: Processor
-    :special-members: __init__
-    :show-inheritance:
