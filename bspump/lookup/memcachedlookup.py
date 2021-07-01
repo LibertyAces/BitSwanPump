@@ -1,6 +1,5 @@
 from ..abc.lookup import Lookup
-from pymemcache.client import base
-
+import pymemcache.client
 import logging
 
 L = logging.getLogger(__name__)
@@ -27,7 +26,7 @@ class Memcachedlookup(Lookup):
 		self.Target = None
 
 		if len(self.Memcache) > 0:
-			self.Client = base.Client(tuple(self.Memcache.split(":")))
+			self.Client = pymemcache.client.base.Client(tuple(self.Memcache.split(":")))
 		else:
 			raise Exception("Memcache service path not set.")
 
