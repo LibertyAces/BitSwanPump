@@ -1,119 +1,67 @@
-BSPump Application
-=======================
+Application
+===========
 
 .. py:currentmodule:: bspump
-.. autoclass:: BSPumpApplication()
 
-init
---------
-.. py:method:: BSPumpApplication.__init__()
+.. autoclass:: BSPumpApplication
+    :special-members: __init__
+    :show-inheritance:
 
-create_argument_parser
---------------------------
 
-.. py:method:: BSPumpApplication.create_argument_parser()
+Application construction
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-parse_arguments
------------------
+.. automethod:: bspump.BSPumpApplication.create_argument_parser
 
-.. py:method:: BSPumpApplication.parse_arguments()
+.. automethod:: bspump.BSPumpApplication.create_argument_parser
 
-main
---------
+.. automethod:: bspump.BSPumpApplication.parse_arguments
 
-.. py:method:: BSPumpApplication.main()
+.. automethod:: bspump.BSPumpApplication.main
 
-_on_signal_usr1
------------------
+.. automethod:: bspump.BSPumpApplication._on_signal_usr1
 
-.. py:method:: BSPumpApplication._on_signal_usr1()
 
 BSPumpService
-==============
-.. py:currentmodule:: bspump
-.. py:class:: BSPumpService()
-
-init
---------
-
-.. py:method:: BSPumpService.__init__()
-
-locate
---------
-
-.. py:method:: BSPumpService.locate()
-
-
-add_pipeline
-----------------
-
-.. py:method:: BSPumpService.add_pipeline()
-
-add_pipelines
-----------------
-
-.. py:method:: BSPumpService.add_pipelines()
-
-del_pipeline
-----------------
-
-.. py:method:: BSPumpService.del_pipeline()
-
-add_connection
-----------------
-.. py:method:: BSPumpService.add_connection()
-
-add_connections
-----------------
-
-.. py:method:: BSPumpService.add_connections()
-
-locate_connection
-------------------------
-
-.. py:method:: BSPumpService.locate_connection()
-
-add_lookup
-------------
-
-.. py:method:: BSPumpService.add_lookup()
-
-add_lookups
-------------
-
-.. py:method:: BSPumpService.add_lookups()
-
-locate_lookup
---------------
-
-.. py:method:: BSPumpService.locate_lookup()
-
-add_lookup_factory
--------------------
-
-.. py:method:: BSPumpService.add_lookup_factory()
-
-add_matrix
------------
-
-.. py:method:: BSPumpService.add_matrix()
-
-add_matrixes
 -------------
 
-.. py:method:: BSPumpService.add_matrixes()
+.. py:currentmodule:: bspump
 
-locate_matrix
----------------
+.. autoclass:: BSPumpService
+    :special-members: __init__
+    :show-inheritance:
 
-.. py:method:: BSPumpService.locate_matrix()
+BSPumpService methods
+~~~~~~~~~~~~~~~~~~~~~
 
-initialize
------------
+.. automethod:: bspump.BSPumpService.locate
 
-.. py:method:: BSPumpService.initialize()
+.. automethod:: bspump.BSPumpService.add_pipeline
 
-finalize
----------
+.. automethod:: bspump.BSPumpService.add_pipelines
 
-.. py:method:: BSPumpService.finalize()
+.. automethod:: bspump.BSPumpService.del_pipeline
+
+.. automethod:: bspump.BSPumpService.add_connection
+
+.. automethod:: bspump.BSPumpService.add_connections
+
+.. automethod:: bspump.BSPumpService.locate_connection
+
+.. automethod:: bspump.BSPumpService.add_lookup
+
+.. automethod:: bspump.BSPumpService.add_lookups
+
+.. automethod:: bspump.BSPumpService.locate_lookup
+
+.. automethod:: bspump.BSPumpService.add_lookup_factory
+
+.. automethod:: bspump.BSPumpService.add_matrix
+
+.. automethod:: bspump.BSPumpService.add_matrixes
+
+.. automethod:: bspump.BSPumpService.locate_matrix
+
+.. automethod:: bspump.BSPumpService.initialize
+
+.. automethod:: bspump.BSPumpService.finalize
