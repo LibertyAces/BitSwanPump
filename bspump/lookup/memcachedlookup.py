@@ -42,7 +42,7 @@ class Memcachedlookup(Lookup):
 	def get(self, key):
 		return self.Client.get(key)
 
-	def delete(self ,key):
+	def delete(self, key):
 		self.Client.delete(key)
 		L.debug("Deleted {} form memcache.".format(key))
 
