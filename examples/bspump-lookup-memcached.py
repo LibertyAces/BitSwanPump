@@ -16,11 +16,6 @@ L = logging.getLogger(__name__)
 ###
 
 class FileCSVEnricher(bspump.Processor):
-    """
-	Index, can be specified in the event's context.
-
-	If not specified, index will be in this case created by the specified rollover_mechanism.
-	"""
 
     def process(self, context, event):
         current_time = int(self.App.time())
