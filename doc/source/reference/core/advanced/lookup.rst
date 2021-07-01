@@ -1,143 +1,110 @@
 Lookup
-===========
+======
+
 .. py:currentmodule:: bspump
-.. py:class:: Lookup()
 
-init
---------
+.. autoclass:: Lookup
+    :special-members: __init__
+    :show-inheritance:
 
-.. py:method:: Lookup.__init__()
 
-getitem
---------
+Lookup construction
+~~~~~~~~~~~~~~~~~~~
 
-.. py:method:: Lookup.__getitem__()
+.. automethod:: bspump.Lookup.__getitem__
 
-iter
---------
+.. automethod:: bspump.Lookup.__iter__
 
-.. py:method:: Lookup.__iter__()
+.. automethod:: bspump.Lookup.__len__
 
-len
---------
+.. automethod:: bspump.Lookup.__contains__
 
-.. py:method:: Lookup.__len__()
+.. automethod:: bspump.Lookup._create_provider
 
-contains
----------
+.. automethod:: bspump.Lookup.time
 
-.. py:method:: Lookup.__contains__()
+.. automethod:: bspump.Lookup.ensure_future_update
 
-_create_provider
--------------------
+.. automethod:: bspump.Lookup._do_update
 
-.. py:method:: Lookup._create_provider()
+.. automethod:: bspump.Lookup.load
 
-time
---------
+.. automethod:: bspump.Lookup.serialize
 
-.. py:method:: Lookup.time()
+.. automethod:: bspump.Lookup.deserialize
 
-ensure_future_update
-----------------------
+.. automethod:: bspump.Lookup.rest_get
 
-.. py:method:: Lookup.ensure_future_update()
+.. automethod:: bspump.Lookup.is_master
 
-_do_update
------------
-
-.. py:method:: Lookup._do_update()
-
-load
---------
-
-.. py:method:: Lookup.load()
-
-serialize
-----------
-
-.. py:method:: Lookup.serialize()
-
-deserialize
--------------
-
-.. py:method:: Lookup.deserialize()
-
-rest_get
----------
-
-.. py:method:: Lookup.rest_get()
-
-is_master
------------
-
-.. py:method:: Lookup.is_master()
 
 MappingLookup
 --------------
 
 .. py:currentmodule:: bspump
-.. py:class:: MappingLookup()
+
+.. autoclass:: MappingLookup
+    :special-members: __init__
+    :show-inheritance:
+
 
 AsyncLookupMixin
 -----------------
 
 .. py:currentmodule:: bspump
-.. py:class:: AsyncLookupMixin()
+
+.. autoclass:: AsyncLookupMixin
+    :special-members: __init__
+    :show-inheritance:
+
 
 DictionaryLookup
 ------------------
 
 .. py:currentmodule:: bspump
-.. py:class:: DictionaryLookup()
 
-init
---------
+.. autoclass:: DictionaryLookup
+    :special-members: __init__
+    :show-inheritance:
 
-.. py:method:: DictionaryLookup.__init__()
 
-get item
------------
+Dictionary Lookup methods
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:method:: DictionaryLookup.__getitem__()
+.. automethod:: bspump.DictionaryLookup.__getitem__
 
-len
---------
+.. automethod:: bspump.DictionaryLookup.__len__
 
-.. py:method:: DictionaryLookup.__len__()
+.. automethod:: bspump.DictionaryLookup.serialize
 
-serialize
-----------
+.. automethod:: bspump.DictionaryLookup.deserialize
 
-.. py:method:: DictionaryLookup.serialize()
+.. automethod:: bspump.DictionaryLookup.rest_get
 
-deserialize
-------------
+.. automethod:: bspump.DictionaryLookup.set
 
-.. py:method:: DictionaryLookup.deserialize()
-
-rest_get
-----------
-
-.. py:method:: DictionaryLookup.rest_get()
-
-set
---------
-
-.. py:method:: DictionaryLookup.set()
 
 Lookup Provider
 ------------------
+
 .. py:currentmodule:: bspump
-.. py:class:: LookupProviderABC()
 
-load
---------
+.. autoclass:: LookupProviderABC
+    :special-members: __init__
+    :show-inheritance:
 
-.. py:method:: LookupProviderABC.load()
+
+Lookup Provider methods
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automethod:: bspump.LookupProviderABC.load()
+
 
 LookupBatchProviderABC
 ------------------------
 
 .. py:currentmodule:: bspump
-.. py:class:: LookupBatchProviderABC()
+
+.. autoclass:: LookupBatchProviderABC
+    :special-members: __init__
+    :show-inheritance:
