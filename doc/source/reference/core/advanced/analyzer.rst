@@ -1,48 +1,26 @@
 Analyzer
 ===========
+
 .. py:currentmodule:: bspump
-.. py:class:: Analyzer()
 
-init
-^^^^^^
+.. autoclass:: Analyzer
+    :special-members: __init__
+    :show-inheritance:
 
-Analyzer
-^^^^^^^^
+Analyzer construction
+~~~~~~~~~~~~~~~~~~~~~
 
-init
---------
+.. automethod:: bspump.Analyzer.start_timer
 
-.. py:method:: Analyzer.__init__()
+.. automethod:: bspump.Analyzer.analyze
 
-start_timer
-------------
+.. automethod:: bspump.Analyzer.evaluate
 
-.. py:method:: Analyzer.start_timer()
+.. automethod:: bspump.Analyzer.predicate
 
-analyze
---------
+.. automethod:: bspump.Analyzer.process
 
-.. py:method:: Analyzer.analyze()
+.. automethod:: bspump.Analyzer.on_clock_tick
 
-evaluate
----------
-
-.. py:method:: Analyzer.evaluate()
-
-predicate
-----------
-
-.. py:method:: Analyzer.predicate()
-
-process
---------
-
-.. py:method:: Analyzer.process()
-
-on_clock_tick
---------------
-
-.. py:method:: Analyzer.on_clock_tick()
-
-Analyzingsource
-----------------
+Analyzing source
+~~~~~~~~~~~~~~~~
