@@ -5,3 +5,4 @@ Top Level Objects
     :maxdepth: 1
 
     bspump_application
+    bspump_service
