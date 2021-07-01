@@ -8,12 +8,12 @@ L = logging.getLogger(__name__)
 ###
 
 
-class Memcachedookup(Lookup):
+class Memcachedlookup(Lookup):
 
 	ConfigDefaults = {
 		'max_size': 1000,
 		'expiry_seconds': 3600,
-		'memcache': '127.0.0.1:11211',
+		'server': '127.0.0.1:11211',
 	}
 
 
@@ -23,23 +23,23 @@ class Memcachedookup(Lookup):
 		self.App = app
 		self.MaxSize = self.Config['max_size']
 		self.Expiration = self.Config['expiry_seconds']
-		self.Memcache = self.Config['memcache']
+		self.Memcache = self.Config['server']
 		self.Target = None
 
-		if self.Memcache:
+		if len(self.Memcache) > 0:
 			self.Client = base.Client(tuple(self.Memcache.split(":")))
 		else:
 			raise Exception("Memcache service path not set.")
 
 
-	def rest_set(self, to_chache: dict):
+	def set(self, to_chache: dict):
 		for key, value in to_chache.items():
 			returned = self.Client.set(key, value, expire=self.Expiration)
 		if returned is not True:
 			L.warning("Setting a memcached key-value failed")
 		L.debug("Successfully set key-value")
 
-	def rest_get(self, key):
+	def get(self, key):
 		return self.Client.get(key)
 
 	def delete(self ,key):
