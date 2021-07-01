@@ -1,4 +1,8 @@
 Anomaly TBD
 =============
+
 .. py:currentmodule:: bspump
-.. py:class:: Anomaly()
+
+.. autoclass:: Anomaly
+    :special-members: __init__
+    :show-inheritance:
