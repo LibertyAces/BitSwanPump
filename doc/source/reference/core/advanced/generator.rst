@@ -1,29 +1,19 @@
 Generator
 ===========
+
 .. py:currentmodule:: bspump
-.. py:class:: Generator()
 
-init
---------
+.. autoclass:: Generator
+    :special-members: __init__
+    :show-inheritance:
 
-.. py:method:: Generator.__init__()
+Generator construction
+~~~~~~~~~~~~~~~~~~~~~~
 
-set_depth
-----------
+.. automethod:: bspump.Generator.set_depth
 
-.. py:method:: Generator.set_depth()
+.. automethod:: bspump.Generator.set_depth()
 
-process
---------
+.. automethod:: bspump.Generator.process()
 
-.. py:method:: Generator.set_depth()
-
-process
----------
-
-.. py:method:: Generator.process()
-
-generate
----------
-
-.. py:method:: Generator.generate()
+.. automethod:: bspump.Generator.generate()
