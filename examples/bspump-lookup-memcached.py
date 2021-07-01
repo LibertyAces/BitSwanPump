@@ -6,7 +6,7 @@ import bspump.elasticsearch
 import bspump.file
 import bspump.trigger
 
-from bspump.lookup.memcachedlookup import Memcachedlookup
+from bspump.lookup.memcachedlookup import MemcachedLookup
 
 ###
 
@@ -25,7 +25,7 @@ class FileCSVEnricher(bspump.Processor):
     def process(self, context, event):
         current_time = int(self.App.time())
         # get memcached
-        mem = Memcachedlookup(self.App)
+        mem = MemcachedLookup(self.App)
         # enrich with  time
         city = event["city"]
         if mem.get(city) is None:

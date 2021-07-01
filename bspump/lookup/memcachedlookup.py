@@ -7,7 +7,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class Memcachedlookup(Lookup):
+class MemcachedLookup(Lookup):
 
 	ConfigDefaults = {
 		'max_size': 1000,
@@ -22,11 +22,11 @@ class Memcachedlookup(Lookup):
 		self.App = app
 		self.MaxSize = self.Config['max_size']
 		self.Expiration = self.Config['expiry_seconds']
-		self.Memcache = self.Config['server']
+		self.Server = self.Config['server']
 		self.Target = None
 
-		if len(self.Memcache) > 0:
-			self.Client = pymemcache.client.base.Client(tuple(self.Memcache.split(":")))
+		if len(self.Server) > 0:
+			self.Client = pymemcache.client.base.Client(tuple(self.Server.split(":")))
 		else:
 			raise Exception("Memcache service path not set.")
 
