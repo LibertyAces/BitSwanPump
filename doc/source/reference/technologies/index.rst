@@ -13,7 +13,6 @@ Technologies Reference Documentation describes the `Technologies` section.
     elastic/index
     files/index
     influxdb/index
-    influxdb
     ipc
     rabbitmq_amqp
     sockets

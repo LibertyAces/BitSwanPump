@@ -5,7 +5,13 @@ from ..abc.generator import Generator
 
 
 class MappingKeysProcessor(Processor):
+	"""
+	Mapping Keys Processor
+	"""
 	def process(self, context, event: collections.abc.Mapping) -> list:
+		"""
+		process is a method of a Mapping Keys Processor
+		"""
 		return [*event.keys()]
 
 

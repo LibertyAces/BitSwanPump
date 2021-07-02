@@ -4,6 +4,9 @@ from bspump import Generator
 
 
 class AggregationStrategy(ABC):
+    """
+    Aggregation Strategy is a method...
+    """
     @abstractmethod
     def append(self, context, event):
         raise NotImplementedError()
@@ -18,6 +21,10 @@ class AggregationStrategy(ABC):
 
 
 class ListAggregationStrategy(AggregationStrategy):
+
+    """
+    ... test
+    """
 
     def __init__(self) -> None:
         super().__init__()

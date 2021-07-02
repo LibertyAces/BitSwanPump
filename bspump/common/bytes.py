@@ -27,5 +27,8 @@ class BytesToStringParser(Processor):
 		self.Encoding = self.Config['encoding']
 
 	def process(self, context, event):
+		"""
+		..ok
+		"""
 		assert isinstance(event, bytes)
 		return event.decode(self.Encoding)
