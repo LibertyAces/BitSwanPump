@@ -16,6 +16,7 @@ BSPump Reference Documentation describes the `bspump` Python library. Based on `
 
    reference/core/basics/index
    reference/core/top-level/index
+   reference/core/common/index
    reference/core/advanced/index
    reference/technologies/index
 
