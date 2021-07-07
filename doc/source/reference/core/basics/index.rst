@@ -84,6 +84,21 @@ Other pipeline methods
 .. automethod:: bspump.Pipeline.rest_get()
 
 
+PipelineLogger
+~~~~~~~~~~~~~~
+
+.. py:currentmodule:: bspump
+
+.. autoclass:: PipelineLogger
+    :special-members: __init__
+    :show-inheritance:
+
+
+.. automethod:: bspump.PipelineLogger.handle()
+
+.. automethod:: bspump.PipelineLogger._format_time()
+
+
 Source
 ------
 
