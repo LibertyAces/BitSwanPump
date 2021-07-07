@@ -5,7 +5,7 @@ from asab import ConfigObject
 class Connection(abc.ABC, ConfigObject):
 	"""
 	Connection class is responsible for creating a connection between items or services within the infrastructure of BSPump.
-	Their main use is to create connection with the main components of BSPump: source, processor and sink. 
+	Their main use is to create connection with the main components of BSPump: source, processor and sink.
 	"""
 
 	def __init__(self, app, id=None, config=None):
