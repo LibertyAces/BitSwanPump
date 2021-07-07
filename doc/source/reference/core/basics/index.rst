@@ -84,26 +84,6 @@ Other pipeline methods
 .. automethod:: bspump.Pipeline.rest_get()
 
 
-
-
-Connection
-----------
-
-.. py:currentmodule:: bspump
-
-.. autoclass:: Connection
-    :special-members: __init__
-    :show-inheritance:
-
-Connection construction
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automethod:: bspump.Connection.time()
-
-.. py:classmethod:::: Connection.consturct()
-
-
-
 Source
 ------
 
@@ -163,16 +143,6 @@ Trigger source methods
 .. automethod:: bspump.TriggerSource.rest_get()
 
 
-Sink
-----
-
-.. py:currentmodule:: bspump
-
-.. autoclass:: Sink
-    :special-members: __init__
-    :show-inheritance:
-
-
 Processor
 ---------
 
@@ -197,4 +167,31 @@ Processor construction
 .. automethod:: bspump.Processor.rest_get()
 
 .. automethod:: bspump.Processor.__repr__()
+
+
+Sink
+----
+
+.. py:currentmodule:: bspump
+
+.. autoclass:: Sink
+    :special-members: __init__
+    :show-inheritance:
+
+
+Connection
+----------
+
+.. py:currentmodule:: bspump
+
+.. autoclass:: Connection
+    :special-members: __init__
+    :show-inheritance:
+
+Connection construction
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automethod:: bspump.Connection.time()
+
+.. py:classmethod:::: Connection.consturct()
 
