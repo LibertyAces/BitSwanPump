@@ -10,9 +10,9 @@ L = logging.getLogger(__name__)
 class Source(ConfigObject):
 
 	"""
-	Source is an object designed to obtain data from a predefined input.
-	The BSPump contains a lot of universally usable, specific source objects, which are capable of loading data from known data interfaces.
-	The BitSwan product further expands these objects by adding source objects directly usable for specific cases of use in industry field given.
+Source is an object designed to obtain data from a predefined input.
+The BSPump contains a lot of universally usable, specific source objects, which are capable of loading data from known data interfaces.
+The BitSwan product further expands these objects by adding source objects directly usable for specific cases of use in industry field given.
 
 Each source represent a coroutine/Future/Task that is running in the context of the main loop.
 The coroutine method main() contains an implementation of each particular source.
@@ -32,10 +32,10 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 	async def process(self, event, context=None):
 		"""
-		This method is used to emit event into a pipeline.
+This method is used to emit event into a pipeline.
 
-		If there is an error in the processing of the event, the pipeline is throttled by setting the error and the exception raised.
-		The source should catch this exception and fail gracefully.
+If there is an error in the processing of the event, the pipeline is throttled by setting the error and the exception raised.
+The source should catch this exception and fail gracefully.
 		"""
 		# TODO: Remove this method completely, each source should call pipeline.process() method directly
 		await self.Pipeline.process(event, context=context)
@@ -83,7 +83,7 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 	async def stopped(self):
 		"""
-		Helper that simplyfies the implementation of sources:
+Helper that simplyfies the implementation of sources:
 
 .. code:: python
 
@@ -132,13 +132,13 @@ It is acomplished by `await self.Pipeline.ready()` call.
 class TriggerSource(Source):
 
 	"""
-	This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
-	You need to provide a trigger class and implement cycle() method.
+This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
+You need to provide a trigger class and implement cycle() method.
 
-	Trigger source will stop execution, when a pipeline is cancelled (raises concurrent.futures.CancelledError).
-	This typically happens when a program wants to quit in reaction to a on the signal.
+Trigger source will stop execution, when a pipeline is cancelled (raises concurrent.futures.CancelledError).
+This typically happens when a program wants to quit in reaction to a on the signal.
 
-	You also may overload the main() method to provide additional parameters for a cycle() method.
+You also may overload the main() method to provide additional parameters for a cycle() method.
 
 .. code:: python
 
