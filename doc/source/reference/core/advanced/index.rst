@@ -8,4 +8,4 @@ Advanced
     generator
     analyzer
     lookup
-    anomalytbd
+    anomaly
