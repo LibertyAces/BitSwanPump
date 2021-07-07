@@ -87,16 +87,16 @@ Other pipeline methods
 PipelineLogger
 ~~~~~~~~~~~~~~
 
-.. py:currentmodule:: bspump
+.. py:currentmodule:: bspump.pipeline
 
 .. autoclass:: PipelineLogger
     :special-members: __init__
     :show-inheritance:
 
 
-.. automethod:: bspump.PipelineLogger.handle()
+.. automethod:: bspump.pipeline.PipelineLogger.handle()
 
-.. automethod:: bspump.PipelineLogger._format_time()
+.. automethod:: bspump.pipeline.PipelineLogger._format_time()
 
 
 Source
