@@ -24,14 +24,17 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
-In the BSPump data are processed in a so called pipeline.
+Pipeline is responsible for data processing in BSPump.
 Individual pipeline objects work asynchronously and independently of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline) and can be triggered in unlimited numbers.
 Each pipeline is usually in charge of one concrete task.
 
-- three main components : source, processor, sink
+There are three main components each pipeline has:
 
-- can be connected to other pipeline
+- source
+- processor
+- sink
 
+Source connects different data sources with pipeline to be processed
 
 Multiple sources
 
@@ -53,7 +56,37 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 				bspump.common.NullSink(app, self),
 			)
 	:meta private:
+
+The main component of the BSPump architecture is a so called processor.
+This object modifies, transforms and enriches events.
+Moreover, it is capable of calculating metrics and creating aggregations, detecting anomalies or react to known as well as unknown system behavior patterns.
+
+Processors differ as to their functions and all of them are aligned according to a predefined sequence in pipeline objects.
+As regards working with data events, each pipeline has its own unique task.
+
+processors are passed as a list of processors to a pipeline `build()` method
+
+.. code:: python
+
+	class MyPipeline(bspump.Pipeline):
+
+		def __init__(self, app, pipeline_id):
+			super().__init__(app, pipeline_id)
+			self.build(
+				[
+					MyProcessor1(app, self),
+					MyProcessor2(app, self),
+					MyProcessor3(app, self),
+				]
+				bspump.common.NullSink(app, self),
+			)
+	:meta private:
+
+Sink object serves as a final event destination within the pipeline given.
+Subsequently, the event is dispatched/written into the system by the BSPump.
 	"""
+
+
 
 	ConfigDefaults = {
 		"async_concurency_limit": 1000,  # TODO concurrency
