@@ -1,5 +1,5 @@
-Anomaly TBD
-=============
+Anomaly
+=======
 
 .. py:currentmodule:: bspump
 
