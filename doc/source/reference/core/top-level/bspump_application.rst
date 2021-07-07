@@ -1,4 +1,4 @@
-Application
+BSPumpApplication
 ===========
 
 .. py:currentmodule:: bspump
@@ -8,7 +8,7 @@ Application
     :show-inheritance:
 
 
-Application construction
+BSPumpApplication construction
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.BSPumpApplication.create_argument_parser
