@@ -24,9 +24,9 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
-Pipeline is responsible for data processing in BSPump.
-Individual pipeline objects work asynchronously and independently of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline) and can be triggered in unlimited numbers.
-Each pipeline is usually in charge of one concrete task.
+Pipeline is responsible for **data processing** in BSPump.
+Individual pipeline objects work **asynchronously** and **independently** of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline) and can be triggered in unlimited numbers.
+Each pipeline is usually in charge of **one** concrete task.
 
 There are three main components each pipeline has:
 
@@ -34,7 +34,7 @@ There are three main components each pipeline has:
 - processor
 - sink
 
-Source connects different data sources with pipeline to be processed
+Source connects different **data sources** with pipeline to be processed
 
 Multiple sources
 
@@ -57,7 +57,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			)
 	:meta private:
 
-The main component of the BSPump architecture is a so called processor.
+The main component of the BSPump architecture is a so called **processor**.
 This object modifies, transforms and enriches events.
 Moreover, it is capable of calculating metrics and creating aggregations, detecting anomalies or react to known as well as unknown system behavior patterns.
 
