@@ -10,6 +10,10 @@ L = logging.getLogger(__name__)
 class Source(ConfigObject):
 
 	"""
+	Source is an object designed to obtain data from a predefined input.
+	The BSPump contains a lot of universally usable, specific source objects, which are capable of loading data from known data interfaces.
+	The BitSwan product further expands these objects by adding source objects directly usable for specific cases of use in industry field given.
+
 Each source represent a coroutine/Future/Task that is running in the context of the main loop.
 The coroutine method main() contains an implementation of each particular source.
 
