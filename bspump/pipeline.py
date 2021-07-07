@@ -24,6 +24,14 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
+In the BSPump data are processed in a so called pipeline.
+Individual pipeline objects work asynchronously and independently of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline) and can be triggered in unlimited numbers.
+Each pipeline is usually in charge of one concrete task.
+
+- three main components : source, processor, sink
+
+- can be connected to other pipeline
+
 
 Multiple sources
 
