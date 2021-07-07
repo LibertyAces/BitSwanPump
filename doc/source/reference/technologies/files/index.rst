@@ -6,3 +6,4 @@ Files
 
     csv
     json
+    plain
