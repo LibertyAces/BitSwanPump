@@ -1,4 +1,4 @@
-Interator
+Iterator
 =========
 
 Hexlify Processor
