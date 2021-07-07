@@ -84,6 +84,8 @@ processors are passed as a list of processors to a pipeline `build()` method
 
 Sink object serves as a final event destination within the pipeline given.
 Subsequently, the event is dispatched/written into the system by the BSPump.
+
+
 	"""
 
 
@@ -653,6 +655,10 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 
 
 class PipelineLogger(logging.Logger):
+	"""
+	PipelineLogger is a feature of BSPump which enables direct monitoring of a specific pipeline.
+	It offers an overview of errors, error handling, data in a given time with its timestamp
+	"""
 
 	def __init__(self, name, metrics_counter, level=logging.NOTSET):
 		super().__init__(name, level=level)
