@@ -11,7 +11,7 @@ Each :meth:`Pipeline <bspump.Pipeline()>` is usually in charge of **one** concre
 There are three main components each pipeline has:
 
 - source
-- processor
+- :meth:`Processor <bspump.Processor()>`
 - sink
 
 Source connects different **data sources** with the :meth:`Pipeline <bspump.Pipeline()>` to be processed
@@ -37,14 +37,14 @@ They are simply passed as a list of sources to a :meth:`Pipeline <bspump.Pipelin
          )
    :meta private:
 
-The main component of the BSPump architecture is a so-called **processor**.
+The main component of the BSPump architecture is a so-called :meth:`Processor <bspump.Processor()>`.
 This object **modifies**, **transforms** and **enriches** events.
 Moreover, it is capable of **calculating metrics** and **creating aggregations**, **detecting anomalies** or react to known as well as unknown **system behaviour patterns**.
 
-**Processors** differ as to their **functions** and all of them are aligned according to a predefined sequence in **pipeline objects**.
+:meth:`Processors <bspump.Processor()>` differ as to their **functions** and all of them are aligned according to a predefined sequence in **pipeline objects**.
 As regards working with data events, each :meth:`Pipeline <bspump.Pipeline()>` has its unique task.
 
-processors are passed as a **list** of processors to a :meth:`Pipeline <bspump.Pipeline()>` `build()` method
+:meth:`Processors <bspump.Processor()>` are passed as a **list** of :meth:`Processors <bspump.Processor()>` to a :meth:`Pipeline <bspump.Pipeline()>` `build()` method
 
 .. code:: python
 
