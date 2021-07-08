@@ -485,6 +485,9 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 			self.Sources.extend(source)
 
 	def append_processor(self, processor):
+		"""
+		adds a procesor to the pipeline
+		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
 		# TODO: Check if fitting
 		self.Processors[-1].append(processor)
@@ -496,6 +499,9 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 		self._post_add_processor(processor)
 
 	def remove_processor(self, processor_id):
+		"""
+		removes a processor from the pipeline
+		"""
 		for depth in self.Processors:
 			for idx, processor in enumerate(depth):
 				if processor.Id != processor_id:
@@ -557,6 +563,9 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 			)
 
 	def build(self, source, *processors):
+		"""
+		This method enables to add sources, processors and sink to create the structure of the pipeline.
+		"""
 		self.set_source(source)
 		for processor in processors:
 			self.append_processor(processor)
@@ -581,6 +590,9 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 		return None
 
 	def locate_connection(self, app, connection_id):
+		"""
+		Find a connection by id.
+		"""
 		if isinstance(connection_id, Connection):
 			return connection_id
 		svc = app.get_service("bspump.PumpService")
