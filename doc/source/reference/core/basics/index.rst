@@ -16,6 +16,10 @@ There are three main components each pipeline has:
 
 Source connects different **data sources** with the :meth:`Pipeline <bspump.Pipeline()>` to be processed
 
+.. image:: /source/images/pipeline.png
+  :width: 400
+  :alt: Pipeline diagram
+
 Multiple sources
 
 A :meth:`Pipeline <bspump.Pipeline()>` can have multiple sources.
