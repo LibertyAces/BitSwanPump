@@ -10,9 +10,9 @@ Each :meth:`Pipeline <bspump.Pipeline()>` is usually in charge of **one** concre
 
 There are three main components each pipeline has:
 
-- source
+- :meth:`Source <bspump.Source()>`
 - :meth:`Processor <bspump.Processor()>`
-- sink
+- :meth:`Sink <bspump.Sink()>`
 
 Source connects different **data sources** with the :meth:`Pipeline <bspump.Pipeline()>` to be processed
 
