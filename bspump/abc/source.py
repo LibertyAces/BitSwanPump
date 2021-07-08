@@ -15,9 +15,9 @@ The BSPump contains a lot of universally usable, specific source objects, which 
 The BitSwan product further expands these objects by adding source objects directly usable for specific cases of use in industry field given.
 
 Each source represent a coroutine/Future/Task that is running in the context of the main loop.
-The coroutine method main() contains an implementation of each particular source.
+The coroutine method :meth:`main() <bspump.Source.main()>` contains an implementation of each particular source.
 
-Source MUST await a pipeline ready state prior producing the event.
+Source MUST await a :meth:`Pipeline <bspump.Pipeline()>` ready state prior producing the event.
 It is acomplished by `await self.Pipeline.ready()` call.
 	"""
 
@@ -32,9 +32,9 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 	async def process(self, event, context=None):
 		"""
-This method is used to emit event into a pipeline.
+This method is used to emit event into a :meth:`Pipeline <bspump.Pipeline()>`.
 
-If there is an error in the processing of the event, the pipeline is throttled by setting the error and the exception raised.
+If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
 The source should catch this exception and fail gracefully.
 		"""
 		# TODO: Remove this method completely, each source should call pipeline.process() method directly
@@ -133,12 +133,12 @@ class TriggerSource(Source):
 
 	"""
 This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
-You need to provide a trigger class and implement cycle() method.
+You need to provide a trigger class and implement :meth:`cycle() <bspump.TriggerSource.cycle()>` method.
 
-Trigger source will stop execution, when a pipeline is cancelled (raises concurrent.futures.CancelledError).
+Trigger source will stop execution, when a :meth:`Pipeline <bspump.Pipeline()>` is cancelled (raises concurrent.futures.CancelledError).
 This typically happens when a program wants to quit in reaction to a on the signal.
 
-You also may overload the main() method to provide additional parameters for a cycle() method.
+You also may overload the :meth:`main() <bspump.Source.main()>` method to provide additional parameters for a :meth:`cycle() <bspump.TriggerSource.cycle()>` method.
 
 .. code:: python
 
