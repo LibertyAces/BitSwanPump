@@ -10,7 +10,7 @@ L = logging.getLogger(__name__)
 class Source(ConfigObject):
 
 	"""
-
+...
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
