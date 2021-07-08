@@ -4,7 +4,7 @@ Aggregator
 Aggregation Strategy
 --------------------
 
-.. py:currentmodule:: bspump.common.aggregator
+.. py:currentmodule:: bspump.aggregator
 
 .. autoclass:: AggregationStrategy
     :special-members: __init__
