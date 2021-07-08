@@ -612,6 +612,9 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 	# Lifecycle ...
 
 	def start(self):
+		"""
+		starts the lifecycle of the pipeline
+		"""
 		self.PubSub.publish("bspump.pipeline.start!", pipeline=self)
 
 		# Start all non-started sources
@@ -621,6 +624,9 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 		self._evaluate_ready()
 
 	async def stop(self):
+		"""
+		stops the lifecycle of the pipeline
+		"""
 		self.PubSub.publish("bspump.pipeline.stop!", pipeline=self)
 
 		# Stop all futures
@@ -681,6 +687,9 @@ class PipelineLogger(logging.Logger):
 	# TODO: configurable log level (per pipeline, from its config)
 
 	def handle(self, record):
+		"""
+		Counts and adds errors to the error counter
+		"""
 		# Count errors and warnings
 		if record.levelno == logging.WARNING:
 			self._metrics_counter.add("warning", 1)
