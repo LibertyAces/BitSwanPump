@@ -5,8 +5,8 @@ Pipeline
 --------
 
 :meth:`Pipeline <bspump.Pipeline()>` is responsible for **data processing** in BSPump.
-Individual pipeline objects work **asynchronously** and **independently** of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline) and can be triggered in unlimited numbers.
-Each pipeline is usually in charge of **one** concrete task.
+Individual :meth:`Pipeline <bspump.Pipeline()>` objects work **asynchronously** and **independently** of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline) and can be triggered in unlimited numbers.
+Each :meth:`Pipeline <bspump.Pipeline()>` is usually in charge of **one** concrete task.
 
 There are three main components each pipeline has:
 
@@ -14,12 +14,12 @@ There are three main components each pipeline has:
 - processor
 - sink
 
-Source connects different **data sources** with the pipeline to be processed
+Source connects different **data sources** with the :meth:`Pipeline <bspump.Pipeline()>` to be processed
 
 Multiple sources
 
-A pipeline can have multiple sources.
-They are simply passed as a list of sources to a pipeline `build()` method.
+A :meth:`Pipeline <bspump.Pipeline()>` can have multiple sources.
+They are simply passed as a list of sources to a :meth:`Pipeline <bspump.Pipeline()>` `build()` method.
 
 .. code:: python
 
@@ -42,9 +42,9 @@ This object **modifies**, **transforms** and **enriches** events.
 Moreover, it is capable of **calculating metrics** and **creating aggregations**, **detecting anomalies** or react to known as well as unknown **system behaviour patterns**.
 
 **Processors** differ as to their **functions** and all of them are aligned according to a predefined sequence in **pipeline objects**.
-As regards working with data events, each pipeline has its unique task.
+As regards working with data events, each :meth:`Pipeline <bspump.Pipeline()>` has its unique task.
 
-processors are passed as a **list** of processors to a pipeline `build()` method
+processors are passed as a **list** of processors to a :meth:`Pipeline <bspump.Pipeline()>` `build()` method
 
 .. code:: python
 
