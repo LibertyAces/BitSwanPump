@@ -24,7 +24,7 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
-Pipeline...
+:meth:`Pipeline <bspump.Pipeline()>`...
 	"""
 
 
@@ -173,8 +173,8 @@ Pipeline...
 
 	def handle_error(self, exception, context, event):
 		"""
-		Override to evaluate on the pipeline processing error.
-		Return False for hard errors (stop the pipeline processing) or True for soft errors that will be ignored
+		Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
+		Return False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing) or True for soft errors that will be ignored
 
 .. code:: python
 
@@ -199,10 +199,10 @@ Pipeline...
 
 	def link(self, ancestral_pipeline):
 		"""
-		Link this pipeline with an ancestral pipeline.
-		This is needed e. g. for a propagation of the throttling from child pipelines back to their ancestors.
-		If the child pipeline uses InternalSource, which may become throttled because the internal queue is full,
-		the throttling is propagated to the ancestral pipeline, so that its source may block incoming events until the
+		Link this :meth:`Pipeline <bspump.Pipeline()>` with an ancestral :meth:`Pipeline <bspump.Pipeline()>`.
+		This is needed e. g. for a propagation of the throttling from child :meth:`Pipelines <bspump.Pipeline()>` back to their ancestors.
+		If the child :meth:`Pipeline <bspump.Pipeline()>` uses InternalSource, which may become throttled because the internal queue is full,
+		the throttling is propagated to the ancestral :meth:`Pipeline <bspump.Pipeline()>`, so that its source may block incoming events until the
 		internal queue is empty again.
 
 		:param ancestral_pipeline: pipeline
@@ -212,7 +212,7 @@ Pipeline...
 
 	def unlink(self, ancestral_pipeline):
 		"""
-		Unlink an ancestral pipeline from this pipeline.
+		Unlink an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
 
 		:param ancestral_pipeline: pipeline
 		"""
@@ -310,7 +310,7 @@ Pipeline...
 
 	def inject(self, context, event, depth):
 		"""
-		Inject method serves to inject events into the pipeline's depth defined by the depth attribute.
+		Inject method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth defined by the depth attribute.
 		Every depth is interconnected with a generator object.
 
 		For normal operations, it is highly recommended to use process method instead (see below).
@@ -331,10 +331,10 @@ Pipeline...
 
 	async def process(self, event, context=None):
 		"""
-		Process method serves to inject events into the pipeline's depth 0,
+		Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
 		while incrementing the event.in metric.
 
-		This is recommended way of inserting events into a pipeline.
+		This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
 
 		:param event:
 		:param context:
@@ -368,12 +368,12 @@ Pipeline...
 
 	def ensure_future(self, coro):
 		"""
-		You can use this method to schedule a future task that will be executed in a context of the pipeline.
-		The pipeline also manages a whole lifecycle of the future/task, which means,
+		You can use this method to schedule a future task that will be executed in a context of the :meth:`Pipeline <bspump.Pipeline()>`.
+		The :meth:`Pipeline <bspump.Pipeline()>` also manages a whole lifecycle of the future/task, which means,
 		it will collect the future result, trash it, and mainly it will capture any possible exception,
-		which will then block the pipeline via set_error().
+		which will then block the :meth:`Pipeline <bspump.Pipeline()>` via set_error().
 
-		If the number of futures exceeds the configured limit, the pipeline is throttled.
+		If the number of futures exceeds the configured limit, the :meth:`Pipeline <bspump.Pipeline()>` is throttled.
 
 		:param coro:
 		:return:
@@ -393,7 +393,7 @@ Pipeline...
 		Removes future from the future list and disables throttling, if the number of
 		futures does not exceed the configured limit.
 
-		If there is an error while processing the future, it it set to the pipeline.
+		If there is an error while processing the future, it it set to the :meth:`Pipeline <bspump.Pipeline()>`.
 		:param future:
 		:return:
 		"""
@@ -439,7 +439,7 @@ Pipeline...
 
 	def remove_processor(self, processor_id):
 		"""
-		removes a processor from the pipeline
+		removes a processor from the :meth:`Pipeline <bspump.Pipeline()>`
 		"""
 		for depth in self.Processors:
 			for idx, processor in enumerate(depth):
@@ -454,7 +454,7 @@ Pipeline...
 
 	def insert_before(self, id, processor):
 		"""
-		Insert the processor into a pipeline before another processor specified by id
+		Insert the processor into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
 
 		:return: True on success. False otherwise (id not found)
 		"""
@@ -468,7 +468,7 @@ Pipeline...
 
 	def insert_after(self, id, processor):
 		"""
-		Insert the processor into a pipeline after another processor specified by id
+		Insert the processor into a :meth:`Pipeline <bspump.Pipeline()>` after another processor specified by id
 
 		:return: True on success. False otherwise (id not found)
 		"""
@@ -503,7 +503,7 @@ Pipeline...
 
 	def build(self, source, *processors):
 		"""
-		This method enables to add sources, processors and sink to create the structure of the pipeline.
+		This method enables to add sources, processors and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
 		"""
 		self.set_source(source)
 		for processor in processors:
@@ -552,7 +552,7 @@ Pipeline...
 
 	def start(self):
 		"""
-		starts the lifecycle of the pipeline
+		starts the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
 		"""
 		self.PubSub.publish("bspump.pipeline.start!", pipeline=self)
 
@@ -564,7 +564,7 @@ Pipeline...
 
 	async def stop(self):
 		"""
-		stops the lifecycle of the pipeline
+		stops the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
 		"""
 		self.PubSub.publish("bspump.pipeline.stop!", pipeline=self)
 
@@ -613,7 +613,7 @@ Pipeline...
 
 class PipelineLogger(logging.Logger):
 	"""
-	PipelineLogger is a feature of BSPump which enables direct monitoring of a specific pipeline.
+	PipelineLogger is a feature of BSPump which enables direct monitoring of a specific :meth:`Pipeline <bspump.Pipeline()>`.
 	It offers an overview of errors, error handling, data in a given time with its timestamp
 	"""
 
