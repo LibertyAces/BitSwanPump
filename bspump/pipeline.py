@@ -477,7 +477,7 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 
 	def set_source(self, source):
 		"""
-		set_source is a method responsible for...
+		it is a method that sets a certain source that will pump data into the BSPump
 		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
