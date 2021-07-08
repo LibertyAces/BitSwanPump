@@ -416,7 +416,7 @@ Pipeline ...
 
 	def set_source(self, source):
 		"""
-		it is a method that sets a certain source that will pump data into the BSPump
+		set_source is a method that sets a selected source that will pump data into the BSPump
 		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
@@ -425,7 +425,7 @@ Pipeline ...
 
 	def append_processor(self, processor):
 		"""
-		adds a procesor to the pipeline
+		adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`
 		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
 		# TODO: Check if fitting
@@ -439,7 +439,7 @@ Pipeline ...
 
 	def remove_processor(self, processor_id):
 		"""
-		removes a processor from the :meth:`Pipeline <bspump.Pipeline()>`
+		removes the processor from the :meth:`Pipeline <bspump.Pipeline()>`
 		"""
 		for depth in self.Processors:
 			for idx, processor in enumerate(depth):
@@ -454,7 +454,7 @@ Pipeline ...
 
 	def insert_before(self, id, processor):
 		"""
-		Insert the processor into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
+		Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
 
 		:return: True on success. False otherwise (id not found)
 		"""
@@ -468,7 +468,7 @@ Pipeline ...
 
 	def insert_after(self, id, processor):
 		"""
-		Insert the processor into a :meth:`Pipeline <bspump.Pipeline()>` after another processor specified by id
+		Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by id
 
 		:return: True on success. False otherwise (id not found)
 		"""
@@ -503,7 +503,7 @@ Pipeline ...
 
 	def build(self, source, *processors):
 		"""
-		This method enables to add sources, processors and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
+		This method enables to add sources, :meth:`Processors <bspump.Processor()>`, and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
 		"""
 		self.set_source(source)
 		for processor in processors:
