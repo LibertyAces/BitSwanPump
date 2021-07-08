@@ -56,12 +56,7 @@ class ProcessorBase(asab.ConfigObject):
 
 class Processor(ProcessorBase):
 	"""
-		The main component of the BSPump architecture is a so called processor.
-		This object modifies, transforms and enriches events.
-		Moreover, it is capable of calculating metrics and creating aggregations, detecting anomalies or react to known as well as unknown system behavior patterns.
 
-		Processors differ as to their functions and all of them are aligned according to a predefined sequence in pipeline objects.
-		As regards working with data events, each pipeline has its own unique task.
 	"""
 	pass
 
