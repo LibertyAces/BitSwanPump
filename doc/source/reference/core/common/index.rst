@@ -1,7 +1,6 @@
 Common
 ======
 
-
 .. toctree::
     :maxdepth: 1
 
