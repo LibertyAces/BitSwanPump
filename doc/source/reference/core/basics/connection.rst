@@ -1,5 +1,8 @@
 Connection
 ===========
+
+test
+
 .. py:currentmodule:: bspump
 .. py:class:: Connection()
 
