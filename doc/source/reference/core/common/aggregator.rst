@@ -64,6 +64,8 @@ String Aggregation Strategy methods
 Aggregator
 ----------
 
+ok ok ok
+
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: Aggregator
