@@ -10,6 +10,9 @@ Source
     :special-members: __init__
     :show-inheritance:
 
+Source methods
+~~~~~~~~~~~~~~
+
 
 Connection
 ----------
@@ -19,6 +22,12 @@ Connection
 .. autoclass:: ElasticSearchBulk
     :special-members: __init__
     :show-inheritance:
+
+
+
+Connection methods
+~~~~~~~~~~~~~~~~~~
+
 
 
 Lookup
@@ -31,6 +40,9 @@ Lookup
     :show-inheritance:
 
 
+Lookup methods
+~~~~~~~~~~~~~~
+
 Sink
 ----
 
@@ -41,8 +53,12 @@ Sink
     :show-inheritance:
 
 
+Sink methods
+~~~~~~~~~~~~
+
+
 Data Feeder Methods
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 .. py:currentmodule:: bspump
 .. py:class:: ElasticSearchBulk()
