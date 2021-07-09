@@ -24,13 +24,13 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
-Description: Pipeline is ...
+	Description: Pipeline is ...
 
 
-Parameters: ---
+	Parameters: ---
 
 
-Returns: xxxx
+	Returns: xxxx
 	"""
 
 
@@ -121,13 +121,40 @@ Returns: xxxx
 		self._context = {}
 
 	def time(self):
+		"""
+		Description: Pipeline is ...
+
+
+		Parameters: ---
+
+
+		Returns: xxxx
+		"""
 		return self.App.time()
 
 	def get_throttles(self):
+		"""
+		Description: Pipeline is ...
+
+
+		Parameters: ---
+
+
+		Returns: xxxx
+        """
 		return self._throttles
 
 
 	def _on_metrics_flush(self, event_type, metric, values):
+		"""
+		Description: Pipeline is ...
+
+
+		Parameters: event_type, metric, values
+
+
+		Returns: xxxx
+        """
 		if metric != self.MetricsCounter:
 			return
 		if values["event.in"] == 0:
@@ -138,13 +165,27 @@ Returns: xxxx
 		self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"])
 
 	def is_error(self):
+		"""
+		Description: Pipeline is ...
+
+
+		Parameters: ---
+
+
+		Returns: xxxx
+        """
 		return self._error is not None
 
 	def set_error(self, context, event, exc):
-		'''
-		If called with `exc is None`, then reset error (aka recovery)
-		'''
+		"""
+		Description: If called with `exc is None`, then reset error (aka recovery)
 
+
+		Parameters: context event exc
+
+
+		Returns: xxxx
+		"""
 		if exc is None:
 			# Reset branch
 			if self._error is not None:
@@ -179,48 +220,65 @@ Returns: xxxx
 
 	def handle_error(self, exception, context, event):
 		"""
-		Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
+		Description: Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
 		Return False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing) or True for soft errors that will be ignored
 
-.. code:: python
 
-	class SampleInternalPipeline(bspump.Pipeline):
+		Parameters: exception, context, event
 
-		def __init__(self, app, pipeline_id):
-			super().__init__(app, pipeline_id)
 
-			self.build(
-				bspump.common.InternalSource(app, self),
-				bspump.common.JSONParserProcessor(app, self),
-				bspump.common.PPrintSink(app, self)
-			)
+		Returns:
 
-		def handle_error(self, exception, context, event):
-			if isinstance(exception, json.decoder.JSONDecodeError):
-				return True
-			return False
+
+		Example:
+
+		.. code:: python
+
+			class SampleInternalPipeline(bspump.Pipeline):
+
+				def __init__(self, app, pipeline_id):
+					super().__init__(app, pipeline_id)
+
+					self.build(
+						bspump.common.InternalSource(app, self),
+						bspump.common.JSONParserProcessor(app, self),
+						bspump.common.PPrintSink(app, self)
+					)
+
+				def handle_error(self, exception, context, event):
+					if isinstance(exception, json.decoder.JSONDecodeError):
+						return True
+					return False
 		"""
 
 		return False
 
 	def link(self, ancestral_pipeline):
 		"""
-		Link this :meth:`Pipeline <bspump.Pipeline()>` with an ancestral :meth:`Pipeline <bspump.Pipeline()>`.
+		Description: Link this :meth:`Pipeline <bspump.Pipeline()>` with an ancestral :meth:`Pipeline <bspump.Pipeline()>`.
 		This is needed e. g. for a propagation of the throttling from child :meth:`Pipelines <bspump.Pipeline()>` back to their ancestors.
 		If the child :meth:`Pipeline <bspump.Pipeline()>` uses InternalSource, which may become throttled because the internal queue is full,
 		the throttling is propagated to the ancestral :meth:`Pipeline <bspump.Pipeline()>`, so that its source may block incoming events until the
 		internal queue is empty again.
 
-		:param ancestral_pipeline: pipeline
+
+		Parameters: :param ancestral_pipeline: pipeline
+
+
+		Returns: xxxx
 		"""
 
 		self._ancestral_pipelines.add(ancestral_pipeline)
 
 	def unlink(self, ancestral_pipeline):
 		"""
-		Unlink an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
+		Description: Unlink an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:param ancestral_pipeline: pipeline
+
+		Parameters: ancestral_pipeline: pipeline
+
+
+		Returns: xxxx
 		"""
 
 		self._ancestral_pipelines.remove(ancestral_pipeline)
@@ -264,7 +322,11 @@ Returns: xxxx
 
 	async def ready(self):
 		"""
-		Can be used in source: `await self.Pipeline.ready()`
+		Description: Can be used in source: `await self.Pipeline.ready()`
+
+		Parameters:
+
+		Returns:
 		"""
 
 		self._chillout_counter += 1
@@ -316,14 +378,11 @@ Returns: xxxx
 
 	def inject(self, context, event, depth):
 		"""
-		Inject method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth defined by the depth attribute.
+		Description: Inject method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth defined by the depth attribute.
 		Every depth is interconnected with a generator object.
 
-		For normal operations, it is highly recommended to use process method instead (see below).
+		#For normal operations, it is highly recommended to use process method instead (see below).
 
-		:param context:
-		:param event:
-		:param depth:
 		:return:
 		"""
 
