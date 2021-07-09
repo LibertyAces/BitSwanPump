@@ -1,5 +1,10 @@
 Lookup
 ======
+	Lookups serve for fast data searching in lists of key-value type. They can subsequently be localized and used
+	in pipeline objects (processors and the like). Each lookup requires a statically or dynamically created value list.
+
+	If the "lazy" parameter in the constructor is set to True, no load method is called and the user is expected
+	to call it when necessary.
 
 .. py:currentmodule:: bspump
 
@@ -50,6 +55,11 @@ MappingLookup
 
 AsyncLookupMixin
 -----------------
+
+AsyncLookupMixin makes sure the value from the lookup is obtained asynchronously.
+AsyncLookupMixin is to be used for every technology that is external to BSPump,
+respective that require a connection to resource server such as SQL etc.
+
 
 .. py:currentmodule:: bspump
 
