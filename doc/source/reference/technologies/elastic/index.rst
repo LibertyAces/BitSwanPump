@@ -44,7 +44,7 @@ ElasticSearchSource is using standard Elastic's search API to fetch data.
 Source methods
 ~~~~~~~~~~~~~~
 
-.. automethod:: bspump.abc.elasticsearch.source.cycle
+.. automethod:: bspump.abc.elasticsearch.ElasticSearchSource.cycle
 
 .. automethod:: bspump.ElasticSearchAggsSource.cycle
 
