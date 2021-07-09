@@ -7,6 +7,11 @@ L = logging.getLogger(__file__)
 
 
 class BSPumpService(asab.Service):
+	"""
+	Description:
+
+	:return:
+	"""
 
 	def __init__(self, app, service_name="bspump.PumpService"):
 		super().__init__(app, service_name)
@@ -19,6 +24,11 @@ class BSPumpService(asab.Service):
 
 
 	def locate(self, address):
+		"""
+		Description:
+
+		:return:
+		"""
 		if '.' in address:
 			p, t = address.split('.', 1)
 		else:
@@ -44,30 +54,60 @@ class BSPumpService(asab.Service):
 	# Pipelines
 
 	def add_pipeline(self, pipeline):
+		"""
+		Description:
+
+		:return:
+		"""
 		if pipeline.Id in self.Pipelines:
 			raise RuntimeError("Pipeline with id '{}' is already registered".format(pipeline.Id))
 		self.Pipelines[pipeline.Id] = pipeline
 
 	def add_pipelines(self, *pipelines):
+		"""
+		Description:
+
+		:return:
+		"""
 		for pipeline in pipelines:
 			self.add_pipeline(pipeline)
 
 	def del_pipeline(self, pipeline):
+		"""
+		Description:
+
+		:return:
+		"""
 		del self.Pipelines[pipeline.Id]
 
 	# Connections
 
 	def add_connection(self, connection):
+		"""
+		Description:
+
+		:return:
+		"""
 		if connection.Id in self.Connections:
 			raise RuntimeError("Connection '{}' already created".format(connection.Id))
 		self.Connections[connection.Id] = connection
 		return connection
 
 	def add_connections(self, *connections):
+		"""
+		Description:
+
+		:return:
+		"""
 		for connection in connections:
 			self.add_connection(connection)
 
 	def locate_connection(self, connection_id):
+		"""
+		Description:
+
+		:return:
+		"""
 		from .abc.connection import Connection
 		if isinstance(connection_id, Connection):
 			return connection_id
@@ -81,16 +121,31 @@ class BSPumpService(asab.Service):
 	# Lookups
 
 	def add_lookup(self, lookup):
+		"""
+		Description:
+
+		:return:
+		"""
 		if lookup.Id in self.Lookups:
 			raise RuntimeError("Lookup '{}' already created".format(lookup.Id))
 		self.Lookups[lookup.Id] = lookup
 		return lookup
 
 	def add_lookups(self, *lookups):
+		"""
+		Description:
+
+		:return:
+		"""
 		for lookup in lookups:
 			self.add_lookup(lookup)
 
 	def locate_lookup(self, lookup_id, context=None):
+		"""
+		Description:
+
+		:return:
+		"""
 		from .abc.lookup import Lookup
 		if isinstance(lookup_id, Lookup):
 			return lookup_id
@@ -111,12 +166,22 @@ class BSPumpService(asab.Service):
 		raise KeyError("Cannot find lookup id '{}' (did you call add_lookup() ?)".format(lookup_id))
 
 	def add_lookup_factory(self, lookup_factory):
+		"""
+		Description:
+
+		:return:
+		"""
 		self.LookupFactories.append(lookup_factory)
 
 
 	# Matrixes
 
 	def add_matrix(self, matrix):
+		"""
+		Description:
+
+		:return:
+		"""
 		if matrix.Id in self.Matrixes:
 			raise RuntimeError("Matrix '{}' already created".format(matrix.Id))
 
@@ -124,10 +189,20 @@ class BSPumpService(asab.Service):
 		return matrix
 
 	def add_matrixes(self, *matrixes):
+		"""
+		Description:
+
+		:return:
+		"""
 		for matrix in matrixes:
 			self.add_matrix(matrix)
 
 	def locate_matrix(self, matrix_id):
+		"""
+		Description:
+
+		:return:
+		"""
 		from .matrix.matrix import Matrix
 		if isinstance(matrix_id, Matrix):
 			return matrix_id
@@ -139,6 +214,11 @@ class BSPumpService(asab.Service):
 	#
 
 	async def initialize(self, app):
+		"""
+		Description:
+
+		:return:
+		"""
 		# Run initialization of lookups
 		lookup_update_tasks = []
 		for lookup in self.Lookups.values():
@@ -155,6 +235,11 @@ class BSPumpService(asab.Service):
 
 
 	async def finalize(self, app):
+		"""
+		Description:
+
+		:return:
+		"""
 		# Stop all started pipelines
 		if len(self.Pipelines) > 0:
 			await asyncio.gather(*[pipeline.stop() for pipeline in self.Pipelines.values()], loop=app.Loop)
