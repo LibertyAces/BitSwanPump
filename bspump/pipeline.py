@@ -284,6 +284,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		self._ancestral_pipelines.remove(ancestral_pipeline)
 
 	def throttle(self, who, enable=True):
+		"""
+		Description:
+
+		:return:
+		"""
 		# L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
 		if enable:
 			self._throttles.add(who)
@@ -301,6 +306,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		self._evaluate_ready()
 
 	def _evaluate_ready(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		orig_ready = self.is_ready()
 
 		# Do we observed an error?
@@ -338,9 +348,19 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		return True
 
 	def is_ready(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return self._ready.is_set()
 
 	def _do_process(self, event, depth, context):
+		"""
+		Description:
+
+		:return:
+		"""
 		for processor in self.Processors[depth]:
 
 			t0 = time.perf_counter()
@@ -396,14 +416,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def process(self, event, context=None):
 		"""
-		Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
+		Description: Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
 		while incrementing the event.in metric.
 
-		This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
+		returns:
 
-		:param event:
-		:param context:
-		:return:
+		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
+
+
 		"""
 
 		while not self.is_ready():
@@ -417,6 +437,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 
 	def create_eps_counter(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return self.MetricsService.create_eps_counter(
 			"bspump.pipeline.eps",
 			tags={'pipeline': self.Id},
@@ -433,15 +458,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def ensure_future(self, coro):
 		"""
-		You can use this method to schedule a future task that will be executed in a context of the :meth:`Pipeline <bspump.Pipeline()>`.
+		Description: You can use this method to schedule a future task that will be executed in a context of the :meth:`Pipeline <bspump.Pipeline()>`.
 		The :meth:`Pipeline <bspump.Pipeline()>` also manages a whole lifecycle of the future/task, which means,
 		it will collect the future result, trash it, and mainly it will capture any possible exception,
 		which will then block the :meth:`Pipeline <bspump.Pipeline()>` via set_error().
 
-		If the number of futures exceeds the configured limit, the :meth:`Pipeline <bspump.Pipeline()>` is throttled.
+		Returns:
 
-		:param coro:
-		:return:
+		:hint: If the number of futures exceeds the configured limit, the :meth:`Pipeline <bspump.Pipeline()>` is throttled.
 		"""
 
 		future = asyncio.ensure_future(coro, loop=self.Loop)
@@ -455,12 +479,12 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def _future_done(self, future):
 		"""
-		Removes future from the future list and disables throttling, if the number of
+		Description: Removes future from the future list and disables throttling, if the number of
 		futures does not exceed the configured limit.
 
-		If there is an error while processing the future, it it set to the :meth:`Pipeline <bspump.Pipeline()>`.
-		:param future:
-		:return:
+		Returns:
+
+		:hint: If there is an error while processing the future, it it set to the :meth:`Pipeline <bspump.Pipeline()>`.
 		"""
 
 		# Remove the throttle
@@ -481,7 +505,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def set_source(self, source):
 		"""
-		set_source is a method that sets a selected source that will pump data into the BSPump
+		Description: set_source is a method that sets a selected source that will pump data into the BSPump
+
+		Returns:
+
 		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
@@ -490,7 +517,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def append_processor(self, processor):
 		"""
-		adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`
+		Description: adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`
+
+		Returns:
+
 		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
 		# TODO: Check if fitting
@@ -504,7 +534,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def remove_processor(self, processor_id):
 		"""
-		removes the processor from the :meth:`Pipeline <bspump.Pipeline()>`
+		Description: removes the processor from the :meth:`Pipeline <bspump.Pipeline()>`
+
+		Returns:
 		"""
 		for depth in self.Processors:
 			for idx, processor in enumerate(depth):
@@ -519,9 +551,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_before(self, id, processor):
 		"""
-		Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
+		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
 
-		:return: True on success. False otherwise (id not found)
+		return: True on success. False otherwise (id not found)
 		"""
 		for processors in self.Processors:
 			for idx, _processor in enumerate(processors):
@@ -533,7 +565,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_after(self, id, processor):
 		"""
-		Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by id
+		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by id
 
 		:return: True on success. False otherwise (id not found)
 		"""
@@ -546,6 +578,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		return False
 
 	def _post_add_processor(self, processor):
+		"""
+		Description:
+
+		:return:
+		"""
 		self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
 			'bspump.pipeline.profiler',
 			tags={
@@ -568,7 +605,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def build(self, source, *processors):
 		"""
-		This method enables to add sources, :meth:`Processors <bspump.Processor()>`, and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
+		Description: This method enables to add sources, :meth:`Processors <bspump.Processor()>`, and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
+
+		:return:
 		"""
 		self.set_source(source)
 		for processor in processors:
@@ -576,7 +615,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def iter_processors(self):
 		"""
-		Iterate thru all processors.
+		Description: Iterate thru all processors.
+
+		:return:
 		"""
 		for processors in self.Processors:
 			for processor in processors:
@@ -586,7 +627,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_source(self, address):
 		"""
-		Find a source by id.
+		Description: Find a source by id.
+
+		:return:
 		"""
 		for source in self.Sources:
 			if source.Id == address:
@@ -595,7 +638,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_connection(self, app, connection_id):
 		"""
-		Find a connection by id.
+		Description: Find a connection by id.
+
+		:return:
 		"""
 		if isinstance(connection_id, Connection):
 			return connection_id
@@ -607,7 +652,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_processor(self, processor_id):
 		"""
-		Find by a processor by id.
+		Description: Find by a processor by id.
+
+		:return:
 		"""
 		for processor in self.iter_processors():
 			if processor.Id == processor_id:
@@ -617,7 +664,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def start(self):
 		"""
-		starts the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
+		Description: starts the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
+
+		:return:
 		"""
 		self.PubSub.publish("bspump.pipeline.start!", pipeline=self)
 
@@ -629,7 +678,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def stop(self):
 		"""
-		stops the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
+		Desription: stops the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
+
+		:return:
 		"""
 		self.PubSub.publish("bspump.pipeline.stop!", pipeline=self)
 
@@ -649,6 +700,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 	# Rest API
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		rest = {
 			'Id': self.Id,
 			'Ready': self.is_ready(),
@@ -678,8 +734,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 class PipelineLogger(logging.Logger):
 	"""
-	PipelineLogger is a feature of BSPump which enables direct monitoring of a specific :meth:`Pipeline <bspump.Pipeline()>`.
+	Description: PipelineLogger is a feature of BSPump which enables direct monitoring of a specific :meth:`Pipeline <bspump.Pipeline()>`.
 	It offers an overview of errors, error handling, data in a given time with its timestamp
+
+	:return:
 	"""
 
 	def __init__(self, name, metrics_counter, level=logging.NOTSET):
@@ -692,7 +750,9 @@ class PipelineLogger(logging.Logger):
 
 	def handle(self, record):
 		"""
-		Counts and adds errors to the error counter
+		Description: Counts and adds errors to the error counter
+
+		:return:
 		"""
 		# Count errors and warnings
 		if record.levelno == logging.WARNING:
@@ -707,6 +767,11 @@ class PipelineLogger(logging.Logger):
 		self.Deque.append(record)
 
 	def _format_time(self, record):
+		"""
+		Description:
+
+		:return:
+		"""
 		try:
 			ct = datetime.datetime.fromtimestamp(record.created)
 			return ct.isoformat()
