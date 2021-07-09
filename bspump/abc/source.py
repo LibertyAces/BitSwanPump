@@ -10,7 +10,9 @@ L = logging.getLogger(__name__)
 class Source(ConfigObject):
 
 	"""
-...
+	Description:
+
+	:return:
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -24,16 +26,23 @@ class Source(ConfigObject):
 
 	async def process(self, event, context=None):
 		"""
-This method is used to emit event into a :meth:`Pipeline <bspump.Pipeline()>`.
+		Description: This method is used to emit event into a :meth:`Pipeline <bspump.Pipeline()>`.
 
-If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
-The source should catch this exception and fail gracefully.
+		:return
+
+		:hint: If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
+		The source should catch this exception and fail gracefully.
 		"""
 		# TODO: Remove this method completely, each source should call pipeline.process() method directly
 		await self.Pipeline.process(event, context=context)
 
 
 	def start(self, loop):
+		"""
+		Description:
+
+		:return:
+		"""
 		if self.Task is not None:
 			return
 
@@ -51,6 +60,11 @@ The source should catch this exception and fail gracefully.
 
 
 	async def stop(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		if self.Task is None:
 			return  # Source is not started
 		if not self.Task.done():
@@ -62,6 +76,11 @@ The source should catch this exception and fail gracefully.
 
 
 	def restart(self, loop):
+		"""
+		Description:
+
+		:return:
+		"""
 		if self.Task is not None:
 			if self.Task.done():
 				self.Task.result()
@@ -70,21 +89,29 @@ The source should catch this exception and fail gracefully.
 
 
 	async def main(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		raise NotImplementedError()
 
 
 	async def stopped(self):
 		"""
-Helper that simplyfies the implementation of sources:
+		Description: Helper that simplyfies the implementation of sources:
 
-.. code:: python
+		:return:
 
-	async def main(self):
-		... initialize resources here
+		Example:
+		.. code:: python
 
-		await self.stopped()
+			async def main(self):
+				... initialize resources here
 
-		... finalize resources here
+				await self.stopped()
+
+				... finalize resources here
 	"""
 
 		try:
@@ -96,10 +123,20 @@ Helper that simplyfies the implementation of sources:
 
 
 	def locate_address(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return "{}.*{}".format(self.Pipeline.Id, self.Id)
 
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return {
 			"Id": self.Id,
 			"Class": self.__class__.__name__
@@ -112,6 +149,11 @@ Helper that simplyfies the implementation of sources:
 
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
+		"""
+		Description:
+
+		:return:
+		"""
 		newid = definition.get('id')
 		config = definition.get('config')
 		args = definition.get('args')
@@ -124,7 +166,9 @@ Helper that simplyfies the implementation of sources:
 class TriggerSource(Source):
 
 	"""
+	Description:
 
+	:return:
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -139,12 +183,19 @@ class TriggerSource(Source):
 
 
 	def time(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return self.App.time()
 
 
 	def on(self, trigger):
 		"""
-		Add trigger
+		Description:
+
+		:return:
 		"""
 		trigger.add(self)
 		self.Triggers.add(trigger)
@@ -152,6 +203,11 @@ class TriggerSource(Source):
 
 
 	async def main(self, *args, **kwags):
+		"""
+		Description:
+
+		:return:
+		"""
 		while True:
 			# Wait for pipeline is ready
 			await self.Pipeline.ready()
@@ -187,10 +243,20 @@ class TriggerSource(Source):
 
 
 	async def cycle(self, *args, **kwags):
+		"""
+		Description:
+
+		:return:
+		"""
 		raise NotImplementedError()
 
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		result = super().rest_get()
 		result.update({
 			"triggered": self.TriggerEvent.is_set()
