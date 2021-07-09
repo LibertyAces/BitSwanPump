@@ -11,15 +11,16 @@ class BSPumpApplication(asab.Application):
 
 
 	"""
+	Description: BSPumpApplication is **class** used for .....
 
-	BSPumpApplication is **class** used for .....
-
+	:return:
 	"""
 
 	def __init__(self, args=None, web_listen=None):
 		'''
-		Bude tohle nekde videt.
+		Description:Bude tohle nekde videt.
 
+		:return:
 		'''
 		super().__init__(args=args)
 
@@ -54,9 +55,11 @@ class BSPumpApplication(asab.Application):
 
 
 	def create_argument_parser(self):
-		'''
-		create agrument parser is a method responsible for ....
-		'''
+		"""
+		Description:
+
+		:return:
+		"""
 		prog = sys.argv[0]
 		if prog[-11:] == '__main__.py':
 			prog = sys.executable + " -m bspump"
@@ -78,9 +81,11 @@ build: {} [{}]
 
 
 	def parse_arguments(self, args=None):
-		'''
-		parse arguments is a method which does....
-		'''
+		"""
+		Description:
+
+		:return:
+		"""
 		args = super().parse_arguments(args=args)
 		self._web_listen = args.web_api
 		return args
@@ -91,11 +96,15 @@ build: {} [{}]
 
 
 	def _on_signal_usr1(self):
-		'''
-		To clear reset from all pipelines, run
+		"""
+		Description:
+
+		:return:
+
+		:hint: To clear reset from all pipelines, run
 		$ kill -SIGUSR1 xxxx
 		Equivalently, you can use `docker kill -s SIGUSR1 ....` to reset containerized BSPump.
-		'''
+		"""
 		# Reset errors from all pipelines
 		for pipeline in self.PumpService.Pipelines.values():
 			if not pipeline.is_error():
