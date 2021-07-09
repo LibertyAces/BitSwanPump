@@ -24,7 +24,13 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
-Pipeline ...
+Description: Pipeline is ...
+
+
+Parameters: ---
+
+
+Returns: xxxx
 	"""
 
 
