@@ -30,7 +30,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 	Parameters: ---
 
 
-	Returns: xxxx
+	:return: xxxx
 	"""
 
 
@@ -128,7 +128,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Parameters: ---
 
 
-		Returns: xxxx
+		:return: xxxx
 		"""
 		return self.App.time()
 
@@ -140,7 +140,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Parameters: ---
 
 
-		Returns: xxxx
+		:return: xxxx
         """
 		return self._throttles
 
@@ -153,7 +153,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Parameters: event_type, metric, values
 
 
-		Returns: xxxx
+		:return: xxxx
         """
 		if metric != self.MetricsCounter:
 			return
@@ -172,7 +172,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Parameters: ---
 
 
-		Returns: xxxx
+		:return: xxxx
         """
 		return self._error is not None
 
@@ -184,7 +184,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Parameters: context event exc
 
 
-		Returns: xxxx
+		:return: xxxx
 		"""
 		if exc is None:
 			# Reset branch
@@ -227,7 +227,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Parameters: exception, context, event
 
 
-		Returns:
+		:return:
 
 
 		Example:
@@ -265,7 +265,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Parameters: :param ancestral_pipeline: pipeline
 
 
-		Returns: xxxx
+		:return: xxxx
 		"""
 
 		self._ancestral_pipelines.add(ancestral_pipeline)
@@ -278,7 +278,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Parameters: ancestral_pipeline: pipeline
 
 
-		Returns: xxxx
+		:return: xxxx
 		"""
 
 		self._ancestral_pipelines.remove(ancestral_pipeline)
@@ -336,7 +336,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		Parameters:
 
-		Returns:
+		:return:
 		"""
 
 		self._chillout_counter += 1
@@ -419,7 +419,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
 		while incrementing the event.in metric.
 
-		returns:
+		:return:
 
 		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
 
@@ -463,7 +463,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		it will collect the future result, trash it, and mainly it will capture any possible exception,
 		which will then block the :meth:`Pipeline <bspump.Pipeline()>` via set_error().
 
-		Returns:
+		:return:
 
 		:hint: If the number of futures exceeds the configured limit, the :meth:`Pipeline <bspump.Pipeline()>` is throttled.
 		"""
@@ -482,7 +482,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Removes future from the future list and disables throttling, if the number of
 		futures does not exceed the configured limit.
 
-		Returns:
+		:return:
 
 		:hint: If there is an error while processing the future, it it set to the :meth:`Pipeline <bspump.Pipeline()>`.
 		"""
@@ -507,7 +507,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: set_source is a method that sets a selected source that will pump data into the BSPump
 
-		Returns:
+		:return:
 
 		"""
 		if isinstance(source, Source):
@@ -519,7 +519,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`
 
-		Returns:
+		:return:
 
 		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
@@ -536,7 +536,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: removes the processor from the :meth:`Pipeline <bspump.Pipeline()>`
 
-		Returns:
+		:return:
 		"""
 		for depth in self.Processors:
 			for idx, processor in enumerate(depth):
