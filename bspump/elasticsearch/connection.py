@@ -15,6 +15,11 @@ L = logging.getLogger(__name__)
 
 
 class ElasticSearchBulk(object):
+	"""
+	Description:
+
+	:return:
+	"""
 
 	def __init__(self, connection, index, max_size):
 		self.Index = index
@@ -26,6 +31,11 @@ class ElasticSearchBulk(object):
 		self.FilterPath = connection.FilterPath
 
 	def consume(self, data_feeder_generator):
+		"""
+		Description:
+
+		:return:
+		"""
 		for item in data_feeder_generator:
 			self.Items.append(item)
 			self.Capacity -= len(item)
@@ -34,10 +44,20 @@ class ElasticSearchBulk(object):
 		return self.Capacity <= 0
 
 	async def _get_data_from_items(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		for item in self.Items:
 			yield item
 
 	async def upload(self, url, session, timeout):
+		"""
+		Description:
+
+		:return:
+		"""
 		items_count = len(self.Items)
 		if items_count == 0:
 			return
@@ -122,18 +142,23 @@ class ElasticSearchBulk(object):
 
 	def partial_error_callback(self, response_items):
 		"""
-		When an upload to ElasticSearch fails for error items (document could not be inserted),
+		Description: When an upload to ElasticSearch fails for error items (document could not be inserted),
 		this callback is called.
+
 		:param response_items: list with dict items: {"index": {"_id": ..., "error": ...}}
+
 		:return:
 		"""
 
 	def full_error_callback(self, bulk_items, return_code):
 		"""
-		When an upload to ElasticSearch fails b/c of ElasticSearch error,
+		Description: When an upload to ElasticSearch fails b/c of ElasticSearch error,
 		this callback is called.
+
 		:param bulk_items: list with tuple items: (_id, data)
+
 		:param return_code: ElasticSearch return code
+
 		:return: False if the bulk is to be resumbitted again
 		"""
 		return False
@@ -141,29 +166,9 @@ class ElasticSearchBulk(object):
 
 class ElasticSearchConnection(Connection):
 	"""
+	Description:
 
-	ElasticSearchConnection allows your ES source, sink or lookup to connect to ElasticSearch instance
-
-	usage:
-
-.. code:: python
-
-
-	# adding connection to PumpService
-	svc = app.get_service("bspump.PumpService")
-	svc.add_connection(
-		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection")
-	)
-
-.. code:: python
-
-	# pass connection name ("ESConnection" in our example) to relevant BSPump's object:
-
-	self.build(
-			bspump.kafka.KafkaSource(app, self, "KafkaConnection"),
-			bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection")
-	)
-
+	:return:
 	"""
 
 	ConfigDefaults = {
@@ -180,6 +185,11 @@ class ElasticSearchConnection(Connection):
 	}
 
 	def __init__(self, app, id=None, config=None):
+		"""
+		Description:
+
+		:return:
+		"""
 		super().__init__(app, id=id, config=config)
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
@@ -248,12 +258,27 @@ class ElasticSearchConnection(Connection):
 		)
 
 	def get_url(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return random.choice(self.node_urls)
 
 	def get_session(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
 	def consume(self, index, data_feeder_generator, bulk_class=ElasticSearchBulk):
+		"""
+		Description:
+
+		:return:
+		"""
 		if data_feeder_generator is None:
 			return
 
@@ -269,10 +294,20 @@ class ElasticSearchConnection(Connection):
 			self.enqueue(bulk)
 
 	def _start(self, event_name):
+		"""
+		Description:
+
+		:return:
+		"""
 		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
 
 	async def _on_exit(self, event_name):
+		"""
+		Description:
+
+		:return:
+		"""
 		# Wait till the queue is empty
 		self.flush(forced=True)
 		while self._output_queue.qsize() > 0:
@@ -293,6 +328,11 @@ class ElasticSearchConnection(Connection):
 
 
 	def _on_tick(self, event_name):
+		"""
+		Description:
+
+		:return:
+		"""
 		self.QueueMetric.set("size", int(self._output_queue.qsize()))
 
 		for i in range(len(self._futures)):
@@ -320,6 +360,11 @@ class ElasticSearchConnection(Connection):
 		self.flush()
 
 	def flush(self, forced=False):
+		"""
+		Description:
+
+		:return:
+		"""
 		aged = []
 		for index, bulk in self._bulks.items():
 			bulk.Aging += 1
@@ -331,9 +376,11 @@ class ElasticSearchConnection(Connection):
 			self.enqueue(bulk)
 
 	def enqueue(self, bulk):
-		'''
-		Properly enqueue the bulk.
-		'''
+		"""
+		Description: Properly enqueue the bulk.
+
+		:return:
+		"""
 		self._output_queue.put_nowait(bulk)
 
 		# Signalize need for throttling
@@ -341,6 +388,11 @@ class ElasticSearchConnection(Connection):
 			self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
 	async def _loader(self, url):
+		"""
+		Description:
+
+		:return:
+		"""
 		async with self.get_session() as session:
 
 			# Preflight check
