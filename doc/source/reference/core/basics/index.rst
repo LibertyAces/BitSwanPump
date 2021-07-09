@@ -8,17 +8,19 @@ Pipeline
 Individual :meth:`Pipeline <bspump.Pipeline()>` objects work **asynchronously** and **independently** of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline) and can be triggered in unlimited numbers.
 Each :meth:`Pipeline <bspump.Pipeline()>` is usually in charge of **one** concrete task.
 
-There are three main components each pipeline has:
+Pipeline has three main components:
 
 - :meth:`Source <bspump.Source()>`
 - :meth:`Processor <bspump.Processor()>`
 - :meth:`Sink <bspump.Sink()>`
 
-Source connects different **data sources** with the :meth:`Pipeline <bspump.Pipeline()>` to be processed
+
 
 .. image:: /images/pipeline.png
   :scale: 100
   :alt: Pipeline diagram
+
+Source connects different **data sources** with the :meth:`Pipeline <bspump.Pipeline()>` to be processed
 
 Multiple sources
 
