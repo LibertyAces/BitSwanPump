@@ -7,39 +7,10 @@ L = logging.getLogger(__name__)
 
 class ElasticSearchSource(TriggerSource):
 	"""
+	Description:
 
-	ElasticSearchSource is using standard Elastic's search API to fetch data.
-
-	**configs**
-
-	*index* - Elastic's index (default is 'index-``*``').
-
-	*scroll_timeout* - Timeout of single scroll request (default is '1m'). Allowed time units:
-	https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#time-units
-
-	**specific pamameters**
-
-	*paging* - boolean (default is True)
-
-	*request_body* - dictionary described by Elastic's doc:
-	https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html
-
-	Default is:
-
-.. code:: python
-
-	default_request_body = {
-		'query': {
-			'bool': {
-				'must': {
-					'match_all': {}
-				}
-			}
-		},
-	}
-
+	:return:
 	"""
-
 	ConfigDefaults = {
 		'index': 'index-*',
 		'scroll_timeout': '1m',
@@ -47,6 +18,11 @@ class ElasticSearchSource(TriggerSource):
 	}
 
 	def __init__(self, app, pipeline, connection, request_body=None, paging=True, id=None, config=None):
+		"""
+		Description:
+
+		:return:
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Connection = pipeline.locate_connection(app, connection)
 
@@ -67,7 +43,11 @@ class ElasticSearchSource(TriggerSource):
 				}}
 
 	async def cycle(self):
+		"""
+		Description:
 
+		:return:
+		"""
 		scroll_id = None
 
 		while True:
@@ -111,39 +91,20 @@ class ElasticSearchSource(TriggerSource):
 
 class ElasticSearchAggsSource(TriggerSource):
 	"""
+	Description:
 
-	ElasticSearchAggsSource is used for Elastic's search aggregations.
-
-	**configs**
-
-	*index*: - Elastic's index (default is 'index-``*``').
-
-	**specific pamameters**
-
-	*request_body*
-	dictionary described by Elastic's doc:
-	https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html
-
-	Default is:
-
-.. code:: python
-
-	default_request_body = {
-		'query': {
-			'bool': {
-				'must': {
-					'match_all': {}
-				}
-			}
-		},
-	}
+	:return:
 	"""
-
 	ConfigDefaults = {
 		'index': 'index-*',
 	}
 
 	def __init__(self, app, pipeline, connection, request_body=None, id=None, config=None):
+		"""
+		Description:
+
+		:return:
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Connection = pipeline.locate_connection(app, connection)
 
@@ -163,6 +124,11 @@ class ElasticSearchAggsSource(TriggerSource):
 			}
 
 	async def cycle(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		request_body = self.RequestBody
 		path = '{}/_search?'.format(self.Index)
 		url = self.Connection.get_url() + path
@@ -192,7 +158,11 @@ class ElasticSearchAggsSource(TriggerSource):
 		await self.process_aggs(path, start_name, start)
 
 	async def process_aggs(self, path, aggs_name, aggs):
+		"""
+		Description:
 
+		:return:
+		"""
 		if 'buckets' in aggs:
 			await self.process_buckets(path, aggs_name, aggs["buckets"])
 
@@ -205,15 +175,14 @@ class ElasticSearchAggsSource(TriggerSource):
 			path.pop(aggs_name)
 
 	async def process_buckets(self, path, parent, buckets):
-		'''
-
-		Recursive function for buckets processing.
+		"""
+		Description: Recursive function for buckets processing.
 		It iterates through keys of the dictionary, looking for 'buckets' or 'value'.
 		If there are 'buckets', calls itself, if there is 'value', calls process_aggs
 		and sends an event to process
 
-		'''
-
+		:return:
+		"""
 		for bucket in buckets:
 			for k in bucket.keys():
 				if k == 'key':
