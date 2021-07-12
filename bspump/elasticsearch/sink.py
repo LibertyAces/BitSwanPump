@@ -35,7 +35,6 @@ class ElasticSearchSink(Sink):
 			)
 
 		yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
-
 	"""
 
 	ConfigDefaults = {
