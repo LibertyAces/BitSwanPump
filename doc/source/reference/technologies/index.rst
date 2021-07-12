@@ -12,7 +12,7 @@ Technologies Reference Documentation describes the `Technologies` section.
     kafka/index
     elastic/index
     files/index
-    influxdb/index
+    influxdb/influxdb.rst
     ipc
     rabbitmq_amqp
     sockets
