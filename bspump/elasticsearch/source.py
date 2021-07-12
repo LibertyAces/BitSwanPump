@@ -91,7 +91,7 @@ class ElasticSearchSource(TriggerSource):
 
 class ElasticSearchAggsSource(TriggerSource):
 	"""
-	Description:
+	Description: d
 
 	:return:
 	"""
