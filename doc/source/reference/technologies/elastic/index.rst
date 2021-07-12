@@ -44,9 +44,9 @@ ElasticSearchSource is using standard Elastic's search API to fetch data.
 Source methods
 ~~~~~~~~~~~~~~
 
-.. automethod:: bspump.Source.ElasticSearchSource.cycle
+.. automethod:: bspump.elasticsearch.source.ElasticSearchSource.cycle
 
-.. automethod:: bspump.ElasticSearchAggsSource.cycle
+.. automethod:: bspump.elasticsearch.source.ElasticSearchSource.cycle
 
 ElasticSearch Aggs Source
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,11 +86,11 @@ ElasticSearch Aggs Source
 ElasticSearch Aggs Source methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.ElasticSearchAggsSource.cycle
+.. automethod:: bspump.elasticsearch.source.ElasticSearchAggsSource.cycle
 
-.. automethod:: bspump.ElasticSearchAggsSource.process_aggs
+.. automethod:: bspump.elasticsearch.source.ElasticSearchAggsSource.process_aggs
 
-.. automethod:: bspump.ElasticSearchAggsSource.process_buckets
+.. automethod:: bspump.elasticsearch.source.ElasticSearchAggsSource.process_buckets
 
 
 ElasticSearch Connection
@@ -129,29 +129,29 @@ ElasticSearchConnection allows your ES source, sink or lookup to connect to Elas
 ElasticSearch Connection methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.ElasticSearchConnection.get_url
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.get_url
 
-.. automethod:: bspump.ElasticSearchConnection.get_session
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.get_session
 
-.. automethod:: bspump.ElasticSearchConnection.consume
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.consume
 
-.. automethod:: bspump.ElasticSearchConnection._start
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection._start
 
-.. automethod:: bspump.ElasticSearchConnection._on_exit
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection._on_exit
 
-.. automethod:: bspump.ElasticSearchConnection._on_tick
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection._on_tick
 
-.. automethod:: bspump.ElasticSearchConnection.flush
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.flush
 
-.. automethod:: bspump.ElasticSearchConnection.enqueue
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.enqueue
 
-.. automethod:: bspump.ElasticSearchConnection._loader
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection._loader
 
 
 Elastic Search Bulk
 ~~~~~~~~~~~~~~~~~~~
 
-.. py:currentmodule:: bspump.elasticsearch
+.. py:currentmodule:: bspump.elasticsearch.connection
 
 .. autoclass:: ElasticSearchBulk
     :special-members: __init__
@@ -161,15 +161,15 @@ Elastic Search Bulk
 Elastic Search Bulk methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.ElasticSearchBulk.consume
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.consume
 
-.. automethod:: bspump.ElasticSearchBulk._get_data_from_items
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk._get_data_from_items
 
-.. automethod:: bspump.ElasticSearchBulk.upload
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.upload
 
-.. automethod:: bspump.ElasticSearchBulk.partial_error_callback
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.partial_error_callback
 
-.. automethod:: bspump.ElasticSearchBulk.full_error_callback
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.full_error_callback
 
 
 Lookup
@@ -185,6 +185,17 @@ Lookup
 Lookup methods
 ~~~~~~~~~~~~~~
 
+.. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup._find_one
+.. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.get
+.. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.build_find_one_query
+.. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup._count
+.. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.load
+.. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.construct
+
+
+
+
+
 Sink
 ----
 
@@ -197,6 +208,9 @@ Sink
 
 Sink methods
 ~~~~~~~~~~~~
+
+.. automethod:: bspump.elasticsearch.sink.ElasticSearchSink.process
+.. automethod:: bspump.elasticsearch.sink.ElasticSearchSink._connection_throttle
 
 
 Data Feeder Methods
