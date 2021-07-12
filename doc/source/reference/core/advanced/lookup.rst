@@ -64,7 +64,6 @@ respective that require a connection to resource server such as SQL etc.
 .. py:currentmodule:: bspump
 
 .. autoclass:: AsyncLookupMixin
-    :special-members: __init__
     :show-inheritance:
 
 
