@@ -61,7 +61,7 @@ AsyncLookupMixin is to be used for every technology that is external to BSPump,
 respective that require a connection to resource server such as SQL etc.
 
 
-.. py:currentmodule:: bspump
+.. py:currentmodule:: bspump.abc.lookup.AsyncLookupMixin
 
 .. autoclass:: AsyncLookupMixin
     :show-inheritance:
@@ -96,7 +96,7 @@ Dictionary Lookup methods
 Lookup Provider
 ------------------
 
-.. py:currentmodule:: bspump
+.. py:currentmodule:: bspump.abc.lookupprovider.LookupProviderABC
 
 .. autoclass:: LookupProviderABC
     :special-members: __init__
@@ -106,13 +106,13 @@ Lookup Provider
 Lookup Provider methods
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.LookupProviderABC.load()
+.. automethod:: bspump.abc.lookupprovider.LookupProviderABC.load
 
 
 LookupBatchProviderABC
 ------------------------
 
-.. py:currentmodule:: bspump
+.. py:currentmodule:: bspump.abc.lookupprovider.LookupBatchProviderABC
 
 .. autoclass:: LookupBatchProviderABC
     :special-members: __init__
