@@ -8,13 +8,11 @@ L = logging.getLogger(__name__)
 
 
 class Source(ConfigObject):
-
 	"""
 	Description:
 
 	:return:
 	"""
-
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
@@ -30,8 +28,9 @@ class Source(ConfigObject):
 
 		:return
 
-		:hint: If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
-		The source should catch this exception and fail gracefully.
+		:hint If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
+		:hint The source should catch this exception and fail gracefully.
+
 		"""
 		# TODO: Remove this method completely, each source should call pipeline.process() method directly
 		await self.Pipeline.process(event, context=context)
@@ -47,6 +46,11 @@ class Source(ConfigObject):
 			return
 
 		async def _main():
+			"""
+			Description:
+
+			:return:
+			"""
 			# This is to properly handle a lifecycle of the main method
 			try:
 				await self.main()
