@@ -96,7 +96,7 @@ Dictionary Lookup methods
 Lookup Provider
 ------------------
 
-.. py:currentmodule:: bspump.abc.lookupprovider.LookupProviderABC
+.. py:currentmodule:: bspump.abc.lookupprovider
 
 .. autoclass:: LookupProviderABC
     :special-members: __init__
@@ -112,7 +112,7 @@ Lookup Provider methods
 LookupBatchProviderABC
 ------------------------
 
-.. py:currentmodule:: bspump.abc.lookupprovider.LookupBatchProviderABC
+.. py:currentmodule:: bspump.abc.lookupprovider
 
 .. autoclass:: LookupBatchProviderABC
     :special-members: __init__
