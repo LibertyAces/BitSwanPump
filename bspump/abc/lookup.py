@@ -17,11 +17,9 @@ L = logging.getLogger(__name__)
 
 class Lookup(asab.ConfigObject):
 	"""
-	Lookups serve for fast data searching in lists of key-value type. They can subsequently be localized and used
-	in pipeline objects (processors and the like). Each lookup requires a statically or dynamically created value list.
+	Description:
 
-	If the "lazy" parameter in the constructor is set to True, no load method is called and the user is expected
-	to call it when necessary.
+	:return:
 	"""
 
 	ConfigDefaults = {
@@ -81,6 +79,11 @@ class Lookup(asab.ConfigObject):
 		raise NotImplementedError("Lookup '{}' __contains__() method not implemented".format(self.Id))
 
 	def _create_provider(self, path: str):
+		"""
+		Description:
+
+		:return:
+		"""
 		if path.startswith("zk:"):
 			from bspump.zookeeper import ZooKeeperBatchLookupProvider
 			self.Provider = ZooKeeperBatchLookupProvider(self, path)
@@ -101,18 +104,38 @@ class Lookup(asab.ConfigObject):
 			self.MasterURL = None
 
 	def time(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return self.App.time()
 
 	def ensure_future_update(self, loop):
+		"""
+		Description:
+
+		:return:
+		"""
 		return asyncio.ensure_future(self._do_update(), loop=loop)
 
 	async def _do_update(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		updated = await self.load()
 		if updated:
 			L.warning(f"{self.Id} bspump.Lookup.changed!")
 			self.PubSub.publish("bspump.Lookup.changed!")
 
 	async def load(self) -> bool:
+		"""
+		Description:
+
+		:return:
+		"""
 		data = await self.Provider.load()
 		if data is None or data is False:
 			L.warning("No data loaded from {}.".format(self.Provider.Id))
@@ -121,12 +144,27 @@ class Lookup(asab.ConfigObject):
 		return True
 
 	def serialize(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		raise NotImplementedError("Lookup '{}' serialize() method not implemented".format(self.Id))
 
 	def deserialize(self, data):
+		"""
+		Description:
+
+		:return:
+		"""
 		raise NotImplementedError("Lookup '{}' deserialize() method not implemented".format(self.Id))
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		response = {
 			"Id": self.Id
 		}
@@ -141,14 +179,19 @@ class Lookup(asab.ConfigObject):
 
 
 class MappingLookup(Lookup, collections.abc.Mapping):
+	"""
+	Description:
+
+	:return:
+	"""
 	pass
 
 
 class AsyncLookupMixin(Lookup):
 	"""
-	AsyncLookupMixin makes sure the value from the lookup is obtained asynchronously.
-	AsyncLookupMixin is to be used for every technology that is external to BSPump,
-	respective that require a connection to resource server such as SQL etc.
+	Description:
+
+	:return:
 	"""
 
 	async def get(self, key):
@@ -156,6 +199,11 @@ class AsyncLookupMixin(Lookup):
 
 
 class DictionaryLookup(MappingLookup):
+	"""
+	Description:
+
+	:return:
+	"""
 
 	def __init__(self, app, id=None, config=None, lazy=False):
 		self.Dictionary = {}
@@ -172,9 +220,19 @@ class DictionaryLookup(MappingLookup):
 		return self.Dictionary.__len__()
 
 	def serialize(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return (json.dumps(self.Dictionary)).encode('utf-8')
 
 	def deserialize(self, data):
+		"""
+		Description:
+
+		:return:
+		"""
 		try:
 			self.Dictionary.update(json.loads(data.decode('utf-8')))
 		except Exception as e:
@@ -183,11 +241,21 @@ class DictionaryLookup(MappingLookup):
 	# REST
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		rest = super().rest_get()
 		rest["Dictionary"] = self.Dictionary
 		return rest
 
 	def set(self, dictionary: dict):
+		"""
+		Description:
+
+		:return:
+		"""
 		if self.is_master() is False:
 			L.warning("'master_url' provided, set() method can not be used")
 

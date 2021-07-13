@@ -29,6 +29,7 @@ import bspump.elasticsearch
 import bspump.declarative
 import bspump.declarative.expression
 
+
 # -- Project information -----------------------------------------------------
 
 project = 'BSPump Reference'
@@ -58,7 +59,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+#templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -90,14 +91,28 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "bitswan"
-html_theme_path = ["_themes", ]
+html_theme = "alabaster"
+#html_theme_path = ["_themes", ]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+
+#html_theme_options = {
+#    'collapse_navigation': True,
+#    'sticky_navigation': True,
+#    'navigation_depth': 4,
+#    'includehidden': True,
+#    'titles_only': True
+# }
+
+html_sticky_navigation = True
+html_collapse_navigation = True
+html_titles_only = False
+html_includehidden = True
+html_navigation_depth = 4
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -112,7 +127,7 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-# html_sidebars = {}
+html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'searchbox.html'] }
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -191,3 +206,7 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
+
+autodoc_member_order = 'bysource'
+add_module_names = False
+add_class_names = False

@@ -148,6 +148,10 @@ class InternalSource(Source):
 
 class RouterMixIn(object):
 
+	"""
+	Router Mix in a class
+	"""
+
 
 	def _mixin_init(self, app):
 		self.ServiceBSPump = app.get_service("bspump.PumpService")

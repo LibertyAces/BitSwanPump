@@ -2,9 +2,19 @@ import asab
 
 
 class ProcessorBase(asab.ConfigObject):
+	"""
+	Description:
+
+	:return:
+	"""
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		:return:
+		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
 		self.App = app
@@ -15,6 +25,11 @@ class ProcessorBase(asab.ConfigObject):
 
 
 	def time(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return self.App.time()
 
 
@@ -30,14 +45,29 @@ class ProcessorBase(asab.ConfigObject):
 
 
 	def process(self, context, event):
+		"""
+		Description:
+
+		:return:
+		"""
 		raise NotImplementedError()
 
 
 	def locate_address(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return "{}.{}".format(self.Pipeline.Id, self.Id)
 
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return {
 			"Id": self.Id,
 			"Class": self.__class__.__name__,
@@ -50,4 +80,10 @@ class ProcessorBase(asab.ConfigObject):
 
 
 class Processor(ProcessorBase):
+	"""
+	Description:
+
+	:return:
+	"""
 	pass
+

@@ -24,27 +24,16 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
+	Description: Pipeline is ...
 
-Multiple sources
 
-A pipeline can have multiple sources.
-They are simply passed as an list of sources to a pipeline `build()` method.
+	Parameters: ---
 
-.. code:: python
 
-	class MyPipeline(bspump.Pipeline):
-
-		def __init__(self, app, pipeline_id):
-			super().__init__(app, pipeline_id)
-			self.build(
-				[
-					MySource1(app, self),
-					MySource2(app, self),
-					MySource3(app, self),
-				]
-				bspump.common.NullSink(app, self),
-			)
+	:return: xxxx
 	"""
+
+
 
 	ConfigDefaults = {
 		"async_concurency_limit": 1000,  # TODO concurrency
@@ -132,13 +121,40 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._context = {}
 
 	def time(self):
+		"""
+		Description: Pipeline is ...
+
+
+		Parameters: ---
+
+
+		:return: xxxx
+		"""
 		return self.App.time()
 
 	def get_throttles(self):
+		"""
+		Description: Pipeline is ...
+
+
+		Parameters: ---
+
+
+		:return: xxxx
+        """
 		return self._throttles
 
 
 	def _on_metrics_flush(self, event_type, metric, values):
+		"""
+		Description: Pipeline is ...
+
+
+		Parameters: event_type, metric, values
+
+
+		:return: xxxx
+        """
 		if metric != self.MetricsCounter:
 			return
 		if values["event.in"] == 0:
@@ -149,13 +165,27 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"])
 
 	def is_error(self):
+		"""
+		Description: Pipeline is ...
+
+
+		Parameters: ---
+
+
+		:return: xxxx
+        """
 		return self._error is not None
 
 	def set_error(self, context, event, exc):
-		'''
-		If called with `exc is None`, then reset error (aka recovery)
-		'''
+		"""
+		Description: If called with `exc is None`, then reset error (aka recovery)
 
+
+		Parameters: context event exc
+
+
+		:return: xxxx
+		"""
 		if exc is None:
 			# Reset branch
 			if self._error is not None:
@@ -190,53 +220,75 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def handle_error(self, exception, context, event):
 		"""
-		Override to evaluate on the pipeline processing error.
-		Return False for hard errors (stop the pipeline processing) or True for soft errors that will be ignored
+		Description: Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
+		Return False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing) or True for soft errors that will be ignored
 
-.. code:: python
 
-	class SampleInternalPipeline(bspump.Pipeline):
+		Parameters: exception, context, event
 
-		def __init__(self, app, pipeline_id):
-			super().__init__(app, pipeline_id)
 
-			self.build(
-				bspump.common.InternalSource(app, self),
-				bspump.common.JSONParserProcessor(app, self),
-				bspump.common.PPrintSink(app, self)
-			)
+		:return:
 
-		def handle_error(self, exception, context, event):
-			if isinstance(exception, json.decoder.JSONDecodeError):
-				return True
-			return False
+
+		Example:
+
+		.. code:: python
+
+			class SampleInternalPipeline(bspump.Pipeline):
+
+				def __init__(self, app, pipeline_id):
+					super().__init__(app, pipeline_id)
+
+					self.build(
+						bspump.common.InternalSource(app, self),
+						bspump.common.JSONParserProcessor(app, self),
+						bspump.common.PPrintSink(app, self)
+					)
+
+				def handle_error(self, exception, context, event):
+					if isinstance(exception, json.decoder.JSONDecodeError):
+						return True
+					return False
 		"""
 
 		return False
 
 	def link(self, ancestral_pipeline):
 		"""
-		Link this pipeline with an ancestral pipeline.
-		This is needed e. g. for a propagation of the throttling from child pipelines back to their ancestors.
-		If the child pipeline uses InternalSource, which may become throttled because the internal queue is full,
-		the throttling is propagated to the ancestral pipeline, so that its source may block incoming events until the
+		Description: Link this :meth:`Pipeline <bspump.Pipeline()>` with an ancestral :meth:`Pipeline <bspump.Pipeline()>`.
+		This is needed e. g. for a propagation of the throttling from child :meth:`Pipelines <bspump.Pipeline()>` back to their ancestors.
+		If the child :meth:`Pipeline <bspump.Pipeline()>` uses InternalSource, which may become throttled because the internal queue is full,
+		the throttling is propagated to the ancestral :meth:`Pipeline <bspump.Pipeline()>`, so that its source may block incoming events until the
 		internal queue is empty again.
 
-		:param ancestral_pipeline: pipeline
+
+		Parameters: :param ancestral_pipeline: pipeline
+
+
+		:return: xxxx
 		"""
 
 		self._ancestral_pipelines.add(ancestral_pipeline)
 
 	def unlink(self, ancestral_pipeline):
 		"""
-		Unlink an ancestral pipeline from this pipeline.
+		Description: Unlink an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:param ancestral_pipeline: pipeline
+
+		Parameters: ancestral_pipeline: pipeline
+
+
+		:return: xxxx
 		"""
 
 		self._ancestral_pipelines.remove(ancestral_pipeline)
 
 	def throttle(self, who, enable=True):
+		"""
+		Description:
+
+		:return:
+		"""
 		# L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
 		if enable:
 			self._throttles.add(who)
@@ -254,6 +306,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._evaluate_ready()
 
 	def _evaluate_ready(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		orig_ready = self.is_ready()
 
 		# Do we observed an error?
@@ -275,7 +332,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	async def ready(self):
 		"""
-		Can be used in source: `await self.Pipeline.ready()`
+		Description: Can be used in source: `await self.Pipeline.ready()`
+
+		Parameters:
+
+		:return:
 		"""
 
 		self._chillout_counter += 1
@@ -287,9 +348,19 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		return True
 
 	def is_ready(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return self._ready.is_set()
 
 	def _do_process(self, event, depth, context):
+		"""
+		Description:
+
+		:return:
+		"""
 		for processor in self.Processors[depth]:
 
 			t0 = time.perf_counter()
@@ -327,14 +398,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def inject(self, context, event, depth):
 		"""
-		Inject method serves to inject events into the pipeline's depth defined by the depth attribute.
+		Description: Inject method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth defined by the depth attribute.
 		Every depth is interconnected with a generator object.
 
-		For normal operations, it is highly recommended to use process method instead (see below).
+		#For normal operations, it is highly recommended to use process method instead (see below).
 
-		:param context:
-		:param event:
-		:param depth:
 		:return:
 		"""
 
@@ -348,14 +416,14 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	async def process(self, event, context=None):
 		"""
-		Process method serves to inject events into the pipeline's depth 0,
+		Description: Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
 		while incrementing the event.in metric.
 
-		This is recommended way of inserting events into a pipeline.
-
-		:param event:
-		:param context:
 		:return:
+
+		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
+
+
 		"""
 
 		while not self.is_ready():
@@ -369,6 +437,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 	def create_eps_counter(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return self.MetricsService.create_eps_counter(
 			"bspump.pipeline.eps",
 			tags={'pipeline': self.Id},
@@ -385,15 +458,14 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def ensure_future(self, coro):
 		"""
-		You can use this method to schedule a future task that will be executed in a context of the pipeline.
-		The pipeline also manages a whole lifecycle of the future/task, which means,
+		Description: You can use this method to schedule a future task that will be executed in a context of the :meth:`Pipeline <bspump.Pipeline()>`.
+		The :meth:`Pipeline <bspump.Pipeline()>` also manages a whole lifecycle of the future/task, which means,
 		it will collect the future result, trash it, and mainly it will capture any possible exception,
-		which will then block the pipeline via set_error().
+		which will then block the :meth:`Pipeline <bspump.Pipeline()>` via set_error().
 
-		If the number of futures exceeds the configured limit, the pipeline is throttled.
-
-		:param coro:
 		:return:
+
+		:hint: If the number of futures exceeds the configured limit, the :meth:`Pipeline <bspump.Pipeline()>` is throttled.
 		"""
 
 		future = asyncio.ensure_future(coro, loop=self.Loop)
@@ -407,12 +479,12 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def _future_done(self, future):
 		"""
-		Removes future from the future list and disables throttling, if the number of
+		Description: Removes future from the future list and disables throttling, if the number of
 		futures does not exceed the configured limit.
 
-		If there is an error while processing the future, it it set to the pipeline.
-		:param future:
 		:return:
+
+		:hint: If there is an error while processing the future, it it set to the :meth:`Pipeline <bspump.Pipeline()>`.
 		"""
 
 		# Remove the throttle
@@ -432,12 +504,24 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 	# Construction
 
 	def set_source(self, source):
+		"""
+		Description: set_source is a method that sets a selected source that will pump data into the BSPump
+
+		:return:
+
+		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
 		else:
 			self.Sources.extend(source)
 
 	def append_processor(self, processor):
+		"""
+		Description: adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`
+
+		:return:
+
+		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
 		# TODO: Check if fitting
 		self.Processors[-1].append(processor)
@@ -449,6 +533,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._post_add_processor(processor)
 
 	def remove_processor(self, processor_id):
+		"""
+		Description: removes the processor from the :meth:`Pipeline <bspump.Pipeline()>`
+
+		:return:
+		"""
 		for depth in self.Processors:
 			for idx, processor in enumerate(depth):
 				if processor.Id != processor_id:
@@ -462,9 +551,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def insert_before(self, id, processor):
 		"""
-		Insert the processor into a pipeline before another processor specified by id
+		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
 
-		:return: True on success. False otherwise (id not found)
+		return: True on success. False otherwise (id not found)
 		"""
 		for processors in self.Processors:
 			for idx, _processor in enumerate(processors):
@@ -476,7 +565,7 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def insert_after(self, id, processor):
 		"""
-		Insert the processor into a pipeline after another processor specified by id
+		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by id
 
 		:return: True on success. False otherwise (id not found)
 		"""
@@ -489,6 +578,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		return False
 
 	def _post_add_processor(self, processor):
+		"""
+		Description:
+
+		:return:
+		"""
 		self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
 			'bspump.pipeline.profiler',
 			tags={
@@ -510,13 +604,20 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 			)
 
 	def build(self, source, *processors):
+		"""
+		Description: This method enables to add sources, :meth:`Processors <bspump.Processor()>`, and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
+
+		:return:
+		"""
 		self.set_source(source)
 		for processor in processors:
 			self.append_processor(processor)
 
 	def iter_processors(self):
 		"""
-		Iterate thru all processors.
+		Description: Iterate thru all processors.
+
+		:return:
 		"""
 		for processors in self.Processors:
 			for processor in processors:
@@ -526,7 +627,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def locate_source(self, address):
 		"""
-		Find a source by id.
+		Description: Find a source by id.
+
+		:return:
 		"""
 		for source in self.Sources:
 			if source.Id == address:
@@ -534,6 +637,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		return None
 
 	def locate_connection(self, app, connection_id):
+		"""
+		Description: Find a connection by id.
+
+		:return:
+		"""
 		if isinstance(connection_id, Connection):
 			return connection_id
 		svc = app.get_service("bspump.PumpService")
@@ -544,7 +652,9 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 	def locate_processor(self, processor_id):
 		"""
-		Find by a processor by id.
+		Description: Find by a processor by id.
+
+		:return:
 		"""
 		for processor in self.iter_processors():
 			if processor.Id == processor_id:
@@ -553,6 +663,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 	# Lifecycle ...
 
 	def start(self):
+		"""
+		Description: starts the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
+
+		:return:
+		"""
 		self.PubSub.publish("bspump.pipeline.start!", pipeline=self)
 
 		# Start all non-started sources
@@ -562,6 +677,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 		self._evaluate_ready()
 
 	async def stop(self):
+		"""
+		Desription: stops the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
+
+		:return:
+		"""
 		self.PubSub.publish("bspump.pipeline.stop!", pipeline=self)
 
 		# Stop all futures
@@ -580,6 +700,11 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 	# Rest API
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		rest = {
 			'Id': self.Id,
 			'Ready': self.is_ready(),
@@ -608,6 +733,12 @@ They are simply passed as an list of sources to a pipeline `build()` method.
 
 
 class PipelineLogger(logging.Logger):
+	"""
+	Description: PipelineLogger is a feature of BSPump which enables direct monitoring of a specific :meth:`Pipeline <bspump.Pipeline()>`.
+	It offers an overview of errors, error handling, data in a given time with its timestamp
+
+	:return:
+	"""
 
 	def __init__(self, name, metrics_counter, level=logging.NOTSET):
 		super().__init__(name, level=level)
@@ -618,6 +749,11 @@ class PipelineLogger(logging.Logger):
 	# TODO: configurable log level (per pipeline, from its config)
 
 	def handle(self, record):
+		"""
+		Description: Counts and adds errors to the error counter
+
+		:return:
+		"""
 		# Count errors and warnings
 		if record.levelno == logging.WARNING:
 			self._metrics_counter.add("warning", 1)
@@ -631,6 +767,11 @@ class PipelineLogger(logging.Logger):
 		self.Deque.append(record)
 
 	def _format_time(self, record):
+		"""
+		Description:
+
+		:return:
+		"""
 		try:
 			ct = datetime.datetime.fromtimestamp(record.created)
 			return ct.isoformat()

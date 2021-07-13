@@ -1,42 +1,23 @@
-.. BSPump Reference Documentation documentation master file, created by
-   sphinx-quickstart on Wed Mar 27 11:05:14 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+BSPump
+--------------------
 
-Welcome to BSPump reference documentation!
-==========================================================
+Get started
+
+
+Reference Documentation
+=======================
+
+BSPump Reference Documentation describes the `bspump` Python library. Based on `ASAB
+<https://asab.readthedocs.io/en/latest/>`_ library. ASAB is a platform that enables BSPump to be efficient and easy to configure.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-.. automodule:: bspump
-    :members:
-    :undoc-members:
+   reference/core/basics/index
+   reference/core/top-level/index
+   reference/core/common/index
+   reference/core/advanced/index
+   reference/technologies/index
 
-.. automodule:: bspump.kafka
-    :members:
-    :undoc-members:
 
-.. automodule:: bspump.influxdb
-    :members:
-    :undoc-members:
 
-.. automodule:: bspump.elasticsearch
-    :members:
-    :undoc-members:
-
-.. automodule:: bspump.declarative
-    :members:
-    :undoc-members:
-
-.. automodule:: bspump.declarative.expression
-    :members:
-    :undoc-members:
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

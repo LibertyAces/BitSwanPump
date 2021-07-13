@@ -8,15 +8,11 @@ L = logging.getLogger(__name__)
 
 
 class Source(ConfigObject):
-
 	"""
-Each source represent a coroutine/Future/Task that is running in the context of the main loop.
-The coroutine method main() contains an implementation of each particular source.
+	Description:
 
-Source MUST await a pipeline ready state prior producing the event.
-It is acomplished by `await self.Pipeline.ready()` call.
+	:return:
 	"""
-
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
@@ -28,20 +24,33 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 	async def process(self, event, context=None):
 		"""
-		This method is used to emit event into a pipeline.
+		Description: This method is used to emit event into a :meth:`Pipeline <bspump.Pipeline()>`.
 
-		If there is an error in the processing of the event, the pipeline is throttled by setting the error and the exception raised.
-		The source should catch this exception and fail gracefully.
+		:return
+
+		:hint If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
+		:hint The source should catch this exception and fail gracefully.
+
 		"""
 		# TODO: Remove this method completely, each source should call pipeline.process() method directly
 		await self.Pipeline.process(event, context=context)
 
 
 	def start(self, loop):
+		"""
+		Description:
+
+		:return:
+		"""
 		if self.Task is not None:
 			return
 
 		async def _main():
+			"""
+			Description:
+
+			:return:
+			"""
 			# This is to properly handle a lifecycle of the main method
 			try:
 				await self.main()
@@ -55,6 +64,11 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 
 	async def stop(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		if self.Task is None:
 			return  # Source is not started
 		if not self.Task.done():
@@ -66,6 +80,11 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 
 	def restart(self, loop):
+		"""
+		Description:
+
+		:return:
+		"""
 		if self.Task is not None:
 			if self.Task.done():
 				self.Task.result()
@@ -74,21 +93,29 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 
 	async def main(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		raise NotImplementedError()
 
 
 	async def stopped(self):
 		"""
-		Helper that simplyfies the implementation of sources:
+		Description: Helper that simplyfies the implementation of sources:
 
-.. code:: python
+		:return:
 
-	async def main(self):
-		... initialize resources here
+		Example:
+		.. code:: python
 
-		await self.stopped()
+			async def main(self):
+				... initialize resources here
 
-		... finalize resources here
+				await self.stopped()
+
+				... finalize resources here
 	"""
 
 		try:
@@ -100,10 +127,20 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 
 	def locate_address(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return "{}.*{}".format(self.Pipeline.Id, self.Id)
 
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return {
 			"Id": self.Id,
 			"Class": self.__class__.__name__
@@ -116,6 +153,11 @@ It is acomplished by `await self.Pipeline.ready()` call.
 
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
+		"""
+		Description:
+
+		:return:
+		"""
 		newid = definition.get('id')
 		config = definition.get('config')
 		args = definition.get('args')
@@ -128,24 +170,9 @@ It is acomplished by `await self.Pipeline.ready()` call.
 class TriggerSource(Source):
 
 	"""
-	This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
-	You need to provide a trigger class and implement cycle() method.
+	Description:
 
-	Trigger source will stop execution, when a pipeline is cancelled (raises concurrent.futures.CancelledError).
-	This typically happens when a program wants to quit in reaction to a on the signal.
-
-	You also may overload the main() method to provide additional parameters for a cycle() method.
-
-.. code:: python
-
-	async def main(self):
-		async with aiohttp.ClientSession(loop=self.Loop) as session:
-			await super().main(session)
-
-
-	async def cycle(self, session):
-		session.get(...)
-
+	:return:
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -160,12 +187,19 @@ class TriggerSource(Source):
 
 
 	def time(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		return self.App.time()
 
 
 	def on(self, trigger):
 		"""
-		Add trigger
+		Description:
+
+		:return:
 		"""
 		trigger.add(self)
 		self.Triggers.add(trigger)
@@ -173,6 +207,11 @@ class TriggerSource(Source):
 
 
 	async def main(self, *args, **kwags):
+		"""
+		Description:
+
+		:return:
+		"""
 		while True:
 			# Wait for pipeline is ready
 			await self.Pipeline.ready()
@@ -208,10 +247,20 @@ class TriggerSource(Source):
 
 
 	async def cycle(self, *args, **kwags):
+		"""
+		Description:
+
+		:return:
+		"""
 		raise NotImplementedError()
 
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		result = super().rest_get()
 		result.update({
 			"triggered": self.TriggerEvent.is_set()

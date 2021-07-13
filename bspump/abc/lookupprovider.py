@@ -4,6 +4,11 @@ import asab
 
 
 class LookupProviderABC(abc.ABC, asab.ConfigObject):
+	"""
+	Description:
+
+	:returns:
+	"""
 	def __init__(self, lookup, url, id=None, config=None):
 		self.Id = "lookupprovider:{}".format(id if id is not None else self.__class__.__name__)
 		super().__init__(config_section_name=self.Id, config=config)
@@ -17,4 +22,9 @@ class LookupProviderABC(abc.ABC, asab.ConfigObject):
 
 
 class LookupBatchProviderABC(LookupProviderABC, abc.ABC):
+	"""
+	Description:
+
+	:returns:
+	"""
 	pass

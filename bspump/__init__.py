@@ -1,4 +1,5 @@
 from .application import BSPumpApplication
+from .service import BSPumpService
 from .pipeline import Pipeline
 from .pumpbuilder import PumpBuilder
 from .abc.source import Source
@@ -14,6 +15,8 @@ from .abc.lookup import MappingLookup
 from .abc.lookup import DictionaryLookup
 from .fileloader import load_json_file
 
+from.analyzer.analyzer import Analyzer
+
 from .matrix.matrix import Matrix, PersistentMatrix
 from .matrix.namedmatrix import NamedMatrix, PersistentNamedMatrix
 from .model.model import Model
@@ -24,6 +27,7 @@ from .__version__ import __version__, __build__
 
 __all__ = (
 	"BSPumpApplication",
+	"BSPumpService",
 	"Pipeline",
 	"PumpBuilder",
 	"Source",
@@ -32,6 +36,8 @@ __all__ = (
 	"Processor",
 	"Generator",
 	"Connection",
+
+	"Analyzer",
 
 	"ProcessingError",
 	"Lookup",

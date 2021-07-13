@@ -141,6 +141,11 @@ class KafkaSource(Source):
 		self.Offsets = {}
 
 	def create_consumer(self):
+		"""
+		Description:
+
+		:returns:
+		"""
 		if len(self.Config["user_defined_partitions"]) != 0:
 			self.Consumer = self.Connection.create_consumer(
 				**self.ConsumerParams
@@ -158,6 +163,11 @@ class KafkaSource(Source):
 			)
 
 	async def initialize_consumer(self):
+		"""
+		Description:
+
+		:returns:
+		"""
 		# Create consumer after the loop is running
 		self.create_consumer()
 
@@ -166,6 +176,11 @@ class KafkaSource(Source):
 		self.Pipeline.PubSub.subscribe("bspump.pipeline.not_ready!", self._not_ready_handler)
 
 	async def _not_ready_handler(self, message_type, *args, **kwargs):
+		"""
+		Description:
+
+		:returns:
+		"""
 		# Preventive commit, when the pipeline is throttled
 		if len(self._group_id) > 0:
 			# TODO: Consider cases where self.MaxRecords != 1
@@ -207,6 +222,11 @@ class KafkaSource(Source):
 			await self.Consumer.stop()
 
 	async def _commit(self, offsets=None):
+		"""
+		Description:
+
+		:returns:
+		"""
 		for i in range(self.Retry, 0, -1):
 			try:
 				if offsets is not None and len(offsets) > 0:
@@ -257,13 +277,14 @@ class KafkaSource(Source):
 				return
 
 	async def _simulate_event(self):
-		'''
-		The _simulate_event method should be called in main method after a message has been processed.
+		"""
+		Description: The _simulate_event method should be called in main method after a message has been processed.
 
 		It ensures that all other asynchronous events receive enough time to perform their tasks.
 		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
-		'''
 
+		:returns:
+		"""
 		self.EventCounter += 1
 		if self.EventCounter % self.EventBlockSize == 0:
 			await asyncio.sleep(self.EventIdleTime)
