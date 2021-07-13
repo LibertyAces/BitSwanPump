@@ -11,4 +11,15 @@ Source
 Source methods
 ~~~~~~~~~~~~~~
 
-.. automethod::
+.. automethod:: bspump.kafka.source.KafkaSource.create_consumer
+
+.. automethod:: bspump.kafka.source.KafkaSource.initialize_consumer
+
+.. automethod:: bspump.kafka.source.KafkaSource._not_ready_handler
+
+.. automethod:: bspump.kafka.source.KafkaSource.main
+
+.. automethod:: bspump.kafka.source.KafkaSource._commit
+
+.. automethod:: bspump.kafka.source.KafkaSource._simulate_event
+
