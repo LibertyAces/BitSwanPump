@@ -1,7 +1,7 @@
 topic initializer
 ------------------
 
-.. py:currentmodule:: bspump.kafka.sink_kafka
+.. py:currentmodule:: bspump.kafka.topic_initializer
 
 .. autoclass:: KafkaTopicInitializer
     :special-members: __init__
