@@ -9,4 +9,6 @@ Apache Kafka
     source_kafka
     sink_kafka
     lookup_kafka
+    keyfilter_kafka
+    batchsink_kafka
     topic_initializer_kafka
