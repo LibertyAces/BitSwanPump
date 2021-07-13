@@ -58,6 +58,11 @@ class KafkaConnection(Connection):
 		self.Loop = app.Loop
 
 	async def create_producer(self, **kwargs):
+		"""
+		Description:
+
+		:returns:
+		"""
 		producer = aiokafka.AIOKafkaProducer(
 			loop=self.Loop,
 			bootstrap_servers=self.get_bootstrap_servers(),
@@ -71,6 +76,11 @@ class KafkaConnection(Connection):
 		return producer
 
 	def create_consumer(self, *topics, **kwargs):
+		"""
+		Description:
+
+		:returns:
+		"""
 		consumer = aiokafka.AIOKafkaConsumer(
 			*topics,
 			loop=self.Loop,
@@ -85,6 +95,11 @@ class KafkaConnection(Connection):
 		return consumer
 
 	def get_bootstrap_servers(self):
+		"""
+		Description:
+
+		:returns:
+		"""
 		return [
 			url for url
 			in re.split(r"[\s;]+", self.Config['bootstrap_servers'])
@@ -93,7 +108,9 @@ class KafkaConnection(Connection):
 
 	def get_compression(self):
 		"""
-		Returns compression type to use in connection
+		Description: Returns compression type to use in connection
+
+		:returns:
 		"""
 		compression_type = self.Config.get("compression_type")
 		if compression_type in ("", "none", "None"):
