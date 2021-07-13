@@ -10,16 +10,16 @@ topic initializer
 topic initializer methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethods:: bspump.kafka.topic_initializer.KafkaTopicInitializer._get_bootstrap_servers
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer._get_bootstrap_servers
 
-.. automethods:: bspump.kafka.topic_initializer.KafkaTopicInitializer.include_topics
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.include_topics
 
-.. automethods:: bspump.kafka.topic_initializer.KafkaTopicInitializer.include_topics_from_file
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.include_topics_from_file
 
-.. automethods:: bspump.kafka.topic_initializer.KafkaTopicInitializer.include_topics_from_config
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.include_topics_from_config
 
-.. automethods:: bspump.kafka.topic_initializer.KafkaTopicInitializer.fetch_existing_topics
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.fetch_existing_topics
 
-.. automethods:: bspump.kafka.topic_initializer.KafkaTopicInitializer.check_and_initialize
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.check_and_initialize
 
-.. automethods:: bspump.kafka.topic_initializer.KafkaTopicInitializer.initialize_topics
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.initialize_topics
