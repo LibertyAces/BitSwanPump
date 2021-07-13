@@ -121,8 +121,6 @@ Other pipeline methods
 
 .. automethod:: bspump.Pipeline._evaluate_ready()
 
-.. automethod:: bspump.Pipeline._evaluate_ready()
-
 .. automethod:: bspump.Pipeline.ready()
 
 .. automethod:: bspump.Pipeline.is_ready()
@@ -178,7 +176,7 @@ The coroutine method :meth:`main() <bspump.Source.main()>` contains an implement
 Source MUST await a :meth:`Pipeline <bspump.Pipeline()>` ready state prior producing the event.
 It is acomplished by `await self.Pipeline.ready()` call.
 
-.. py:currentmodule:: bspump
+.. py:currentmodule:: bspump.abc.source
 
 .. autoclass:: Source
     :special-members: __init__
@@ -188,27 +186,25 @@ It is acomplished by `await self.Pipeline.ready()` call.
 Source construction
 ~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.Source.process()
+.. automethod:: bspump.abc.source.Source.process
 
-.. automethod:: bspump.Source.start()
+.. automethod:: bspump.abc.source.Source.start
 
-.. automethod:: bspump.Source._main()
+.. automethod:: bspump.abc.source.Source.stop
 
-.. automethod:: bspump.Source.stop()
+.. automethod:: bspump.abc.source.Source.restart
 
-.. automethod:: bspump.Source.restart()
+.. automethod:: bspump.abc.source.Source.main
 
-.. automethod:: bspump.Source.main()
+.. automethod:: bspump.abc.source.Source.stopped
 
-.. automethod:: bspump.Source.stopped()
+.. automethod:: bspump.abc.source.Source.locate_address
 
-.. automethod:: bspump.Source.locate_address()
+.. automethod:: bspump.abc.source.Source.rest_get
 
-.. automethod:: bspump.Source.rest_get()
+.. automethod:: bspump.abc.source.Source.__repr__
 
-.. automethod:: bspump.Source.__repr__()
-
-.. automethod:: bspump.Source.construct()
+.. automethod:: bspump.abc.source.Source.construct
 
 Trigger source
 ~~~~~~~~~~~~~~
