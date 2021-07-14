@@ -11,7 +11,7 @@ L = logging.getLogger(__name__)
 
 class Stream(object):
 	'''
-	This object represent a client connection.
+	Description: This object represent a client connection.
 	It is unencrypted STREAM socket.
 	'''
 
@@ -48,11 +48,16 @@ class Stream(object):
 
 class TLSStream(object):
 	'''
-	This object represent a TLS client connection.
+	Description: This object represent a TLS client connection.
 	It is encrypted SSL/TLS socket abstraction.
 	'''
 
 	def __init__(self, loop, sslcontext, socket, server_side: bool):
+		"""
+		Description:
+
+
+		"""
 		self.Loop = loop
 		self.Socket = socket
 
@@ -66,6 +71,14 @@ class TLSStream(object):
 
 
 	async def handshake(self):
+		"""
+		Description:
+
+		:return: False if error is raised or socket is closed, otherwise returns True.
+
+		|
+
+		"""
 		while True:
 
 			try:
@@ -96,6 +109,11 @@ class TLSStream(object):
 
 
 	async def recv_into(self, buf):
+		"""
+		Description:
+
+
+		"""
 		while True:
 
 			try:
@@ -124,6 +142,11 @@ class TLSStream(object):
 
 
 	def send(self, data):
+		"""
+		Description:
+
+
+		"""
 		self.OutboundQueue.put_nowait(data)
 
 
@@ -144,5 +167,10 @@ class TLSStream(object):
 
 
 	async def close(self):
+		"""
+		Description:
+
+
+		"""
 		self.OutboundQueue.put_nowait(None)
 		self.Socket.close()
