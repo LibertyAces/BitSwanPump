@@ -24,13 +24,10 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
-	Description: Pipeline is ...
+	Pipeline is ...
 
+	|
 
-	Parameters: ---
-
-
-	:return: xxxx
 	"""
 
 
@@ -41,6 +38,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 	}
 
 	def __init__(self, app, id=None, config=None):
+		"""
+		...
+		"""
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__("pipeline:{}".format(_id), config=config)
 
@@ -124,11 +124,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Pipeline is ...
 
+		:return: App.time()
 
-		Parameters: ---
+		|
 
-
-		:return: xxxx
 		"""
 		return self.App.time()
 
@@ -136,11 +135,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Pipeline is ...
 
+		:return: _throttles
 
-		Parameters: ---
+		|
 
-
-		:return: xxxx
         """
 		return self._throttles
 
@@ -149,11 +147,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Pipeline is ...
 
+		:return: MatricsGauge.set
 
-		Parameters: event_type, metric, values
+		|
 
-
-		:return: xxxx
         """
 		if metric != self.MetricsCounter:
 			return
@@ -168,11 +165,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Pipeline is ...
 
-
-		Parameters: ---
-
-
 		:return: xxxx
+
+		|
+
         """
 		return self._error is not None
 
@@ -180,11 +176,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: If called with `exc is None`, then reset error (aka recovery)
 
+		:return: adds error via Metris EPS counter
 
-		Parameters: context event exc
+		|
 
-
-		:return: xxxx
 		"""
 		if exc is None:
 			# Reset branch
@@ -223,13 +218,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
 		Return False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing) or True for soft errors that will be ignored
 
-
-		Parameters: exception, context, event
-
-
-		:return:
-
-
 		Example:
 
 		.. code:: python
@@ -249,6 +237,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 					if isinstance(exception, json.decoder.JSONDecodeError):
 						return True
 					return False
+
+		|
+
 		"""
 
 		return False
@@ -264,8 +255,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		Parameters: :param ancestral_pipeline: pipeline
 
+		|
 
-		:return: xxxx
 		"""
 
 		self._ancestral_pipelines.add(ancestral_pipeline)
@@ -277,8 +268,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		Parameters: ancestral_pipeline: pipeline
 
+		|
 
-		:return: xxxx
 		"""
 
 		self._ancestral_pipelines.remove(ancestral_pipeline)
@@ -287,7 +278,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		# L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
 		if enable:
@@ -307,9 +299,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def _evaluate_ready(self):
 		"""
-		Description:
+		Description: evaluates if pipeline is ready
 
-		:return:
+		|
+
 		"""
 		orig_ready = self.is_ready()
 
@@ -334,9 +327,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Can be used in source: `await self.Pipeline.ready()`
 
-		Parameters:
-
-		:return:
 		"""
 
 		self._chillout_counter += 1
@@ -351,7 +341,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: _ready.is_set()
+
+		|
+
 		"""
 		return self._ready.is_set()
 
@@ -359,7 +352,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
 		"""
 		for processor in self.Processors[depth]:
 
@@ -403,7 +395,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		#For normal operations, it is highly recommended to use process method instead (see below).
 
-		:return:
+		|
+
 		"""
 
 		if context is None:
@@ -419,11 +412,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
 		while incrementing the event.in metric.
 
-		:return:
-
 		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
-
-
 		"""
 
 		while not self.is_ready():
@@ -440,7 +429,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: creates eps counter using MetricsService
+
+		|
+
 		"""
 		return self.MetricsService.create_eps_counter(
 			"bspump.pipeline.eps",
@@ -463,9 +455,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		it will collect the future result, trash it, and mainly it will capture any possible exception,
 		which will then block the :meth:`Pipeline <bspump.Pipeline()>` via set_error().
 
-		:return:
-
 		:hint: If the number of futures exceeds the configured limit, the :meth:`Pipeline <bspump.Pipeline()>` is throttled.
+
+		|
+
 		"""
 
 		future = asyncio.ensure_future(coro, loop=self.Loop)
@@ -482,9 +475,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Removes future from the future list and disables throttling, if the number of
 		futures does not exceed the configured limit.
 
-		:return:
-
 		:hint: If there is an error while processing the future, it it set to the :meth:`Pipeline <bspump.Pipeline()>`.
+
+		|
+
 		"""
 
 		# Remove the throttle
@@ -507,7 +501,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: set_source is a method that sets a selected source that will pump data into the BSPump
 
-		:return:
+		|
 
 		"""
 		if isinstance(source, Source):
@@ -519,7 +513,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`
 
-		:return:
+		|
 
 		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
@@ -536,7 +530,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: removes the processor from the :meth:`Pipeline <bspump.Pipeline()>`
 
-		:return:
+		:return: error when processor is not found
+
+		|
+
 		"""
 		for depth in self.Processors:
 			for idx, processor in enumerate(depth):
@@ -554,6 +551,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
 
 		return: True on success. False otherwise (id not found)
+
+		|
+
 		"""
 		for processors in self.Processors:
 			for idx, _processor in enumerate(processors):
@@ -568,6 +568,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by id
 
 		:return: True on success. False otherwise (id not found)
+
+		|
+
 		"""
 		for processors in self.Processors:
 			for idx, _processor in enumerate(processors):
@@ -581,7 +584,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
 			'bspump.pipeline.profiler',
@@ -607,7 +611,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: This method enables to add sources, :meth:`Processors <bspump.Processor()>`, and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:return:
+		|
+
 		"""
 		self.set_source(source)
 		for processor in processors:
@@ -617,7 +622,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Iterate thru all processors.
 
-		:return:
+		|
+
 		"""
 		for processors in self.Processors:
 			for processor in processors:
@@ -629,7 +635,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Find a source by id.
 
-		:return:
+		|
+
 		"""
 		for source in self.Sources:
 			if source.Id == address:
@@ -640,7 +647,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Find a connection by id.
 
-		:return:
+		:return: connection
+
+		|
+
 		"""
 		if isinstance(connection_id, Connection):
 			return connection_id
@@ -654,7 +664,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Find by a processor by id.
 
-		:return:
+		:return: processor
+
+		|
+
 		"""
 		for processor in self.iter_processors():
 			if processor.Id == processor_id:
@@ -666,7 +679,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: starts the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
 
-		:return:
+		|
+
 		"""
 		self.PubSub.publish("bspump.pipeline.start!", pipeline=self)
 
@@ -680,7 +694,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Desription: stops the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
 
-		:return:
+		|
+
 		"""
 		self.PubSub.publish("bspump.pipeline.stop!", pipeline=self)
 
@@ -703,7 +718,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: rest
+
+		|
+
 		"""
 		rest = {
 			'Id': self.Id,
@@ -737,7 +755,8 @@ class PipelineLogger(logging.Logger):
 	Description: PipelineLogger is a feature of BSPump which enables direct monitoring of a specific :meth:`Pipeline <bspump.Pipeline()>`.
 	It offers an overview of errors, error handling, data in a given time with its timestamp
 
-	:return:
+	|
+
 	"""
 
 	def __init__(self, name, metrics_counter, level=logging.NOTSET):
@@ -752,7 +771,8 @@ class PipelineLogger(logging.Logger):
 		"""
 		Description: Counts and adds errors to the error counter
 
-		:return:
+		|
+
 		"""
 		# Count errors and warnings
 		if record.levelno == logging.WARNING:
@@ -770,7 +790,10 @@ class PipelineLogger(logging.Logger):
 		"""
 		Description:
 
-		:return:
+		:return: time as a string
+
+		|
+
 		"""
 		try:
 			ct = datetime.datetime.fromtimestamp(record.created)
