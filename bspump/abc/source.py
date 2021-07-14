@@ -41,6 +41,9 @@ class Source(ConfigObject):
 		Description:
 
 		:return:
+
+		|
+
 		"""
 		if self.Task is not None:
 			return
