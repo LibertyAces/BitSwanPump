@@ -105,8 +105,6 @@ Other pipeline methods
 
 .. automethod:: bspump.Pipeline.get_throttles
 
-.. automethod:: bspump.Pipeline._on_metrics_flush
-
 .. automethod:: bspump.Pipeline.is_error()
 
 .. automethod:: bspump.Pipeline.set_error()
@@ -119,13 +117,9 @@ Other pipeline methods
 
 .. automethod:: bspump.Pipeline.throttle()
 
-.. automethod:: bspump.Pipeline._evaluate_ready()
-
 .. automethod:: bspump.Pipeline.ready()
 
 .. automethod:: bspump.Pipeline.is_ready()
-
-.. automethod:: bspump.Pipeline._do_process()
 
 .. automethod:: bspump.Pipeline.inject()
 
@@ -145,22 +139,7 @@ Other pipeline methods
 
 .. automethod:: bspump.Pipeline.stop()
 
-.. automethod:: bspump.Pipeline.rest_get()
 
-
-PipelineLogger
-~~~~~~~~~~~~~~
-
-.. py:currentmodule:: bspump.pipeline
-
-.. autoclass:: PipelineLogger
-    :special-members: __init__
-    :show-inheritance:
-
-
-.. automethod:: bspump.pipeline.PipelineLogger.handle()
-
-.. automethod:: bspump.pipeline.PipelineLogger._format_time()
 
 
 Source
@@ -199,10 +178,6 @@ Source construction
 .. automethod:: bspump.abc.source.Source.stopped
 
 .. automethod:: bspump.abc.source.Source.locate_address
-
-.. automethod:: bspump.abc.source.Source.rest_get
-
-.. automethod:: bspump.abc.source.Source.__repr__
 
 .. automethod:: bspump.abc.source.Source.construct
 
@@ -246,7 +221,6 @@ Trigger source methods
 
 .. automethod:: bspump.TriggerSource.cycle()
 
-.. automethod:: bspump.TriggerSource.rest_get()
 
 
 Processor
@@ -277,9 +251,6 @@ Processor construction
 
 .. automethod:: bspump.Processor.locate_address()
 
-.. automethod:: bspump.Processor.rest_get()
-
-.. automethod:: bspump.Processor.__repr__()
 
 
 Sink
@@ -291,8 +262,10 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 .. py:currentmodule:: bspump
 
 .. autoclass:: Sink
-    :special-members: __init__
     :show-inheritance:
+
+
+.. automethod:: bspump.Sink.__init__
 
 
 Connection
