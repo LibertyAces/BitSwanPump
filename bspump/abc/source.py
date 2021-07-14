@@ -11,9 +11,16 @@ class Source(ConfigObject):
 	"""
 	Description:
 
-	:return:
+	|
+
 	"""
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		|
+
+		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
 		self.Id = id if id is not None else self.__class__.__name__
@@ -26,10 +33,10 @@ class Source(ConfigObject):
 		"""
 		Description: This method is used to emit event into a :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:return
-
 		:hint If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
 		:hint The source should catch this exception and fail gracefully.
+
+		|
 
 		"""
 		# TODO: Remove this method completely, each source should call pipeline.process() method directly
@@ -40,8 +47,6 @@ class Source(ConfigObject):
 		"""
 		Description:
 
-		:return:
-
 		|
 
 		"""
@@ -49,11 +54,6 @@ class Source(ConfigObject):
 			return
 
 		async def _main():
-			"""
-			Description:
-
-			:return:
-			"""
 			# This is to properly handle a lifecycle of the main method
 			try:
 				await self.main()
@@ -68,9 +68,10 @@ class Source(ConfigObject):
 
 	async def stop(self):
 		"""
-		Description:
+		Description: stops a tasks or raises an error
 
-		:return:
+		|
+
 		"""
 		if self.Task is None:
 			return  # Source is not started
@@ -86,7 +87,8 @@ class Source(ConfigObject):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		if self.Task is not None:
 			if self.Task.done():
@@ -99,7 +101,8 @@ class Source(ConfigObject):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		raise NotImplementedError()
 
@@ -107,8 +110,6 @@ class Source(ConfigObject):
 	async def stopped(self):
 		"""
 		Description: Helper that simplyfies the implementation of sources:
-
-		:return:
 
 		Example:
 		.. code:: python
@@ -119,7 +120,10 @@ class Source(ConfigObject):
 				await self.stopped()
 
 				... finalize resources here
-	"""
+
+		|
+
+		"""
 
 		try:
 			while True:
@@ -133,7 +137,10 @@ class Source(ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: ID as a string
+
+		|
+
 		"""
 		return "{}.*{}".format(self.Pipeline.Id, self.Id)
 
@@ -142,7 +149,10 @@ class Source(ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: ID and class
+
+		|
+
 		"""
 		return {
 			"Id": self.Id,
@@ -159,7 +169,8 @@ class Source(ConfigObject):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		newid = definition.get('id')
 		config = definition.get('config')
@@ -175,7 +186,8 @@ class TriggerSource(Source):
 	"""
 	Description:
 
-	:return:
+	|
+
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -193,7 +205,10 @@ class TriggerSource(Source):
 		"""
 		Description:
 
-		:return:
+		:return: time
+
+		|
+
 		"""
 		return self.App.time()
 
@@ -202,7 +217,8 @@ class TriggerSource(Source):
 		"""
 		Description:
 
-		:return:
+		:return: ?? Trigger.add(trigger)
+
 		"""
 		trigger.add(self)
 		self.Triggers.add(trigger)
@@ -213,7 +229,8 @@ class TriggerSource(Source):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		while True:
 			# Wait for pipeline is ready
@@ -253,7 +270,8 @@ class TriggerSource(Source):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		raise NotImplementedError()
 
@@ -262,7 +280,10 @@ class TriggerSource(Source):
 		"""
 		Description:
 
-		:return:
+		:return: result
+
+		|
+
 		"""
 		result = super().rest_get()
 		result.update({
