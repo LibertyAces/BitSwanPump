@@ -5,6 +5,7 @@ class Sink(ProcessorBase):
 	"""
 	Description:
 
-	:return:
+	|
+
 	"""
 	pass
