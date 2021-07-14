@@ -16,6 +16,10 @@ L = logging.getLogger(__name__)
 
 
 class StreamServerSource(Source):
+	"""
+	Description:
+
+	"""
 
 	ConfigDefaults = {
 		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
@@ -28,6 +32,10 @@ class StreamServerSource(Source):
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None, protocol_class=LineSourceProtocol):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Address = self.Config['address']
@@ -48,6 +56,10 @@ class StreamServerSource(Source):
 
 
 	def start(self, loop):
+		"""
+		Description:
+
+		"""
 		if self.Task is not None:
 			return
 
@@ -84,6 +96,10 @@ class StreamServerSource(Source):
 
 
 	async def stop(self):
+		"""
+		Description:
+
+		"""
 		# Close client connections
 		for t in self.ConnectedClients:
 			t.cancel()
@@ -94,6 +110,10 @@ class StreamServerSource(Source):
 
 
 	async def main(self):
+		"""
+		Description:
+
+		"""
 		if len(self.AcceptingSockets) == 0:
 			L.warning("No listening socket configured")
 			return
@@ -108,6 +128,10 @@ class StreamServerSource(Source):
 
 
 	async def _handle_accept(self, sock):
+		"""
+		Description:
+
+		"""
 		loop = self.Pipeline.App.Loop
 		server_addr = sock.getsockname()
 		while True:
@@ -119,6 +143,10 @@ class StreamServerSource(Source):
 
 
 	async def _client_connected_task(self, client_sock, client_addr, server_addr):
+		"""
+		Description:
+
+		"""
 		client_sock.setblocking(False)
 
 		if client_sock.family is socket.AF_INET:
