@@ -5,7 +5,8 @@ class ProcessorBase(asab.ConfigObject):
 	"""
 	Description:
 
-	:return:
+	|
+
 	"""
 
 
@@ -13,7 +14,8 @@ class ProcessorBase(asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
@@ -28,7 +30,10 @@ class ProcessorBase(asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: time
+
+		|
+
 		"""
 		return self.App.time()
 
@@ -48,7 +53,8 @@ class ProcessorBase(asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		raise NotImplementedError()
 
@@ -57,7 +63,10 @@ class ProcessorBase(asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: ID of the pipeline
+
+		|
+
 		"""
 		return "{}.{}".format(self.Pipeline.Id, self.Id)
 
@@ -66,7 +75,10 @@ class ProcessorBase(asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: ID, Class and PipelineID
+
+		|
+
 		"""
 		return {
 			"Id": self.Id,
@@ -83,7 +95,8 @@ class Processor(ProcessorBase):
 	"""
 	Description:
 
-	:return:
+	|
+
 	"""
 	pass
 
