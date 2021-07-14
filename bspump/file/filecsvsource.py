@@ -9,6 +9,10 @@ L = logging.getLogger(__file__)
 
 
 class FileCSVSource(FileABCSource):
+	"""
+	Description:
+
+	"""
 
 
 	ConfigDefaults = {
@@ -34,6 +38,14 @@ class FileCSVSource(FileABCSource):
 
 
 	def reader(self, f):
+		"""
+		Description:
+
+		:returns: ??
+
+		|
+
+		"""
 		kwargs = {}
 
 		v = self.Config.get('delimiter')
@@ -77,6 +89,10 @@ class FileCSVSource(FileABCSource):
 
 
 	async def read(self, filename, f):
+		"""
+		Description:
+
+		"""
 
 		for line in self.reader(f):
 			await self.process(line, {
