@@ -74,8 +74,9 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 .. py:currentmodule:: bspump
 
 .. autoclass:: Pipeline
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.Pipeline.__init__()
 
 
 Pipeline construction
