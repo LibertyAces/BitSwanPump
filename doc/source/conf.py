@@ -112,6 +112,9 @@ html_collapse_navigation = True
 html_titles_only = False
 html_includehidden = True
 html_navigation_depth = 4
+html_prev_next_buttons_location = 'bottom'
+
+
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -127,7 +130,7 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'searchbox.html'] }
+html_sidebars = { '**': ['globaltoc.html', 'relations.html'] }
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
