@@ -27,7 +27,7 @@ Datagramsink
 .. automethod:: bspump.ipc.datagram.DatagramSink.process
 
 
-protocol
+Protocol
 --------
 
 .. py:currentmodule:: bspump.ipc.protocol
@@ -40,8 +40,8 @@ protocol
 .. automethod:: bspump.ipc.protocol.SourceProtocolABC.handle
 
 
-LineSourceProtocol
-~~~~~~~~~~~~~~~~~~
+Line Source Protocol
+~~~~~~~~~~~~~~~~~~~~
 
 .. py:currentmodule:: bspump.ipc.protocol
 
@@ -53,7 +53,7 @@ LineSourceProtocol
 .. automethod:: bspump.ipc.protocol.LineSourceProtocol.handle
 
 
-stream
+Stream
 ------
 
 .. py:currentmodule:: bspump.ipc.stream
@@ -91,7 +91,7 @@ TLS Stream
 .. automethod:: bspump.ipc.stream.TLSStream.close
 
 
-steam_server_source
+Steam Server Source
 -------------------
 
 .. py:currentmodule:: bspump.ipc.stream_server_source
@@ -108,7 +108,7 @@ steam_server_source
 .. automethod:: bspump.ipc.stream_server_source.StreamServerSource.main
 
 
-stream_client_sink
+Stream Client Sink
 ------------------
 
 .. py:currentmodule:: bspump.ipc.stream_client_sink
