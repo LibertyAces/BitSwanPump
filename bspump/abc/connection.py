@@ -7,14 +7,16 @@ class Connection(abc.ABC, ConfigObject):
 	Description: Connection class is responsible for creating a connection between items or services within the infrastructure of BSPump.
 	Their main use is to create connection with the main components of BSPump: source, processor and sink.
 
-	:return:
+	|
+
 	"""
 
 	def __init__(self, app, id=None, config=None):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 
 		_id = id if id is not None else self.__class__.__name__
@@ -30,7 +32,10 @@ class Connection(abc.ABC, ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: time
+
+		|
+
 		"""
 		return self.App.time()
 
@@ -40,7 +45,10 @@ class Connection(abc.ABC, ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: cls
+
+		|
+
 		"""
 		newid = definition.get('id')
 		config = definition.get('config')
