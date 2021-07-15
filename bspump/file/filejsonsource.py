@@ -26,7 +26,7 @@ class FileJSONSource(FileABCSource):
 	async def read(self, filename, f):
 		"""
 		Description:
-		
+
 		"""
 		await self.Pipeline.ready()
 
