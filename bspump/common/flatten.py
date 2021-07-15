@@ -3,6 +3,9 @@ from ..abc.processor import Processor
 
 class FlattenDictProcessor(Processor):
 	"""
+	Desription: ....
+
+
 		Inspired by https://github.com/amirziai/flatten
 
 		Example:
@@ -36,11 +39,23 @@ class FlattenDictProcessor(Processor):
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id, config)
 		self.Separator = self.Config['separator']
 
 
 	def _construct_key(self, previous_key, new_key):
+		"""
+		Description:
+
+		:return: new_key
+
+		|
+
+		"""
 		if previous_key:
 			return u"{}{}{}".format(previous_key, self.Separator, new_key)
 		else:
@@ -48,6 +63,14 @@ class FlattenDictProcessor(Processor):
 
 
 	def flatten(self, nested_dict):
+		"""
+		Description:
+
+		:return: flattened_dict
+
+		|
+
+		"""
 
 		flattened_dict = dict()
 
@@ -73,5 +96,13 @@ class FlattenDictProcessor(Processor):
 
 
 	def process(self, context, event):
+		"""
+		Description:
+
+		:return: event
+
+		|
+
+		"""
 		event = self.flatten(event)
 		return event
