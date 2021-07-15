@@ -4,8 +4,10 @@ BSPumpService
 .. py:currentmodule:: bspump
 
 .. autoclass:: BSPumpService
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.BSPumpService.__init__()
+
 
 BSPumpService methods
 ~~~~~~~~~~~~~~~~~~~~~
