@@ -7,9 +7,9 @@ Hexlify Processor
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: IteratorSource
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.IteratorSource.__init__()
 
 Hexlify Processor method
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,9 +23,9 @@ Hexlify Processor
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: IteratorGenerator
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.IteratorGenerator.__init__()
 
 Iterator Generator method
 ~~~~~~~~~~~~~~~~~~~~~~~~~
