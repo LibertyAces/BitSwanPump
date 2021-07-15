@@ -1,15 +1,15 @@
 BSPumpApplication
-===========
+=================
 
 .. py:currentmodule:: bspump
 
 .. autoclass:: BSPumpApplication
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.BSPumpApplication.__init__()
 
 BSPumpApplication construction
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.BSPumpApplication.create_argument_parser
 
@@ -19,6 +19,5 @@ BSPumpApplication construction
 
 .. automethod:: bspump.BSPumpApplication.main
 
-.. automethod:: bspump.BSPumpApplication._on_signal_usr1
 
 
