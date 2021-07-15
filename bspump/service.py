@@ -10,10 +10,13 @@ class BSPumpService(asab.Service):
 	"""
 	Description:
 
-	:return:
 	"""
 
 	def __init__(self, app, service_name="bspump.PumpService"):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, service_name)
 
 		self.Pipelines = dict()
@@ -27,7 +30,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		if '.' in address:
 			p, t = address.split('.', 1)
@@ -57,7 +59,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		if pipeline.Id in self.Pipelines:
 			raise RuntimeError("Pipeline with id '{}' is already registered".format(pipeline.Id))
@@ -67,7 +68,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		for pipeline in pipelines:
 			self.add_pipeline(pipeline)
@@ -76,7 +76,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		del self.Pipelines[pipeline.Id]
 
@@ -86,7 +85,7 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
+		:return: connection
 		"""
 		if connection.Id in self.Connections:
 			raise RuntimeError("Connection '{}' already created".format(connection.Id))
@@ -97,7 +96,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		for connection in connections:
 			self.add_connection(connection)
@@ -106,7 +104,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		from .abc.connection import Connection
 		if isinstance(connection_id, Connection):
@@ -124,7 +121,7 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
+		:return: lookup
 		"""
 		if lookup.Id in self.Lookups:
 			raise RuntimeError("Lookup '{}' already created".format(lookup.Id))
@@ -135,7 +132,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		for lookup in lookups:
 			self.add_lookup(lookup)
@@ -144,7 +140,7 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
+		:return: returns lookup from the lookup serivce or form the internal dictionary
 		"""
 		from .abc.lookup import Lookup
 		if isinstance(lookup_id, Lookup):
@@ -169,7 +165,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		self.LookupFactories.append(lookup_factory)
 
@@ -180,7 +175,7 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
+		:return: matrix
 		"""
 		if matrix.Id in self.Matrixes:
 			raise RuntimeError("Matrix '{}' already created".format(matrix.Id))
@@ -192,7 +187,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		for matrix in matrixes:
 			self.add_matrix(matrix)
@@ -201,7 +195,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		from .matrix.matrix import Matrix
 		if isinstance(matrix_id, Matrix):
@@ -217,7 +210,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		# Run initialization of lookups
 		lookup_update_tasks = []
@@ -238,7 +230,6 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
-		:return:
 		"""
 		# Stop all started pipelines
 		if len(self.Pipelines) > 0:
