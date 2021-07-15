@@ -11,7 +11,8 @@ L = logging.getLogger(__name__)
 
 class DirectSource(Source):
 	"""
-	This source processes inserted event synchronously.
+	Description: This source processes inserted event synchronously.
+
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -19,9 +20,10 @@ class DirectSource(Source):
 
 	def put(self, context, event, copy_context=False, copy_event=False):
 		"""
-		This method serves to put events into the pipeline and process them right away.
+		Description :This method serves to put events into the pipeline and process them right away.
 
 		Context can be an empty dictionary if is not provided.
+
 		"""
 
 		if copy_context:
@@ -38,10 +40,18 @@ class DirectSource(Source):
 		self.Pipeline.inject(context=child_context, event=event, depth=0)
 
 	async def main(self):
+		"""
+		Description:
+
+		"""
 		pass
 
 
 class InternalSource(Source):
+	"""
+	Description:
+
+	"""
 
 
 	ConfigDefaults = {
@@ -51,6 +61,10 @@ class InternalSource(Source):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop
 
@@ -70,7 +84,7 @@ class InternalSource(Source):
 
 	def put(self, context, event, copy_context=False, copy_event=False):
 		'''
-		Context can be an empty dictionary if is not provided.
+		Description: Context can be an empty dictionary if is not provided.
 
 		If you are getting a `asyncio.queues.QueueFull` exception,
 		you likely did not implemented backpressure handling.
@@ -95,7 +109,7 @@ class InternalSource(Source):
 
 	async def put_async(self, context, event, copy_context=False, copy_event=False):
 		'''
-		This method allows to put an event into InternalSource asynchronously.
+		Description: This method allows to put an event into InternalSource asynchronously.
 		Since a processing in the pipeline is synchronous, this method is useful mainly
 		for situation, when an event is created outside of the pipeline processing.
 		It is designed to handle situation when the queue is becoming full.
@@ -120,6 +134,10 @@ class InternalSource(Source):
 
 
 	async def main(self):
+		"""
+		Description:
+
+		"""
 		try:
 
 			while True:
@@ -140,6 +158,14 @@ class InternalSource(Source):
 
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return: rest
+
+		|
+
+		"""
 		rest = super().rest_get()
 		rest['Queue'] = self.Queue.qsize()
 		rest['BackPressure'] = self.BackPressure
@@ -147,18 +173,30 @@ class InternalSource(Source):
 
 
 class RouterMixIn(object):
-
 	"""
-	Router Mix in a class
+	Description: Router Mix in a class
+
 	"""
 
 
 	def _mixin_init(self, app):
+		"""
+		Description:
+
+		"""
 		self.ServiceBSPump = app.get_service("bspump.PumpService")
 		self.SourcesCache = {}
 
 
 	def locate(self, source_id):
+		"""
+		Description:
+
+		:return: source
+
+		|
+
+		"""
 		source = self.ServiceBSPump.locate(source_id)
 		if source is None:
 			L.warning("Cannot locate '{}' in '{}'".format(source_id, self.Id))
@@ -183,7 +221,7 @@ class RouterMixIn(object):
 
 	def unlocate(self, source_id):
 		'''
-		Undo locate() call, it means that it removes the source from a cache + remove throttling binds
+		Description: Undo locate() call, it means that it removes the source from a cache + remove throttling binds
 		'''
 
 		# UNTESTED CODE !!!
@@ -207,13 +245,19 @@ class RouterMixIn(object):
 
 
 	def dispatch(self, context, event, source_id, copy_event=True):
+		"""
+		Description:
+
+		:return: self.route(context, event, source_id, copy_event=True)
+
+		"""
 		# TODO: Obsolete function
 		return self.route(context, event, source_id, copy_event=True)
 
 
 	def route(self, context, event, source_id, copy_event=True):
 		'''
-		This method routes an event to a InternalSource `source_id`.
+		Description: This method routes an event to a InternalSource `source_id`.
 
 		It can be called multiple times from a process() method, which results in a cloning of the event.
 		'''
@@ -226,6 +270,10 @@ class RouterMixIn(object):
 
 
 	def _on_target_pipeline_ready_change(self, event_name, pipeline):
+		"""
+		Description:
+
+		"""
 		if event_name == "bspump.pipeline.ready!":
 			self.Pipeline.throttle(pipeline, enable=False)
 		elif event_name == "bspump.pipeline.not_ready!":
@@ -235,6 +283,10 @@ class RouterMixIn(object):
 
 
 	def _on_internal_source_backpressure_ready_change(self, event_name, source):
+		"""
+		Description:
+
+		"""
 		if event_name == "bspump.InternalSource.backpressure_off!":
 			self.Pipeline.throttle(source, enable=False)
 		elif event_name == "bspump.InternalSource.backpressure_on!":
@@ -244,11 +296,11 @@ class RouterMixIn(object):
 
 
 class RouterSink(Sink, RouterMixIn):
-
-	'''
-	Abstract Sink that dispatches events to other internal sources.
+	"""
+	Description: Abstract Sink that dispatches events to other internal sources.
 	One should override the process() method and call route() with target source id.
-	'''
+
+	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
@@ -256,11 +308,11 @@ class RouterSink(Sink, RouterMixIn):
 
 
 class RouterProcessor(Processor, RouterMixIn):
-
-	'''
-	Abstract Processor that dispatches events to other internal sources.
+	"""
+	Description:	Abstract Processor that dispatches events to other internal sources.
 	One should override the process() method and call route() with target source id.
-	'''
+
+	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
