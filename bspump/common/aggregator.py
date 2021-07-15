@@ -5,81 +5,175 @@ from bspump import Generator
 
 class AggregationStrategy(ABC):
     """
-    Aggregation Strategy is a method...
+    Description: Aggregation Strategy is a method...
+
     """
     @abstractmethod
     def append(self, context, event):
+        """
+        Description:
+
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def flush(self):
+        """
+        Description:
+
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def is_empty(self) -> bool:
+        """
+        Description:
+
+        """
         raise NotImplementedError()
 
 
 class ListAggregationStrategy(AggregationStrategy):
 
     """
-    ... test
+    Description: ... test
     """
 
     def __init__(self) -> None:
+        """
+        Description:
+
+        """
         super().__init__()
         self.AggregatedEvent = []
 
     def append(self, context, event):
+        """
+        Description:
+
+        """
         self.AggregatedEvent.append((context, event))
 
     def flush(self):
+        """
+        Description:
+
+        :return: result
+
+        |
+
+        """
         result = self.AggregatedEvent
         self.AggregatedEvent = []
         return result
 
     def is_empty(self) -> bool:
+        """
+        Description:
+
+        :return: Aggregated Event
+
+        |
+
+        """
         return len(self.AggregatedEvent) == 0
 
 
 class ListEventAggregationStrategy(AggregationStrategy):
+    """
+    Description:
+
+    """
 
     def __init__(self) -> None:
+        """
+        Description:
+
+        """
         super().__init__()
         self.AggregatedEvent = []
 
     def append(self, context, event):
+        """
+        Description:
+
+        """
         self.AggregatedEvent.append(event)
 
     def flush(self):
+        """
+        Description:
+
+        :return: result
+
+        |
+
+        """
         result = self.AggregatedEvent
         self.AggregatedEvent = []
         return result
 
     def is_empty(self) -> bool:
+        """
+        Description:
+
+        :return: Aggregated event
+
+        |
+
+        """
         return len(self.AggregatedEvent) == 0
 
 
 class StringAggregationStrategy(AggregationStrategy):
+    """
+    Description:
+
+    """
 
     def __init__(self, delimiter='\n') -> None:
+        """
+        Description:
+
+        """
         super().__init__()
         self.Delimiter = delimiter
         self.AggregatedEvent = ""
 
     def append(self, context, event):
+        """
+        Description:
+
+        """
         self.AggregatedEvent += str(event) + self.Delimiter
 
     def flush(self):
+        """
+        Description:
+
+        :return: result
+        """
         result = self.AggregatedEvent[0:-len(self.Delimiter)]  # Remove trailing delimiter
         self.AggregatedEvent = ""
         return result
 
     def is_empty(self) -> bool:
+        """
+        Description:
+
+        :return: Aggregated event
+
+        |
+
+        """
         return len(self.AggregatedEvent) == 0
 
 
 class Aggregator(Generator):
+    """
+    Description:
+
+    """
     ConfigDefaults = {
         'completion_size': 10,
         'completion_timeout': 0,  # 0 means no timeout,
@@ -89,6 +183,10 @@ class Aggregator(Generator):
     def __init__(self, app, pipeline,
                  aggregation_strategy: AggregationStrategy = ListAggregationStrategy(),
                  id=None, config=None):
+        """
+        Description:
+
+        """
         super().__init__(app, pipeline, id, config)
         self.CompletionSize = int(self.Config['completion_size'])
         self.CompletionTimeout = int(self.Config['completion_timeout'])
@@ -124,6 +222,11 @@ class Aggregator(Generator):
         self.flush()
 
     def flush(self):
+        """
+        Description:
+
+        :return: ??
+        """
         if self.AggregationStrategy.is_empty():
             return
 
@@ -133,6 +236,10 @@ class Aggregator(Generator):
         )
 
     def process(self, context, event):
+        """
+        Description:
+
+        """
         self.AggregationStrategy.append(context, event)
         self.CurrentSize += 1
         if self.CurrentSize >= self.CompletionSize:
@@ -141,5 +248,9 @@ class Aggregator(Generator):
         return None
 
     async def generate(self, context, aggregated_event, depth):
+        """
+        Description:
+
+        """
         self.LastFlushTime = self.App.time()
         await self.Pipeline.inject(context, aggregated_event, depth)
