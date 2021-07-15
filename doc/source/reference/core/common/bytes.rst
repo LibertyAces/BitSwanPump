@@ -2,13 +2,14 @@ Bytes
 =====
 
 String to Bytes Parser
---------------------
+----------------------
 
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: StringToBytesParser
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.common.StringToBytesParser.__init__()
 
 
 String to Bytes Parser method
@@ -18,14 +19,14 @@ String to Bytes Parser method
 
 
 Bytes to String Parser
---------------------
+----------------------
 
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: BytesToStringParser
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.BytesToStringParser.__init__()
 
 Bytes to String Parser method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
