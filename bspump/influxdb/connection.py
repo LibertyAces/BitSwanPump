@@ -15,7 +15,7 @@ L = logging.getLogger(__name__)
 
 class InfluxDBConnection(Connection):
 	"""
-	InfluxDBConnection serves to connect BSPump application with an InfluxDB database.
+	Description: InfluxDBConnection serves to connect BSPump application with an InfluxDB database.
 	The InfluxDB server is accessed via URL, and the database is specified
 	using the `db` parameter in the configuration.
 
@@ -40,6 +40,10 @@ class InfluxDBConnection(Connection):
 	}
 
 	def __init__(self, app, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, id=id, config=config)
 
 		self.url = self.Config["url"].strip()
@@ -70,7 +74,8 @@ class InfluxDBConnection(Connection):
 
 	def consume(self, data):
 		"""
-		Consumes user-defined data to be stored in the InfluxDB database.
+		Description: Consumes user-defined data to be stored in the InfluxDB database.
+
 		"""
 		self._output_bucket += data
 		if len(self._output_bucket) > self._output_bucket_max_size:
@@ -97,7 +102,8 @@ class InfluxDBConnection(Connection):
 
 	def flush(self, event_name=None):
 		"""
-		Directly flushes the content of the internal bucket with data to InfluxDB database.
+		Description: Directly flushes the content of the internal bucket with data to InfluxDB database.
+
 		"""
 		if len(self._output_bucket) == 0:
 			return
