@@ -92,19 +92,49 @@ File csv Sink
 File json Source
 ----------------
 
-.. py:currentmodule:: bspump.file.filecsvsink
-
-.. autoclass:: FileCSVSink
+.. py:currentmodule:: bspump.file.filejsonsource
+.. autoclass:: FileJSONSource
     :show-inheritance:
 
-.. automethod:: bspump.file.filecsvsink.FileCSVSink.__init__()
+.. automethod:: bspump.file.filejsonsource.FileJSONSource.__init__()
 
-File json Sink
+.. automethod:: bspump.file.filejsonsource.FileJSONSource.read
+
+File line Source
 --------------
 
-Global Scan
------------
+.. py:currentmodule:: bspump.file.filelinesource
+.. autoclass:: FileLineSource
+    :show-inheritance:
+
+.. automethod:: bspump.file.filelinesource.FileLineSource.__init__()
+
+.. automethod:: bspump.file.filelinesource.FileLineSource.read
+
+
+File Multiline Source
+~~~~~~~~~~~~~~~~~~~~~
+
+.. py:currentmodule:: bspump.file.filelinesource
+.. autoclass:: FileMultiLineSource
+    :show-inheritance:
+
+.. automethod:: bspump.file.filelinesource.FileMultiLineSource.__init__()
+
+.. automethod:: bspump.file.filelinesource.FileMultiLineSource.read
+
 
 Lookup Provider
 ---------------
+
+.. py:currentmodule:: bspump.file.lookupprovider
+.. autoclass:: FileBatchLookupProvider
+    :show-inheritance:
+
+.. automethod:: bspump.file.lookupprovider.FileBatchLookupProvider.__init__()
+
+.. automethod:: bspump.file.lookupprovider.FileBatchLookupProvider.load
+
+.. automethod:: bspump.file.lookupprovider.FileBatchLookupProvider.load_on_thread
+
 
