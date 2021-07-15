@@ -10,12 +10,27 @@ L = logging.getLogger(__file__)
 
 
 class FileLineSource(FileABCSource):
+	"""
+	Description:
+
+
+	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 
 	async def read(self, filename, f):
+		"""
+		Description:
+
+
+		"""
 
 		for line in f:
 
@@ -29,8 +44,8 @@ class FileLineSource(FileABCSource):
 
 
 class FileMultiLineSource(FileABCSource):
-	'''
-	Read file line by line but try to join multi-line events by separator.
+	"""
+	Description: Read file line by line but try to join multi-line events by separator.
 	Separator is a (fixed) pattern that should present at the begin of the line, if it is a new event.
 
 	Example:
@@ -41,9 +56,15 @@ class FileMultiLineSource(FileABCSource):
 
 	The separatpr is '<' string in this case
 
-	'''
+
+	"""
 
 	def __init__(self, app, pipeline, separator, id=None, config=None):
+		"""
+		Description:
+
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 		if isinstance(separator, str):
@@ -54,6 +75,11 @@ class FileMultiLineSource(FileABCSource):
 
 
 	async def read(self, filename, f):
+		"""
+		Description:
+
+
+		"""
 		latch = None
 
 		for line in f:
