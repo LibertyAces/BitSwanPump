@@ -8,7 +8,6 @@ Hexlify Processor
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: HexlifyProcessor
-    :special-members: __init__
     :show-inheritance:
 
 
