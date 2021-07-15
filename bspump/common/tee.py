@@ -6,8 +6,10 @@ L = logging.getLogger(__name__)
 
 
 class TeeSource(InternalSource):
+	"""
+	Description:
 
-	'''
+
 
 class SamplePipeline(bspump.Pipeline):
 
@@ -31,9 +33,13 @@ class SampleTeePipeline(bspump.Pipeline):
 			bspump.common.PPrintSink(app, self)
 		)
 
-	'''
+	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Targets = []
@@ -41,11 +47,27 @@ class SampleTeePipeline(bspump.Pipeline):
 
 
 	def bind(self, target):
+		"""
+		Description:
+
+		:return:
+
+		|
+
+		"""
 		self.Targets.append(target)
 		return self
 
 
 	async def main(self):
+		"""
+		Description:
+
+		:return:
+
+		|
+
+		"""
 
 		unbind_processor = []
 		for target in self.Targets:
@@ -71,35 +93,61 @@ class SampleTeePipeline(bspump.Pipeline):
 #
 
 class TeeProcessor(RouterProcessor):
+	"""
+	Description: See TeeSource for details.
 
-	'''
-	See TeeSource for details.
-	'''
+	"""
 
 	ConfigDefaults = {
 	}
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Targets = []
 
 
 	def bind(self, target: str):
-		'''
-		Target is a bspump.PumpService.locate() string
-		'''
+		"""
+		Description:	Target is a bspump.PumpService.locate() string
+
+		:return:
+
+		|
+
+		"""
+
 		self.Targets.append(target)
 		return self
 
 
 	def unbind(self, target: str):
+		"""
+		Description:
+
+		:return:
+
+		|
+
+		"""
 		self.Targets.remove(target)
 		self.unlocate(target)
 		return self
 
 
 	def process(self, context, event):
+		"""
+		Description:
+
+		:return:
+
+		|
+
+		"""
 		for source in self.Targets:
 			self.route(context, event, source)
 		return event
