@@ -10,6 +10,7 @@ Tee Source Processor
     :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.TeeSource.__init__()
 
 Tee Source method
 ~~~~~~~~~~~~~~~~~
@@ -27,6 +28,7 @@ Tee Processor
     :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.TeeProcessor.__init__()
 
 Tee Processor method
 ~~~~~~~~~~~~~~~~~~~~
