@@ -11,7 +11,7 @@ L = logging.getLogger(__name__)
 
 class InfluxDBSink(Sink):
 	"""
-	InfluxDBSink is a sink processor, that stores the event into an InfluxDB database
+	Description: InfluxDBSink is a sink processor, that stores the event into an InfluxDB database
 	specified in the InfluxDBConnection object.
 
 .. code:: python
@@ -28,6 +28,11 @@ class InfluxDBSink(Sink):
 	"""
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
+		"""
+		Description:
+
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self._connection = pipeline.locate_connection(app, connection)
 
@@ -37,6 +42,11 @@ class InfluxDBSink(Sink):
 
 	# TODO: Restructure data: { "measurement": "location", "tag_set": "location=us-midwest", "field_set": "temperature=82", "timestamp": 1465839830100400200 }
 	def process(self, context, event):
+		"""
+		Description:
+
+
+		"""
 
 		if isinstance(event, tuple):
 			measurement, tag_set, field_set, timestamp = event
