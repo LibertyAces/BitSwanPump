@@ -9,6 +9,7 @@ Time Zone Normalizer
     :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.TimeZoneNormalizer.__init__()
 
 Time Zone Normalizer method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
