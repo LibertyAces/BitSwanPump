@@ -107,12 +107,12 @@ html_theme = "alabaster"
 #    'titles_only': True
 # }
 
-html_sticky_navigation = True
-html_collapse_navigation = True
+html_sticky_navigation = False
+html_collapse_navigation = False
 html_titles_only = False
 html_includehidden = True
 html_navigation_depth = 4
-html_prev_next_buttons_location = 'bottom'
+
 
 
 
