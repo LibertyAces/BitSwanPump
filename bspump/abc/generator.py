@@ -5,14 +5,12 @@ class Generator(ProcessorBase):
 	"""
 	Description:
 
-	:return:
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description:
 
-		:return:
 		"""
 		super().__init__(app, pipeline, id, config)
 		# The correct depth is later set by the pipeline
@@ -22,7 +20,6 @@ class Generator(ProcessorBase):
 		"""
 		Description:
 
-		:return:
 		"""
 		assert(self.PipelineDepth is None)
 		self.PipelineDepth = depth
@@ -31,7 +28,6 @@ class Generator(ProcessorBase):
 		"""
 		Description:
 
-		:return:
 		"""
 		self.Pipeline.ensure_future(
 			self.generate(context, event, self.PipelineDepth + 1)
@@ -43,6 +39,5 @@ class Generator(ProcessorBase):
 		"""
 		Description:
 
-		:return:
 		"""
 		raise NotImplementedError()
