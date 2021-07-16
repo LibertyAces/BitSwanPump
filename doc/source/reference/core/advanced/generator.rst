@@ -43,16 +43,15 @@ Generator object is used to generate one or multiple events in asynchronous way
 .. py:currentmodule:: bspump
 
 .. autoclass:: Generator
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.Generator.__init__()
 
 Generator construction
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.Generator.set_depth
 
-.. automethod:: bspump.Generator.set_depth()
+.. automethod:: bspump.Generator.process
 
-.. automethod:: bspump.Generator.process()
-
-.. automethod:: bspump.Generator.generate()
+.. automethod:: bspump.Generator.generate
