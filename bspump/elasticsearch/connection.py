@@ -18,7 +18,6 @@ class ElasticSearchBulk(object):
 	"""
 	Description:
 
-	:return:
 	"""
 
 	def __init__(self, connection, index, max_size):
@@ -34,7 +33,10 @@ class ElasticSearchBulk(object):
 		"""
 		Description:
 
-		:return:
+		:return: self.Capacity <= 0
+
+		|
+
 		"""
 		for item in data_feeder_generator:
 			self.Items.append(item)
@@ -47,7 +49,6 @@ class ElasticSearchBulk(object):
 		"""
 		Description:
 
-		:return:
 		"""
 		for item in self.Items:
 			yield item
@@ -56,7 +57,10 @@ class ElasticSearchBulk(object):
 		"""
 		Description:
 
-		:return:
+		:return: ?
+
+		|
+
 		"""
 		items_count = len(self.Items)
 		if items_count == 0:
@@ -147,7 +151,6 @@ class ElasticSearchBulk(object):
 
 		:param response_items: list with dict items: {"index": {"_id": ..., "error": ...}}
 
-		:return:
 		"""
 
 	def full_error_callback(self, bulk_items, return_code):
@@ -160,6 +163,9 @@ class ElasticSearchBulk(object):
 		:param return_code: ElasticSearch return code
 
 		:return: False if the bulk is to be resumbitted again
+
+		|
+
 		"""
 		return False
 
@@ -168,7 +174,6 @@ class ElasticSearchConnection(Connection):
 	"""
 	Description:
 
-	:return:
 	"""
 
 	ConfigDefaults = {
@@ -188,7 +193,6 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
-		:return:
 		"""
 		super().__init__(app, id=id, config=config)
 
@@ -261,7 +265,10 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
-		:return:
+		:return: ?
+
+		|
+
 		"""
 		return random.choice(self.node_urls)
 
@@ -269,7 +276,10 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
-		:return:
+		:return: ??
+
+		|
+
 		"""
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
@@ -277,7 +287,10 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
-		:return:
+		:return: ?
+
+		|
+
 		"""
 		if data_feeder_generator is None:
 			return
@@ -297,7 +310,6 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
-		:return:
 		"""
 		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
@@ -306,7 +318,6 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
-		:return:
 		"""
 		# Wait till the queue is empty
 		self.flush(forced=True)
@@ -331,7 +342,6 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
-		:return:
 		"""
 		self.QueueMetric.set("size", int(self._output_queue.qsize()))
 
@@ -363,7 +373,6 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
-		:return:
 		"""
 		aged = []
 		for index, bulk in self._bulks.items():
@@ -379,7 +388,6 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description: Properly enqueue the bulk.
 
-		:return:
 		"""
 		self._output_queue.put_nowait(bulk)
 
@@ -391,7 +399,6 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
-		:return:
 		"""
 		async with self.get_session() as session:
 
