@@ -115,7 +115,7 @@ class TeeProcessor(RouterProcessor):
 		"""
 		Description:	Target is a bspump.PumpService.locate() string
 
-		:return:
+		:return: ?
 
 		|
 
@@ -129,7 +129,7 @@ class TeeProcessor(RouterProcessor):
 		"""
 		Description:
 
-		:return:
+		:return: ?
 
 		|
 
@@ -143,7 +143,7 @@ class TeeProcessor(RouterProcessor):
 		"""
 		Description:
 
-		:return:
+		:return: event
 
 		|
 
