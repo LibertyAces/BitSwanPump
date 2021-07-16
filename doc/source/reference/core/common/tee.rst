@@ -7,7 +7,6 @@ Tee Source Processor
 
 .. py:currentmodule:: bspump.common
 .. autoclass:: TeeSource
-    :special-members: __init__
     :show-inheritance:
 
 .. automethod:: bspump.common.TeeSource.__init__()
@@ -25,7 +24,6 @@ Tee Processor
 
 .. py:currentmodule:: bspump.common
 .. autoclass:: TeeProcessor
-    :special-members: __init__
     :show-inheritance:
 
 .. automethod:: bspump.common.TeeProcessor.__init__()
