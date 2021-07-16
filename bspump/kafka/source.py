@@ -73,6 +73,10 @@ class KafkaSource(Source):
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.topics = re.split(r'\s*,\s*', self.Config['topic'])
@@ -144,7 +148,6 @@ class KafkaSource(Source):
 		"""
 		Description:
 
-		:returns:
 		"""
 		if len(self.Config["user_defined_partitions"]) != 0:
 			self.Consumer = self.Connection.create_consumer(
@@ -166,7 +169,6 @@ class KafkaSource(Source):
 		"""
 		Description:
 
-		:returns:
 		"""
 		# Create consumer after the loop is running
 		self.create_consumer()
@@ -179,7 +181,6 @@ class KafkaSource(Source):
 		"""
 		Description:
 
-		:returns:
 		"""
 		# Preventive commit, when the pipeline is throttled
 		if len(self._group_id) > 0:
@@ -187,6 +188,10 @@ class KafkaSource(Source):
 			await self._commit(self.Offsets)
 
 	async def main(self):
+		"""
+		Description:
+
+		"""
 		await self.initialize_consumer()
 		try:
 			while 1:
@@ -225,7 +230,6 @@ class KafkaSource(Source):
 		"""
 		Description:
 
-		:returns:
 		"""
 		for i in range(self.Retry, 0, -1):
 			try:
@@ -283,7 +287,6 @@ class KafkaSource(Source):
 		It ensures that all other asynchronous events receive enough time to perform their tasks.
 		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
 
-		:returns:
 		"""
 		self.EventCounter += 1
 		if self.EventCounter % self.EventBlockSize == 0:
