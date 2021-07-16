@@ -86,6 +86,9 @@ class BSPumpService(asab.Service):
 		Description:
 
 		:return: connection
+
+		|
+
 		"""
 		if connection.Id in self.Connections:
 			raise RuntimeError("Connection '{}' already created".format(connection.Id))
@@ -122,6 +125,9 @@ class BSPumpService(asab.Service):
 		Description:
 
 		:return: lookup
+
+		|
+
 		"""
 		if lookup.Id in self.Lookups:
 			raise RuntimeError("Lookup '{}' already created".format(lookup.Id))
@@ -141,6 +147,9 @@ class BSPumpService(asab.Service):
 		Description:
 
 		:return: returns lookup from the lookup serivce or form the internal dictionary
+
+		|
+
 		"""
 		from .abc.lookup import Lookup
 		if isinstance(lookup_id, Lookup):
@@ -176,6 +185,9 @@ class BSPumpService(asab.Service):
 		Description:
 
 		:return: matrix
+
+		|
+
 		"""
 		if matrix.Id in self.Matrixes:
 			raise RuntimeError("Matrix '{}' already created".format(matrix.Id))
