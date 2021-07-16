@@ -87,6 +87,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 	}
 
 	def __init__(self, app, connection, id: typing.Optional[str] = None, config: dict = None):
+		"""
+		Description:
+
+		"""
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__(_id, config)
 
@@ -110,6 +114,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		self.BootstrapServers = re.split(r"[\s,]+", svc.Connections[connection].Config["bootstrap_servers"].strip())
 
 	def include_topics(self, *, topic_config=None, kafka_component=None, pipeline=None, config_file=None):
+		"""
+		Description:
+
+		"""
 		# Include topic from config or dict object
 		if topic_config is not None:
 			L.info("Including topics from dictionary")
@@ -137,6 +145,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 				self.include_topics_from_config(sink.Config)
 
 	def include_topics_from_file(self, topics_file: str):
+		"""
+		Description:
+
+		"""
 		# Support yaml and json input
 		ext = topics_file.strip().split(".")[-1].lower()
 		if ext == "json":
@@ -156,6 +168,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			self.RequiredTopics[topic["name"]] = kafka.admin.NewTopic(**topic)
 
 	def include_topics_from_config(self, config_object):
+		"""
+		Description:
+
+		"""
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
 		topic_names = config_object.get("topic").split(",")
 
@@ -185,6 +201,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			)
 
 	def fetch_existing_topics(self):
+		"""
+		Description:
+
+		"""
 		admin_client = kafka.admin.KafkaAdminClient(
 			bootstrap_servers=self.BootstrapServers,
 			client_id=self.ClientId
@@ -193,10 +213,18 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		admin_client.close()
 
 	def check_and_initialize(self):
+		"""
+		Description:
+
+		"""
 		L.warning("`check_and_initialize()` is obsoleted, use `initialize_topics()` instead")
 		self.initialize_topics()
 
 	def initialize_topics(self):
+		"""
+		Description:
+
+		"""
 		if len(self.RequiredTopics) == 0:
 			L.info("No Kafka topics were required.")
 			return
