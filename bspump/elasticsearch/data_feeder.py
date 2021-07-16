@@ -6,6 +6,10 @@ Data feeders to be used in ElasticSearchSink.
 
 
 def data_feeder_create_or_index(event):
+	"""
+	Description:
+
+	"""
 	_id = event.pop("_id", None)
 
 	if _id is None:
@@ -19,6 +23,10 @@ def data_feeder_create_or_index(event):
 
 
 def data_feeder_create(event):
+	"""
+	Description:
+
+	"""
 	_id = event.pop("_id", None)
 
 	if _id is None:
@@ -32,6 +40,10 @@ def data_feeder_create(event):
 
 
 def data_feeder_index(event):
+	"""
+	Description:
+
+	"""
 	_id = event.pop("_id", None)
 
 	if _id is None:
@@ -45,6 +57,10 @@ def data_feeder_index(event):
 
 
 def data_feeder_update(event):
+	"""
+	Description:
+
+	"""
 	_id = event.pop("_id", None)
 
 	assert _id is not None, "_id must be present in the event when updating a document in ElasticSearch"
@@ -57,6 +73,10 @@ def data_feeder_update(event):
 
 
 def data_feeder_delete(event):
+	"""
+	Description:
+
+	"""
 	_id = event.pop("_id", None)
 
 	assert _id is not None, "_id must be present in the event when deleting a document from ElasticSearch"
