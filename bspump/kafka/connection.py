@@ -54,6 +54,10 @@ class KafkaConnection(Connection):
 	}
 
 	def __init__(self, app, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, id=id, config=config)
 		self.Loop = app.Loop
 
@@ -61,7 +65,10 @@ class KafkaConnection(Connection):
 		"""
 		Description:
 
-		:returns:
+		:returns: producer
+
+		|
+
 		"""
 		producer = aiokafka.AIOKafkaProducer(
 			loop=self.Loop,
@@ -79,7 +86,10 @@ class KafkaConnection(Connection):
 		"""
 		Description:
 
-		:returns:
+		:returns: consumer
+
+		|
+
 		"""
 		consumer = aiokafka.AIOKafkaConsumer(
 			*topics,
@@ -98,7 +108,10 @@ class KafkaConnection(Connection):
 		"""
 		Description:
 
-		:returns:
+		:returns: ???
+
+		|
+
 		"""
 		return [
 			url for url
@@ -110,7 +123,10 @@ class KafkaConnection(Connection):
 		"""
 		Description: Returns compression type to use in connection
 
-		:returns:
+		:returns: compression_type
+
+		|
+
 		"""
 		compression_type = self.Config.get("compression_type")
 		if compression_type in ("", "none", "None"):
