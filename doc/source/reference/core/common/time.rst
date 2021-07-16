@@ -6,7 +6,6 @@ Time Zone Normalizer
 
 .. py:currentmodule:: bspump.common
 .. autoclass:: TimeZoneNormalizer
-    :special-members: __init__
     :show-inheritance:
 
 .. automethod:: bspump.common.TimeZoneNormalizer.__init__()
