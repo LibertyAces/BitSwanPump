@@ -169,6 +169,8 @@ class Source(ConfigObject):
 		"""
 		Description:
 
+		:return: ??
+
 		|
 
 		"""
