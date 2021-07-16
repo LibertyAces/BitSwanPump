@@ -60,6 +60,10 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 	}
 
 	def __init__(self, app, connection, id=None, config=None, cache=None, lazy=False):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, id=id, config=config, lazy=lazy)
 		self.Connection = connection
 
@@ -110,6 +114,11 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 	async def get(self, key):
 		"""
 		Obtain the value from lookup asynchronously.
+
+		:return: value
+
+		|
+
 		"""
 		value = None
 		try:
@@ -135,7 +144,11 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 	def build_find_one_query(self, key) -> dict:
 		"""
 		Override this method to build your own lookup query
+
 		:return: Default single-key query
+
+		|
+
 		"""
 		return {
 			'match': {
@@ -172,6 +185,14 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 
 	async def load(self):
+		"""
+		Description:
+
+		:return: True
+
+		|
+
+		"""
 		self.Count = len(self.Cache)
 		return True
 
@@ -240,6 +261,14 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 	@classmethod
 	def construct(cls, app, definition: dict):
+		"""
+		Description:
+
+		:return: cls(app, newid, connection, config)
+
+		|
+
+		"""
 		newid = definition.get('id')
 		config = definition.get('config')
 		connection = definition['args']['connection']
