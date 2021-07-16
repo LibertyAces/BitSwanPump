@@ -28,7 +28,6 @@ List Aggregation Strategy
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: ListAggregationStrategy
-    :special-members: __init__
     :show-inheritance:
 
 .. automethod:: bspump.common.ListAggregationStrategy.__init__()
@@ -50,7 +49,6 @@ String Aggregation Strategy
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: StringAggregationStrategy
-
     :show-inheritance:
 
 .. automethod:: bspump.common.StringAggregationStrategy.__init__()
@@ -72,7 +70,6 @@ Aggregator
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: Aggregator
-    :special-members: __init__
     :show-inheritance:
 
 .. automethod:: bspump.common.Aggregator.__init__()
