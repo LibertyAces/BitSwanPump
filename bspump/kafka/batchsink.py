@@ -8,7 +8,7 @@ from .sink import KafkaSink
 
 class KafkaBatchSink(KafkaSink):
 	"""
-	KafkaBatchSink is a sink processor that forwards the event to
+	Description: KafkaBatchSink is a sink processor that forwards the event to
 	an Apache Kafka specified by a KafkaConnection object in batches.
 
 	It is a proof of concept sink, that allows faster processing of events in the pipeline,
@@ -23,11 +23,19 @@ class KafkaBatchSink(KafkaSink):
 	}
 
 	def __init__(self, app, pipeline, connection, key_serializer=None, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, connection, key_serializer, id, config)
 		self._batch_size = int(self.Config["batch_size"])
 		self._throttled = False
 
 	def process(self, context, event: typing.Union[dict, str, bytes]):
+		"""
+		Description:
+
+		"""
 		if type(event) == dict:
 			event = json.dumps(event)
 			event = event.encode(self.Encoding)
