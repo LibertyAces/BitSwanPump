@@ -43,6 +43,10 @@ class ElasticSearchSink(Sink):
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None, bulk_class=ElasticSearchBulk, data_feeder=data_feeder_create_or_index):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Connection = pipeline.locate_connection(app, connection)
@@ -65,6 +69,10 @@ class ElasticSearchSink(Sink):
 
 
 	def process(self, context, event):
+		"""
+		Description:
+
+		"""
 		self.Connection.consume(
 			context.get("es_index", self.Index),
 			self.DataFeeder(event),
