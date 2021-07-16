@@ -40,6 +40,14 @@ class ProcessorBase(asab.ConfigObject):
 
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
+		"""
+		Description:
+
+		:return: ??
+
+		|
+
+		"""
 		newid = definition.get('id')
 		config = definition.get('config')
 		args = definition.get('args')
@@ -72,14 +80,6 @@ class ProcessorBase(asab.ConfigObject):
 
 
 	def rest_get(self):
-		"""
-		Description:
-
-		:return: ID, Class and PipelineID
-
-		|
-
-		"""
 		return {
 			"Id": self.Id,
 			"Class": self.__class__.__name__,
