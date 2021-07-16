@@ -9,7 +9,6 @@ class ElasticSearchSource(TriggerSource):
 	"""
 	Description:
 
-	:return:
 	"""
 	ConfigDefaults = {
 		'index': 'index-*',
@@ -21,7 +20,6 @@ class ElasticSearchSource(TriggerSource):
 		"""
 		Description:
 
-		:return:
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Connection = pipeline.locate_connection(app, connection)
@@ -46,7 +44,6 @@ class ElasticSearchSource(TriggerSource):
 		"""
 		Description:
 
-		:return:
 		"""
 		scroll_id = None
 
@@ -93,7 +90,6 @@ class ElasticSearchAggsSource(TriggerSource):
 	"""
 	Description: d
 
-	:return:
 	"""
 	ConfigDefaults = {
 		'index': 'index-*',
@@ -103,7 +99,6 @@ class ElasticSearchAggsSource(TriggerSource):
 		"""
 		Description:
 
-		:return:
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Connection = pipeline.locate_connection(app, connection)
@@ -127,7 +122,10 @@ class ElasticSearchAggsSource(TriggerSource):
 		"""
 		Description:
 
-		:return:
+		:return: ??
+
+		|
+
 		"""
 		request_body = self.RequestBody
 		path = '{}/_search?'.format(self.Index)
@@ -161,7 +159,6 @@ class ElasticSearchAggsSource(TriggerSource):
 		"""
 		Description:
 
-		:return:
 		"""
 		if 'buckets' in aggs:
 			await self.process_buckets(path, aggs_name, aggs["buckets"])
@@ -181,7 +178,6 @@ class ElasticSearchAggsSource(TriggerSource):
 		If there are 'buckets', calls itself, if there is 'value', calls process_aggs
 		and sends an event to process
 
-		:return:
 		"""
 		for bucket in buckets:
 			for k in bucket.keys():
