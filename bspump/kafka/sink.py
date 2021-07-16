@@ -14,7 +14,7 @@ L = logging.getLogger(__name__)
 
 class KafkaSink(Sink):
 	"""
-	KafkaSink is a sink processor that forwards the event to a Apache Kafka specified by a KafkaConnection object.
+	Description: KafkaSink is a sink processor that forwards the event to a Apache Kafka specified by a KafkaConnection object.
 
 	KafkaSink expects bytes as an input. If the input is string or dictionary, it is automatically transformed to bytes
 	using encoding charset specified in the configuration.
@@ -78,6 +78,10 @@ class KafkaSink(Sink):
 
 
 	def __init__(self, app, pipeline, connection, key_serializer=None, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Connection = pipeline.locate_connection(app, connection)
@@ -126,7 +130,6 @@ class KafkaSink(Sink):
 		"""
 		Description:
 
-		:returns:
 		"""
 		if self._conn_future is not None:
 			# Connection future exists
@@ -157,7 +160,6 @@ class KafkaSink(Sink):
 		"""
 		Description:
 
-		:returns:
 		"""
 		self._output_queue.put_nowait((None, None, None))
 
@@ -166,7 +168,6 @@ class KafkaSink(Sink):
 		"""
 		Description:
 
-		:returns:
 		"""
 		producer = await self.Connection.create_producer(**self._producer_params)
 		try:
@@ -190,7 +191,6 @@ class KafkaSink(Sink):
 		"""
 		Description:
 
-		:returns:
 		"""
 		if type(event) == dict:
 			event = json.dumps(event)
