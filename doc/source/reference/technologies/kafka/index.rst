@@ -1,14 +1,118 @@
 Apache Kafka
 =============
 
-.. toctree::
-    :maxdepth: 1
+connection
+------------
+
+.. py:currentmodule:: bspump.kafka.connection
+
+.. autoclass:: KafkaConnection
+    :show-inheritance:
 
 
-    connection_kafka
-    source_kafka
-    sink_kafka
-    lookup_kafka
-    keyfilter_kafka
-    batchsink_kafka
-    topic_initializer_kafka
+.. automethod:: bspump.kafka.connection.KafkaConnection.__init__()
+
+
+connection methods
+~~~~~~~~~~~~~~~~~~
+
+.. automethod:: bspump.kafka.connection.KafkaConnection.create_producer
+
+.. automethod:: bspump.kafka.connection.KafkaConnection.create_consumer
+
+.. automethod:: bspump.kafka.connection.KafkaConnection.get_bootstrap_servers
+
+.. automethod:: bspump.kafka.connection.KafkaConnection.get_compression
+
+
+Source
+------
+
+.. py:currentmodule:: bspump.kafka.source
+
+.. autoclass:: KafkaSource
+    :show-inheritance:
+
+.. automethod:: bspump.kafka.source.KafkaSource.__init__()
+
+
+Source methods
+~~~~~~~~~~~~~~
+
+.. automethod:: bspump.kafka.source.KafkaSource.create_consumer
+
+.. automethod:: bspump.kafka.source.KafkaSource.initialize_consumer
+
+.. automethod:: bspump.kafka.source.KafkaSource.main
+
+
+Sink
+----
+
+.. py:currentmodule:: bspump.kafka.sink
+
+.. autoclass:: KafkaSink
+    :show-inheritance:
+
+.. automethod:: bspump.kafka.sink.KafkaSink.__init__()
+
+
+Sink methods
+~~~~~~~~~~~~
+
+.. automethod:: bspump.kafka.sink.KafkaSink.process
+
+
+key filter kafka
+----------------
+
+.. py:currentmodule:: bspump.kafka.keyfilter
+
+.. autoclass:: KafkaKeyFilter
+    :show-inheritance:
+
+.. automethod:: bspump.kafka.keyfilter.KafkaKeyFilter.__init__()
+
+.. automethod:: bspump.kafka.keyfilter.KafkaKeyFilter.process
+
+
+batch sink
+----------
+.. py:currentmodule:: bspump.kafka.batchsink
+
+.. autoclass:: KafkaBatchSink
+    :show-inheritance:
+
+.. automethod:: bspump.kafka.batchsink.KafkaBatchSink.__init__()
+
+
+batch sink methods
+~~~~~~~~~~~~~~~~~~
+
+.. automethod:: bspump.kafka.batchsink.KafkaBatchSink.process
+
+
+topic initializer
+------------------
+
+.. py:currentmodule:: bspump.kafka.topic_initializer
+
+.. autoclass:: KafkaTopicInitializer
+    :show-inheritance:
+
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.__init__()
+
+topic initializer methods
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.include_topics
+
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.include_topics_from_file
+
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.include_topics_from_config
+
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.fetch_existing_topics
+
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.check_and_initialize
+
+.. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.initialize_topics
