@@ -16,6 +16,11 @@ class DirectSource(Source):
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 	def put(self, context, event, copy_context=False, copy_event=False):
@@ -222,6 +227,11 @@ class RouterMixIn(object):
 	def unlocate(self, source_id):
 		'''
 		Description: Undo locate() call, it means that it removes the source from a cache + remove throttling binds
+
+		:return: ??
+
+		|
+
 		'''
 
 		# UNTESTED CODE !!!
@@ -249,6 +259,8 @@ class RouterMixIn(object):
 		Description:
 
 		:return: self.route(context, event, source_id, copy_event=True)
+
+		|
 
 		"""
 		# TODO: Obsolete function
