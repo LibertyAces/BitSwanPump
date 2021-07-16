@@ -37,6 +37,7 @@ class ListAggregationStrategy(AggregationStrategy):
 
     """
     Description: ... test
+
     """
 
     def __init__(self) -> None:
