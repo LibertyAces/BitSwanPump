@@ -3,13 +3,12 @@ from ..abc.processor import Processor
 
 class FlattenDictProcessor(Processor):
 	"""
-	Desription: ....
+	Description: ....
 
 
 		Inspired by https://github.com/amirziai/flatten
 
 		Example:
-
 		"person": {
 			"details": {
 				"first_name": "John",
