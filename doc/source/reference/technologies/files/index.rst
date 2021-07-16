@@ -70,7 +70,7 @@ File csv Source
 
 
 File csv Sink
----------------
+-------------
 
 .. py:currentmodule:: bspump.file.filecsvsink
 
@@ -101,7 +101,7 @@ File json Source
 .. automethod:: bspump.file.filejsonsource.FileJSONSource.read
 
 File line Source
---------------
+----------------
 
 .. py:currentmodule:: bspump.file.filelinesource
 .. autoclass:: FileLineSource
