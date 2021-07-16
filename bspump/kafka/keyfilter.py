@@ -16,6 +16,10 @@ class KafkaKeyFilter(bspump.Processor):
 	"""
 
 	def __init__(self, app, pipeline, keys, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id, config)
 		if not isinstance(keys, collections.abc.Iterable) or isinstance(keys, bytes):
 			self.Keys = frozenset([keys])
@@ -25,6 +29,10 @@ class KafkaKeyFilter(bspump.Processor):
 
 
 	def process(self, context, event):
+		"""
+		Description:
+
+		"""
 		kafka_ctx = context.get("kafka")
 		assert (kafka_ctx is not None)
 
