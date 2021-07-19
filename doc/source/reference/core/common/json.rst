@@ -12,24 +12,9 @@ CySimd Json Parser
 
 
 CySimd Json Parser method
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.CySimdJsonParser.process
-
-
-Std Dict To Json Parser
------------------------
-
-.. py:currentmodule:: bspump.common
-
-.. autoclass:: StdDictToJsonParser
-    :show-inheritance:
-
-
-Std Dict To Json Parser method
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automethod:: bspump.common.StdDictToJsonParser.process
 
 
 Std Dict To Json Parser

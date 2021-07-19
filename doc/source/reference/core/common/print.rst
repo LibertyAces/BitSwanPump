@@ -2,7 +2,7 @@ Print
 =====
 
 Print Sink
-----------
+-----------
 
 .. py:currentmodule:: bspump.common
 .. autoclass:: PrintSink
@@ -17,18 +17,12 @@ Print Sink method
 
 
 PPrint Sink
------------
+------------
 
 .. py:currentmodule:: bspump.common
-.. autoclass:: PrintSink
+.. autoclass:: PPrintSink
     :special-members: __init__
     :show-inheritance:
-
-
-PPrint Sink method
-~~~~~~~~~~~~~~~~~~
-
-.. automethod:: bspump.common.PrintSink.process
 
 
 Print Processor
@@ -46,21 +40,6 @@ Print Processor method
 .. automethod:: bspump.common.PrintProcessor.process
 
 
-PPrint Processor
-----------------
-
-.. py:currentmodule:: bspump.common
-.. autoclass:: PPrintProcessor
-    :special-members: __init__
-    :show-inheritance:
-
-
-PPrint Processor method
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automethod:: bspump.common.PPrintProcessor.process
-
-
 Print Context Processor
 -----------------------
 
@@ -74,20 +53,3 @@ Print Context Processor method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.PrintContextProcessor.process
-
-
-PPrint Context Processor
------------------------
-
-.. py:currentmodule:: bspump.common
-.. autoclass:: PPrintContextProcessor
-    :special-members: __init__
-    :show-inheritance:
-
-
-PPrint Context Processor method
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automethod:: bspump.common.PPrintContextProcessor.process
-
-

@@ -34,19 +34,12 @@ ElasticSearchSource is using standard Elastic's search API to fetch data.
 		},
 	}
 
-.. py:currentmodule:: bspump.elasticsearch
-
-.. autoclass:: ElasticSearchSource
-    :special-members: __init__
-    :show-inheritance:
-
 
 Source methods
 ~~~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.source.ElasticSearchSource.cycle
 
-.. automethod:: bspump.elasticsearch.source.ElasticSearchSource.cycle
 
 ElasticSearch Aggs Source
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -172,16 +165,6 @@ Elastic Search Bulk methods
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.full_error_callback
 
 
-Lookup
-------
-
-.. py:currentmodule:: bspump.elasticsearch
-
-.. autoclass:: ElasticSearchLookup
-    :special-members: __init__
-    :show-inheritance:
-
-
 Lookup methods
 ~~~~~~~~~~~~~~
 
@@ -191,19 +174,6 @@ Lookup methods
 .. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup._count
 .. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.load
 .. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.construct
-
-
-
-
-
-Sink
-----
-
-.. py:currentmodule:: bspump.elasticsearch
-
-.. autoclass:: ElasticSearchSink
-    :special-members: __init__
-    :show-inheritance:
 
 
 Sink methods
