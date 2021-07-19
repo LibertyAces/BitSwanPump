@@ -2,7 +2,7 @@ Bytes
 =====
 
 String to Bytes Parser
---------------------
+-----------------------
 
 .. py:currentmodule:: bspump.common
 
@@ -18,7 +18,7 @@ String to Bytes Parser method
 
 
 Bytes to String Parser
---------------------
+-----------------------
 
 .. py:currentmodule:: bspump.common
 

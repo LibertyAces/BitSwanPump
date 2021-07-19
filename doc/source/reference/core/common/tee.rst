@@ -6,9 +6,6 @@ Tee Source Processor
 --------------------
 
 .. py:currentmodule:: bspump.common
-.. autoclass:: TeeSource
-    :special-members: __init__
-    :show-inheritance:
 
 
 Tee Source method

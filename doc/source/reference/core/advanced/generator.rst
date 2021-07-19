@@ -2,7 +2,8 @@ Generator
 ===========
 
 Generator object is used to generate one or multiple events in asynchronous way
-	and pass them to following processors in the pipeline.
+and pass them to following processors in the pipeline.
+
 	In the case of Generator, user overrides `generate` method, not `process`.
 
 	1.) Generator can iterate through an event to create (generate) derived ones and pass them to following processors.
@@ -51,8 +52,6 @@ Generator construction
 
 .. automethod:: bspump.Generator.set_depth
 
-.. automethod:: bspump.Generator.set_depth()
+.. automethod:: bspump.Generator.process
 
-.. automethod:: bspump.Generator.process()
-
-.. automethod:: bspump.Generator.generate()
+.. automethod:: bspump.Generator.generate
