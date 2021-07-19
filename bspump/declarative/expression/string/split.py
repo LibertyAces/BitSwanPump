@@ -37,4 +37,8 @@ class SPLIT(Expression):
 	def __call__(self, context, event, *args, **kwargs):
 		value = self.Value(context, event, *args, **kwargs)
 		separator = self.Separator(context, event, *args, **kwargs)
-		return value.split(separator)
+
+		try:
+			return value.split(separator)
+		except AttributeError:
+			return None
