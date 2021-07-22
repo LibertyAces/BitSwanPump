@@ -33,7 +33,7 @@ import bspump.declarative.expression
 # -- Project information -----------------------------------------------------
 
 project = 'BSPump Reference'
-copyright = '2020, TeskaLabs'
+copyright = '2021, TeskaLabs'
 author = 'TeskaLabs'
 
 # The short X.Y version
