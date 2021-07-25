@@ -550,7 +550,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
 
-		return: True on success. False otherwise (id not found)
+		:return: True on success. False otherwise (id not found)
 
 		|
 
