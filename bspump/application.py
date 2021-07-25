@@ -17,7 +17,7 @@ class BSPumpApplication(asab.Application):
 
 	def __init__(self, args=None, web_listen=None):
 		'''
-		Description:Bude tohle nekde videt.
+		Description:
 
 		'''
 		super().__init__(args=args)
