@@ -10,7 +10,8 @@ Mapping Transformator
 
 .. automethod:: bspump.common.MappingTransformator.__init__()
 
-Mapping Transformator methods
+
+Mapping Transformator Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.MappingTransformator.build
