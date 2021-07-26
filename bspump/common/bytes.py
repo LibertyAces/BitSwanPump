@@ -5,6 +5,8 @@ class StringToBytesParser(Processor):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	ConfigDefaults = {
@@ -14,6 +16,8 @@ class StringToBytesParser(Processor):
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -36,6 +40,8 @@ class BytesToStringParser(Processor):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	ConfigDefaults = {
@@ -45,6 +51,8 @@ class BytesToStringParser(Processor):
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
