@@ -59,6 +59,10 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		"""
 
 		super().__init__(app, pipeline, analyze_on_clock=True, clock_driven=True, id=id, config=config)
 
@@ -72,6 +76,11 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def predicate(self, context, event):
+		"""
+		Description:
+
+		:return: True
+		"""
 		if self.EventAttribute not in event:
 			return False
 
@@ -82,6 +91,11 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def evaluate(self, context, event):
+		"""
+		Description:
+
+		:return: ??
+		"""
 		attribute = event[self.EventAttribute]
 		time_stamp = event["@timestamp"]
 
@@ -100,6 +114,10 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def analyze(self):
+		"""
+		Description:
+
+		"""
 		# Checking an empty array
 		if self.TimeWindow.Array.shape[0] == 0:
 			return
@@ -153,4 +171,9 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def alarm(self, *args):
+		"""
+		Description:
+		
+		"""
+
 		pass
