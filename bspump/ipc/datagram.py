@@ -38,8 +38,6 @@ class DatagramSource(Source):
 
 			self.Socket = socket.socket(family, socket.SOCK_DGRAM)
 			self.Socket.setblocking(False)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 			if self.ReceiveBufferSize > 0:
 				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
 
@@ -49,8 +47,6 @@ class DatagramSource(Source):
 
 			self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 			self.Socket.setblocking(False)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 			if self.ReceiveBufferSize > 0:
 				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
 
@@ -112,8 +108,6 @@ class DatagramSink(Sink):
 
 			self.Socket = socket.socket(family, socket.SOCK_DGRAM)
 			self.Socket.setblocking(False)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 			if self.ReceiveBufferSize > 0:
 				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
 
@@ -123,8 +117,6 @@ class DatagramSink(Sink):
 
 			self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 			self.Socket.setblocking(False)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 			if self.ReceiveBufferSize > 0:
 				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
 
