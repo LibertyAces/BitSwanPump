@@ -11,7 +11,8 @@ Hexlify Processor
 
 .. automethod:: bspump.common.IteratorSource.__init__()
 
-Hexlify Processor method
+
+Hexlify Processor Method
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.IteratorSource.cycle
@@ -27,7 +28,8 @@ Hexlify Processor
 
 .. automethod:: bspump.common.IteratorGenerator.__init__()
 
-Iterator Generator method
+
+Iterator Generator Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.IteratorGenerator.generate
