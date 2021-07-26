@@ -12,6 +12,8 @@ class TimeZoneNormalizer(bspump.Processor):
 	"""
 	Description: Normalizes datetime from local timezone (e.g. in config) to UTC, which is preferred internal datetime form
 
+	|
+
 	"""
 
 	ConfigDefaults = {
@@ -22,6 +24,8 @@ class TimeZoneNormalizer(bspump.Processor):
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -51,5 +55,8 @@ class TimeZoneNormalizer(bspump.Processor):
 			>>> native_time = event["@timestamp"]
 			>>> local_time = self.normalize(native_time)
 			>>> event["@timestamp"] = local_time
+
+		|
+
 		"""
 		raise NotImplementedError()
