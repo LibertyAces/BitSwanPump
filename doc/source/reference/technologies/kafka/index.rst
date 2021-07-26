@@ -1,8 +1,8 @@
 Apache Kafka
 =============
 
-connection
-------------
+Connection
+----------
 
 .. py:currentmodule:: bspump.kafka.connection
 
@@ -13,7 +13,7 @@ connection
 .. automethod:: bspump.kafka.connection.KafkaConnection.__init__()
 
 
-connection methods
+connection Methods
 ~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.kafka.connection.KafkaConnection.create_producer
@@ -36,7 +36,7 @@ Source
 .. automethod:: bspump.kafka.source.KafkaSource.__init__()
 
 
-Source methods
+Source Methods
 ~~~~~~~~~~~~~~
 
 .. automethod:: bspump.kafka.source.KafkaSource.create_consumer
@@ -57,13 +57,13 @@ Sink
 .. automethod:: bspump.kafka.sink.KafkaSink.__init__()
 
 
-Sink methods
+Sink Methods
 ~~~~~~~~~~~~
 
 .. automethod:: bspump.kafka.sink.KafkaSink.process
 
 
-key filter kafka
+Key Filter Kafka
 ----------------
 
 .. py:currentmodule:: bspump.kafka.keyfilter
@@ -73,10 +73,11 @@ key filter kafka
 
 .. automethod:: bspump.kafka.keyfilter.KafkaKeyFilter.__init__()
 
+
 .. automethod:: bspump.kafka.keyfilter.KafkaKeyFilter.process
 
 
-batch sink
+Batch Sink
 ----------
 .. py:currentmodule:: bspump.kafka.batchsink
 
@@ -86,14 +87,14 @@ batch sink
 .. automethod:: bspump.kafka.batchsink.KafkaBatchSink.__init__()
 
 
-batch sink methods
+Batch Sink Methods
 ~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.kafka.batchsink.KafkaBatchSink.process
 
 
-topic initializer
-------------------
+Topic Initializer
+-----------------
 
 .. py:currentmodule:: bspump.kafka.topic_initializer
 
@@ -101,6 +102,7 @@ topic initializer
     :show-inheritance:
 
 .. automethod:: bspump.kafka.topic_initializer.KafkaTopicInitializer.__init__()
+
 
 topic initializer methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~
