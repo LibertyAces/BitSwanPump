@@ -7,12 +7,16 @@ class MappingTransformator(Processor):
 	"""
 	Description:
 
+	|
+
 	"""
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -23,6 +27,8 @@ class MappingTransformator(Processor):
 	def build(self, app):
 		"""
 		Description:
+
+		|
 
 		"""
 		raise NotImplementedError()
