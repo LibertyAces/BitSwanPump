@@ -12,13 +12,13 @@ String to Bytes Parser
 .. automethod:: bspump.common.StringToBytesParser.__init__()
 
 
-String to Bytes Parser method
+String To Bytes Parser Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.StringToBytesParser.process
 
 
-Bytes to String Parser
+Bytes To String Parser
 ----------------------
 
 .. py:currentmodule:: bspump.common
@@ -28,7 +28,8 @@ Bytes to String Parser
 
 .. automethod:: bspump.common.BytesToStringParser.__init__()
 
-Bytes to String Parser method
+
+Bytes To String Parser Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.BytesToStringParser.process
