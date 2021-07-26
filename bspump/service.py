@@ -10,11 +10,15 @@ class BSPumpService(asab.Service):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def __init__(self, app, service_name="bspump.PumpService"):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, service_name)
@@ -29,6 +33,8 @@ class BSPumpService(asab.Service):
 	def locate(self, address):
 		"""
 		Description:
+
+		|
 
 		"""
 		if '.' in address:
@@ -59,6 +65,8 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
+		|
+
 		"""
 		if pipeline.Id in self.Pipelines:
 			raise RuntimeError("Pipeline with id '{}' is already registered".format(pipeline.Id))
@@ -68,6 +76,8 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
+		|
+
 		"""
 		for pipeline in pipelines:
 			self.add_pipeline(pipeline)
@@ -75,6 +85,8 @@ class BSPumpService(asab.Service):
 	def del_pipeline(self, pipeline):
 		"""
 		Description:
+
+		|
 
 		"""
 		del self.Pipelines[pipeline.Id]
@@ -99,6 +111,8 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
+		|
+
 		"""
 		for connection in connections:
 			self.add_connection(connection)
@@ -106,6 +120,8 @@ class BSPumpService(asab.Service):
 	def locate_connection(self, connection_id):
 		"""
 		Description:
+
+		|
 
 		"""
 		from .abc.connection import Connection
@@ -137,6 +153,8 @@ class BSPumpService(asab.Service):
 	def add_lookups(self, *lookups):
 		"""
 		Description:
+
+		|
 
 		"""
 		for lookup in lookups:
@@ -174,6 +192,8 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
+		|
+
 		"""
 		self.LookupFactories.append(lookup_factory)
 
@@ -199,6 +219,8 @@ class BSPumpService(asab.Service):
 		"""
 		Description:
 
+		|
+
 		"""
 		for matrix in matrixes:
 			self.add_matrix(matrix)
@@ -206,6 +228,8 @@ class BSPumpService(asab.Service):
 	def locate_matrix(self, matrix_id):
 		"""
 		Description:
+
+		|
 
 		"""
 		from .matrix.matrix import Matrix
@@ -221,6 +245,8 @@ class BSPumpService(asab.Service):
 	async def initialize(self, app):
 		"""
 		Description:
+
+		|
 
 		"""
 		# Run initialization of lookups
@@ -241,6 +267,8 @@ class BSPumpService(asab.Service):
 	async def finalize(self, app):
 		"""
 		Description:
+
+		|
 
 		"""
 		# Stop all started pipelines
