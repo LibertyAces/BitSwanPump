@@ -11,6 +11,7 @@ Connection
 
 .. automethod:: bspump.influxdb.connection.InfluxDBConnection.__init__()
 
+
 Sink
 ----
 
@@ -20,5 +21,6 @@ Sink
     :show-inheritance:
 
 .. automethod:: bspump.influxdb.sink.InfluxDBSink.__init__()
+
 
 .. automethod:: bspump.influxdb.sink.InfluxDBSink.process
