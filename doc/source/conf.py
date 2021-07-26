@@ -18,6 +18,8 @@
 
 import os
 import sys
+import sphinx_rtd_theme
+
 
 root_directory = os.path.join(os.path.dirname(os.getcwd()), "..")
 sys.path.insert(0, root_directory)
@@ -56,6 +58,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.imgmath',
     'sphinx.ext.viewcode',
+    'sphinx_rtd_theme',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -91,7 +94,10 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "alabaster"
+#html_theme = "alabaster"
+html_theme = "sphinx_rtd_theme"
+#html_theme = "sphinx_book_theme"
+#html_theme = 'furo'
 #html_theme_path = ["_themes", ]
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -99,19 +105,25 @@ html_theme = "alabaster"
 # documentation.
 #
 
-#html_theme_options = {
-#    'collapse_navigation': True,
-#    'sticky_navigation': True,
-#    'navigation_depth': 4,
-#    'includehidden': True,
-#    'titles_only': True
-# }
+html_theme_options = {
+    'collapse_navigation': True,
+    'sticky_navigation': True,
+    'navigation_depth': -1,
+    'includehidden': True,
+    'titles_only': False,
+    'prev_next_buttons_location': 'both',
+    'display_version': True,
+    'style_external_links': True,
+ }
 
-html_sticky_navigation = False
-html_collapse_navigation = False
-html_titles_only = False
-html_includehidden = True
-html_navigation_depth = 4
+
+
+#html_sticky_navigation = False
+#html_collapse_navigation = False
+#html_titles_only = False
+#html_includehidden = True
+#html_navigation_depth = 4
+#html_prev_next_buttons_location: 'bottom'
 
 
 
@@ -130,8 +142,10 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
+
 html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html',
- 'searchbox.html'] }
+'searchbox.html'] }
+
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
