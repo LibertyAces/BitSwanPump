@@ -39,7 +39,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def __init__(self, app, id=None, config=None):
 		"""
-		...
+		Description:
+
+		|
+
 		"""
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__("pipeline:{}".format(_id), config=config)
@@ -151,7 +154,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		|
 
-        """
+		"""
 		if metric != self.MetricsCounter:
 			return
 		if values["event.in"] == 0:
@@ -327,6 +330,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Can be used in source: `await self.Pipeline.ready()`
 
+		|
+
 		"""
 
 		self._chillout_counter += 1
@@ -351,6 +356,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 	def _do_process(self, event, depth, context):
 		"""
 		Description:
+
+		|
 
 		"""
 		for processor in self.Processors[depth]:
@@ -413,6 +420,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		while incrementing the event.in metric.
 
 		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
+
+		|
+
 		"""
 
 		while not self.is_ready():
