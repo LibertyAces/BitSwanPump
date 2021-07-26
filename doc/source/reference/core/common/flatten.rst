@@ -8,9 +8,9 @@ Flatten Dict Processor
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: FlattenDictProcessor
-    :special-members: __init__
     :show-inheritance:
 
+..automethod:: bspump.common.FlattenDictProcessor.__init__()
 
 Flatten Dict Processor
 ~~~~~~~~~~~~~~~~~~~~~~
