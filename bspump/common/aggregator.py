@@ -7,11 +7,15 @@ class AggregationStrategy(ABC):
     """
     Aggregation Strategy is a method...
 
+    |
+
     """
     @abstractmethod
     def append(self, context, event):
         """
         Description:
+
+        |
 
         """
         raise NotImplementedError()
@@ -21,6 +25,8 @@ class AggregationStrategy(ABC):
         """
         Description:
 
+        |
+
         """
         raise NotImplementedError()
 
@@ -28,6 +34,8 @@ class AggregationStrategy(ABC):
     def is_empty(self) -> bool:
         """
         Description:
+
+        |
 
         """
         raise NotImplementedError()
@@ -38,11 +46,15 @@ class ListAggregationStrategy(AggregationStrategy):
     """
     Description: ... test
 
+    |
+
     """
 
     def __init__(self) -> None:
         """
         Description:
+
+        |
 
         """
         super().__init__()
@@ -51,6 +63,8 @@ class ListAggregationStrategy(AggregationStrategy):
     def append(self, context, event):
         """
         Description:
+
+        |
 
         """
         self.AggregatedEvent.append((context, event))
@@ -84,11 +98,15 @@ class ListEventAggregationStrategy(AggregationStrategy):
     """
     Description:
 
+    |
+
     """
 
     def __init__(self) -> None:
         """
         Description:
+
+        |
 
         """
         super().__init__()
@@ -97,6 +115,8 @@ class ListEventAggregationStrategy(AggregationStrategy):
     def append(self, context, event):
         """
         Description:
+
+        |
 
         """
         self.AggregatedEvent.append(event)
@@ -130,11 +150,15 @@ class StringAggregationStrategy(AggregationStrategy):
     """
     Description:
 
+    |
+
     """
 
     def __init__(self, delimiter='\n') -> None:
         """
         Description:
+
+        |
 
         """
         super().__init__()
@@ -145,6 +169,8 @@ class StringAggregationStrategy(AggregationStrategy):
         """
         Description:
 
+        |
+
         """
         self.AggregatedEvent += str(event) + self.Delimiter
 
@@ -153,6 +179,9 @@ class StringAggregationStrategy(AggregationStrategy):
         Description:
 
         :return: result
+
+        |
+
         """
         result = self.AggregatedEvent[0:-len(self.Delimiter)]  # Remove trailing delimiter
         self.AggregatedEvent = ""
@@ -174,6 +203,8 @@ class Aggregator(Generator):
     """
     Description:
 
+    |
+
     """
     ConfigDefaults = {
         'completion_size': 10,
@@ -186,6 +217,8 @@ class Aggregator(Generator):
                  id=None, config=None):
         """
         Description:
+
+        |
 
         """
         super().__init__(app, pipeline, id, config)
@@ -227,6 +260,9 @@ class Aggregator(Generator):
         Description:
 
         :return: ??
+
+        |
+
         """
         if self.AggregationStrategy.is_empty():
             return
@@ -240,6 +276,8 @@ class Aggregator(Generator):
         """
         Description:
 
+        |
+
         """
         self.AggregationStrategy.append(context, event)
         self.CurrentSize += 1
@@ -251,6 +289,8 @@ class Aggregator(Generator):
     async def generate(self, context, aggregated_event, depth):
         """
         Description:
+
+        |
 
         """
         self.LastFlushTime = self.App.time()
