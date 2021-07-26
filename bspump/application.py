@@ -11,13 +11,17 @@ class BSPumpApplication(asab.Application):
 
 
 	"""
-	Description: BSPumpApplication is **class** used for .....
+	BSPumpApplication is **class** used for .....
+
+	|
 
 	"""
 
 	def __init__(self, args=None, web_listen=None):
 		'''
 		Description:
+
+		|
 
 		'''
 		super().__init__(args=args)
@@ -57,6 +61,8 @@ class BSPumpApplication(asab.Application):
 		Description:
 
 		:return: paraser
+
+		|
 
 		"""
 		prog = sys.argv[0]
