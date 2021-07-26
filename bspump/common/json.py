@@ -5,7 +5,7 @@ from ..abc.processor import Processor
 
 class CySimdJsonParser(Processor):
 	'''
-	Description: Fast JSON parser. Expects json bytes represented as bytes as input
+	Fast JSON parser. Expects json bytes represented as bytes as input
 	Based on https://github.com/TeskaLabs/cysimdjson
 
 	'''
@@ -69,7 +69,7 @@ class StdJsonToDictParser(Processor):
 
 class DictToJsonBytesParser(Processor):
 	"""
-	Description: DictToJsonBytesParser transforms a dictionary to JSON-string encoded in bytes.
+	DictToJsonBytesParser transforms a dictionary to JSON-string encoded in bytes.
 	The encoding charset can be specified in the configuration in `encoding` field.
 
 	"""
