@@ -11,11 +11,12 @@ Datagram
 
 .. automethod:: bspump.ipc.datagram.DatagramSource.__init__()
 
+
 .. automethod:: bspump.ipc.datagram.DatagramSource.main
 
 
-Datagramsink
-~~~~~~~~~~~~
+Datagram sink
+~~~~~~~~~~~~~
 
 .. py:currentmodule:: bspump.ipc.datagram
 
@@ -23,6 +24,7 @@ Datagramsink
     :show-inheritance:
 
 .. automethod:: bspump.ipc.datagram.DatagramSink.__init__()
+
 
 .. automethod:: bspump.ipc.datagram.DatagramSink.process
 
@@ -37,6 +39,7 @@ Protocol
 
 .. automethod:: bspump.ipc.protocol.SourceProtocolABC.__init__()
 
+
 .. automethod:: bspump.ipc.protocol.SourceProtocolABC.handle
 
 
@@ -50,6 +53,7 @@ Line Source Protocol
 
 .. automethod:: bspump.ipc.protocol.LineSourceProtocol.__init__()
 
+
 .. automethod:: bspump.ipc.protocol.LineSourceProtocol.handle
 
 
@@ -62,6 +66,7 @@ Stream
     :show-inheritance:
 
 .. automethod:: bspump.ipc.stream.Stream.__init__()
+
 
 .. automethod:: bspump.ipc.stream.Stream.recv_into
 
@@ -82,6 +87,7 @@ TLS Stream
 
 .. automethod:: bspump.ipc.stream.TLSStream.__init__()
 
+
 .. automethod:: bspump.ipc.stream.TLSStream.recv_into
 
 .. automethod:: bspump.ipc.stream.TLSStream.send
@@ -101,6 +107,7 @@ Steam Server Source
 
 .. automethod:: bspump.ipc.stream_server_source.StreamServerSource.__init__()
 
+
 .. automethod:: bspump.ipc.stream_server_source.StreamServerSource.start
 
 .. automethod:: bspump.ipc.stream_server_source.StreamServerSource.stop
@@ -117,5 +124,6 @@ Stream Client Sink
     :show-inheritance:
 
 .. automethod:: bspump.ipc.stream_client_sink.StreamClientSink.__init__()
+
 
 .. automethod:: bspump.ipc.stream_client_sink.StreamClientSink.process
