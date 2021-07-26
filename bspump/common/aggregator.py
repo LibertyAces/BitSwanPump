@@ -5,7 +5,7 @@ from bspump import Generator
 
 class AggregationStrategy(ABC):
     """
-    Description: Aggregation Strategy is a method...
+    Aggregation Strategy is a method...
 
     """
     @abstractmethod
