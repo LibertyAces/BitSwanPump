@@ -26,6 +26,10 @@ class TimeDriftAnalyzer(Analyzer):
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		# def __init__(self, app, pipeline, analyze_on_clock=False, analyze_period=None, id=None, config=None):
 		super().__init__(app, pipeline, analyze_on_clock=True, id=id, config=config)
 
@@ -58,6 +62,14 @@ class TimeDriftAnalyzer(Analyzer):
 
 
 	def predicate(self, context, event):
+		"""
+		Description:
+
+		:return: True
+
+		|
+
+		"""
 		if self.TimestampAttr not in event:
 			return False
 
@@ -70,13 +82,19 @@ class TimeDriftAnalyzer(Analyzer):
 
 	def get_diff(self, event_timestamp):
 		'''
-			Returns the time difference of current event.
+		Returns the time difference of current event.
+
+		:return: diff
 		'''
 		diff = self.App.time() - event_timestamp
 		return diff
 
 
 	def evaluate(self, context, event):
+		"""
+		Description:
+
+		"""
 		timestamp = event[self.TimestampAttr]
 		diff = self.get_diff(timestamp)
 
@@ -92,6 +110,10 @@ class TimeDriftAnalyzer(Analyzer):
 
 
 	def analyze(self):
+		"""
+		Description:
+
+		"""
 		# in seconds
 		if len(self.History) > 0:
 			avg = np.mean(self.History)
