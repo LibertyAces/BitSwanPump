@@ -11,6 +11,7 @@ Direct Source
 
 .. automethod:: bspump.common.DirectSource.__init__()
 
+
 Direct Source
 ~~~~~~~~~~~~~
 
@@ -28,6 +29,7 @@ Internal Source
     :show-inheritance:
 
 .. automethod:: bspump.common.InternalSource.__init__()
+
 
 Internal Source methods
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,6 +53,7 @@ Router Mix In
 
 .. automethod:: bspump.common.routing.RouterMixIn.__init__()
 
+
 Router Mix In methods
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -73,6 +76,7 @@ Router Sink
     :show-inheritance:
 
 .. automethod:: bspump.common.routing.RouterSink.__init__()
+
 
 Router Processor
 ----------------
