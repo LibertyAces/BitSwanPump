@@ -9,7 +9,7 @@ Null Sink
     :show-inheritance:
 
 
-Null Sink method
+Null Sink Method
 ~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.NullSink.process
