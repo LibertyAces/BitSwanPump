@@ -8,12 +8,15 @@ class CySimdJsonParser(Processor):
 	Fast JSON parser. Expects json bytes represented as bytes as input
 	Based on https://github.com/TeskaLabs/cysimdjson
 
+	|
+
 	'''
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description: .
 
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -25,6 +28,8 @@ class CySimdJsonParser(Processor):
 
 		:return: self._parser.parse(event)
 
+		|
+
 		"""
 		return self._parser.parse(event)
 
@@ -32,6 +37,8 @@ class CySimdJsonParser(Processor):
 class StdDictToJsonParser(Processor):
 	"""
 	Description:
+
+	|
 
 	"""
 
@@ -52,6 +59,7 @@ class StdJsonToDictParser(Processor):
 	"""
 	Description:
 
+	|
 
 	"""
 
@@ -72,6 +80,8 @@ class DictToJsonBytesParser(Processor):
 	DictToJsonBytesParser transforms a dictionary to JSON-string encoded in bytes.
 	The encoding charset can be specified in the configuration in `encoding` field.
 
+	|
+
 	"""
 	ConfigDefaults = {
 		'encoding': 'utf-8',
@@ -81,6 +91,7 @@ class DictToJsonBytesParser(Processor):
 		"""
 		Description: ..
 
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
