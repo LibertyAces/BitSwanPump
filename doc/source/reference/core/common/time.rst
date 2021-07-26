@@ -10,7 +10,8 @@ Time Zone Normalizer
 
 .. automethod:: bspump.common.TimeZoneNormalizer.__init__()
 
-Time Zone Normalizer method
+
+Time Zone Normalizer Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.TimeZoneNormalizer.normalize
