@@ -55,7 +55,7 @@ class Analyzer(Processor):
 
 	def evaluate(self, context, event):
 		"""
-		Description: The function which records the information from the event into the analyzed object.
+		The function which records the information from the event into the analyzed object.
 			Specific for each analyzer.
 
 
@@ -66,7 +66,7 @@ class Analyzer(Processor):
 
 	def predicate(self, context, event):
 		"""
-		Description: This function is meant to check, if the event is worth to process.
+		This function is meant to check, if the event is worth to process.
 			If it is, should return True.
 			Specific for each analyzer, but default one always returns True.
 
@@ -77,7 +77,7 @@ class Analyzer(Processor):
 
 	def process(self, context, event):
 		"""
-		Description: The event passes through `process(context, event)` unchanged.
+		The event passes through `process(context, event)` unchanged.
 			Meanwhile it is evaluated.
 
 		:return:
@@ -90,7 +90,7 @@ class Analyzer(Processor):
 
 	async def on_clock_tick(self):
 		"""
-		Description: Run analyzis every tick.
+		Run analyzis every tick.
 
 		:return:
 		"""
