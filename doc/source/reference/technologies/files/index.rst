@@ -14,7 +14,7 @@ File ABC Source
 .. automethod:: bspump.file.fileabcsource.FileABCSource.__init__()
 
 
-File ABC Source methods
+File ABC Source Methods
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.file.fileabcsource.FileABCSource.cycle
@@ -34,6 +34,7 @@ File Block Source
 
 
 .. automethod:: bspump.file.fileblocksource.FileBlockSource.__init__()
+
 
 .. automethod:: bspump.file.fileblocksource.FileBlockSource.read
 
@@ -63,6 +64,7 @@ File csv Source
     :show-inheritance:
 
 .. automethod:: bspump.file.filecsvsource.FileCSVSource.__init__()
+
 
 .. automethod:: bspump.file.filecsvsource.FileCSVSource.reader
 
@@ -98,7 +100,9 @@ File json Source
 
 .. automethod:: bspump.file.filejsonsource.FileJSONSource.__init__()
 
+
 .. automethod:: bspump.file.filejsonsource.FileJSONSource.read
+
 
 File line Source
 ----------------
@@ -121,6 +125,7 @@ File Multiline Source
 
 .. automethod:: bspump.file.filelinesource.FileMultiLineSource.__init__()
 
+
 .. automethod:: bspump.file.filelinesource.FileMultiLineSource.read
 
 
@@ -132,6 +137,7 @@ Lookup Provider
     :show-inheritance:
 
 .. automethod:: bspump.file.lookupprovider.FileBatchLookupProvider.__init__()
+
 
 .. automethod:: bspump.file.lookupprovider.FileBatchLookupProvider.load
 
