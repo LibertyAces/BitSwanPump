@@ -11,7 +11,7 @@ Hexlify Processor
     :show-inheritance:
 
 
-Hexlify Processor method
+Hexlify Processor Method
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.HexlifyProcessor.process
