@@ -9,7 +9,7 @@ BSPumpService
 .. automethod:: bspump.BSPumpService.__init__()
 
 
-BSPumpService methods
+BSPumpService Methods
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.BSPumpService.locate
