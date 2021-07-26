@@ -11,13 +11,12 @@ Source
 
 .. automethod:: bspump.amqp.source.AMQPSource.__init__()
 
+
 .. automethod:: bspump.amqp.source.AMQPSource.main
 
 .. automethod:: bspump.amqp.source.AMQPSource.process_message
 
 .. automethod:: bspump.amqp.source.AMQPSource.construct
-
-
 
 
 AMQP Full Message Source
@@ -27,6 +26,7 @@ AMQP Full Message Source
 
 .. autoclass:: AMQPFullMessageSource
     :show-inheritance:
+
 
 .. automethod:: bspump.amqp.source.AMQPFullMessageSource.process_message
 
@@ -41,6 +41,7 @@ Sink
 
 .. automethod:: bspump.amqp.sink.AMQPSink.__init__()
 
+
 .. automethod:: bspump.amqp.sink.AMQPSink.process
 
 
@@ -51,6 +52,7 @@ Connection
 
 .. autoclass:: AMQPConnection
     :show-inheritance:
+
 
 .. automethod:: bspump.amqp.connection.AMQPConnection.__init__()
 
