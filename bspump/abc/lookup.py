@@ -19,6 +19,7 @@ class Lookup(asab.ConfigObject):
 	"""
 	Description:
 
+	|
 
 	"""
 
@@ -125,10 +126,6 @@ class Lookup(asab.ConfigObject):
 		return asyncio.ensure_future(self._do_update(), loop=loop)
 
 	async def _do_update(self):
-		"""
-		Description:
-
-		"""
 		updated = await self.load()
 		if updated:
 			L.warning(f"{self.Id} bspump.Lookup.changed!")
@@ -154,12 +151,16 @@ class Lookup(asab.ConfigObject):
 		"""
 		Description:
 
+		|
+
 		"""
 		raise NotImplementedError("Lookup '{}' serialize() method not implemented".format(self.Id))
 
 	def deserialize(self, data):
 		"""
 		Description:
+
+		|
 
 		"""
 		raise NotImplementedError("Lookup '{}' deserialize() method not implemented".format(self.Id))
@@ -190,6 +191,8 @@ class MappingLookup(Lookup, collections.abc.Mapping):
 	"""
 	Description:
 
+	|
+
 	"""
 	pass
 
@@ -197,6 +200,8 @@ class MappingLookup(Lookup, collections.abc.Mapping):
 class AsyncLookupMixin(Lookup):
 	"""
 	Description:
+
+	|
 
 	"""
 
@@ -208,11 +213,15 @@ class DictionaryLookup(MappingLookup):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def __init__(self, app, id=None, config=None, lazy=False):
 		"""
 		Description:
+
+		|
 
 		"""
 
@@ -244,6 +253,8 @@ class DictionaryLookup(MappingLookup):
 		"""
 		Description:
 
+		|
+
 		"""
 		try:
 			self.Dictionary.update(json.loads(data.decode('utf-8')))
@@ -268,6 +279,8 @@ class DictionaryLookup(MappingLookup):
 	def set(self, dictionary: dict):
 		"""
 		Description:
+
+		|
 
 		"""
 		if self.is_master() is False:
