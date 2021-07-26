@@ -7,6 +7,8 @@ class LookupProviderABC(abc.ABC, asab.ConfigObject):
 	"""
 	Description:
 
+	|
+
 	"""
 	def __init__(self, lookup, url, id=None, config=None):
 		"""
@@ -24,6 +26,8 @@ class LookupProviderABC(abc.ABC, asab.ConfigObject):
 		"""
 		Description:
 
+		|
+
 		"""
 		raise NotImplementedError()
 
@@ -31,6 +35,8 @@ class LookupProviderABC(abc.ABC, asab.ConfigObject):
 class LookupBatchProviderABC(LookupProviderABC, abc.ABC):
 	"""
 	Description:
+
+	|
 
 	"""
 	pass
