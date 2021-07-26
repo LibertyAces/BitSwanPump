@@ -8,11 +8,15 @@ class PrintSink(Sink):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None, stream=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -21,6 +25,8 @@ class PrintSink(Sink):
 	def process(self, context, event):
 		"""
 		Description:
+
+		|
 
 		"""
 		print(event, file=self.Stream)
@@ -30,11 +36,15 @@ class PPrintSink(Sink):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None, stream=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -43,6 +53,8 @@ class PPrintSink(Sink):
 	def process(self, context, event):
 		"""
 		Description:
+
+		|
 
 		"""
 		pprint.pprint(event, stream=self.Stream)
@@ -52,11 +64,15 @@ class PrintProcessor(Processor):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None, stream=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -65,6 +81,8 @@ class PrintProcessor(Processor):
 	def process(self, context, event):
 		"""
 		Description:
+
+		|
 
 		:return: event
 		"""
@@ -76,11 +94,15 @@ class PPrintProcessor(Processor):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None, stream=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -89,6 +111,8 @@ class PPrintProcessor(Processor):
 	def process(self, context, event):
 		"""
 		Description:
+
+		|
 
 		:return: event
 		"""
@@ -100,11 +124,15 @@ class PrintContextProcessor(Processor):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None, stream=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -113,6 +141,8 @@ class PrintContextProcessor(Processor):
 	def process(self, context, event):
 		"""
 		Description:
+
+		|
 		
 		:return: event
 		
@@ -126,11 +156,15 @@ class PPrintContextProcessor(Processor):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None, stream=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -139,6 +173,8 @@ class PPrintContextProcessor(Processor):
 	def process(self, context, event):
 		"""
 		Description:
+
+		|
 
 		:return: event
 		"""
