@@ -11,7 +11,7 @@ Tee Source Processor
 
 .. automethod:: bspump.common.TeeSource.__init__()
 
-Tee Source method
+Tee Source Method
 ~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.TeeSource.bind
@@ -28,7 +28,8 @@ Tee Processor
 
 .. automethod:: bspump.common.TeeProcessor.__init__()
 
-Tee Processor method
+
+Tee Processor Method
 ~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.TeeProcessor.bind
