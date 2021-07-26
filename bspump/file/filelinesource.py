@@ -13,6 +13,7 @@ class FileLineSource(FileABCSource):
 	"""
 	Description:
 
+	|
 
 	"""
 
@@ -20,6 +21,7 @@ class FileLineSource(FileABCSource):
 		"""
 		Description:
 
+		|
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -29,6 +31,7 @@ class FileLineSource(FileABCSource):
 		"""
 		Description:
 
+		|
 
 		"""
 
@@ -56,6 +59,7 @@ class FileMultiLineSource(FileABCSource):
 
 	The separatpr is '<' string in this case
 
+	|
 
 	"""
 
@@ -63,6 +67,7 @@ class FileMultiLineSource(FileABCSource):
 		"""
 		Description:
 
+		|
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -78,6 +83,7 @@ class FileMultiLineSource(FileABCSource):
 		"""
 		Description:
 
+		|
 
 		"""
 		latch = None
