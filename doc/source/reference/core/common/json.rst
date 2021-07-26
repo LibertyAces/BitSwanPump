@@ -11,7 +11,8 @@ CySimd Json Parser
 
 .. automethod:: bspump.common.CySimdJsonParser.__init__()
 
-CySimd Json Parser method
+
+CySimd Json Parser Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.CySimdJsonParser.process
@@ -25,7 +26,8 @@ Std Dict To Json Parser
 .. autoclass:: StdDictToJsonParser
     :show-inheritance:
 
-Std Dict To Json Parser method
+
+Std Dict To Json Parser Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.StdDictToJsonParser.process
@@ -57,7 +59,7 @@ Dict To JsonBytes Parser
 .. automethod:: bspump.common.DictToJsonBytesParser.__init__()
 
 
-Dict To Json Bytes Parser method
+Dict To Json Bytes Parser Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.DictToJsonBytesParser.process
