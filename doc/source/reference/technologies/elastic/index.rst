@@ -22,6 +22,7 @@ ElasticSearchSource is using standard Elastic's search API to fetch data.
 
 	Default is:
 
+
 .. code:: python
 
 	default_request_body = {
@@ -34,6 +35,7 @@ ElasticSearchSource is using standard Elastic's search API to fetch data.
 		},
 	}
 
+
 .. py:currentmodule:: bspump.elasticsearch
 
 .. autoclass:: ElasticSearchSource
@@ -41,10 +43,12 @@ ElasticSearchSource is using standard Elastic's search API to fetch data.
 
 .. automethod:: bspump.elasticsearch.source.ElasticSearchSource.__init__()
 
-Source methods
+
+Source Methods
 ~~~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.source.ElasticSearchSource.cycle
+
 
 ElasticSearch Aggs Source
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,6 +67,7 @@ ElasticSearch Aggs Source
 
 	Default is:
 
+
 .. code:: python
 
 	default_request_body = {
@@ -75,6 +80,7 @@ ElasticSearch Aggs Source
 		},
 	}
 
+
 .. py:currentmodule:: bspump.elasticsearch
 
 .. autoclass:: ElasticSearchAggsSource
@@ -82,7 +88,8 @@ ElasticSearch Aggs Source
 
 .. automethod:: bspump.elasticsearch.source.ElasticSearchAggsSource.__init__()
 
-ElasticSearch Aggs Source methods
+
+ElasticSearch Aggs Source Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.source.ElasticSearchAggsSource.cycle
@@ -99,6 +106,7 @@ ElasticSearchConnection allows your ES source, sink or lookup to connect to Elas
 
 	usage:
 
+
 .. code:: python
 
 
@@ -107,6 +115,7 @@ ElasticSearchConnection allows your ES source, sink or lookup to connect to Elas
 	svc.add_connection(
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection")
 	)
+
 
 .. code:: python
 
@@ -125,7 +134,8 @@ ElasticSearchConnection allows your ES source, sink or lookup to connect to Elas
 
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.__init__()
 
-ElasticSearch Connection methods
+
+ElasticSearch Connection Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.get_url
@@ -139,7 +149,6 @@ ElasticSearch Connection methods
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.enqueue
 
 
-
 Elastic Search Bulk
 ~~~~~~~~~~~~~~~~~~~
 
@@ -150,7 +159,8 @@ Elastic Search Bulk
 
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.__init__()
 
-Elastic Search Bulk methods
+
+Elastic Search Bulk Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.consume
@@ -171,6 +181,7 @@ Lookup
     :show-inheritance:
 
 .. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.__init__()
+
 
 Lookup methods
 ~~~~~~~~~~~~~~
@@ -194,12 +205,11 @@ Sink
 
 .. automethod:: bspump.elasticsearch.sink.ElasticSearchSink.__init__()
 
+
 Sink methods
 ~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.sink.ElasticSearchSink.process
-
-.. automethod:: bspump.elasticsearch.sink.ElasticSearchSink._connection_throttle
 
 
 Data Feeder Methods
