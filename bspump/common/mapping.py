@@ -8,12 +8,14 @@ class MappingKeysProcessor(Processor):
 	"""
 	Description: Mapping Keys Processor
 
+	|
+
 	"""
 	def process(self, context, event: collections.abc.Mapping) -> list:
 		"""
 		Description: process is a method of a Mapping Keys Processor
 
-		:return: *event.keys()
+		:return: event.keys()
 
 		|
 
@@ -25,13 +27,15 @@ class MappingValuesProcessor(Processor):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def process(self, context, event: collections.abc.Mapping) -> list:
 		"""
 		Description:
 
-		:return: *event.values()
+		:return: event.values()
 
 		|
 
@@ -43,13 +47,15 @@ class MappingItemsProcessor(Processor):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	def process(self, context, event: collections.abc.Mapping) -> list:
 		"""
 		Description:
 
-		:return: *event.items()
+		:return: event.items()
 
 		|
 
@@ -60,6 +66,8 @@ class MappingItemsProcessor(Processor):
 class MappingKeysGenerator(Generator):
 	"""
 	Description:
+
+	|
 
 	"""
 
@@ -76,11 +84,15 @@ class MappingValuesGenerator(Generator):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	async def generate(self, context, event, depth):
 		"""
 		Description:
+
+		|
 
 		"""
 		for item in event.values():
@@ -91,11 +103,15 @@ class MappingItemsGenerator(Generator):
 	"""
 	Description:
 
+	|
+
 	"""
 
 	async def generate(self, context, event, depth):
 		"""
 		Description:
+
+		|
 
 		"""
 		for item in event.items():
