@@ -12,7 +12,7 @@ Aggregation Strategy
 .. automethod:: bspump.common.AggregationStrategy.__init__()
 
 
-Aggregation Strategy methods
+Aggregation Strategy Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.AggregationStrategy.append
@@ -33,7 +33,7 @@ List Aggregation Strategy
 .. automethod:: bspump.common.ListAggregationStrategy.__init__()
 
 
-List Aggregation Strategy methods
+List Aggregation Strategy Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.ListAggregationStrategy.append
@@ -54,7 +54,7 @@ String Aggregation Strategy
 .. automethod:: bspump.common.StringAggregationStrategy.__init__()
 
 
-String Aggregation Strategy methods
+String Aggregation Strategy Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.StringAggregationStrategy.append
