@@ -9,7 +9,7 @@ Mapping Keys Processor
     :show-inheritance:
 
 
-Mapping Keys Processor method
+Mapping Keys Processor Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.MappingKeysProcessor.process
@@ -23,7 +23,7 @@ Mapping Values Processor
     :show-inheritance:
 
 
-Mapping Values Processor method
+Mapping Values Processor Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.MappingValuesProcessor.process
@@ -37,7 +37,7 @@ Mapping Items Processor
     :show-inheritance:
 
 
-Mapping Items Processor method
+Mapping Items Processor Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.MappingItemsProcessor.process
@@ -51,7 +51,7 @@ Mapping Keys Generator
     :show-inheritance:
 
 
-Mapping Keys Generator method
+Mapping Keys Generator Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.MappingKeysGenerator.generate
