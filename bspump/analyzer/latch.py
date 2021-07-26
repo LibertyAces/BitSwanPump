@@ -37,6 +37,10 @@ class LatchAnalyzer(Analyzer):
 	}
 
 	def __init__(self, app, pipeline, query=True, analyze_on_clock=False, inclusive=False, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		max_size = int(self.Config.get('latch_max_size'))
 		if max_size == 0:
@@ -59,6 +63,11 @@ class LatchAnalyzer(Analyzer):
 
 
 	def process(self, context, event):
+		"""
+		Description:
+
+		:return: event
+		"""
 		if self.Query is True:
 			self.Latch.append(event)
 
