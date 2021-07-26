@@ -1,6 +1,6 @@
 class Anomaly(dict):
 	"""
-	Description: 	Anomaly is an abstract class to be overriden for a specific anomaly and its type.
+	Anomaly is an abstract class to be overriden for a specific anomaly and its type.
 
 	Implement: TYPE, on_tick
 
