@@ -1,6 +1,8 @@
 Advanced
 =========
 
+BitSwan Pump provides more advanced Processors that can be used in a pipeline
+
 
 Generator
 ---------
@@ -44,6 +46,7 @@ Generator object is used to generate one or multiple events in asynchronous way
 			# Inject a new event into a next depth of the pipeline
 			self.Pipeline.inject(context, new_event, depth)
 
+
 .. py:currentmodule:: bspump
 
 .. autoclass:: Generator
@@ -52,7 +55,7 @@ Generator object is used to generate one or multiple events in asynchronous way
 .. automethod:: bspump.Generator.__init__()
 
 
-Generator construction
+Generator Construction
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.Generator.set_depth
@@ -62,9 +65,9 @@ Generator construction
 .. automethod:: bspump.Generator.generate
 
 
-
 Analyzer
 --------
+
 This is general analyzer interface, which can be the basement of different analyzers.
 		`analyze_on_clock` enables analyzis by timer, which period can be set by `analyze_period` or
 		`Config["analyze_period"]`.
@@ -82,7 +85,8 @@ This is general analyzer interface, which can be the basement of different analy
 
 .. automethod:: bspump.Analyzer.__init__()
 
-Analyzer construction
+
+Analyzer Construction
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.Analyzer.start_timer
@@ -111,7 +115,7 @@ Instead `np.all()` you can use `np.any()` to get all row indexes, where there is
 .. automethod:: bspump.Analyzer.on_clock_tick
 
 
-Analyzing source
+Analyzing Source
 ~~~~~~~~~~~~~~~~
 
 
@@ -123,6 +127,7 @@ Lookup
 	If the "lazy" parameter in the constructor is set to True, no load method is called and the user is expected
 	to call it when necessary.
 
+
 .. py:currentmodule:: bspump
 
 .. autoclass:: Lookup
@@ -130,32 +135,19 @@ Lookup
 
 .. automethod:: bspump.Lookup.__init__()
 
-Lookup construction
+
+Lookup Construction
 ~~~~~~~~~~~~~~~~~~~
-
-.. automethod:: bspump.Lookup.__getitem__
-
-.. automethod:: bspump.Lookup.__iter__
-
-.. automethod:: bspump.Lookup.__len__
-
-.. automethod:: bspump.Lookup.__contains__
-
-.. automethod:: bspump.Lookup._create_provider
 
 .. automethod:: bspump.Lookup.time
 
 .. automethod:: bspump.Lookup.ensure_future_update
-
-.. automethod:: bspump.Lookup._do_update
 
 .. automethod:: bspump.Lookup.load
 
 .. automethod:: bspump.Lookup.serialize
 
 .. automethod:: bspump.Lookup.deserialize
-
-.. automethod:: bspump.Lookup.rest_get
 
 .. automethod:: bspump.Lookup.is_master
 
@@ -170,8 +162,9 @@ MappingLookup
 
 .. automethod:: bspump.MappingLookup.__init__()
 
-AsyncLookupMixin
-~~~~~~~~~~~~~~~~
+
+Async Lookup Mixin
+~~~~~~~~~~~~~~~~~~
 
 AsyncLookupMixin makes sure the value from the lookup is obtained asynchronously.
 AsyncLookupMixin is to be used for every technology that is external to BSPump,
@@ -184,19 +177,18 @@ respective that require a connection to resource server such as SQL etc.
     :show-inheritance:
 
 
-DictionaryLookup
-~~~~~~~~~~~~~~~~
+Dictionary Lookup
+~~~~~~~~~~~~~~~~~
 
 .. py:currentmodule:: bspump.abc.lookup
 
 .. autoclass:: DictionaryLookup
     :show-inheritance:
 
-
 .. automethod:: bspump.DictionaryLookup.__init__()
 
 
-Dictionary Lookup methods
+Dictionary Lookup Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.DictionaryLookup.__getitem__
@@ -220,26 +212,25 @@ Lookup Provider
 .. autoclass:: LookupProviderABC
     :show-inheritance:
 
-
 .. automethod:: bspump.abc.lookup.LookupProviderABC.__init__()
 
 
-Lookup Provider methods
+Lookup Provider Methods
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.abc.lookupprovider.LookupProviderABC.load
 
 
-LookupBatchProviderABC
-~~~~~~~~~~~~~~~~~~~~~~
+Lookup BatchProvider ABC
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. py:currentmodule:: bspump.abc.lookupprovider
 
 .. autoclass:: LookupBatchProviderABC
     :show-inheritance:
 
-
 .. automethod:: bspump.abc.lookupprovider.LookupBatchProviderABC.__init__()
+
 
 Anomaly
 -------
@@ -248,6 +239,5 @@ Anomaly
 
 .. autoclass:: Anomaly
     :show-inheritance:
-
 
 .. automethod:: bspump.abc.anomaly.Anomaly.__init__()
