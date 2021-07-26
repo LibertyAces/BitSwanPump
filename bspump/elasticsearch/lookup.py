@@ -32,23 +32,23 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 	.. code:: python
 
-	The ElasticSearchLookup can be then located and used inside a custom enricher:
+		The ElasticSearchLookup can be then located and used inside a custom enricher:
 
-		class AsyncEnricher(bspump.Generator):
+			class AsyncEnricher(bspump.Generator):
 
-			def __init__(self, app, pipeline, id=None, config=None):
-				super().__init__(app, pipeline, id, config)
-				svc = app.get_service("bspump.PumpService")
-				self.Lookup = svc.locate_lookup("MySQLLookup")
+				def __init__(self, app, pipeline, id=None, config=None):
+					super().__init__(app, pipeline, id, config)
+					svc = app.get_service("bspump.PumpService")
+					self.Lookup = svc.locate_lookup("MySQLLookup")
 
-			async def generate(self, context, event, depth):
-				if 'user' not in event:
-					return None
+				async def generate(self, context, event, depth):
+					if 'user' not in event:
+						return None
 
-				info = await self.Lookup.get(event['user'])
+					info = await self.Lookup.get(event['user'])
 
-				# Inject a new event into a next depth of the pipeline
-				self.Pipeline.inject(context, event, depth)
+					# Inject a new event into a next depth of the pipeline
+					self.Pipeline.inject(context, event, depth)
 
 	"""
 
@@ -62,6 +62,8 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 	def __init__(self, app, connection, id=None, config=None, cache=None, lazy=False):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, id=id, config=config, lazy=lazy)
