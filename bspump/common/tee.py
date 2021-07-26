@@ -33,11 +33,15 @@ class SampleTeePipeline(bspump.Pipeline):
 			bspump.common.PPrintSink(app, self)
 		)
 
+	|
+
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -96,6 +100,8 @@ class TeeProcessor(RouterProcessor):
 	"""
 	Description: See TeeSource for details.
 
+	|
+
 	"""
 
 	ConfigDefaults = {
@@ -105,6 +111,8 @@ class TeeProcessor(RouterProcessor):
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
