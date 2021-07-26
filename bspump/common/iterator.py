@@ -11,6 +11,7 @@ class IteratorSource(TriggerSource):
 	"""
 	Description:
 
+	|
 
 	"""
 
@@ -18,6 +19,7 @@ class IteratorSource(TriggerSource):
 		"""
 		Description:
 
+		|
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -28,6 +30,7 @@ class IteratorSource(TriggerSource):
 		"""
 		Description:
 
+		|
 
 		"""
 		for event in self.Iterator:
@@ -38,6 +41,7 @@ class IteratorGenerator(Generator):
 	"""
 	Description:
 
+	|
 
 	"""
 
@@ -45,6 +49,7 @@ class IteratorGenerator(Generator):
 		"""
 		Description:
 
+		|
 
 		"""
 		for item in event:
