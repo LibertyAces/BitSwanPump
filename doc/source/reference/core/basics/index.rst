@@ -1,6 +1,9 @@
 Basics
 =======
 
+BitSwan Pump consists of three 5 main components: Pipeline, Source, Processor, Sink, and Connection.
+
+
 Pipeline
 --------
 
@@ -71,6 +74,7 @@ As regards working with data events, each :meth:`Pipeline <bspump.Pipeline()>` h
 Sink object serves as a **final event destination** within the pipeline given.
 Subsequently, the event is dispatched/written into the system by the BSPump.
 
+
 .. py:currentmodule:: bspump
 
 .. autoclass:: Pipeline
@@ -97,50 +101,46 @@ Pipeline construction
 .. automethod:: bspump.Pipeline.iter_processors
 
 
-Other pipeline methods
+Other Pipeline Methods
 ~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: bspump
 
 .. automethod:: bspump.Pipeline.time
 
 .. automethod:: bspump.Pipeline.get_throttles
 
-.. automethod:: bspump.Pipeline.is_error()
+.. automethod:: bspump.Pipeline.is_error
 
-.. automethod:: bspump.Pipeline.set_error()
+.. automethod:: bspump.Pipeline.set_error
 
-.. automethod:: bspump.Pipeline.handle_error()
+.. automethod:: bspump.Pipeline.handle_error
 
-.. automethod:: bspump.Pipeline.link()
+.. automethod:: bspump.Pipeline.link
 
-.. automethod:: bspump.Pipeline.unlink()
+.. automethod:: bspump.Pipeline.unlink
 
-.. automethod:: bspump.Pipeline.throttle()
+.. automethod:: bspump.Pipeline.throttle
 
-.. automethod:: bspump.Pipeline.ready()
+.. automethod:: bspump.Pipeline.ready
 
-.. automethod:: bspump.Pipeline.is_ready()
+.. automethod:: bspump.Pipeline.is_ready
 
-.. automethod:: bspump.Pipeline.inject()
+.. automethod:: bspump.Pipeline.inject
 
-.. automethod:: bspump.Pipeline.process()
+.. automethod:: bspump.Pipeline.process
 
-.. automethod:: bspump.Pipeline.create_eps_counter()
+.. automethod:: bspump.Pipeline.create_eps_counter
 
-.. automethod:: bspump.Pipeline.ensure_future()
+.. automethod:: bspump.Pipeline.ensure_future
 
-.. automethod:: bspump.Pipeline.locate_source()
+.. automethod:: bspump.Pipeline.locate_source
 
-.. automethod:: bspump.Pipeline.locate_connection()
+.. automethod:: bspump.Pipeline.locate_connection
 
-.. automethod:: bspump.Pipeline.locate_processor()
+.. automethod:: bspump.Pipeline.locate_processor
 
-.. automethod:: bspump.Pipeline.start()
+.. automethod:: bspump.Pipeline.start
 
-.. automethod:: bspump.Pipeline.stop()
-
-
+.. automethod:: bspump.Pipeline.stop
 
 
 Source
@@ -156,14 +156,16 @@ The coroutine method :meth:`main() <bspump.Source.main()>` contains an implement
 Source MUST await a :meth:`Pipeline <bspump.Pipeline()>` ready state prior producing the event.
 It is acomplished by `await self.Pipeline.ready()` call.
 
+
 .. py:currentmodule:: bspump.abc.source
 
 .. autoclass:: Source
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.abc.source.Source.__init__()
 
-Source construction
+
+Source Construction
 ~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.abc.source.Source.process
@@ -182,7 +184,7 @@ Source construction
 
 .. automethod:: bspump.abc.source.Source.construct
 
-Trigger source
+Trigger Source
 ~~~~~~~~~~~~~~
 
 This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
@@ -192,6 +194,7 @@ Trigger source will stop execution, when a :meth:`Pipeline <bspump.Pipeline()>` 
 This typically happens when a program wants to quit in reaction to a on the signal.
 
 You also may overload the :meth:`main() <bspump.Source.main()>` method to provide additional parameters for a :meth:`cycle() <bspump.TriggerSource.cycle()>` method.
+
 
 .. code:: python
 
@@ -207,21 +210,21 @@ You also may overload the :meth:`main() <bspump.Source.main()>` method to provid
 .. py:currentmodule:: bspump
 
 .. autoclass:: TriggerSource
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.TriggerSource.__init__()
 
-Trigger source methods
+
+Trigger Source Methods
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.TriggerSource.time()
+.. automethod:: bspump.TriggerSource.time
 
-.. automethod:: bspump.TriggerSource.on()
+.. automethod:: bspump.TriggerSource.on
 
-.. automethod:: bspump.TriggerSource.main()
+.. automethod:: bspump.TriggerSource.main
 
-.. automethod:: bspump.TriggerSource.cycle()
-
+.. automethod:: bspump.TriggerSource.cycle
 
 
 Processor
@@ -234,24 +237,25 @@ Moreover, it is capable of calculating metrics and creating aggregations, detect
 Processors differ as to their functions and all of them are aligned according to a predefined sequence in pipeline objects.
 As regards working with data events, each pipeline has its own unique task.
 
+
 .. py:currentmodule:: bspump
 
 .. autoclass:: Processor
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.Processor.__init__()
 
-Processor construction
+
+Processor Construction
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.Processor.time()
+.. automethod:: bspump.Processor.time
 
-.. automethod:: bspump.Processor.construct()
+.. automethod:: bspump.Processor.construct
 
-.. automethod:: bspump.Processor.process()
+.. automethod:: bspump.Processor.process
 
-.. automethod:: bspump.Processor.locate_address()
-
+.. automethod:: bspump.Processor.locate_address
 
 
 Sink
@@ -265,8 +269,7 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 .. autoclass:: Sink
     :show-inheritance:
 
-
-.. automethod:: bspump.Sink.__init__
+.. automethod:: bspump.Sink.__init__()
 
 
 Connection
@@ -275,13 +278,15 @@ Connection
 .. py:currentmodule:: bspump
 
 .. autoclass:: Connection
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.Connection.__init__()
+
 
 Connection construction
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.Connection.time()
+.. automethod:: bspump.Connection.time
 
-.. py:classmethod:::: Connection.consturct()
+.. automethod:: Connection.construct
 
