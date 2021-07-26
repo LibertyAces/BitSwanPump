@@ -5,10 +5,10 @@ class FlattenDictProcessor(Processor):
 	"""
 	Description: ....
 
-
-		Inspired by https://github.com/amirziai/flatten
+			Inspired by https://github.com/amirziai/flatten
 
 		Example:
+
 		"person": {
 			"details": {
 				"first_name": "John",
@@ -40,6 +40,8 @@ class FlattenDictProcessor(Processor):
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description:
+
+		|
 
 		"""
 		super().__init__(app, pipeline, id, config)
