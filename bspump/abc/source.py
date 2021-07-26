@@ -31,7 +31,7 @@ class Source(ConfigObject):
 
 	async def process(self, event, context=None):
 		"""
-		Description: This method is used to emit event into a :meth:`Pipeline <bspump.Pipeline()>`.
+	 	This method is used to emit event into a :meth:`Pipeline <bspump.Pipeline()>`.
 
 		:hint If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
 		:hint The source should catch this exception and fail gracefully.
@@ -68,7 +68,7 @@ class Source(ConfigObject):
 
 	async def stop(self):
 		"""
-		Description: stops a tasks or raises an error
+		stops a tasks or raises an error
 
 		|
 
@@ -109,7 +109,7 @@ class Source(ConfigObject):
 
 	async def stopped(self):
 		"""
-		Description: Helper that simplyfies the implementation of sources:
+		Helper that simplyfies the implementation of sources:
 
 		Example:
 		.. code:: python
