@@ -10,7 +10,7 @@ Print Sink
     :show-inheritance:
 
 
-Print Sink method
+Print Sink Method
 ~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.PrintSink.process
@@ -25,7 +25,7 @@ PPrint Sink
     :show-inheritance:
 
 
-PPrint Sink method
+PPrint Sink Method
 ~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.PPrintSink.process
@@ -40,7 +40,7 @@ Print Processor
     :show-inheritance:
 
 
-Print Processor method
+Print Processor Method
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.PrintProcessor.process
@@ -55,7 +55,7 @@ PPrint Processor
     :show-inheritance:
 
 
-PPrint Processor method
+PPrint Processor Method
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.PPrintProcessor.process
@@ -70,7 +70,7 @@ Print Context Processor
     :show-inheritance:
 
 
-Print Context Processor method
+Print Context Processor Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.PrintContextProcessor.process
@@ -85,7 +85,7 @@ PPrint Context Processor
     :show-inheritance:
 
 
-PPrint Context Processor method
+PPrint Context Processor Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.PPrintContextProcessor.process
