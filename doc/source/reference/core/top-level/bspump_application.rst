@@ -8,7 +8,8 @@ BSPumpApplication
 
 .. automethod:: bspump.BSPumpApplication.__init__()
 
-BSPumpApplication construction
+
+BSPumpApplication Construction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.BSPumpApplication.create_argument_parser
