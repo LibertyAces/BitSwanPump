@@ -221,6 +221,8 @@ class TriggerSource(Source):
 
 		:return: ?? Trigger.add(trigger)
 
+		|
+
 		"""
 		trigger.add(self)
 		self.Triggers.add(trigger)
