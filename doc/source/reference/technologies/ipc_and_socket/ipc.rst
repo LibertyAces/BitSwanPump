@@ -127,3 +127,39 @@ Stream Client Sink
 
 
 .. automethod:: bspump.ipc.stream_client_sink.StreamClientSink.process
+
+
+FTP
+===
+
+
+connection
+----------
+
+.. py:currentmodule:: bspump.ftp.connection
+
+.. autoclass:: FTPConnection
+    :show-inheritance:
+
+.. automethod:: bspump.ftp.connection.FTPConnection.__init__()
+
+
+.. automethod:: bspump.ftp.connection.FTPConnection.connect
+
+
+source
+------
+
+.. py:currentmodule:: bspump.ftp.source
+
+.. autoclass:: FTPSource
+    :show-inheritance:
+
+.. automethod:: bspump.ftp.source.FTPSource.__init__()
+
+
+.. automethod:: bspump.ftp.source.FTPSource.list_files
+
+.. automethod:: bspump.ftp.source.FTPSource.inbound
+
+.. automethod:: bspump.ftp.source.FTPSource.cycle
