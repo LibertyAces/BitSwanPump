@@ -32,18 +32,20 @@ class DatagramSource(Source):
 		# Receive Buffer Size
 		self.ReceiveBufferSize = int(self.Config['receiver_buffer_size'])
 
-		if ":" in self.Address:
-			host, port = self.Address.rsplit(":", maxsplit=1)
-			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
+		for addrline in self.Address.split('\n'):
+			addrline = addrline.strip()
+			if " " in addrline:
+				host, port = self.Address.rsplit(":", maxsplit=1)
+				(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
 
-			self.Socket = socket.socket(family, socket.SOCK_DGRAM)
-			self.Socket.setblocking(False)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-			if self.ReceiveBufferSize > 0:
-				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
+				self.Socket = socket.socket(family, socket.SOCK_DGRAM)
+				self.Socket.setblocking(False)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+				if self.ReceiveBufferSize > 0:
+					self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
 
-			self.Socket.bind(sockaddr)
+				self.Socket.bind(sockaddr)
 
 		else:
 
