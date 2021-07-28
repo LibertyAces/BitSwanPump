@@ -35,7 +35,7 @@ class DatagramSource(Source):
 		for addrline in self.Address.split('\n'):
 			addrline = addrline.strip()
 			if " " in addrline:
-				host, port = self.Address.rsplit(":", maxsplit=1)
+				host, port = self.Address.rsplit(" ", maxsplit=1)
 				(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
 
 				self.Socket = socket.socket(family, socket.SOCK_DGRAM)
@@ -111,7 +111,7 @@ class DatagramSink(Sink):
 		for addrline in self.Address.split('\n'):
 			addrline = addrline.strip()
 			if " " in addrline:
-				host, port = self.Address.rsplit(":", maxsplit=1)
+				host, port = self.Address.rsplit(" ", maxsplit=1)
 				(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
 
 				self.Socket = socket.socket(family, socket.SOCK_DGRAM)
