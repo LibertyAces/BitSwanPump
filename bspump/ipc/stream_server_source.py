@@ -75,9 +75,16 @@ class StreamServerSource(Source):
 					s.setblocking(False)
 					self.AcceptingSockets.append(s)
 
-			# TODO elif: unix sockets
-
 			else:
+				self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+				self.Socket.setblocking(False)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+				if self.ReceiveBufferSize > 0:
+					self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
+
+				self.Socket.bind(self.Address)
+
 				L.error("Invalid address specification: '{}'".format(addrline))
 
 		super().start(loop)
