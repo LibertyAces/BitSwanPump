@@ -125,7 +125,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def time(self):
 		"""
-		Pipeline is ...
+		records time of...
 
 		:return: App.time()
 
@@ -136,7 +136,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def get_throttles(self):
 		"""
-		Pipeline is ...
+		enables throttling
 
 		:return: _throttles
 
@@ -147,14 +147,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 
 	def _on_metrics_flush(self, event_type, metric, values):
-		"""
-		Description: Pipeline is ...
-
-		:return: MatricsGauge.set
-
-		|
-
-		"""
 		if metric != self.MetricsCounter:
 			return
 		if values["event.in"] == 0:
