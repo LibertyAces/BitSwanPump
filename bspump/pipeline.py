@@ -549,8 +549,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		:return: error when processor is not found
 
-		|
-
 		"""
 		for depth in self.Processors:
 			for idx, processor in enumerate(depth):
@@ -567,11 +565,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
 
-		:param: id : str - id of a processor 
+		:param: id : str - ID of a processor
+		:param: processor : str - ID of a processor inserting
 
 		:return: True on success. False otherwise (id not found)
-
-		|
 
 		"""
 		for processors in self.Processors:
@@ -586,9 +583,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by id
 
-		:return: True on success. False otherwise (id not found)
+		:param: id : str - ID of a processor
+		:param: processor : str - ID of a processor inserting
 
-		|
+		:return: True on success. False otherwise (id not found)
 
 		"""
 		for processors in self.Processors:
@@ -600,12 +598,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		return False
 
 	def _post_add_processor(self, processor):
-		"""
-		Description:
-
-		|
-
-		"""
 		self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
 			'bspump.pipeline.profiler',
 			tags={
@@ -630,7 +622,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: This method enables to add sources, :meth:`Processors <bspump.Processor()>`, and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
 
-		|
+		:param: source : str - ID of a processor
+		:param: *processors : 
 
 		"""
 		self.set_source(source)
