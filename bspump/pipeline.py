@@ -24,7 +24,7 @@ L = logging.getLogger(__name__)
 
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
-	Pipeline is ...
+
 
 	|
 
@@ -125,7 +125,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def time(self):
 		"""
-		Description: Pipeline is ...
+		Pipeline is ...
 
 		:return: App.time()
 
@@ -136,7 +136,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def get_throttles(self):
 		"""
-		Description: Pipeline is ...
+		Pipeline is ...
 
 		:return: _throttles
 
@@ -509,7 +509,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def set_source(self, source):
 		"""
-		sets a specific source or list of sources to the pipeline
+		Sets a specific source or list of sources to the pipeline.
 
 		:param: source - ID of a source : str, list - optional
 
@@ -522,7 +522,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def append_processor(self, processor):
 		"""
-		Description: adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`
+		Adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		:param: processor - ID of a processor: str
 
@@ -543,7 +543,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def remove_processor(self, processor_id):
 		"""
-		Description: removes a specific processor from the :meth:`Pipeline <bspump.Pipeline()>`
+		Removes a specific processor from the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		:param: processor_id : str - ID of a processor
 
@@ -563,7 +563,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_before(self, id, processor):
 		"""
-		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
+		Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id.
 
 		:param: id : str - ID of a processor
 		:param: processor : str - ID of a processor inserting
@@ -622,8 +622,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: This method enables to add sources, :meth:`Processors <bspump.Processor()>`, and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:param: source : str - ID of a processor
-		:param: *processors : 
+		:param: source : str - ID of a source
+		:param: *processors : str - ID of processor
 
 		"""
 		self.set_source(source)
@@ -632,7 +632,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def iter_processors(self):
 		"""
-		Description: Iterate thru all processors.
+		Generator that iterate thru all processors
+
+		:yields: processor
 
 		|
 
