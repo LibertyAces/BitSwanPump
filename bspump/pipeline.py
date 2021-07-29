@@ -543,7 +543,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def remove_processor(self, processor_id):
 		"""
-		Description: removes the processor from the :meth:`Pipeline <bspump.Pipeline()>`
+		Description: removes a specific processor from the :meth:`Pipeline <bspump.Pipeline()>`
+
+		:param: processor_id : str - ID of a processor
 
 		:return: error when processor is not found
 
@@ -564,6 +566,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 	def insert_before(self, id, processor):
 		"""
 		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id
+
+		:param: id : str - id of a processor 
 
 		:return: True on success. False otherwise (id not found)
 
