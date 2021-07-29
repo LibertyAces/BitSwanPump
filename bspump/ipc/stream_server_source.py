@@ -57,27 +57,32 @@ class StreamServerSource(Source):
 			if " " in addrline:
 				# IP server socket server
 				host, port = addrline.rsplit(" ", maxsplit=1)
-				addrinfo = socket.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
-				for family, socktype, proto, canonname, sockaddr in addrinfo:
-					s = socket.socket(family, socktype, proto)
-					try:
-						s.bind(sockaddr)
-					except OSError as e:
-						L.warning("Failed to start listening at '{}': {}".format(addrline, e))
-						continue
+			elif addrline.count(":") == 1:
+				host, port = self.Address.rsplit(":", maxsplit=1)
 
-					backlog = self.Config['backlog']
-					if backlog == '':
-						s.listen()
-					else:
-						s.listen(int(backlog))
+			addrinfo = socket.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
+			for family, socktype, proto, canonname, sockaddr in addrinfo:
+				s = socket.socket(family, socktype, proto)
+				try:
+					s.bind(sockaddr)
+				except OSError as e:
+					L.warning("Failed to start listening at '{}': {}".format(addrline, e))
+					continue
 
+				backlog = self.Config['backlog']
+				if backlog == '':
+					s.listen()
+				else:
+					s.listen(int(backlog))
 					s.setblocking(False)
 					self.AcceptingSockets.append(s)
-
-			# TODO elif: unix sockets
-
 			else:
+				self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+				self.Socket.setblocking(False)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+				self.Socket.bind(self.Address)
+
 				L.error("Invalid address specification: '{}'".format(addrline))
 
 		super().start(loop)

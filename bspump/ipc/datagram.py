@@ -16,7 +16,7 @@ class DatagramSource(Source):
 
 
 	ConfigDefaults = {
-		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
+		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
 		'max_packet_size': 64 * 1024,
 		'receiver_buffer_size': 0,
 	}
@@ -32,16 +32,19 @@ class DatagramSource(Source):
 		# Receive Buffer Size
 		self.ReceiveBufferSize = int(self.Config['receiver_buffer_size'])
 
-		if ":" in self.Address:
+		addrline = self.Address.strip()
+		if " " in addrline:
+			host, port = self.Address.rsplit(" ", maxsplit=1)
+		elif addrline.count(":") == 1:
 			host, port = self.Address.rsplit(":", maxsplit=1)
-			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
+		(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
 
-			self.Socket = socket.socket(family, socket.SOCK_DGRAM)
-			self.Socket.setblocking(False)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-			if self.ReceiveBufferSize > 0:
-				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
+		self.Socket = socket.socket(family, socket.SOCK_DGRAM)
+		self.Socket.setblocking(False)
+		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+		if self.ReceiveBufferSize > 0:
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
 
 			self.Socket.bind(sockaddr)
 
@@ -90,7 +93,7 @@ class DatagramSink(Sink):
 
 
 	ConfigDefaults = {
-		'address': '127.0.0.1:8888',  # IPv4, IPv6 or unix socket path
+		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
 		'max_packet_size': 64 * 1024,
 		'receiver_buffer_size': 0,
 	}
@@ -106,16 +109,19 @@ class DatagramSink(Sink):
 		# Receive Buffer Size
 		self.ReceiveBufferSize = int(self.Config['receiver_buffer_size'])
 
-		if ":" in self.Address:
+		addrline = self.Address.strip()
+		if " " in addrline:
+			host, port = self.Address.rsplit(" ", maxsplit=1)
+		elif addrline.count(":") == 1:
 			host, port = self.Address.rsplit(":", maxsplit=1)
-			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
+		(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
 
-			self.Socket = socket.socket(family, socket.SOCK_DGRAM)
-			self.Socket.setblocking(False)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-			if self.ReceiveBufferSize > 0:
-				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
+		self.Socket = socket.socket(family, socket.SOCK_DGRAM)
+		self.Socket.setblocking(False)
+		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+		if self.ReceiveBufferSize > 0:
+			self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.ReceiveBufferSize)
 
 			self.Socket.connect(sockaddr)
 
