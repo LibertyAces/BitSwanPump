@@ -125,22 +125,18 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def time(self):
 		"""
-		records time of...
+		returns correct time of a event (used in asynchronous methods)
 
 		:return: App.time()
-
-		|
 
 		"""
 		return self.App.time()
 
 	def get_throttles(self):
 		"""
-		enables throttling
+		returns components from pipeline that are throttled
 
 		:return: _throttles
-
-		|
 
         """
 		return self._throttles
@@ -158,20 +154,23 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def is_error(self):
 		"""
-		Description: Pipeline is ...
+		Returns False when there is no error, otherwise it returns True
 
-		:return: xxxx
-
-		|
+		:return: self._error is not None
 
         """
 		return self._error is not None
 
 	def set_error(self, context, event, exc):
 		"""
-		Description: If called with `exc is None`, then reset error (aka recovery)
+		If called with `exc is None`, then reset error (aka recovery)
 
-		:return: adds error via Metris EPS counter
+		If called with exc can set exceptions for soft error etc.
+
+		:param: context: type? - context of an error
+		:param: event: type? - description?
+		:param: exc: type? - exception
+
 
 		|
 
