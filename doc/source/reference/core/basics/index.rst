@@ -90,8 +90,6 @@ Pipeline construction
 
 .. automethod:: bspump.Pipeline.append_processor
 
-premek
-
 .. automethod:: bspump.Pipeline.remove_processor
 
 .. automethod:: bspump.Pipeline.insert_before
