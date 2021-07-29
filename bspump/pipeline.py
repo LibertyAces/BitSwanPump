@@ -528,6 +528,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		:hint: generator can be added by using this method. It requires a depth parameter
 
+		# What is depth parameter??
+
 		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
 		# TODO: Check if fitting
