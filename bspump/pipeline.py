@@ -509,10 +509,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def set_source(self, source):
 		"""
-		Description: set_source is a method that sets a selected source that will pump data into the BSPump
+		sets a specific source or list of sources to the pipeline
 
-		|
+		:param: source - ID of a source : str, list - optional
 
+		if a list of sources is passed in set_source adds the sources in a list automatically
 		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
@@ -523,7 +524,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`
 
-		|
+		:param: processor - ID of a processor: str
+
+		:hint: generator can be added by using this method. It requires a depth parameter
 
 		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
