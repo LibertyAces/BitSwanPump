@@ -209,8 +209,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def handle_error(self, exception, context, event):
 		"""
-		Description: Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
-		Return False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing) or True for soft errors that will be ignored
+		Used for setting up exceptions and contitions for erros. Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
+
+		:param: exception, used for setting up a condition
+		:param: context
+		:param: event
+
+		:return: False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing)
+		:return: True for soft errors that will be ignored
 
 		Example:
 
@@ -613,7 +619,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: This method enables to add sources, :meth:`Processors <bspump.Processor()>`, and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:param: source : str - ID of a source
+		:parameters: source : str - ID of a source
+
 		:param: *processors : str - ID of processor
 
 		"""
