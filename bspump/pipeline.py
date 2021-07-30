@@ -401,27 +401,16 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Inject method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth defined by the depth attribute.
 		Every depth is interconnected with a generator object.
 
-		:parameter: context(str) information propagated through the pipeline
-		:parameter: event(str) name of the event
-		:parameter: depth(int) int depth attribute
+		**Parameters**
 
-		.. rubric:: Parameters:
+		context : string
+			information propagated through the pipeline
 
-		.. rst:directive:option:: context
-			:type: str
+		event : str
+			name of the event
 
-		information propagated through the pipeline
-
-		.. rst:directive:option:: event
-			:type: str
-
-		name of the event??
-
-		.. rst:directive:option:: depth
-			:type: int
-
-		depth attribute
-
+		depth : int
+			int depth attribute
 
 		:note: For normal operations, it is highly recommended to use process method instead (see in source code).
 
