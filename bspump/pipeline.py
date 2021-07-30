@@ -136,7 +136,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		returns components from pipeline that are throttled
 
-		:return: _throttles
+		.. rubric:: Returns:
+
+		.. rst:directive:option:: _throttles
+
+      	method _throttles
 
         """
 		return self._throttles
@@ -168,8 +172,25 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		If called with exc can set exceptions for soft error etc.
 
 		:param: context: type? - context of an error
-		:param: event: type? - description?
-		:param: exc: type? - exception
+		 		event: type? - description?
+				exc: type? - exception
+
+		.. rubric:: Parameters:
+
+		.. rst:directive:option:: context
+			:type: ?
+
+		context of an error
+
+		.. rst:directive:option:: event
+			:type: str
+
+		description?
+
+		.. rst:directive:option:: exc
+			:type: ?
+
+		exception
 
 
 		|
@@ -253,7 +274,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		internal queue is empty again.
 
 
-		Parameters: :param ancestral_pipeline: pipeline
+		:parameters: ancestral_pipeline: pipeline
 
 		|
 
@@ -266,9 +287,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Unlink an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
 
 
-		Parameters: ancestral_pipeline: pipeline
-
-		|
+		:parameters: ancestral_pipeline: pipeline
 
 		"""
 
@@ -276,9 +295,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def throttle(self, who, enable=True):
 		"""
-		Description:
+		enables throttling method for a chosen pipeline and its ancestral pipelines if needed.
 
-		|
+		:parameters: who:
+		:parameters: enable: default True
 
 		"""
 		# L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
@@ -298,12 +318,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		self._evaluate_ready()
 
 	def _evaluate_ready(self):
-		"""
-		Description: evaluates if pipeline is ready
-
-		|
-
-		"""
 		orig_ready = self.is_ready()
 
 		# Do we observed an error?
@@ -325,9 +339,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def ready(self):
 		"""
-		Description: Can be used in source: `await self.Pipeline.ready()`
-
-		|
+		Checks if a pipeline is ready. Can be used in source: `await self.Pipeline.ready()`
 
 		"""
 
@@ -341,22 +353,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def is_ready(self):
 		"""
-		Description:
+		It is a checkup of the event in the Python Event class.
 
 		:return: _ready.is_set()
-
-		|
 
 		"""
 		return self._ready.is_set()
 
 	def _do_process(self, event, depth, context):
-		"""
-		Description:
-
-		|
-
-		"""
 		for processor in self.Processors[depth]:
 
 			t0 = time.perf_counter()
@@ -397,9 +401,29 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Description: Inject method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth defined by the depth attribute.
 		Every depth is interconnected with a generator object.
 
-		#For normal operations, it is highly recommended to use process method instead (see below).
+		:parameter: context(str) information propagated through the pipeline
+		:parameter: event(str) name of the event
+		:parameter: depth(int) int depth attribute
 
-		|
+		.. rubric:: Parameters:
+
+		.. rst:directive:option:: context
+			:type: str
+
+		information propagated through the pipeline
+
+		.. rst:directive:option:: event
+			:type: str
+
+		name of the event??
+
+		.. rst:directive:option:: depth
+			:type: int
+
+		depth attribute
+
+
+		:note: For normal operations, it is highly recommended to use process method instead (see in source code).
 
 		"""
 
@@ -413,12 +437,13 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def process(self, event, context=None):
 		"""
-		Description: Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
+		Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
 		while incrementing the event.in metric.
 
-		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
+		:parameter: event
+		:parameter: context, default None
 
-		|
+		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
 
 		"""
 
@@ -434,11 +459,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def create_eps_counter(self):
 		"""
-		Description:
+		creates a dictionary with information about the pipeline. It contains eps (events per second), warnings and errors.
 
 		:return: creates eps counter using MetricsService
 
-		|
+		:note: eps counter can be created using this method or dicertly by using MatricsService method
 
 		"""
 		return self.MetricsService.create_eps_counter(
@@ -462,6 +487,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		it will collect the future result, trash it, and mainly it will capture any possible exception,
 		which will then block the :meth:`Pipeline <bspump.Pipeline()>` via set_error().
 
+		:parameters: coro : method
+
 		:hint: If the number of futures exceeds the configured limit, the :meth:`Pipeline <bspump.Pipeline()>` is throttled.
 
 		|
@@ -478,15 +505,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 
 	def _future_done(self, future):
-		"""
-		Description: Removes future from the future list and disables throttling, if the number of
-		futures does not exceed the configured limit.
-
-		:hint: If there is an error while processing the future, it it set to the :meth:`Pipeline <bspump.Pipeline()>`.
-
-		|
-
-		"""
 
 		# Remove the throttle
 		if len(self.AsyncFutures) == self.AsyncConcurencyLimit:
@@ -634,8 +652,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		:yields: processor
 
-		|
-
 		"""
 		for processors in self.Processors:
 			for processor in processors:
@@ -645,9 +661,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_source(self, address):
 		"""
-		Description: Find a source by id.
+		locate a sources bases on ID
 
-		|
+		:parameters: adress : id of the source, string
 
 		"""
 		for source in self.Sources:
@@ -657,7 +673,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_connection(self, app, connection_id):
 		"""
-		Description: Find a connection by id.
+		Find a connection by id.
+
+		:parameters: app, ?
+		:parameters: connection_id, string
 
 		:return: connection
 
@@ -676,6 +695,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Find by a processor by id.
 
+		:parameters: processor_id, string
+
 		:return: processor
 
 		|
@@ -691,8 +712,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: starts the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
 
-		|
-
 		"""
 		self.PubSub.publish("bspump.pipeline.start!", pipeline=self)
 
@@ -705,8 +724,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 	async def stop(self):
 		"""
 		Desription: stops the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
-
-		|
 
 		"""
 		self.PubSub.publish("bspump.pipeline.stop!", pipeline=self)
