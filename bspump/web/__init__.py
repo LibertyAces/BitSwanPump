@@ -12,7 +12,11 @@ import asab.web.rest
 from ..__version__ import __build__ as bspump_build
 from ..__version__ import __version__ as bspump_version
 
+#
+
 L = logging.getLogger(__name__)
+
+#
 
 
 # TODO: Remove functions *_v0 after September 2020
@@ -191,30 +195,11 @@ KEY2=${ENVIRONMENT_VARIABLE}
 	return asab.web.rest.json_response(request, d)
 
 
-Module = asab.web.Module
-
-
-def _initialize_web(app, listen="0.0.0.0:8080"):
-	app.add_module(Module)
-
-	websvc = app.get_service("asab.WebService")
-	container = websvc.Containers.get("asab:web")
-	assert container is not None, "asab:web webcontainer have not been found. Probably not initialized correctly."
-
-	# Create a dedicated web container
-	# container = asab.web.WebContainer(websvc, 'asab:web', config={"listen": listen})
-
-	# Add web app
-	# TODO: The following app should be reviewed
-	# asab.web.StaticDirProvider(
-	# 	container.WebApp,
-	# 	root='/',
-	# 	path=os.path.join(os.path.dirname(__file__), "static"),
-	# 	index="app.html")
+def register_bspump_endpoints(container):
 
 	# Add routes
 	# LEGACY
-	# TODO: Remove this after September 2020
+	# TODO: Remove this after September 2021
 	container.WebApp.router.add_get('/pipelines', pipelines_v0)
 	container.WebApp.router.add_get('/example/trigger', example_trigger_v0)
 	container.WebApp.router.add_get('/example/internal', example_internal_v0)

@@ -2,6 +2,7 @@ import signal
 import sys
 
 import asab
+import asab.web
 
 from .service import BSPumpService
 from .__version__ import __version__, __build__
@@ -16,13 +17,8 @@ class BSPumpApplication(asab.Application):
 	:return:
 	"""
 
-	def __init__(self, args=None, web_listen=None):
-		'''
-		Description:Bude tohle nekde videt.
-
-		:return:
-		'''
-		super().__init__(args=args)
+	def __init__(self):
+		super().__init__()
 
 		# Banner
 		print("BitSwan BSPump version {}".format(__version__))
@@ -42,16 +38,16 @@ class BSPumpApplication(asab.Application):
 		except (NotImplementedError, AttributeError):
 			pass
 
-		# Activate web frontend, if requested
-		if web_listen is None:
-			if self._web_listen is not None and len(self._web_listen) > 0:
-				web_listen = self._web_listen
-			elif "bspump:web" in asab.Config:
-				web_listen = asab.Config["bspump:web"].get("listen", "")
+		# Register bspump API endpoints, if requested (the web service is present)
+		if asab.Config["web"].get("listen"):
 
-		if web_listen is not None and len(web_listen) > 0:
-			from .web import _initialize_web
-			self.WebContainer = _initialize_web(self, web_listen)
+			# Initialize API service
+			self.add_module(asab.web.Module)
+
+			self.WebService = self.get_service("asab.WebService")
+
+			from .web import register_bspump_endpoints
+			self.WebContainer = register_bspump_endpoints(self.WebService.WebContainer)
 
 
 	def create_argument_parser(self):
@@ -78,17 +74,6 @@ build: {} [{}]
 			description=description
 		)
 		return parser
-
-
-	def parse_arguments(self, args=None):
-		"""
-		Description:
-
-		:return:
-		"""
-		args = super().parse_arguments(args=args)
-		self._web_listen = args.web_api
-		return args
 
 
 	async def main(self):
