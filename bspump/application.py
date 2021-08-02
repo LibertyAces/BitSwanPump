@@ -46,8 +46,8 @@ class BSPumpApplication(asab.Application):
 
 			self.WebService = self.get_service("asab.WebService")
 
-			from .web import register_bspump_endpoints
-			self.WebContainer = register_bspump_endpoints(self.WebService.WebContainer)
+			from .web import initialize_web
+			self.WebContainer = initialize_web(self.WebService.WebContainer)
 
 
 	def create_argument_parser(self):

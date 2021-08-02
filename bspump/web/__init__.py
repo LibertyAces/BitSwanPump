@@ -195,24 +195,9 @@ KEY2=${ENVIRONMENT_VARIABLE}
 	return asab.web.rest.json_response(request, d)
 
 
-def register_bspump_endpoints(container):
+def initialize_web(container):
 
 	# Add routes
-	# LEGACY
-	# TODO: Remove this after September 2021
-	container.WebApp.router.add_get('/pipelines', pipelines_v0)
-	container.WebApp.router.add_get('/example/trigger', example_trigger_v0)
-	container.WebApp.router.add_get('/example/internal', example_internal_v0)
-
-	container.WebApp.router.add_get('/lookup', lookup_list_v0)
-	container.WebApp.router.add_get('/lookup/{lookup_id}', lookup_v0)
-	container.WebApp.router.add_get('/lookup/{lookup_id}/meta', lookup_meta_v0)
-
-	container.WebApp.router.add_get('/metric', metric_list_v0)
-	container.WebApp.router.add_get('/metric/{metric_id}', metric_detail_v0)
-
-	container.WebApp.router.add_get('/manifest', manifest_v0)
-
 
 	# API VERSION 1
 	container.WebApp.router.add_get('/bspump/v1/pipelines', pipelines)
