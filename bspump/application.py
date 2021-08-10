@@ -17,8 +17,8 @@ class BSPumpApplication(asab.Application):
 	:return:
 	"""
 
-	def __init__(self):
-		super().__init__()
+	def __init__(self, args=None):
+		super().__init__(args=args)
 
 		# Banner
 		print("BitSwan BSPump version {}".format(__version__))
