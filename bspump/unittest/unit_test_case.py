@@ -9,7 +9,7 @@ from ..abc.processor import Processor
 
 class TestCase(unittest.TestCase):
 	def setUp(self) -> None:
-		self.App = BSPumpApplication(args=[])
+		self.App = BSPumpApplication()
 
 
 	def tearDown(self):
