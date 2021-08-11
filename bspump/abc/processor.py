@@ -43,6 +43,18 @@ class ProcessorBase(asab.ConfigObject):
 		"""
 		Description:
 
+		**Parameters**
+
+		app : str
+			id of the app
+
+		pipeline : str
+			id of the pipeline
+
+		definition : dict
+			description?
+
+
 		:return: ??
 
 		|
@@ -61,7 +73,13 @@ class ProcessorBase(asab.ConfigObject):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		context : ??
+			description??
+
+		event : ??
+			description??
 
 		"""
 		raise NotImplementedError()
