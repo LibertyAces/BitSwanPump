@@ -136,11 +136,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		returns components from pipeline that are throttled
 
-		.. rubric:: Returns:
-
-		.. rst:directive:option:: _throttles
-
-      	method _throttles
+		:return: self._throttles
+			returns list of throttles
 
         """
 		return self._throttles
@@ -171,29 +168,16 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		If called with exc can set exceptions for soft error etc.
 
-		:param: context: type? - context of an error
-		 		event: type? - description?
-				exc: type? - exception
+		**Parameters**
 
-		.. rubric:: Parameters:
+		context : type?
+			context of an error
 
-		.. rst:directive:option:: context
-			:type: ?
+		event : str
+			description?
 
-		context of an error
-
-		.. rst:directive:option:: event
-			:type: str
-
-		description?
-
-		.. rst:directive:option:: exc
-			:type: ?
-
-		exception
-
-
-		|
+		exc : ??
+			exception
 
 		"""
 		if exc is None:
@@ -232,9 +216,16 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Used for setting up exceptions and contitions for erros. Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
 
-		:param: exception, used for setting up a condition
-		:param: context
-		:param: event
+		**Parameters**
+
+		exception : type??
+		 	used for setting up a condition
+
+		context : type??
+			??
+
+		event : type?
+			??
 
 		:return: False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing)
 		:return: True for soft errors that will be ignored
@@ -273,10 +264,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		the throttling is propagated to the ancestral :meth:`Pipeline <bspump.Pipeline()>`, so that its source may block incoming events until the
 		internal queue is empty again.
 
+		**Parameters**
 
-		:parameters: ancestral_pipeline: pipeline
-
-		|
+		ancestral_pipeline : str
+			id of a pipeline that will be linked
 
 		"""
 
@@ -286,8 +277,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Unlink an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
 
+		**Parameters**
 
-		:parameters: ancestral_pipeline: pipeline
+		ancestral_pipeline : str
+			id of a ancestral pipeline that will be unlinked
 
 		"""
 
@@ -297,8 +290,15 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		enables throttling method for a chosen pipeline and its ancestral pipelines if needed.
 
-		:parameters: who:
-		:parameters: enable: default True
+
+		**Parameters**
+
+		who : str
+			assigns processors that are throttled
+
+		enable : bool, defualt True
+			when True, content of who is added to _throttles list
+
 
 		"""
 		# L.debug("Pipeline '{}' throttle {} by {}".format(self.Id, "enabled" if enable else "disabled", who))
@@ -429,8 +429,12 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
 		while incrementing the event.in metric.
 
-		:parameter: event
-		:parameter: context, default None
+		**Parameters**
+
+		event : ?
+			??
+		context : bool, default None
+			??
 
 		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
 
@@ -450,7 +454,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		creates a dictionary with information about the pipeline. It contains eps (events per second), warnings and errors.
 
-		:return: creates eps counter using MetricsService
+		:return: self.MetricsService
+			creates eps counter using MetricsService
 
 		:note: eps counter can be created using this method or dicertly by using MatricsService method
 
@@ -476,7 +481,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		it will collect the future result, trash it, and mainly it will capture any possible exception,
 		which will then block the :meth:`Pipeline <bspump.Pipeline()>` via set_error().
 
-		:parameters: coro : method
+		**Parameters**
+
+		coro : ??
+			??
 
 		:hint: If the number of futures exceeds the configured limit, the :meth:`Pipeline <bspump.Pipeline()>` is throttled.
 
@@ -515,7 +523,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Sets a specific source or list of sources to the pipeline.
 
-		:param: source - ID of a source : str, list - optional
+		**Parameters**
+
+			source : str, list optional
+				id of a source
 
 		if a list of sources is passed in set_source adds the sources in a list automatically
 		"""
@@ -528,7 +539,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:param: processor - ID of a processor: str
+		**Parameters**
+
+			processor : str
+				ID of a processor
 
 		:hint: generator can be added by using this method. It requires a depth parameter
 
@@ -549,7 +563,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Removes a specific processor from the :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:param: processor_id : str - ID of a processor
+		**Parameters**
+
+		processor_id : str
+			ID of a processor
 
 		:return: error when processor is not found
 
@@ -572,6 +589,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		:param: id : str - ID of a processor
 		:param: processor : str - ID of a processor inserting
 
+		**Parameters**
+
+		id : str
+			ID of a processor
+
+		processor : str
+			ID of a processor before which selected processor is inserted
+
 		:return: True on success. False otherwise (id not found)
 
 		"""
@@ -587,8 +612,13 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by id
 
-		:param: id : str - ID of a processor
-		:param: processor : str - ID of a processor inserting
+		**Parameters**
+
+		id : str
+			ID of a processor
+
+		processor : str
+			ID of a processor before which selected processor is inserted
 
 		:return: True on success. False otherwise (id not found)
 
@@ -626,9 +656,13 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: This method enables to add sources, :meth:`Processors <bspump.Processor()>`, and sink to create the structure of the :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:parameters: source : str - ID of a source
+		**Parameters**
 
-		:param: *processors : str - ID of processor
+		source : str
+			ID of a source
+
+		*processors : str
+			IDs of a processors
 
 		"""
 		self.set_source(source)
@@ -652,7 +686,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		locate a sources bases on ID
 
-		:parameters: adress : id of the source, string
+		**Parameters**
+
+		address : str
+			ID of a the source
 
 		"""
 		for source in self.Sources:
@@ -664,12 +701,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Find a connection by id.
 
-		:parameters: app, ?
-		:parameters: connection_id, string
+
+		**Parameters**
+
+		app : type?
+
+		connection_id : str
 
 		:return: connection
-
-		|
 
 		"""
 		if isinstance(connection_id, Connection):
@@ -684,7 +723,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description: Find by a processor by id.
 
-		:parameters: processor_id, string
+		**Parameters**
+
+		processor_id : str
+			ID of a processor
 
 		:return: processor
 
@@ -805,14 +847,6 @@ class PipelineLogger(logging.Logger):
 		self.Deque.append(record)
 
 	def _format_time(self, record):
-		"""
-		Description:
-
-		:return: time as a string
-
-		|
-
-		"""
 		try:
 			ct = datetime.datetime.fromtimestamp(record.created)
 			return ct.isoformat()
