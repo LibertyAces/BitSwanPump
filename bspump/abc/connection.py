@@ -45,6 +45,14 @@ class Connection(abc.ABC, ConfigObject):
 		"""
 		Description:
 
+		**Parameters**
+
+		app : str
+			ID of the app
+
+		definition : dict
+
+
 		:return: cls
 
 		|
