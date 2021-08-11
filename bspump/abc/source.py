@@ -31,12 +31,18 @@ class Source(ConfigObject):
 
 	async def process(self, event, context=None):
 		"""
-	 	This method is used to emit event into a :meth:`Pipeline <bspump.Pipeline()>`.
+		This method is used to emit event into a :meth:`Pipeline <bspump.Pipeline()>`.
+
+		**Parameters**
+
+		event: ?
+			description?
+
+		context : bool, default None
+			description??
 
 		:hint If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
 		:hint The source should catch this exception and fail gracefully.
-
-		|
 
 		"""
 		# TODO: Remove this method completely, each source should call pipeline.process() method directly
@@ -47,7 +53,11 @@ class Source(ConfigObject):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		loop : ?
+			decsription
+
 
 		"""
 		if self.Task is not None:
@@ -87,7 +97,10 @@ class Source(ConfigObject):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		loop : ??
+			description??
 
 		"""
 		if self.Task is not None:
@@ -219,6 +232,11 @@ class TriggerSource(Source):
 		"""
 		Description:
 
+		**Parameters**
+
+		trigger : ??
+			description??
+
 		:return: ?? Trigger.add(trigger)
 
 		|
@@ -232,6 +250,12 @@ class TriggerSource(Source):
 	async def main(self, *args, **kwags):
 		"""
 		Description:
+
+		**Parameters**
+
+		*args : ?
+
+		**kwags : ?
 
 		|
 
@@ -274,7 +298,12 @@ class TriggerSource(Source):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		*args : ?
+
+		**kwags : ?
+
 
 		"""
 		raise NotImplementedError()
