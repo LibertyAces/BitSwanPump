@@ -1,5 +1,5 @@
 Basics
-=======
+======
 
 BitSwan Pump consists of three 5 main components: Pipeline, Source, Processor, Sink, and Connection.
 
