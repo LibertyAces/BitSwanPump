@@ -41,7 +41,16 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		app : str
+			description?
+
+		id : bool, default None
+			description?
+
+		config : type?, defualt None
+			description?
 
 		"""
 		_id = id if id is not None else self.__class__.__name__
@@ -219,7 +228,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		exception : type??
-		 	used for setting up a condition
+			used for setting up a condition
 
 		context : type??
 			??
@@ -433,6 +442,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		event : ?
 			??
+
 		context : bool, default None
 			??
 
@@ -525,8 +535,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-			source : str, list optional
-				id of a source
+		source : str, list optional
+			id of a source
 
 		if a list of sources is passed in set_source adds the sources in a list automatically
 		"""
@@ -541,8 +551,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-			processor : str
-				ID of a processor
+		processor : str
+			ID of a processor
 
 		:hint: generator can be added by using this method. It requires a depth parameter
 
@@ -585,9 +595,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 	def insert_before(self, id, processor):
 		"""
 		Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id.
-
-		:param: id : str - ID of a processor
-		:param: processor : str - ID of a processor inserting
 
 		**Parameters**
 
