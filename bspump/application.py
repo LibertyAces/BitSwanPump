@@ -21,7 +21,7 @@ class BSPumpApplication(asab.Application):
 		'''
 		Description:
 
-	
+
 
 		'''
 		super().__init__(args=args)
