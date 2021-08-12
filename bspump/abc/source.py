@@ -18,7 +18,13 @@ class Source(ConfigObject):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		app : ?
+		description?
+
+		pipeline : ??
+		??
 
 		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
