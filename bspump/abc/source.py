@@ -192,6 +192,7 @@ class Source(ConfigObject):
 
 		|
 
+		# zeptat se premy nebo alese
 		"""
 		newid = definition.get('id')
 		config = definition.get('config')
