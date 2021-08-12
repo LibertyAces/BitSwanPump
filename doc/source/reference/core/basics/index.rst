@@ -1,11 +1,13 @@
 Basics
 ======
 
-BitSwan Pump consists of three 5 main components: Pipeline, Source, Processor, Sink, and Connection.
-
+Basics covers the most fundamental components of a BSPump. We will start with a 'backbone' of the BSPump.
 
 Pipeline
 --------
+
+Pipeline is responsible for construction of the pipeline itself and its methods enables us to manage it and maintain
+a working lifecycle of the system.
 
 .. py:currentmodule:: bspump
 
@@ -17,6 +19,8 @@ Pipeline
 
 Pipeline construction
 ~~~~~~~~~~~~~~~~~~~~~
+
+Following methods are the core methods of the pipeline
 
 .. automethod:: bspump.Pipeline.set_source
 
@@ -35,6 +39,8 @@ Pipeline construction
 
 Other Pipeline Methods
 ~~~~~~~~~~~~~~~~~~~~~~
+
+These methods are additional methods which brings more features to the pipeline. However, many of them are very imporant and almost necessary
 
 .. automethod:: bspump.Pipeline.time
 
@@ -78,17 +84,6 @@ Other Pipeline Methods
 Source
 ------
 
-Source is an **object** designed to obtain data from a predefined input.
-The BSPump contains a lot of universally usable, specific source objects, which are capable of loading data from known data interfaces.
-The BitSwan product further expands these objects by adding source objects directly usable for specific cases of use in industry field given.
-
-Each source represent a coroutine/Future/Task that is running in the context of the main loop.
-The coroutine method :meth:`main() <bspump.Source.main()>` contains an implementation of each particular source.
-
-Source MUST await a :meth:`Pipeline <bspump.Pipeline()>` ready state prior producing the event.
-It is acomplished by `await self.Pipeline.ready()` call.
-
-
 .. py:currentmodule:: bspump.abc.source
 
 .. autoclass:: Source
@@ -119,26 +114,6 @@ Source Construction
 Trigger Source
 ~~~~~~~~~~~~~~
 
-This is an abstract source class intended as a base for implementation of 'cyclic' sources such as file readers, SQL extractors etc.
-You need to provide a trigger class and implement :meth:`cycle() <bspump.TriggerSource.cycle()>` method.
-
-Trigger source will stop execution, when a :meth:`Pipeline <bspump.Pipeline()>` is cancelled (raises concurrent.futures.CancelledError).
-This typically happens when a program wants to quit in reaction to a on the signal.
-
-You also may overload the :meth:`main() <bspump.Source.main()>` method to provide additional parameters for a :meth:`cycle() <bspump.TriggerSource.cycle()>` method.
-
-
-.. code:: python
-
-	async def main(self):
-		async with aiohttp.ClientSession(loop=self.Loop) as session:
-			await super().main(session)
-
-
-	async def cycle(self, session):
-		session.get(...)
-
-
 .. py:currentmodule:: bspump
 
 .. autoclass:: TriggerSource
@@ -162,14 +137,6 @@ Trigger Source Methods
 Processor
 ---------
 
-The main component of the BSPump architecture is a so called processor.
-This object modifies, transforms and enriches events.
-Moreover, it is capable of calculating metrics and creating aggregations, detecting anomalies or react to known as well as unknown system behavior patterns.
-
-Processors differ as to their functions and all of them are aligned according to a predefined sequence in pipeline objects.
-As regards working with data events, each pipeline has its own unique task.
-
-
 .. py:currentmodule:: bspump
 
 .. autoclass:: Processor
@@ -178,8 +145,8 @@ As regards working with data events, each pipeline has its own unique task.
 .. automethod:: bspump.Processor.__init__()
 
 
-Processor Construction
-~~~~~~~~~~~~~~~~~~~~~~
+Processor Methods
+~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.Processor.time
 
@@ -215,8 +182,8 @@ Connection
 .. automethod:: bspump.Connection.__init__()
 
 
-Connection construction
-~~~~~~~~~~~~~~~~~~~~~~~
+Connection Methods
+~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.Connection.time
 
