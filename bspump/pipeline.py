@@ -25,8 +25,22 @@ L = logging.getLogger(__name__)
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
 
+	Example of Pipeline a basic usage
 
-	|
+	.. code:: python
+
+	   class MyPipeline(bspump.Pipeline):
+
+		  def __init__(self, app, pipeline_id):
+			 super().__init__(app, pipeline_id)
+			 self.build(
+				[
+				   MySource1(app, self),
+				   MySource2(app, self),
+				   MySource3(app, self),
+				]
+				bspump.common.NullSink(app, self),
+			 )
 
 	"""
 
@@ -39,7 +53,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def __init__(self, app, id=None, config=None):
 		"""
-		Description:
+		set ups basic variables used in other Pipeline methods. You can also add more information using the parameters
 
 		**Parameters**
 
@@ -47,10 +61,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			description?
 
 		id : bool, default None
-			description?
+			You can enter id to the __init__
 
 		config : type?, defualt None
-			description?
+			You can add a config file with additional settings and configurations
 
 		"""
 		_id = id if id is not None else self.__class__.__name__
@@ -441,7 +455,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		event : ?
-			??
+			You can specify an event that is passed to the method
 
 		context : bool, default None
 			??
@@ -819,10 +833,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 class PipelineLogger(logging.Logger):
 	"""
-	Description: PipelineLogger is a feature of BSPump which enables direct monitoring of a specific :meth:`Pipeline <bspump.Pipeline()>`.
+	PipelineLogger is a feature of BSPump which enables direct monitoring of a specific :meth:`Pipeline <bspump.Pipeline()>`.
 	It offers an overview of errors, error handling, data in a given time with its timestamp
-
-	|
 
 	"""
 
@@ -836,9 +848,7 @@ class PipelineLogger(logging.Logger):
 
 	def handle(self, record):
 		"""
-		Description: Counts and adds errors to the error counter
-
-		|
+		Counts and adds errors to the error counter
 
 		"""
 		# Count errors and warnings
