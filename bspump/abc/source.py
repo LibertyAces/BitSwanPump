@@ -9,26 +9,26 @@ L = logging.getLogger(__name__)
 
 class Source(ConfigObject):
 	"""
-	Description:
-
-	|
+	Source class is reponsible for connecting to a source and propagating the events or data from the source to processors
 
 	"""
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
-		Description:
+		sets the initial ID, pipeline and Task
 
 		**Parameters**
 
-		app : ?
-		description?
-
-		pipeline : ??
+		app : type?
 		??
 
-		id : str, default None
+		pipeline : type?
+		specification of a pipeline
 
-		config : type?, default None
+		id : str, default None
+		specification of a ID
+
+		config : json?, default None
+		option for adding a configuration file
 
 		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
@@ -45,11 +45,11 @@ class Source(ConfigObject):
 
 		**Parameters**
 
-		event: ?
+		event: data type with time stamp
 			message or information that is passed to the method and emited into a pipeline
 
-		context : bool, default None
-			description??
+		context : default None
+			what is it??
 
 		If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
 		:hint The source should catch this exception and fail gracefully.
