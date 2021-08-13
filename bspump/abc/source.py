@@ -253,7 +253,7 @@ class TriggerSource(Source):
 		trigger : ??
 			description??
 
-		:return: ?? Trigger.add(trigger)
+		:return: Trigger.add(trigger)
 
 		|
 
@@ -265,7 +265,7 @@ class TriggerSource(Source):
 
 	async def main(self, *args, **kwags):
 		"""
-		Description:
+		Waits for pipeline, triggers and calls exceptions when the source is initiated
 
 		**Parameters**
 
@@ -326,14 +326,6 @@ class TriggerSource(Source):
 
 
 	def rest_get(self):
-		"""
-		Description:
-
-		:return: result
-
-		|
-
-		"""
 		result = super().rest_get()
 		result.update({
 			"triggered": self.TriggerEvent.is_set()
