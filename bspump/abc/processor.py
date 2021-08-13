@@ -12,9 +12,22 @@ class ProcessorBase(asab.ConfigObject):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
-		Description:
+		sets the parameters it contains
 
-		|
+		**Parameters**
+
+		app : object
+			application object
+
+		pipeline :
+			pipeline
+
+		id : str, default=None,
+			id of a processor
+
+		config : json?, default=None
+			configuration file
+
 
 		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
@@ -28,11 +41,9 @@ class ProcessorBase(asab.ConfigObject):
 
 	def time(self):
 		"""
-		Description:
+		Accurate representation of a time in the pipeline
 
-		:return: time
-
-		|
+		:return: App.time()
 
 		"""
 		return self.App.time()
@@ -41,7 +52,7 @@ class ProcessorBase(asab.ConfigObject):
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
 		"""
-		Description:
+		can construct a processor based on a specific definition made for example, in a JSON file.
 
 		**Parameters**
 
