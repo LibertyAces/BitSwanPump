@@ -121,7 +121,7 @@ class Source(ConfigObject):
 
 	async def main(self):
 		"""
-		Can be implemented for additional features, else will raise NotImplementedError
+		Can be implemented for additional features, else will raise NotImplementedError and _main is called instead
 
 		"""
 		raise NotImplementedError()
@@ -129,7 +129,7 @@ class Source(ConfigObject):
 
 	async def stopped(self):
 		"""
-		Helper that simplyfies the implementation of sources:
+		Waits for all asynchronous tasks to be completed. It is helper that simplyfies the implementation of sources
 
 		Example:
 		.. code:: python
@@ -140,8 +140,6 @@ class Source(ConfigObject):
 				await self.stopped()
 
 				... finalize resources here
-
-		|
 
 		"""
 
@@ -155,9 +153,9 @@ class Source(ConfigObject):
 
 	def locate_address(self):
 		"""
-		Description:
 
-		:return: ID as a string
+
+		:return: ID and ID of a Pipeline as a string
 
 		|
 
@@ -189,11 +187,21 @@ class Source(ConfigObject):
 		"""
 		Description:
 
+		**Parameters**
+
+		cls : ?
+
+		app : ?
+
+		pipeline : ?
+
+		definition: dict : ?
+
+
 		:return: ??
 
 		|
 
-		# zeptat se premy nebo alese
 		"""
 		newid = definition.get('id')
 		config = definition.get('config')
@@ -226,9 +234,9 @@ class TriggerSource(Source):
 
 	def time(self):
 		"""
-		Description:
+		Method used for measuring a accurate time.
 
-		:return: time
+		:return: App.time()
 
 		|
 
@@ -238,7 +246,7 @@ class TriggerSource(Source):
 
 	def on(self, trigger):
 		"""
-		Description:
+		sets a Trigger which is a method that waits for a given condition and then triggers a
 
 		**Parameters**
 
