@@ -26,6 +26,10 @@ class Source(ConfigObject):
 		pipeline : ??
 		??
 
+		id : str, default None
+
+		config : type?, default None
+
 		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
@@ -42,7 +46,7 @@ class Source(ConfigObject):
 		**Parameters**
 
 		event: ?
-			description?
+			message or information that is passed to the method and emited into a pipeline
 
 		context : bool, default None
 			description??
@@ -57,12 +61,13 @@ class Source(ConfigObject):
 
 	def start(self, loop):
 		"""
-		Description:
+		Starts the pipeline through the _main method, but if main method is implemented
+		it starts the coroutine using main method instead
 
 		**Parameters**
 
 		loop : ?
-			decsription
+			contains the coroutines
 
 
 		"""
@@ -84,9 +89,7 @@ class Source(ConfigObject):
 
 	async def stop(self):
 		"""
-		stops a tasks or raises an error
-
-		|
+		Stops the Source using self.Task. If the processes are not done it cancels them or raises an error.
 
 		"""
 		if self.Task is None:
@@ -101,12 +104,12 @@ class Source(ConfigObject):
 
 	def restart(self, loop):
 		"""
-		Description:
+		restarts the loop of coroutines and returns result() method
 
 		**Parameters**
 
 		loop : ??
-			description??
+			contains the coroutines
 
 		"""
 		if self.Task is not None:
@@ -118,9 +121,7 @@ class Source(ConfigObject):
 
 	async def main(self):
 		"""
-		Description:
-
-		|
+		Can be implemented for additional features, else will raise NotImplementedError
 
 		"""
 		raise NotImplementedError()
