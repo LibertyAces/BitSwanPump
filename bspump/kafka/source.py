@@ -227,10 +227,6 @@ class KafkaSource(Source):
 			await self.Consumer.stop()
 
 	async def _commit(self, offsets=None):
-		"""
-		Description:
-
-		"""
 		for i in range(self.Retry, 0, -1):
 			try:
 				if offsets is not None and len(offsets) > 0:
