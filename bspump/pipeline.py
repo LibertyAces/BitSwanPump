@@ -613,10 +613,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		id : str
-			ID of a processor
+			ID of a processor of our
 
 		processor : str
-			ID of a processor before which selected processor is inserted
+			specification of a processor before which we insert our processor
 
 		:return: True on success. False otherwise (id not found)
 
