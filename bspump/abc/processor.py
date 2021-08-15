@@ -98,7 +98,6 @@ class ProcessorBase(asab.ConfigObject):
 
 	def locate_address(self):
 		"""
-		Description:
 
 		:return: ID of the pipeline
 
