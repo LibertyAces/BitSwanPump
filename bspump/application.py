@@ -11,7 +11,7 @@ class BSPumpApplication(asab.Application):
 
 
 	"""
-	BSPumpApplication is **class** used for .....
+	BSPumpApplication is responsible for the main life cycle of the Application. It is based on ASAB Application class
 
 	|
 
@@ -19,7 +19,13 @@ class BSPumpApplication(asab.Application):
 
 	def __init__(self, args=None, web_listen=None):
 		'''
-		Description:
+		Initiates the Application and looks for config with additional arguments.
+
+		**Parameters**
+
+		args : default= None
+
+		web_listen : default= None
 
 
 
@@ -58,9 +64,9 @@ class BSPumpApplication(asab.Application):
 
 	def create_argument_parser(self):
 		"""
-		Description:
+		enables to create arguments that can be called within the command prompt when starting the application
 
-		:return: paraser
+		:return: parser,
 
 		|
 
@@ -87,7 +93,7 @@ build: {} [{}]
 
 	def parse_arguments(self, args=None):
 		"""
-		Description:
+		It parses argument in the ASAB application using super method.
 
 		:return: args
 
@@ -101,9 +107,7 @@ build: {} [{}]
 
 	async def main(self):
 		"""
-		Description:
-
-		:return: args
+		It prints a message about how many pipelines are ready
 
 		|
 
