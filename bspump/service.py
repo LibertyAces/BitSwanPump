@@ -63,7 +63,7 @@ class BSPumpService(asab.Service):
 
 	def add_pipeline(self, pipeline):
 		"""
-		Description:
+		Adds a pipeline to the BSPump
 
 		|
 
@@ -266,7 +266,7 @@ class BSPumpService(asab.Service):
 
 	async def finalize(self, app):
 		"""
-		Description:
+		Stops all the pipelines 
 
 		|
 
