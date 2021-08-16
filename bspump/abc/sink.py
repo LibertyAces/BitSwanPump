@@ -3,7 +3,7 @@ from .processor import ProcessorBase
 
 class Sink(ProcessorBase):
 	"""
-	Description:
+	Sink is basically a processor. It takes an event and 
 
 	|
 
