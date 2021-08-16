@@ -15,6 +15,17 @@ class Connection(abc.ABC, ConfigObject):
 		"""
 		Description:
 
+
+		**Parameters**
+
+		app :
+
+		id : ?
+
+		config : default None
+			it contains imporant information and data responsible for creating a connection.
+
+
 		|
 
 		"""
@@ -30,7 +41,7 @@ class Connection(abc.ABC, ConfigObject):
 
 	def time(self):
 		"""
-		Description:
+		Returns accurate time of the asynchronous process
 
 		:return: time
 
@@ -43,7 +54,7 @@ class Connection(abc.ABC, ConfigObject):
 	@classmethod
 	def construct(cls, app, definition: dict):
 		"""
-		Description:
+		can create a connection based on a specific definition. For example, a JSON file.
 
 		**Parameters**
 
@@ -53,7 +64,7 @@ class Connection(abc.ABC, ConfigObject):
 		definition : dict
 
 
-		:return: cls
+		:return: cls(app, newid, config)
 
 		|
 
