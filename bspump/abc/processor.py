@@ -52,7 +52,7 @@ class ProcessorBase(asab.ConfigObject):
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
 		"""
-		can construct a processor based on a specific definition made for example, in a JSON file.
+		can construct a processor based on a specific definition. For example, a JSON file.
 
 		**Parameters**
 
@@ -82,7 +82,7 @@ class ProcessorBase(asab.ConfigObject):
 
 	def process(self, context, event):
 		"""
-		Description:
+		Can be implemented to return event based on a given logic.
 
 		**Parameters**
 
@@ -90,7 +90,7 @@ class ProcessorBase(asab.ConfigObject):
 			description??
 
 		event : ??
-			description??
+			message or information that is passed to the method and emitted into a pipeline
 
 		"""
 		raise NotImplementedError()
@@ -98,8 +98,9 @@ class ProcessorBase(asab.ConfigObject):
 
 	def locate_address(self):
 		"""
+		Returns an ID of a processor and a pipeline
 
-		:return: ID of the pipeline
+		:return: ID of the pipeline a
 
 		|
 
