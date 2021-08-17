@@ -266,7 +266,7 @@ class BSPumpService(asab.Service):
 
 	async def finalize(self, app):
 		"""
-		Stops all the pipelines 
+		Stops all the pipelines
 
 		|
 
