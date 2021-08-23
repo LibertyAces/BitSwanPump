@@ -22,6 +22,8 @@ Pipeline construction
 
 Following methods are the core methods of the pipeline
 
+.. automethod:: bspump.Pipeline.build
+
 .. automethod:: bspump.Pipeline.set_source
 
 .. automethod:: bspump.Pipeline.append_processor
@@ -31,8 +33,6 @@ Following methods are the core methods of the pipeline
 .. automethod:: bspump.Pipeline.insert_before
 
 .. automethod:: bspump.Pipeline.insert_after
-
-.. automethod:: bspump.Pipeline.build
 
 .. automethod:: bspump.Pipeline.iter_processors
 
