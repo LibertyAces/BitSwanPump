@@ -25,7 +25,7 @@ L = logging.getLogger(__name__)
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
 
-	Example of Pipeline a basic usage
+	an example of a Pipeline construction
 
 	.. code:: python
 
@@ -63,7 +63,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		id : bool, default None
 			You can enter id to the __init__
 
-		config : type?, defualt None
+		config : defualt None
 			You can add a config file with additional settings and configurations
 
 		"""
@@ -148,7 +148,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def time(self):
 		"""
-		Returns correct time of a event (used in asynchronous methods)
+		Returns correct time of the event
 
 		:return: App.time()
 
