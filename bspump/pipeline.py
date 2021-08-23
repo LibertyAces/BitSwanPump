@@ -35,9 +35,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			 super().__init__(app, pipeline_id)
 			 self.build(
 				[
-				   MySource1(app, self),
+				   MySource(app, self),
 				   MySource2(app, self),
-				   MySource3(app, self),
+				   MyProcessor(app, self),
+				   MyProcessor2(app, self),
 				]
 				bspump.common.NullSink(app, self),
 			 )
@@ -53,7 +54,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def __init__(self, app, id=None, config=None):
 		"""
-		Set ups basic variables used in other Pipeline methods. You can also add more information using the parameters
+		Setups basic variables used in other Pipeline methods. You can also add more information using the parameters
 
 		**Parameters**
 
@@ -61,7 +62,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			description?
 
 		id : bool, default None
-			You can enter id to the __init__
+			You can enter ID to the __init__
 
 		config : defualt None
 			You can add a config file with additional settings and configurations
@@ -290,7 +291,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		ancestral_pipeline : str
-			id of a pipeline that will be linked
+			ID of a pipeline that will be linked
 
 		"""
 
@@ -303,7 +304,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		ancestral_pipeline : str
-			id of a ancestral pipeline that will be unlinked
+			ID of a ancestral pipeline that will be unlinked
 
 		"""
 
@@ -550,9 +551,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		source : str, list optional
-			id of a source
+			ID of a source
 
-		if a list of sources is passed in set_source adds the sources in a list automatically
+		if a list of sources is passed in set_source the method adds the whole list of sources to the pipeline
 		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
@@ -608,7 +609,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_before(self, id, processor):
 		"""
-		Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id.
+		Insert the :meth:`Processor <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` before another processor specified by id.
 
 		**Parameters**
 
@@ -631,7 +632,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_after(self, id, processor):
 		"""
-		Insert the :meth:`Processors <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by id
+		Insert the :meth:`Processor <bspump.Processor()>` into a :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by id
 
 		**Parameters**
 
@@ -639,7 +640,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			ID of a processor
 
 		processor : str
-			ID of a processor before which selected processor is inserted
+			specification of a processor after which we insert our processor
 
 		:return: True on success. False otherwise (id not found)
 
