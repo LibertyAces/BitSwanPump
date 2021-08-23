@@ -58,14 +58,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		app : str
-			description?
+		app : Application
+			configure which application
 
-		id : bool, default None
-			You can enter ID to the __init__
+		id : str ,default None
+			You can enter ID of the class. Otherwise a name the current class will be using using __class__ descriptor object.
 
 		config : defualt None
-			You can add a config file with additional settings and configurations
+			You can add a config file with additional settings and configurations, otherwise a
 
 		"""
 		_id = id if id is not None else self.__class__.__name__
@@ -149,7 +149,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def time(self):
 		"""
-		Returns correct time of the event
+		Returns correct time
 
 		:return: App.time()
 
@@ -184,24 +184,25 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		:return: self._error is not None
 
         """
+
 		return self._error is not None
 
 	def set_error(self, context, event, exc):
 		"""
 		If called with `exc is None`, then reset error (aka recovery).
 
-		If called with exc can set exceptions for soft error etc.
+		If called with exc, you can set exceptions for soft error etc.
 
 		**Parameters**
 
 		context : type?
 			context of an error
 
-		event : str
-			description?
+		event : data stored in any data type, usually it is in JSON
+			You can specify an event that is passed to the method
 
-		exc : ??
-			exception
+		exc : Exception
+			Python default exceptions
 
 		"""
 		if exc is None:
@@ -238,18 +239,18 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def handle_error(self, exception, context, event):
 		"""
-		Used for setting up exceptions and contitions for erros. Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
+		Used for setting up exceptions and conditions for errors. Override to evaluate on the :meth:`Pipeline <bspump.Pipeline()>` processing error.
 
 		**Parameters**
 
-		exception : type??
-			used for setting up a condition
+		exception : Exception
+			used for setting up a custom Exception
 
-		context : type??
-			??
+		context : information
+			Additional information can be passed
 
-		event : type?
-			??
+		event : data stored in any data type, usually it is in JSON
+			You can specify an event that is passed to the method
 
 		:return: False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing)
 		:return: True for soft errors that will be ignored
@@ -318,7 +319,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		who : str
-			assigns processors that are throttled
+			ID of a pipeline
 
 		enable : bool, defualt True
 			when True, content of who is added to _throttles list
@@ -430,8 +431,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		context : string
 			information propagated through the pipeline
 
-		event : str
-			name of the event
+		event : data stored in any data type, usually it is in JSON
+			You can specify an event that is passed to the method
 
 		depth : int
 			int depth attribute
@@ -455,11 +456,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		event : ?
+		event : data stored in any data type, usually it is in JSON
 			You can specify an event that is passed to the method
 
-		context : bool, default None
-			??
+		context : default None
+			You can add additional information needed for work with event streaming.
 
 		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
 
