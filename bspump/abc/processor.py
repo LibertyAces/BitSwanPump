@@ -122,7 +122,7 @@ class ProcessorBase(asab.ConfigObject):
 
 class Processor(ProcessorBase):
 	"""
-	Description:
+	Inherits from ProcessorBase
 
 	|
 
