@@ -318,7 +318,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		who : ID of a processor 
+		who : ID of a processor
 			specification of a processor that we want to throttle
 
 		enable : bool, defualt True
@@ -435,9 +435,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			You can specify an event that is passed to the method
 
 		depth : int
-			int depth attribute
+			level of depth
 
-		:note: For normal operations, it is highly recommended to use process method instead (see in source code).
+		:note: For normal operations, it is highly recommended to use process method instead.
 
 		"""
 
@@ -452,14 +452,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 	async def process(self, event, context=None):
 		"""
 		Process method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth 0,
-		while incrementing the event.in metric.
+		while incrementing the event in metric.
 
 		**Parameters**
 
 		event : data stored in any data type, usually it is in JSON
 			You can specify an event that is passed to the method
 
-		context : default None
+		context : str, default None
 			You can add additional information needed for work with event streaming.
 
 		:hint: This is recommended way of inserting events into a :meth:`Pipeline <bspump.Pipeline()>`.
@@ -572,8 +572,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		:hint: generator can be added by using this method. It requires a depth parameter
 
-		# What is depth parameter??
-
 		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
 		# TODO: Check if fitting
@@ -615,12 +613,12 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		id : str
-			ID of a processor of our
+			ID of a processor that we want to insert
 
 		processor : str
 			specification of a processor before which we insert our processor
 
-		:return: True on success. False otherwise (id not found)
+		:return: True on success. False if id was not found
 
 		"""
 		for processors in self.Processors:
@@ -638,12 +636,12 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		id : str
-			ID of a processor
+			ID of a processor that we want to insert
 
 		processor : str
 			specification of a processor after which we insert our processor
 
-		:return: True on success. False otherwise (id not found)
+		:return: True on success. False if id was not found)
 
 		"""
 		for processors in self.Processors:
