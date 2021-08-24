@@ -9,7 +9,7 @@ L = logging.getLogger(__name__)
 
 class Source(ConfigObject):
 	"""
-	Source class is reponsible for connecting to a source and propagating the events or data from the source to processors
+	Source class is responsible for connecting to a source and propagating the events or data from the source to processors
 
 	"""
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -18,16 +18,16 @@ class Source(ConfigObject):
 
 		**Parameters**
 
-		app : type?
-		??
+		app : Application
+			specification of an Application
 
-		pipeline : type?
-		specification of a pipeline
+		pipeline : address of a pipeline
+			specification of a pipeline
 
 		id : str, default None
-		specification of a ID
+			specification of a ID
 
-		config : json?, default None
+		config : compatible config type , default None
 		option for adding a configuration file
 
 		"""
