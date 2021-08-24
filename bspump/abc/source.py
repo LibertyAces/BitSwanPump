@@ -45,11 +45,11 @@ class Source(ConfigObject):
 
 		**Parameters**
 
-		event: data type with time stamp
+		event: data with time stamp stored in any data type, usually JSON
 			message or information that is passed to the method and emited into a pipeline
 
 		context : default None
-			what is it??
+			additional information
 
 		If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
 		:hint The source should catch this exception and fail gracefully.
@@ -129,7 +129,7 @@ class Source(ConfigObject):
 
 	async def stopped(self):
 		"""
-		Waits for all asynchronous tasks to be completed. It is helper that simplyfies the implementation of sources
+		Waits for all asynchronous tasks to be completed. It is helper that simplifies the implementation of sources
 
 		Example:
 		.. code:: python
@@ -153,11 +153,9 @@ class Source(ConfigObject):
 
 	def locate_address(self):
 		"""
-
+		locates address of a pipeline
 
 		:return: ID and ID of a Pipeline as a string
-
-		|
 
 		"""
 		return "{}.*{}".format(self.Pipeline.Id, self.Id)
@@ -165,11 +163,8 @@ class Source(ConfigObject):
 
 	def rest_get(self):
 		"""
-		Description:
 
-		:return: ID and class
-
-		|
+		:return: ID and class ID
 
 		"""
 		return {
@@ -185,22 +180,21 @@ class Source(ConfigObject):
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
 		"""
-		Description:
+		can create a source based on a specific definition. For example, a JSON file.
 
 		**Parameters**
 
-		cls : ?
+		app : Application
+			ID of the app
 
-		app : ?
+		pipeline : Pipeline
+			specification of a pipeline
 
-		pipeline : ?
+		definition : dict
+			definition that is used to create a source
 
-		definition: dict : ?
 
-
-		:return: ??
-
-		|
+		:return: cls(app, newid, config)
 
 		"""
 		newid = definition.get('id')
@@ -234,11 +228,9 @@ class TriggerSource(Source):
 
 	def time(self):
 		"""
-		Method used for measuring a accurate time.
+		Method used for measuring an accurate time.
 
 		:return: App.time()
-
-		|
 
 		"""
 		return self.App.time()
@@ -246,16 +238,14 @@ class TriggerSource(Source):
 
 	def on(self, trigger):
 		"""
-		sets a Trigger which is a method that waits for a given condition and then triggers a
+		sets a Trigger which is a method that waits for a given condition
 
 		**Parameters**
 
-		trigger : ??
-			description??
+		trigger : keyword of a trigger
+			Given condition that
 
-		:return: Trigger.add(trigger)
-
-		|
+		:return: Trigger.add(trigger)                                                                        a
 
 		"""
 		trigger.add(self)
@@ -312,7 +302,7 @@ class TriggerSource(Source):
 
 	async def cycle(self, *args, **kwags):
 		"""
-		Description:
+		Not implemented
 
 		**Parameters**
 
