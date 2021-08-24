@@ -18,15 +18,13 @@ class Connection(abc.ABC, ConfigObject):
 
 		**Parameters**
 
-		app :
+		app : Application
+			specification of an Application
 
-		id : ?
+		id : default None
 
-		config : default None
-			it contains imporant information and data responsible for creating a connection.
-
-
-		|
+		config : JSON or other compatible format, default None
+			it contains important information and data responsible for creating a connection.
 
 		"""
 
@@ -61,7 +59,8 @@ class Connection(abc.ABC, ConfigObject):
 		app : str
 			ID of the app
 
-		definition : dict
+		definition : definition format
+			defines instructions for the method that can be used to create a connection
 
 
 		:return: cls(app, newid, config)
