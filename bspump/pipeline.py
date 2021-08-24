@@ -705,7 +705,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_source(self, address):
 		"""
-		Locate a sources based on ID
+		Locate a sources based on its ID
 
 		**Parameters**
 
@@ -725,9 +725,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		app : type?
+		app : Application
+			specify application
 
 		connection_id : str
+			id of connection we want to locate
 
 		:return: connection
 
@@ -775,7 +777,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def stop(self):
 		"""
-		Stops the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`
+		Gracefully stops the lifecycle of the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		"""
 		self.PubSub.publish("bspump.pipeline.stop!", pipeline=self)
@@ -837,6 +839,11 @@ class PipelineLogger(logging.Logger):
 	"""
 
 	def __init__(self, name, metrics_counter, level=logging.NOTSET):
+		"""
+		itializes a metrics counter
+
+
+		"""
 		super().__init__(name, level=level)
 		self.Deque = collections.deque([], 50)
 		self._metrics_counter = metrics_counter
@@ -847,6 +854,12 @@ class PipelineLogger(logging.Logger):
 	def handle(self, record):
 		"""
 		Counts and adds errors to the error counter
+
+		**Parameters**
+
+		record :
+			Record that is evaluated
+
 
 		"""
 		# Count errors and warnings
