@@ -12,20 +12,20 @@ class ProcessorBase(asab.ConfigObject):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
-		sets the parameters it contains
+		Initialize method
 
 		**Parameters**
 
 		app : object
 			application object
 
-		pipeline :
+		pipeline : Pipeline
 			pipeline
 
 		id : str, default=None,
-			id of a processor
+			ID
 
-		config : json?, default=None
+		config : JSON, or other compatible formats, default=None
 			configuration file
 
 
@@ -52,7 +52,7 @@ class ProcessorBase(asab.ConfigObject):
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
 		"""
-		can construct a processor based on a specific definition. For example, a JSON file.
+		Can construct a processor based on a specific definition. For example, a JSON file.
 
 		**Parameters**
 
@@ -63,10 +63,10 @@ class ProcessorBase(asab.ConfigObject):
 			id of the pipeline
 
 		definition : dict
-			description?
+			set of instructions based on which processor can be constructed
 
 
-		:return: ??
+		:return: cls(app, pipeline, id=newid, config=config)
 
 		|
 
@@ -86,11 +86,11 @@ class ProcessorBase(asab.ConfigObject):
 
 		**Parameters**
 
-		context : ??
-			description??
+		context :
+			additional information passed to the method
 
-		event : ??
-			message or information that is passed to the method and emitted into a pipeline
+		event : data with time stamp stored in any data type, usually it is in JSON
+			You can specify an event that is passed to the method
 
 		"""
 		raise NotImplementedError()
@@ -100,7 +100,7 @@ class ProcessorBase(asab.ConfigObject):
 		"""
 		Returns an ID of a processor and a pipeline
 
-		:return: ID of the pipeline a
+		:return: ID of the pipeline and self.Id
 
 		|
 
