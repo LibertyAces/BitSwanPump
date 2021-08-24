@@ -59,13 +59,13 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		app : Application
-			configure which application
+			specification of an Application
 
 		id : str ,default None
 			You can enter ID of the class. Otherwise a name the current class will be using using __class__ descriptor object.
 
 		config : defualt None
-			You can add a config file with additional settings and configurations, otherwise a
+			You can add a config file with additional settings and configurations, otherwise a default config is used
 
 		"""
 		_id = id if id is not None else self.__class__.__name__
@@ -198,7 +198,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		context : type?
 			context of an error
 
-		event : data stored in any data type, usually it is in JSON
+		event : data with time stamp stored in any data type, usually it is in JSON
 			You can specify an event that is passed to the method
 
 		exc : Exception
@@ -249,7 +249,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		context : information
 			Additional information can be passed
 
-		event : data stored in any data type, usually it is in JSON
+		event : data with time stamp stored in any data type, usually it is in JSON
 			You can specify an event that is passed to the method
 
 		:return: False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing)
@@ -431,7 +431,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		context : string
 			information propagated through the pipeline
 
-		event : data stored in any data type, usually it is in JSON
+		event : data with time stamp stored in any data type, usually it is in JSON
 			You can specify an event that is passed to the method
 
 		depth : int
@@ -456,7 +456,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		event : data stored in any data type, usually it is in JSON
+		event : data with time stamp stored in any data type, usually it is in JSON
 			You can specify an event that is passed to the method
 
 		context : str, default None
