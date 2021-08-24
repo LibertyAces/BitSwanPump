@@ -28,7 +28,7 @@ class Source(ConfigObject):
 			specification of a ID
 
 		config : compatible config type , default None
-		option for adding a configuration file
+			option for adding a configuration file
 
 		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
