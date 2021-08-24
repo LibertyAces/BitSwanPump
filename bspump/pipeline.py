@@ -683,7 +683,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			ID of a source
 
 		*processors : str
-			IDs of a processors
+			IDs of processors
 
 		"""
 		self.set_source(source)
@@ -692,7 +692,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def iter_processors(self):
 		"""
-		Generator that iterate thru all processors
+		Generator that iterate through all processors
 
 		:yields: processor
 
@@ -705,7 +705,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_source(self, address):
 		"""
-		Locate a sources bases on ID
+		Locate a sources based on ID
 
 		**Parameters**
 
