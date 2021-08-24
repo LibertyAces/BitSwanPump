@@ -54,7 +54,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def __init__(self, app, id=None, config=None):
 		"""
-		Setups basic variables used in other Pipeline methods. You can also add more information using the parameters
+		Setup basic variables used in other Pipeline methods. You can also add more information using the parameters
 
 		**Parameters**
 
@@ -149,7 +149,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def time(self):
 		"""
-		Returns correct time
+		Return correct time
 
 		:return: App.time()
 
@@ -158,7 +158,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def get_throttles(self):
 		"""
-		Returns components from pipeline that are throttled
+		Return components from pipeline that are throttled
 
 		:return: self._throttles
 			returns list of throttles
@@ -179,7 +179,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def is_error(self):
 		"""
-		Returns False when there is no error, otherwise it returns True
+		Return False when there is no error, otherwise it returns True
 
 		:return: self._error is not None
 
@@ -313,7 +313,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def throttle(self, who, enable=True):
 		"""
-		Enables throttling method for a chosen pipeline and its ancestral pipelines if needed.
+		Enable throttling method for a chosen pipeline and its ancestral pipelines if needed.
 
 
 		**Parameters**
@@ -364,7 +364,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def ready(self):
 		"""
-		Checks if a pipeline is ready. Can be used in source: `await self.Pipeline.ready()`
+		Check if a pipeline is ready. Can be used in source: `await self.Pipeline.ready()`
 
 		"""
 
@@ -478,7 +478,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def create_eps_counter(self):
 		"""
-		Creates a dictionary with information about the pipeline. It contains eps (events per second), warnings and errors.
+		Create a dictionary with information about the pipeline. It contains eps (events per second), warnings and errors.
 
 		:return: self.MetricsService
 			creates eps counter using MetricsService
@@ -547,7 +547,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def set_source(self, source):
 		"""
-		Sets a specific source or list of sources to the pipeline.
+		Set a specific source or list of sources to the pipeline.
 
 		**Parameters**
 
@@ -563,7 +563,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def append_processor(self, processor):
 		"""
-		Adds a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`.
+		Add a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
