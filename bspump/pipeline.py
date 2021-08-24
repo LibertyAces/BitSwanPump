@@ -300,7 +300,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def unlink(self, ancestral_pipeline):
 		"""
-		Description: Unlink an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
+		Unlink an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
@@ -318,8 +318,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		who : str
-			ID of a pipeline
+		who : ID of a processor 
+			specification of a processor that we want to throttle
 
 		enable : bool, defualt True
 			when True, content of who is added to _throttles list
