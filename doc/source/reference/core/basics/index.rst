@@ -40,7 +40,7 @@ Following methods are the core methods of the pipeline.
 Other Pipeline Methods
 ~~~~~~~~~~~~~~~~~~~~~~
 
-These methods are additional methods which brings more features to the pipeline. However, many of them are very imporant and almost necessary
+These methods are additional methods which brings more features to the pipeline. However, many of them are very important and almost necessary.
 
 .. automethod:: bspump.Pipeline.time
 
