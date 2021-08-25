@@ -553,7 +553,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		source : str, list optional
 			ID of a source
 
-		if a list of sources is passed in set_source the method adds the whole list of sources to the pipeline
+		if a list of sources is passed to the method. It adds the whole list of sources to the pipeline
 		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
@@ -562,7 +562,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def append_processor(self, processor):
 		"""
-		Add a :meth:`Processors <bspump.Processor()>` to the :meth:`Pipeline <bspump.Pipeline()>`.
+		Add a :meth:`Processors <bspump.Processor()>` to the current :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
@@ -681,8 +681,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		source : str
 			ID of a source
 
-		*processors : str
-			IDs of processors
+		*processors : str, list optional
+			ID of processor or list of IDs
 
 		"""
 		self.set_source(source)
