@@ -137,11 +137,10 @@ class Source(ConfigObject):
 		..code:: python
 
 			async def main(self):
-				... initialize resources here
+				#... initialize resources here
 
 				await self.stopped()
-
-				... finalize resources here
+				#... finalize resources here
 
 		"""
 
