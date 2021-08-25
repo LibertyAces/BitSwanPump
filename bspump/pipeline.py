@@ -186,9 +186,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def set_error(self, context, event, exc):
 		"""
-		If called with `exc is None`, it resets error (aka recovery).
+		When called with `exc is None`, it resets error (aka recovery).
 
-		If called with exc, it sets exceptions for soft errors.
+		When called with exc, it sets exceptions for soft errors.
 
 		**Parameters**
 
@@ -689,7 +689,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def iter_processors(self):
 		"""
-		use python generator routine that iterate through all processors in the pipeline.
+		use python generator routine that iterates through all processors in the pipeline.
 
 		:yields: Processor from a list in the pipeline.
 
