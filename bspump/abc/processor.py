@@ -17,16 +17,16 @@ class ProcessorBase(asab.ConfigObject):
 		**Parameters**
 
 		app : object
-			application object
+			Application object.
 
 		pipeline : Pipeline
-			pipeline
+			Pipeline.
 
 		id : str, default=None,
-			ID
+			ID of the class of config.
 
 		config : JSON, or other compatible formats, default=None
-			configuration file
+			Configuration file.
 
 
 		"""
@@ -41,7 +41,7 @@ class ProcessorBase(asab.ConfigObject):
 
 	def time(self):
 		"""
-		Accurate representation of a time in the pipeline
+		Accurate representation of a time in the pipeline.
 
 		:return: App.time()
 
@@ -57,13 +57,13 @@ class ProcessorBase(asab.ConfigObject):
 		**Parameters**
 
 		app : str
-			id of the app
+			ID of the app.
 
 		pipeline : str
-			id of the pipeline
+			ID of the pipeline.
 
 		definition : dict
-			set of instructions based on which processor can be constructed
+			Set of instructions based on which processor can be constructed.
 
 
 		:return: cls(app, pipeline, id=newid, config=config)
@@ -87,10 +87,10 @@ class ProcessorBase(asab.ConfigObject):
 		**Parameters**
 
 		context :
-			additional information passed to the method
+			Additional information passed to the method.
 
-		event : data with time stamp stored in any data type, usually it is in JSON
-			You can specify an event that is passed to the method
+		event : Data with time stamp stored in any data type, usually it is in JSON.
+			You can specify an event that is passed to the method.
 
 		"""
 		raise NotImplementedError()
@@ -98,9 +98,9 @@ class ProcessorBase(asab.ConfigObject):
 
 	def locate_address(self):
 		"""
-		Returns an ID of a processor and a pipeline
+		Returns an ID of a processor and a pipeline.
 
-		:return: ID of the pipeline and self.Id
+		:return: ID of the pipeline and self.Id.
 
 		|
 
@@ -122,7 +122,7 @@ class ProcessorBase(asab.ConfigObject):
 
 class Processor(ProcessorBase):
 	"""
-	Inherits from ProcessorBase
+	Inherits from ProcessorBase.
 
 	|
 
