@@ -20,7 +20,7 @@ a working lifecycle of the system.
 Pipeline construction
 ~~~~~~~~~~~~~~~~~~~~~
 
-Following methods are the core methods of the pipeline
+Following methods are the core methods of the pipeline.
 
 .. automethod:: bspump.Pipeline.build
 
