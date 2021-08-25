@@ -9,26 +9,26 @@ L = logging.getLogger(__name__)
 
 class Source(ConfigObject):
 	"""
-	Source class is responsible for connecting to a source and propagating the events or data from the source to processors
+	Source class is responsible for connecting to a source and propagating the events or data from the source to processors.
 
 	"""
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
-		sets the initial ID, pipeline and Task
+		Set the initial ID, pipeline and Task.
 
 		**Parameters**
 
 		app : Application
-			specification of an Application
+			Name of an Application.
 
 		pipeline : address of a pipeline
-			specification of a pipeline
+			Name of a pipeline.
 
 		id : str, default None
-			specification of a ID
+			Name of a the Pipeline.
 
 		config : compatible config type , default None
-			option for adding a configuration file
+			Option for adding a configuration file.
 
 		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
@@ -45,13 +45,14 @@ class Source(ConfigObject):
 
 		**Parameters**
 
-		event: data with time stamp stored in any data type, usually JSON
-			message or information that is passed to the method and emited into a pipeline
+		event: Data with time stamp stored in any data type, usually JSON.
+			Message or information that is passed to the method and emitted into a pipeline.
 
 		context : default None
-			additional information
+			Additional information.
 
 		If there is an error in the processing of the event, the :meth:`Pipeline <bspump.Pipeline()>` is throttled by setting the error and the exception raised.
+
 		:hint The source should catch this exception and fail gracefully.
 
 		"""
@@ -61,13 +62,13 @@ class Source(ConfigObject):
 
 	def start(self, loop):
 		"""
-		Starts the pipeline through the _main method, but if main method is implemented
-		it starts the coroutine using main method instead
+		Start the pipeline through the _main method, but if main method is implemented
+		it starts the coroutine using main method instead.
 
 		**Parameters**
 
 		loop : ?
-			contains the coroutines
+			Contains the coroutines.
 
 
 		"""
@@ -89,7 +90,7 @@ class Source(ConfigObject):
 
 	async def stop(self):
 		"""
-		Stops the Source using self.Task. If the processes are not done it cancels them or raises an error.
+		Stop the Source using self.Task. If the processes are not done it cancels them or raises an error.
 
 		"""
 		if self.Task is None:
@@ -104,12 +105,12 @@ class Source(ConfigObject):
 
 	def restart(self, loop):
 		"""
-		restarts the loop of coroutines and returns result() method
+		Restart the loop of coroutines and returns result() method.
 
 		**Parameters**
 
 		loop : ??
-			contains the coroutines
+			Contains the coroutines.
 
 		"""
 		if self.Task is not None:
@@ -121,7 +122,7 @@ class Source(ConfigObject):
 
 	async def main(self):
 		"""
-		Can be implemented for additional features, else will raise NotImplementedError and _main is called instead
+		Can be implemented for additional features, else will raise NotImplementedError and _main is called instead.
 
 		"""
 		raise NotImplementedError()
@@ -129,10 +130,11 @@ class Source(ConfigObject):
 
 	async def stopped(self):
 		"""
-		Waits for all asynchronous tasks to be completed. It is helper that simplifies the implementation of sources
+		Wait for all asynchronous tasks to be completed. It is helper that simplifies the implementation of sources.
 
 		Example:
-		.. code:: python
+
+		..code:: python
 
 			async def main(self):
 				... initialize resources here
