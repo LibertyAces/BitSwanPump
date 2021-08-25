@@ -569,7 +569,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		processor : str
 			ID of a processor
 
-		:hint: generator can be added by using this method. It requires a depth parameter
+		:hint: Generator can be added by using this method. It requires a depth parameter.
 
 		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
@@ -584,7 +584,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def remove_processor(self, processor_id):
 		"""
-		Removes a specific processor from the :meth:`Pipeline <bspump.Pipeline()>`.
+		Remove a specific processor from the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
