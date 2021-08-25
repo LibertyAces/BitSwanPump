@@ -240,7 +240,7 @@ class TriggerSource(Source):
 
 	def on(self, trigger):
 		"""
-		Sets a Trigger which is a method that waits for a given condition.
+		Set a Trigger which is a method that waits for a given condition.
 
 		**Parameters**
 
@@ -257,7 +257,7 @@ class TriggerSource(Source):
 
 	async def main(self, *args, **kwags):
 		"""
-		Waits for pipeline, triggers, and calls exceptions when the source is initiated.
+		Wait for pipeline, triggers, and calls exceptions when the source is initiated.
 
 		**Parameters**
 
