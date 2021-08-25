@@ -188,7 +188,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		If called with `exc is None`, it resets error (aka recovery).
 
-		If called with exc, it sets exceptions for soft errors
+		If called with exc, it sets exceptions for soft errors.
 
 		**Parameters**
 
