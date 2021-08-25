@@ -19,12 +19,12 @@ class Connection(abc.ABC, ConfigObject):
 		**Parameters**
 
 		app : Application
-			specification of an Application
+			Specification of an Application.
 
 		id : default None
 
 		config : JSON or other compatible format, default None
-			it contains important information and data responsible for creating a connection.
+			It contains important information and data responsible for creating a connection.
 
 		"""
 
@@ -39,7 +39,7 @@ class Connection(abc.ABC, ConfigObject):
 
 	def time(self):
 		"""
-		Returns accurate time of the asynchronous process
+		Returns accurate time of the asynchronous process.
 
 		:return: time
 
@@ -52,15 +52,15 @@ class Connection(abc.ABC, ConfigObject):
 	@classmethod
 	def construct(cls, app, definition: dict):
 		"""
-		can create a connection based on a specific definition. For example, a JSON file.
+		Can create a connection based on a specific definition. For example, a JSON file.
 
 		**Parameters**
 
 		app : str
-			ID of the app
+			ID of the app.
 
 		definition : definition format
-			defines instructions for the method that can be used to create a connection
+			Defines instructions for the method that can be used to create a connection.
 
 
 		:return: cls(app, newid, config)
