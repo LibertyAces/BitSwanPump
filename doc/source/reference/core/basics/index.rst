@@ -1,12 +1,12 @@
 Basics
 ======
 
-Basics covers the most fundamental components of a BSPump. We will start with a 'backbone' of the BSPump.
+Basics covers the most fundamental components of a BSPump. We will start with a 'backbone' of the BSPump which is a pipeline.
 
 Pipeline
 --------
 
-Pipeline is responsible for construction of the pipeline itself and its methods enables us to manage it and maintain
+The pipeline class is responsible for construction of the BSPump pipeline itself. Its methods enables us to maintain
 a working lifecycle of the system.
 
 .. py:currentmodule:: bspump
