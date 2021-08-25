@@ -137,7 +137,7 @@ class Source(ConfigObject):
 		..code:: python
 
 			async def main(self):
-			
+
 				#... initialize resources here
 
 				await self.stopped()
@@ -156,9 +156,9 @@ class Source(ConfigObject):
 
 	def locate_address(self):
 		"""
-		locates address of a pipeline
+		Locate address of a pipeline.
 
-		:return: ID and ID of a Pipeline as a string
+		:return: ID and ID of a Pipeline as a string.
 
 		"""
 		return "{}.*{}".format(self.Pipeline.Id, self.Id)
@@ -166,7 +166,6 @@ class Source(ConfigObject):
 
 	def rest_get(self):
 		"""
-
 		:return: ID and class ID
 
 		"""
@@ -183,18 +182,18 @@ class Source(ConfigObject):
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
 		"""
-		can create a source based on a specific definition. For example, a JSON file.
+		Can create a source based on a specific definition. For example, a JSON file.
 
 		**Parameters**
 
 		app : Application
-			ID of the app
+			ID of the app.
 
 		pipeline : Pipeline
-			specification of a pipeline
+			Specification of a pipeline.
 
 		definition : dict
-			definition that is used to create a source
+			Definition that is used to create a source.
 
 
 		:return: cls(app, newid, config)
@@ -241,14 +240,14 @@ class TriggerSource(Source):
 
 	def on(self, trigger):
 		"""
-		sets a Trigger which is a method that waits for a given condition
+		Sets a Trigger which is a method that waits for a given condition.
 
 		**Parameters**
 
 		trigger : keyword of a trigger
-			Given condition that
+			Given condition that.
 
-		:return: Trigger.add(trigger)                                                                        a
+		:return: Trigger.add(trigger)
 
 		"""
 		trigger.add(self)
@@ -258,7 +257,7 @@ class TriggerSource(Source):
 
 	async def main(self, *args, **kwags):
 		"""
-		Waits for pipeline, triggers and calls exceptions when the source is initiated
+		Waits for pipeline, triggers, and calls exceptions when the source is initiated.
 
 		**Parameters**
 
@@ -305,7 +304,7 @@ class TriggerSource(Source):
 
 	async def cycle(self, *args, **kwags):
 		"""
-		Not implemented
+		Not implemented.
 
 		**Parameters**
 
