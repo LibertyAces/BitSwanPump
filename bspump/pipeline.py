@@ -25,7 +25,7 @@ L = logging.getLogger(__name__)
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
 
-	an example of a Pipeline construction
+	An example of The Pipeline construction:
 
 	.. code:: python
 
@@ -36,7 +36,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			 self.build(
 				[
 				   MySource(app, self),
-				   MySource2(app, self),
 				   MyProcessor(app, self),
 				   MyProcessor2(app, self),
 				]
@@ -54,18 +53,18 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def __init__(self, app, id=None, config=None):
 		"""
-		Setup basic variables used in other Pipeline methods. You can also add more information using the parameters
+		Setup basic variables used in the other Pipeline methods. You can also add more information using parameters.
 
 		**Parameters**
 
 		app : Application
-			specification of an Application
+			Name of an Application.
 
-		id : str ,default None
-			You can enter ID of the class. Otherwise a name the current class will be using using __class__ descriptor object.
+		id : str, default None
+			You can enter ID of the class. Otherwise a name of the current class will used by calling __class__ descriptor object.
 
-		config : defualt None
-			You can add a config file with additional settings and configurations, otherwise a default config is used
+		config : default None
+			You can add a config file with additional settings and configurations, otherwise a default config is used.
 
 		"""
 		_id = id if id is not None else self.__class__.__name__
