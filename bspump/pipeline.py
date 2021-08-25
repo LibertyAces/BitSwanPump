@@ -689,7 +689,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def iter_processors(self):
 		"""
-		A generator that iterate through all processors.
+		use python generator routine that iterate through all processors in the pipeline.
 
 		:yields: Processor from a list in the pipeline.
 
