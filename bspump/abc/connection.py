@@ -39,7 +39,7 @@ class Connection(abc.ABC, ConfigObject):
 
 	def time(self):
 		"""
-		Returns accurate time of the asynchronous process.
+		Return accurate time of the asynchronous process.
 
 		:return: time
 
