@@ -249,8 +249,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		event : Data with time stamp stored in any data type, usually it is in JSON.
 			You can specify an event that is passed to the method.
 
-		:return: False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing).
-		:return: True for soft errors that will be ignored.
+		:return: False for hard errors (stop the :meth:`Pipeline <bspump.Pipeline()>` processing). True for soft errors that will be ignored.
 
 		Example:
 
@@ -316,10 +315,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		who : ID of a processor.
-			Specification of a processor that we want to throttle.
+			Name of a processor that we want to throttle.
 
 		enable : bool, defualt True
-			When True, content of who is added to _throttles list.
+			When True, content of argument 'who' is added to _throttles list.
 
 
 		"""
@@ -361,7 +360,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def ready(self):
 		"""
-		Check if a pipeline is ready. Can be used in source: `await self.Pipeline.ready()`.
+		Check if the pipeline is ready. Can be used in source: `await self.Pipeline.ready()`.
 
 		"""
 
@@ -478,6 +477,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Create a dictionary with information about the pipeline. It contains eps (events per second), warnings and errors.
 
 		:return: self.MetricsService
+
 			Creates eps counter using MetricsService.
 
 		:note: EPS counter can be created using this method or dicertly by using MatricsService method.
@@ -707,7 +707,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		address : str
-			ID of a the source.
+			ID of the source.
 
 		"""
 		for source in self.Sources:
@@ -723,7 +723,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		app : Application
-			Specify application.
+			Name of the Application.
 
 		connection_id : str
 			ID of connection we want to locate.
@@ -741,7 +741,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_processor(self, processor_id):
 		"""
-		Find by a processor by ID.
+		Find a processor by ID.
 
 		**Parameters**
 
