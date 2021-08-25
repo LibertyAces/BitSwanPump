@@ -605,7 +605,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_before(self, id, processor):
 		"""
-		Insert the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` in front if another processor specified by ID.
+		Insert the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` in front of another processor specified by ID.
 
 		**Parameters**
 
@@ -628,7 +628,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_after(self, id, processor):
 		"""
-		Insert the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` after another :meth:`Processors <bspump.Processor()>` specified by ID.
+		Insert the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` behind another :meth:`Processors <bspump.Processor()>` specified by ID.
 
 		**Parameters**
 
