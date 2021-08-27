@@ -28,11 +28,14 @@ class KafkaBatchSink(KafkaSink):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the Application.
 
-		pipeline :
+		pipeline : Pipeline
+			Name of the Pipeline.
 
 		connection :
+
 
 		key_serializer :  ,default None
 
@@ -48,6 +51,14 @@ class KafkaBatchSink(KafkaSink):
 	def process(self, context, event: typing.Union[dict, str, bytes]):
 		"""
 		Description:
+
+		**Parameters**
+
+		context : type?
+			Additional information.
+
+		event: typing.Union[dict, str, bytes] : type?
+
 
 		"""
 		if type(event) == dict:
