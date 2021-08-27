@@ -57,14 +57,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		app : Application
-			Name of an Application.
+			app : Application
+				Name of an Application.
+	
+			id : str, default None
+				You can enter ID of the class. Otherwise a name of the current class will used by calling __class__ descriptor object.
 
-		id : str, default None
-			You can enter ID of the class. Otherwise a name of the current class will used by calling __class__ descriptor object.
-
-		config : default None
-			You can add a config file with additional settings and configurations, otherwise a default config is used.
+			config : default None
+				You can add a config file with additional settings and configurations, otherwise a default config is used.
 
 		"""
 		_id = id if id is not None else self.__class__.__name__
