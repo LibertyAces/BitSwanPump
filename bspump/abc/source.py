@@ -62,7 +62,7 @@ class Source(ConfigObject):
 
 	def start(self, loop):
 		"""
-		Start the pipeline through the _main method, but if main method is implemented
+		Starts the pipeline through the _main method, but if main method is implemented
 		it starts the coroutine using main method instead.
 
 		**Parameters**
@@ -90,7 +90,7 @@ class Source(ConfigObject):
 
 	async def stop(self):
 		"""
-		Stop the Source using self.Task. If the processes are not done it cancels them or raises an error.
+		Stops the Source using self.Task. If the processes are not done it cancels them or raises an error.
 
 		"""
 		if self.Task is None:
@@ -105,7 +105,7 @@ class Source(ConfigObject):
 
 	def restart(self, loop):
 		"""
-		Restart the loop of coroutines and returns result() method.
+		Restarts the loop of coroutines and returns result() method.
 
 		**Parameters**
 
@@ -130,7 +130,7 @@ class Source(ConfigObject):
 
 	async def stopped(self):
 		"""
-		Wait for all asynchronous tasks to be completed. It is helper that simplifies the implementation of sources.
+		Waits for all asynchronous tasks to be completed. It is helper that simplifies the implementation of sources.
 
 		Example:
 
@@ -156,7 +156,7 @@ class Source(ConfigObject):
 
 	def locate_address(self):
 		"""
-		Locate address of a pipeline.
+		Locates address of a pipeline.
 
 		:return: ID and ID of a Pipeline as a string.
 
@@ -240,7 +240,7 @@ class TriggerSource(Source):
 
 	def on(self, trigger):
 		"""
-		Set a Trigger which is a method that waits for a given condition.
+		Sets a Trigger which is a method that waits for a given condition.
 
 		**Parameters**
 
@@ -257,7 +257,7 @@ class TriggerSource(Source):
 
 	async def main(self, *args, **kwags):
 		"""
-		Wait for pipeline, triggers, and calls exceptions when the source is initiated.
+		Waits for pipeline, triggers, and calls exceptions when the source is initiated.
 
 		**Parameters**
 
