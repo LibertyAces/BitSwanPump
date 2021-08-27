@@ -17,7 +17,19 @@ class KafkaKeyFilter(bspump.Processor):
 
 	def __init__(self, app, pipeline, keys, id=None, config=None):
 		"""
-		Description:
+		Initializes variables
+
+		**Parameters**
+
+		app :
+
+		pipeline :
+
+		keys :
+
+		id : , default = None
+
+		config : , default = None
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -31,6 +43,12 @@ class KafkaKeyFilter(bspump.Processor):
 	def process(self, context, event):
 		"""
 		Description:
+
+		**Parameters**
+
+		context :
+
+		event :
 
 		"""
 		kafka_ctx = context.get("kafka")
