@@ -90,6 +90,17 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		"""
 		Description:
 
+		**Parameters**
+
+		app : Application
+			Name of the Application
+
+		connection : Connection
+
+		id: typing.Optional[str] = None :
+
+		config: dict = None :
+
 		"""
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__(_id, config)
@@ -116,6 +127,18 @@ class KafkaTopicInitializer(asab.ConfigObject):
 	def include_topics(self, *, topic_config=None, kafka_component=None, pipeline=None, config_file=None):
 		"""
 		Description:
+
+		**Parameters**
+
+		* :
+
+		topic_config : , default= None
+
+		kafka_component : , default= None
+
+		pipeline : , default= None
+
+		config_file : , default= None
 
 		"""
 		# Include topic from config or dict object
@@ -148,6 +171,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		"""
 		Description:
 
+		**Parameters**
+
+		topics_file:str :
+
 		"""
 		# Support yaml and json input
 		ext = topics_file.strip().split(".")[-1].lower()
@@ -170,6 +197,10 @@ class KafkaTopicInitializer(asab.ConfigObject):
 	def include_topics_from_config(self, config_object):
 		"""
 		Description:
+
+		**Parameters**
+
+		config_object :
 
 		"""
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
