@@ -63,7 +63,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			id : str, default None
 				You can enter ID of the class. Otherwise a name of the current class will used by calling __class__ descriptor object.
 
-			config : default None
+			config : ,default None
 				You can add a config file with additional settings and configurations, otherwise a default config is used.
 
 		"""
