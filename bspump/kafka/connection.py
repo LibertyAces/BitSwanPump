@@ -55,7 +55,18 @@ class KafkaConnection(Connection):
 
 	def __init__(self, app, id=None, config=None):
 		"""
-		Description:
+		initializes variables
+
+		**Parameters**
+
+		app : Application
+			Name of the Application.
+
+		id :  , default = None
+			ID information.
+
+		config : JSON or txt, default= None
+			Configuration file of any supported type.
 
 		"""
 		super().__init__(app, id=id, config=config)
@@ -63,7 +74,10 @@ class KafkaConnection(Connection):
 
 	async def create_producer(self, **kwargs):
 		"""
-		Description:
+
+		**Parameters**
+
+		**kwargs :
 
 		:returns: producer
 
@@ -85,6 +99,13 @@ class KafkaConnection(Connection):
 	def create_consumer(self, *topics, **kwargs):
 		"""
 		Description:
+
+		**Parameters**
+
+		*topics :
+
+		**kwargs :
+
 
 		:returns: consumer
 
@@ -121,7 +142,7 @@ class KafkaConnection(Connection):
 
 	def get_compression(self):
 		"""
-		Description: Returns compression type to use in connection
+		Returns compression type to use in connection
 
 		:returns: compression_type
 
