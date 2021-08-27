@@ -81,6 +81,20 @@ class KafkaSink(Sink):
 		"""
 		Description:
 
+		**Parameters**
+
+		app :
+
+		pipeline :
+
+		connection :
+
+		key_serializer : , default = None
+
+		id : , default = None
+
+		config : , default = None
+
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
@@ -130,6 +144,10 @@ class KafkaSink(Sink):
 		"""
 		Description:
 
+		**Parameters**
+
+		message_type :
+
 		"""
 		if self._conn_future is not None:
 			# Connection future exists
@@ -159,6 +177,12 @@ class KafkaSink(Sink):
 	def _on_application_stop(self, message_type, counter):
 		"""
 		Description:
+
+		**Parameters**
+
+		messsage_type :
+
+		counter :
 
 		"""
 		self._output_queue.put_nowait((None, None, None))
@@ -190,6 +214,13 @@ class KafkaSink(Sink):
 	def process(self, context, event: typing.Union[dict, str, bytes]):
 		"""
 		Description:
+
+		**Parameters**
+
+		context : type
+			Additional information.
+
+		event:typing.Union[dict, str, bytes] :
 
 		"""
 		if type(event) == dict:
