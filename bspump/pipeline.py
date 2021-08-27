@@ -53,7 +53,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def __init__(self, app, id=None, config=None):
 		"""
-		Setup basic variables used in the other Pipeline methods. You can also add more information using parameters.
+		Setups basic variables used in the other Pipeline methods. You can also add more information using parameters.
 
 		**Parameters**
 
@@ -148,7 +148,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def time(self):
 		"""
-		Return correct time.
+		Returns correct time.
 
 		:return: App.time()
 
@@ -157,7 +157,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def get_throttles(self):
 		"""
-		Return components from pipeline that are throttled.
+		Returns components from pipeline that are throttled.
 
 		:return: self._throttles
 			Return list of throttles.
@@ -178,7 +178,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def is_error(self):
 		"""
-		Return False when there is no error, otherwise it returns True.
+		Returns False when there is no error, otherwise it returns True.
 
 		:return: self._error is not None.
         """
@@ -279,7 +279,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def link(self, ancestral_pipeline):
 		"""
-		Link this :meth:`Pipeline <bspump.Pipeline()>` with an ancestral :meth:`Pipeline <bspump.Pipeline()>`.
+		Links this :meth:`Pipeline <bspump.Pipeline()>` with an ancestral :meth:`Pipeline <bspump.Pipeline()>`.
 		This is needed e. g. for a propagation of the throttling from child :meth:`Pipelines <bspump.Pipeline()>` back to their ancestors.
 		If the child :meth:`Pipeline <bspump.Pipeline()>` uses InternalSource, which may become throttled because the internal queue is full,
 		the throttling is propagated to the ancestral :meth:`Pipeline <bspump.Pipeline()>`, so that its source may block incoming events until the
@@ -296,7 +296,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def unlink(self, ancestral_pipeline):
 		"""
-		Unlink an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
+		Unlinks an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
@@ -309,7 +309,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def throttle(self, who, enable=True):
 		"""
-		Enable throttling method for a chosen pipeline and its ancestral pipelines if needed.
+		Enables throttling method for a chosen pipeline and its ancestral pipelines if needed.
 
 
 		**Parameters**
@@ -360,7 +360,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def ready(self):
 		"""
-		Check if the pipeline is ready. Can be used in source: `await self.Pipeline.ready()`.
+		Checks if the pipeline is ready. Can be used in source: `await self.Pipeline.ready()`.
 
 		"""
 
@@ -419,7 +419,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def inject(self, context, event, depth):
 		"""
-		Inject method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth defined by the depth attribute.
+		Injects method serves to inject events into the :meth:`Pipeline <bspump.Pipeline()>`'s depth defined by the depth attribute.
 		Every depth is interconnected with a generator object.
 
 		**Parameters**
@@ -474,7 +474,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def create_eps_counter(self):
 		"""
-		Create a dictionary with information about the pipeline. It contains eps (events per second), warnings and errors.
+		Creates a dictionary with information about the pipeline. It contains eps (events per second), warnings and errors.
 
 		:return: self.MetricsService
 
@@ -544,7 +544,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def set_source(self, source):
 		"""
-		Set a specific source or list of sources to the pipeline.
+		Sets a specific source or list of sources to the pipeline.
 
 		**Parameters**
 
@@ -560,7 +560,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def append_processor(self, processor):
 		"""
-		Add a :meth:`Processors <bspump.Processor()>` to the current :meth:`Pipeline <bspump.Pipeline()>`.
+		Adds a :meth:`Processors <bspump.Processor()>` to the current :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
@@ -582,7 +582,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def remove_processor(self, processor_id):
 		"""
-		Remove a specific processor from the :meth:`Pipeline <bspump.Pipeline()>`.
+		Removes a specific processor from the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
@@ -605,7 +605,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_before(self, id, processor):
 		"""
-		Insert the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` in front of another processor specified by ID.
+		Inserts the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` in front of another processor specified by ID.
 
 		**Parameters**
 
@@ -628,7 +628,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_after(self, id, processor):
 		"""
-		Insert the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` behind another :meth:`Processors <bspump.Processor()>` specified by ID.
+		Inserts the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` behind another :meth:`Processors <bspump.Processor()>` specified by ID.
 
 		**Parameters**
 
@@ -689,7 +689,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def iter_processors(self):
 		"""
-		use python generator routine that iterates through all processors in the pipeline.
+		uses python generator routine that iterates through all processors in the pipeline.
 
 		:yields: Processor from a list in the pipeline.
 
@@ -702,7 +702,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_source(self, address):
 		"""
-		Locate a sources based on its ID.
+		Locates a sources based on its ID.
 
 		**Parameters**
 
@@ -717,7 +717,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_connection(self, app, connection_id):
 		"""
-		Find a connection by ID.
+		Finds a connection by ID.
 
 
 		**Parameters**
@@ -741,7 +741,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_processor(self, processor_id):
 		"""
-		Find a processor by ID.
+		Finds a processor by ID.
 
 		**Parameters**
 
@@ -796,7 +796,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def rest_get(self):
 		"""
-		Return information about the status of the pipeline:
+		Returns information about the status of the pipeline:
 
 		:return: rest
 
@@ -850,7 +850,7 @@ class PipelineLogger(logging.Logger):
 
 	def handle(self, record):
 		"""
-		Count and add errors to the error counter.
+		Counts and add errors to the error counter.
 
 		**Parameters**
 
