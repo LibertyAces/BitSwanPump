@@ -76,6 +76,20 @@ class KafkaSource(Source):
 		"""
 		Description:
 
+		**Parameters**
+
+		app : Application
+			Name of the Application.
+
+		pipeline : Pipeline
+			Name of the Pipeline.
+
+		connection :
+
+		id : , default = None
+
+		config : , default = None
+
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
@@ -180,6 +194,14 @@ class KafkaSource(Source):
 	async def _not_ready_handler(self, message_type, *args, **kwargs):
 		"""
 		Description:
+
+		**Parameters**
+
+		message_types :
+
+		*args :
+
+		**kwargs :
 
 		"""
 		# Preventive commit, when the pipeline is throttled
