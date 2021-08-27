@@ -39,9 +39,9 @@ class Connection(abc.ABC, ConfigObject):
 
 	def time(self):
 		"""
-		Return accurate time of the asynchronous process.
+		Returns accurate time of the asynchronous process.
 
-		:return: time
+		:return: App.time()
 
 		|
 
@@ -52,7 +52,7 @@ class Connection(abc.ABC, ConfigObject):
 	@classmethod
 	def construct(cls, app, definition: dict):
 		"""
-		Can create a connection based on a specific definition. For example, a JSON file.
+		Creates a connection based on a specific definition. For example, a JSON file.
 
 		**Parameters**
 
