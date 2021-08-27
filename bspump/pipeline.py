@@ -59,7 +59,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 			app : Application
 				Name of an Application.
-	
+
 			id : str, default None
 				You can enter ID of the class. Otherwise a name of the current class will used by calling __class__ descriptor object.
 
