@@ -12,7 +12,7 @@ class ProcessorBase(asab.ConfigObject):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
-		Initialize method
+		Initializes the Parameters
 
 		**Parameters**
 
