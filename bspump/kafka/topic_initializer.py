@@ -88,18 +88,20 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 	def __init__(self, app, connection, id: typing.Optional[str] = None, config: dict = None):
 		"""
-		Description:
+		Initializes the parameters passed to the class.
 
 		**Parameters**
 
 		app : Application
-			Name of the Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_.
 
 		connection : Connection
+			Information needed to create a connection.
 
 		id: typing.Optional[str] = None :
 
-		config: dict = None :
+		config: dict = None : JSON
+			configuration file containing important information.
 
 		"""
 		_id = id if id is not None else self.__class__.__name__
@@ -126,19 +128,22 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 	def include_topics(self, *, topic_config=None, kafka_component=None, pipeline=None, config_file=None):
 		"""
-		Description:
+		Includes topic from config file or dict object. It can also scan Pipeline and get topics from Source or Sink.
 
 		**Parameters**
 
 		* :
 
 		topic_config : , default= None
+			Topic config file.
 
 		kafka_component : , default= None
 
 		pipeline : , default= None
+			Name of the Pipeline.
 
 		config_file : , default= None
+			Configuration file.
 
 		"""
 		# Include topic from config or dict object
@@ -169,11 +174,12 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 	def include_topics_from_file(self, topics_file: str):
 		"""
-		Description:
+		Includes topics from a topic file.
 
 		**Parameters**
 
-		topics_file:str :
+		topics_file:str : str
+			Name of a topic file we wanted to include.
 
 		"""
 		# Support yaml and json input
@@ -196,11 +202,12 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 	def include_topics_from_config(self, config_object):
 		"""
-		Description:
+		Includes topics using a config
 
 		**Parameters**
 
-		config_object :
+		config_object : JSON
+			config object containing information about what topics we want to include.
 
 		"""
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
@@ -233,7 +240,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 	def fetch_existing_topics(self):
 		"""
-		Description:
+		???
 
 		"""
 		admin_client = kafka.admin.KafkaAdminClient(
@@ -245,7 +252,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 	def check_and_initialize(self):
 		"""
-		Description:
+		Initializes new topics and logs a warning.
 
 		"""
 		L.warning("`check_and_initialize()` is obsoleted, use `initialize_topics()` instead")
@@ -253,7 +260,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 	def initialize_topics(self):
 		"""
-		Description:
+		Initializes topics  ??
 
 		"""
 		if len(self.RequiredTopics) == 0:
