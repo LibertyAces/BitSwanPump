@@ -19,7 +19,7 @@ class Source(ConfigObject):
 		**Parameters**
 
 		app : Application
-			Name of an Application.
+			Name of an `Application` <https://asab.readthedocs.io/en/latest/asab/application.html#>`_ .
 
 		pipeline : address of a pipeline
 			Name of a :meth:`Pipeline <bspump.Pipeline()>`.
