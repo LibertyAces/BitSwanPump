@@ -74,17 +74,18 @@ class KafkaSource(Source):
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		"""
-		Description:
+		Initializes parameters.
 
 		**Parameters**
 
 		app : Application
-			Name of the Application.
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_.
 
 		pipeline : Pipeline
 			Name of the Pipeline.
 
-		connection :
+		connection : Connection
+			information needed to create a connection.
 
 		id : , default = None
 
@@ -160,7 +161,7 @@ class KafkaSource(Source):
 
 	def create_consumer(self):
 		"""
-		Description:
+		Creates a consumer.
 
 		"""
 		if len(self.Config["user_defined_partitions"]) != 0:
@@ -181,7 +182,7 @@ class KafkaSource(Source):
 
 	async def initialize_consumer(self):
 		"""
-		Description:
+		Creates a consumer after the loop is started.
 
 		"""
 		# Create consumer after the loop is running
@@ -193,7 +194,7 @@ class KafkaSource(Source):
 
 	async def _not_ready_handler(self, message_type, *args, **kwargs):
 		"""
-		Description:
+		Calls _commit when pipeline is throttled.
 
 		**Parameters**
 
@@ -211,7 +212,7 @@ class KafkaSource(Source):
 
 	async def main(self):
 		"""
-		Description:
+		Method that starts the Source.
 
 		"""
 		await self.initialize_consumer()
