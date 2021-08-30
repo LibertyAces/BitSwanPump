@@ -1,5 +1,7 @@
-ElasticSearch
+Elastic Search
 ==============
+
+Elastic Search is a Analytics and full-text search engine. Commonly used for `Application Performance Management <https://en.wikipedia.org/wiki/Application_performance_management>`_ mainly Analysis of Logs.
 
 Source
 ------
