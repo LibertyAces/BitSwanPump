@@ -11,7 +11,7 @@ class BSPumpApplication(asab.Application):
 
 
 	"""
-	BSPumpApplication is responsible for the main life cycle of the Application. It is based on ASAB Application class
+	BSPumpApplication is responsible for the main life cycle of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_. It is based on ASAB `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_ class
 
 	|
 
@@ -64,7 +64,7 @@ class BSPumpApplication(asab.Application):
 
 	def create_argument_parser(self):
 		"""
-		enables to create arguments that can be called within the command prompt when starting the application
+		Eables to create arguments that can be called within the command prompt when starting the application
 
 		:return: parser,
 
