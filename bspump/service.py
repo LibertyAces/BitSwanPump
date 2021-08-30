@@ -96,8 +96,6 @@ class BSPumpService(asab.Service):
 		*pipelines : list
 			List of pipelines that are add to the BSPump.
 
-		|
-
 		"""
 		for pipeline in pipelines:
 			self.add_pipeline(pipeline)
@@ -110,8 +108,6 @@ class BSPumpService(asab.Service):
 
 		pipeline : str, ID
 			ID of a pipeline.
-
-		|
 
 		"""
 		del self.Pipelines[pipeline.Id]
@@ -129,8 +125,6 @@ class BSPumpService(asab.Service):
 
 
 		:return: connection
-
-		|
 
 		"""
 		if connection.Id in self.Connections:
@@ -160,9 +154,6 @@ class BSPumpService(asab.Service):
 		connection_id : ID
 			Connection ID.
 
-
-		|
-
 		"""
 		from .abc.connection import Connection
 		if isinstance(connection_id, Connection):
@@ -187,8 +178,6 @@ class BSPumpService(asab.Service):
 
 		:return: lookup
 
-		|
-
 		"""
 		if lookup.Id in self.Lookups:
 			raise RuntimeError("Lookup '{}' already created".format(lookup.Id))
@@ -203,9 +192,6 @@ class BSPumpService(asab.Service):
 
 		lookup : Lookup
 			List of Lookups.
-
-
-		|
 
 		"""
 		for lookup in lookups:
@@ -224,8 +210,6 @@ class BSPumpService(asab.Service):
 			Additional information.
 
 		:return: lookup from the lookup service or form the internal dictionary.
-
-		|
 
 		"""
 		from .abc.lookup import Lookup
@@ -256,8 +240,6 @@ class BSPumpService(asab.Service):
 		lookup_factory :
 			Name of lookup factory.
 
-		|
-
 		"""
 		self.LookupFactories.append(lookup_factory)
 
@@ -274,8 +256,6 @@ class BSPumpService(asab.Service):
 			Name of Matrix.
 
 		:return: matrix
-
-		|
 
 		"""
 		if matrix.Id in self.Matrixes:
@@ -305,8 +285,6 @@ class BSPumpService(asab.Service):
 
 		matrix_id : str, ID
 			ID of a matrix.
-
-		|
 
 		"""
 		from .matrix.matrix import Matrix
