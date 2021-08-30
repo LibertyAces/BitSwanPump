@@ -64,11 +64,9 @@ class BSPumpApplication(asab.Application):
 
 	def create_argument_parser(self):
 		"""
-		Eables to create arguments that can be called within the command prompt when starting the application
+		Enables to create arguments that can be called within the command prompt when starting the application
 
-		:return: parser,
-
-		|
+		:return: parser
 
 		"""
 		prog = sys.argv[0]
@@ -93,7 +91,7 @@ build: {} [{}]
 
 	def parse_arguments(self, args=None):
 		"""
-		It parses argument in the ASAB application using super method.
+		It parses argument in the ASAB `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_ using super() method.
 
 		:return: args
 
