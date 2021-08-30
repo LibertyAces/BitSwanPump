@@ -19,8 +19,8 @@ class ProcessorBase(asab.ConfigObject):
 		app : object
 			Application object.
 
-		pipeline : Pipeline
-			Pipeline.
+		pipeline : :meth:`Pipeline <bspump.Pipeline()>`
+			Name of the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		id : str, default=None,
 			ID of the class of config.
@@ -41,7 +41,7 @@ class ProcessorBase(asab.ConfigObject):
 
 	def time(self):
 		"""
-		Accurate representation of a time in the pipeline.
+		Accurate representation of a time in the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		:return: App.time()
 
@@ -56,11 +56,11 @@ class ProcessorBase(asab.ConfigObject):
 
 		**Parameters**
 
-		app : str
-			ID of the app.
+		app : Application
+			Name of the App.
 
 		pipeline : str
-			ID of the pipeline.
+			Name of the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		definition : dict
 			Set of instructions based on which processor can be constructed.
@@ -100,7 +100,7 @@ class ProcessorBase(asab.ConfigObject):
 		"""
 		Returns an ID of a processor and a pipeline.
 
-		:return: ID of the pipeline and self.Id.
+		:return: ID of the :meth:`Pipeline <bspump.Pipeline()>` and self.Id.
 
 		|
 
