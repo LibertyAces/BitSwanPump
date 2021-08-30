@@ -8,15 +8,22 @@ L = logging.getLogger(__file__)
 
 class BSPumpService(asab.Service):
 	"""
-	Description:
-
-	|
+	Service registry based on Service object. Read more in ASAB documentation `Service <https://asab.readthedocs.io/en/latest/asab/service.html`_.
 
 	"""
 
 	def __init__(self, app, service_name="bspump.PumpService"):
 		"""
-		Description:
+		Initializes parameters passed to the Service class.
+
+		**Parameters**
+
+		app : Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_.
+
+		service_name : str, Service name
+			string variable containing ""bspump.PumpService
+
 
 		|
 
@@ -32,7 +39,12 @@ class BSPumpService(asab.Service):
 
 	def locate(self, address):
 		"""
-		Description:
+		locates pipeline, source or processor based on the adressed parameter
+
+		**Parameters**
+
+		address : str, ID
+			Address of an pipeline component.
 
 		|
 
@@ -63,9 +75,12 @@ class BSPumpService(asab.Service):
 
 	def add_pipeline(self, pipeline):
 		"""
-		Adds a pipeline to the BSPump
+		Adds a pipeline to the BSPump.
 
-		|
+		**Parameters**
+
+		pipeline : Pipeline
+			Name of the Pipeline.
 
 		"""
 		if pipeline.Id in self.Pipelines:
@@ -74,7 +89,12 @@ class BSPumpService(asab.Service):
 
 	def add_pipelines(self, *pipelines):
 		"""
-		Description:
+		Adds a pipelines the BSPump.
+
+		**Parameters**
+
+		*pipelines : list
+			List of pipelines that are add to the BSPump.
 
 		|
 
@@ -84,7 +104,12 @@ class BSPumpService(asab.Service):
 
 	def del_pipeline(self, pipeline):
 		"""
-		Description:
+		Deletes a pipeline from a list of Pipelines.
+
+		**Parameters*
+
+		pipeline : str, ID
+			ID of a pipeline. 
 
 		|
 
