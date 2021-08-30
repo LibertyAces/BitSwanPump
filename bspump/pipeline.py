@@ -152,7 +152,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		:return: App.time()
 
-		:hint: more information in the ASAB documentation in `UTC Time <https://asab.readthedocs.io/en/latest/asab/application.html#utc-time>`_
+		:hint: More information in the ASAB documentation in `UTC Time <https://asab.readthedocs.io/en/latest/asab/application.html#utc-time>`_.
 
 		"""
 		return self.App.time()
