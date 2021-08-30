@@ -377,7 +377,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def is_ready(self):
 		"""
-		It is a checkup of the event in the Python Event class.
+		It is a checkup of the event in the Event class.
 
 		:return: _ready.is_set().
 
