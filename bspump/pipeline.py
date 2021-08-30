@@ -683,7 +683,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			ID of a source.
 
 		*processors : str, list optional
-			ID of processor or list of IDs.
+			ID of :meth:`Processor <bspump.Processor()>` or list of IDs.
 
 		"""
 		self.set_source(source)
@@ -692,7 +692,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def iter_processors(self):
 		"""
-		uses python generator routine that iterates through all processors in the :meth:`Pipeline <bspump.Pipeline()>`.
+		uses python generator routine that iterates through all :meth:`Processors <bspump.Processor()>` in the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		:yields: Processor from a list in the :meth:`Pipeline <bspump.Pipeline()>`.
 
@@ -744,12 +744,12 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def locate_processor(self, processor_id):
 		"""
-		Finds a processor by ID.
+		Finds a :meth:`Processor <bspump.Processor()>` by ID.
 
 		**Parameters**
 
 		processor_id : str
-			ID of a processor.
+			ID of a :meth:`Processor <bspump.Processor()>`.
 
 		:return: processor
 
