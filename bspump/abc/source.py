@@ -14,7 +14,7 @@ class Source(ConfigObject):
 	"""
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
-		Set the initial ID, pipeline and Task.
+		Set the initial ID, :meth:`Pipeline <bspump.Pipeline()>` and Task.
 
 		**Parameters**
 
@@ -22,10 +22,10 @@ class Source(ConfigObject):
 			Name of an Application.
 
 		pipeline : address of a pipeline
-			Name of a pipeline.
+			Name of a :meth:`Pipeline <bspump.Pipeline()>`.
 
 		id : str, default None
-			Name of a the Pipeline.
+			Name of a the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		config : compatible config type , default None
 			Option for adding a configuration file.
@@ -46,7 +46,7 @@ class Source(ConfigObject):
 		**Parameters**
 
 		event: Data with time stamp stored in any data type, usually JSON.
-			Message or information that is passed to the method and emitted into a pipeline.
+			Message or information that is passed to the method and emitted into a :meth:`Pipeline <bspump.Pipeline()>`.
 
 		context : default None
 			Additional information.
@@ -62,7 +62,7 @@ class Source(ConfigObject):
 
 	def start(self, loop):
 		"""
-		Starts the pipeline through the _main method, but if main method is implemented
+		Starts the :meth:`Pipeline <bspump.Pipeline()>` through the _main method, but if main method is implemented
 		it starts the coroutine using main method instead.
 
 		**Parameters**
@@ -156,9 +156,9 @@ class Source(ConfigObject):
 
 	def locate_address(self):
 		"""
-		Locates address of a pipeline.
+		Locates address of a :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:return: ID and ID of a Pipeline as a string.
+		:return: ID and ID of a :meth:`Pipeline <bspump.Pipeline()>` as a string.
 
 		"""
 		return "{}.*{}".format(self.Pipeline.Id, self.Id)
@@ -189,8 +189,8 @@ class Source(ConfigObject):
 		app : Application
 			ID of the app.
 
-		pipeline : Pipeline
-			Specification of a pipeline.
+		pipeline : :meth:`Pipeline <bspump.Pipeline()>`
+			Specification of a :meth:`Pipeline <bspump.Pipeline()>`.
 
 		definition : dict
 			Definition that is used to create a source.
@@ -257,7 +257,7 @@ class TriggerSource(Source):
 
 	async def main(self, *args, **kwags):
 		"""
-		Waits for pipeline, triggers, and calls exceptions when the source is initiated.
+		Waits for :meth:`Pipeline <bspump.Pipeline()>`, triggers, and calls exceptions when the source is initiated.
 
 		**Parameters**
 
