@@ -57,7 +57,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-			app : Application `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
+			app : `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
+				name of the ASAB `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
 
 			id : str, default None
 				You can enter ID of the class. Otherwise a name of the current class will used by calling __class__ descriptor object.
@@ -150,6 +151,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Returns correct time.
 
 		:return: App.time()
+
+		:hint: more information in the ASAB documentation in `UTC Time <https://asab.readthedocs.io/en/latest/asab/application.html#utc-time>`_
 
 		"""
 		return self.App.time()
@@ -721,8 +724,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		app : Application
-			Name of the Application.
+		app : `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_.
 
 		connection_id : str
 			ID of connection we want to locate.
