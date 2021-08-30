@@ -29,13 +29,13 @@ class KafkaBatchSink(KafkaSink):
 		**Parameters**
 
 		app : Application
-			Name of the Application.
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_.
 
 		pipeline : Pipeline
 			Name of the Pipeline.
 
 		connection : Connection
-			Information needed to createa connection.
+			Information needed to creates connection.
 
 		key_serializer :  ,default None
 
@@ -59,7 +59,6 @@ class KafkaBatchSink(KafkaSink):
 			Additional information.
 
 		event: typing.Union[dict, str, bytes] : type?
-
 
 		"""
 		if type(event) == dict:
