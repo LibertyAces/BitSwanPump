@@ -21,15 +21,19 @@ class KafkaKeyFilter(bspump.Processor):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html`_.
 
-		pipeline :
+		pipeline : Pipeline
+			Name of the Pipeline.
 
-		keys :
+		keys : bytes
+			keys used to filter out events from the event stream.
 
 		id : , default = None
 
-		config : , default = None
+		config : JSON, default = None
+			configuration file in JSON
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -42,13 +46,14 @@ class KafkaKeyFilter(bspump.Processor):
 
 	def process(self, context, event):
 		"""
-		Description:
+		Does the filtering processed based on passed key variable.
 
 		**Parameters**
 
-		context :
+		context : Context
+			additional information passed to the method
 
-		event :
+		event : any type,a single unit of information that flows through the Pipeline.
 
 		"""
 		kafka_ctx = context.get("kafka")
