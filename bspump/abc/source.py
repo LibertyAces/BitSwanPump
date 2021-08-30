@@ -234,6 +234,8 @@ class TriggerSource(Source):
 
 		:return: App.time()
 
+		:hint: You can find more information about `UTC Time <https://asab.readthedocs.io/en/latest/asab/application.html#utc-time>_ in the ASAB documentation
+
 		"""
 		return self.App.time()
 
