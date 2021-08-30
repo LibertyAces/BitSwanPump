@@ -109,7 +109,7 @@ class BSPumpService(asab.Service):
 		**Parameters*
 
 		pipeline : str, ID
-			ID of a pipeline. 
+			ID of a pipeline.
 
 		|
 
@@ -120,7 +120,13 @@ class BSPumpService(asab.Service):
 
 	def add_connection(self, connection):
 		"""
-		Description:
+		Adds a connection to the Connection dictionary.
+
+		**Parameters**
+
+		connection : str, ID
+			ID of a connection.
+
 
 		:return: connection
 
@@ -134,9 +140,12 @@ class BSPumpService(asab.Service):
 
 	def add_connections(self, *connections):
 		"""
-		Description:
+		Adds a connections to the Connection dictionary.
 
-		|
+		**Parameters**
+
+		*connection : str, ID
+			list of IDs of a connections.
 
 		"""
 		for connection in connections:
@@ -144,7 +153,13 @@ class BSPumpService(asab.Service):
 
 	def locate_connection(self, connection_id):
 		"""
-		Description:
+		Locates connection based on connection ID.
+
+		**Parameters**
+
+		connection_id : ID
+			Connection ID.
+
 
 		|
 
@@ -163,7 +178,12 @@ class BSPumpService(asab.Service):
 
 	def add_lookup(self, lookup):
 		"""
-		Description:
+		Sets a lookup based on Lookup.
+
+		**Parameters**
+
+		lookup : Lookup
+			Name of the Lookup.
 
 		:return: lookup
 
@@ -177,7 +197,13 @@ class BSPumpService(asab.Service):
 
 	def add_lookups(self, *lookups):
 		"""
-		Description:
+		Adds a list of lookups to the Pipeline.
+
+		**Parameters**
+
+		lookup : Lookup
+			List of Lookups.
+
 
 		|
 
@@ -187,9 +213,17 @@ class BSPumpService(asab.Service):
 
 	def locate_lookup(self, lookup_id, context=None):
 		"""
-		Description:
+		Locates lookup based on ID.
 
-		:return: returns lookup from the lookup serivce or form the internal dictionary
+		**Parameters**
+
+		lookup_id : ID
+			ID of a Lookup.
+
+		context : ,default = None
+			Additional information.
+
+		:return: lookup from the lookup service or form the internal dictionary.
 
 		|
 
@@ -215,7 +249,12 @@ class BSPumpService(asab.Service):
 
 	def add_lookup_factory(self, lookup_factory):
 		"""
-		Description:
+		Adds a lookup factory
+
+		**Parameters**
+
+		lookup_factory :
+			Name of lookup factory.
 
 		|
 
@@ -227,7 +266,12 @@ class BSPumpService(asab.Service):
 
 	def add_matrix(self, matrix):
 		"""
-		Description:
+		Adds a matrix to the Pipeline.
+
+		**Parameters**
+
+		matrix : Matrix
+			Name of Matrix.
 
 		:return: matrix
 
@@ -242,9 +286,12 @@ class BSPumpService(asab.Service):
 
 	def add_matrixes(self, *matrixes):
 		"""
-		Description:
+		Adds a list of Matrices to the Pipeline.
 
-		|
+		**Parameters**
+
+		*matrixes : list
+			List of matrices.
 
 		"""
 		for matrix in matrixes:
@@ -252,7 +299,12 @@ class BSPumpService(asab.Service):
 
 	def locate_matrix(self, matrix_id):
 		"""
-		Description:
+		Locates a matrix based on matrix ID
+
+		**Parameters**
+
+		matrix_id : str, ID
+			ID of a matrix.
 
 		|
 
@@ -269,9 +321,12 @@ class BSPumpService(asab.Service):
 
 	async def initialize(self, app):
 		"""
-		Description:
+		Initializes an Application based on ASAB `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
 
-		|
+		**Parameters**
+
+		app : Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
 
 		"""
 		# Run initialization of lookups
@@ -293,7 +348,10 @@ class BSPumpService(asab.Service):
 		"""
 		Stops all the pipelines
 
-		|
+		**Parameters**
+
+		app : Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
 
 		"""
 		# Stop all started pipelines
