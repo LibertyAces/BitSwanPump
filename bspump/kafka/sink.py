@@ -79,15 +79,18 @@ class KafkaSink(Sink):
 
 	def __init__(self, app, pipeline, connection, key_serializer=None, id=None, config=None):
 		"""
-		Description:
+		Initilizes the parameters that are passed to the Sink class.
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_.
 
-		pipeline :
+		pipeline : Pipeline
+			Name of the Pipeline.
 
-		connection :
+		connection : Connection
+			information needed to create a connection.
 
 		key_serializer : , default = None
 
@@ -141,14 +144,6 @@ class KafkaSink(Sink):
 
 
 	def _on_health_check(self, message_type):
-		"""
-		Description:
-
-		**Parameters**
-
-		message_type :
-
-		"""
 		if self._conn_future is not None:
 			# Connection future exists
 
@@ -175,24 +170,10 @@ class KafkaSink(Sink):
 
 
 	def _on_application_stop(self, message_type, counter):
-		"""
-		Description:
-
-		**Parameters**
-
-		messsage_type :
-
-		counter :
-
-		"""
 		self._output_queue.put_nowait((None, None, None))
 
 
 	async def _connection(self):
-		"""
-		Description:
-
-		"""
 		producer = await self.Connection.create_producer(**self._producer_params)
 		try:
 			await producer.start()
@@ -213,7 +194,7 @@ class KafkaSink(Sink):
 
 	def process(self, context, event: typing.Union[dict, str, bytes]):
 		"""
-		Description:
+		Outputs events to a chosen location.
 
 		**Parameters**
 
