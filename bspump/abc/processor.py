@@ -57,7 +57,7 @@ class ProcessorBase(asab.ConfigObject):
 		**Parameters**
 
 		app : Application
-			Name of the App.
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>_.
 
 		pipeline : str
 			Name of the :meth:`Pipeline <bspump.Pipeline()>`.
