@@ -91,7 +91,11 @@ build: {} [{}]
 
 	def parse_arguments(self, args=None):
 		"""
-		It parses argument in the ASAB `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_ using super() method.
+		Parses argument in the ASAB `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_ using super() method.
+
+		**Parameters**
+
+		args : default= None
 
 		:return: args
 
@@ -105,7 +109,7 @@ build: {} [{}]
 
 	async def main(self):
 		"""
-		It prints a message about how many pipelines are ready
+		Prints a message about how many pipelines are ready.
 
 		|
 
