@@ -98,7 +98,7 @@ class ProcessorBase(asab.ConfigObject):
 
 	def locate_address(self):
 		"""
-		Returns an ID of a :meth:`processor <bspump.Processor()>` and a pipeline.
+		Returns an ID of a :meth:`processor <bspump.Processor()>` and a :meth:`Pipeline <bspump.Pipeline()>`.
 
 		:return: ID of the :meth:`Pipeline <bspump.Pipeline()>` and self.Id.
 
