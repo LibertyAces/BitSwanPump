@@ -25,7 +25,7 @@ L = logging.getLogger(__name__)
 class Pipeline(abc.ABC, asab.ConfigObject):
 	"""
 
-	An example of The Pipeline construction:
+	An example of The :meth:`Pipeline <bspump.Pipeline()>` construction:
 
 	.. code:: python
 
@@ -53,7 +53,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def __init__(self, app, id=None, config=None):
 		"""
-		Setups basic variables used in the other Pipeline methods. You can also add more information using parameters.
+		Setups basic variables used in the other :meth:`Pipeline <bspump.Pipeline()>` methods. You can also add more information using parameters.
 
 		**Parameters**
 
@@ -157,7 +157,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def get_throttles(self):
 		"""
-		Returns components from pipeline that are throttled.
+		Returns components from :meth:`Pipeline <bspump.Pipeline()>` that are throttled.
 
 		:return: self._throttles
 			Return list of throttles.
@@ -288,7 +288,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		ancestral_pipeline : str
-			ID of a pipeline that will be linked.
+			ID of a :meth:`Pipeline <bspump.Pipeline()>` that will be linked.
 
 		"""
 
@@ -296,12 +296,12 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def unlink(self, ancestral_pipeline):
 		"""
-		Unlinks an ancestral pipeline from this :meth:`Pipeline <bspump.Pipeline()>`.
+		Unlinks an ancestral :meth:`Pipeline <bspump.Pipeline()>` from this :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
 		ancestral_pipeline : str
-			ID of a ancestral pipeline that will be unlinked.
+			ID of a ancestral :meth:`Pipeline <bspump.Pipeline()>` that will be unlinked.
 
 		"""
 
@@ -309,7 +309,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def throttle(self, who, enable=True):
 		"""
-		Enables throttling method for a chosen pipeline and its ancestral pipelines if needed.
+		Enables throttling method for a chosen :meth:`pipeline <bspump.Pipeline()>` and its ancestral :meth:`pipelines <bspump.Pipeline()>` if needed.
 
 
 		**Parameters**
@@ -360,7 +360,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def ready(self):
 		"""
-		Checks if the pipeline is ready. Can be used in source: `await self.Pipeline.ready()`.
+		Checks if the :meth:`Pipeline <bspump.Pipeline()>` is ready. Can be used in source: `await self.Pipeline.ready()`.
 
 		"""
 
@@ -425,7 +425,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		context : string
-			Information propagated through the pipeline.
+			Information propagated through the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		event : Data with time stamp stored in any data type, usually it is in JSON.
 			You can specify an event that is passed to the method.
@@ -474,7 +474,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def create_eps_counter(self):
 		"""
-		Creates a dictionary with information about the pipeline. It contains eps (events per second), warnings and errors.
+		Creates a dictionary with information about the :meth:`Pipeline <bspump.Pipeline()>`. It contains eps (events per second), warnings and errors.
 
 		:return: self.MetricsService
 
@@ -544,14 +544,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def set_source(self, source):
 		"""
-		Sets a specific source or list of sources to the pipeline.
+		Sets a specific source or list of sources to the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
 		source : str, list optional
 			ID of a source.
 
-		If a list of sources is passed to the method. It adds the whole list of sources to the pipeline.
+		If a list of sources is passed to the method. It adds the whole list of sources to the :meth:`Pipeline <bspump.Pipeline()>`.
 		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
@@ -689,9 +689,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def iter_processors(self):
 		"""
-		uses python generator routine that iterates through all processors in the pipeline.
+		uses python generator routine that iterates through all processors in the :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:yields: Processor from a list in the pipeline.
+		:yields: Processor from a list in the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		"""
 		for processors in self.Processors:
@@ -796,7 +796,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def rest_get(self):
 		"""
-		Returns information about the status of the pipeline:
+		Returns information about the status of the :meth:`Pipeline <bspump.Pipeline()>`:
 
 		:return: rest
 
