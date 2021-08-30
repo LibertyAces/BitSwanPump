@@ -24,7 +24,7 @@ class KafkaBatchSink(KafkaSink):
 
 	def __init__(self, app, pipeline, connection, key_serializer=None, id=None, config=None):
 		"""
-		Description:
+		Initializing parameters passed to the BatchSink class.
 
 		**Parameters**
 
@@ -34,14 +34,15 @@ class KafkaBatchSink(KafkaSink):
 		pipeline : Pipeline
 			Name of the Pipeline.
 
-		connection :
-
+		connection : Connection
+			Information needed to createa connection.
 
 		key_serializer :  ,default None
 
 		id :  , default = None
 
-		config : default = None
+		config : JSON, default = None
+			Configuration file with additional information.
 
 		"""
 		super().__init__(app, pipeline, connection, key_serializer, id, config)
@@ -50,7 +51,7 @@ class KafkaBatchSink(KafkaSink):
 
 	def process(self, context, event: typing.Union[dict, str, bytes]):
 		"""
-		Description:
+		Starts the sink process.
 
 		**Parameters**
 
