@@ -57,7 +57,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-			app : Application `Application<https://asab.readthedocs.io/en/latest/asab/application.html>`_
+			app : Application `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
 
 			id : str, default None
 				You can enter ID of the class. Otherwise a name of the current class will used by calling __class__ descriptor object.
