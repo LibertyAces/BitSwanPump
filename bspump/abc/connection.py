@@ -19,7 +19,7 @@ class Connection(abc.ABC, ConfigObject):
 		**Parameters**
 
 		app : Application
-			Specification of an Application.
+			Specification of an `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>_.
 
 		id : default None
 
@@ -41,7 +41,7 @@ class Connection(abc.ABC, ConfigObject):
 		"""
 		Returns accurate time of the asynchronous process.
 
-		:return: App.time()
+		:hint: more information in the ASAB documentation in `UTC Time <https://asab.readthedocs.io/en/latest/asab/application.html#utc-time>`_
 
 		|
 
@@ -56,8 +56,8 @@ class Connection(abc.ABC, ConfigObject):
 
 		**Parameters**
 
-		app : str
-			ID of the app.
+		app : Application
+			ID of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>_.
 
 		definition : definition format
 			Defines instructions for the method that can be used to create a connection.
