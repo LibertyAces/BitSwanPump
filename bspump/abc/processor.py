@@ -52,7 +52,7 @@ class ProcessorBase(asab.ConfigObject):
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
 		"""
-		Can construct a processor based on a specific definition. For example, a JSON file.
+		Can construct a :meth:`processor <bspump.Processor()>` based on a specific definition. For example, a JSON file.
 
 		**Parameters**
 
@@ -63,7 +63,7 @@ class ProcessorBase(asab.ConfigObject):
 			Name of the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		definition : dict
-			Set of instructions based on which processor can be constructed.
+			Set of instructions based on which :meth:`processor <bspump.Processor()>` can be constructed.
 
 
 		:return: cls(app, pipeline, id=newid, config=config)
@@ -98,7 +98,7 @@ class ProcessorBase(asab.ConfigObject):
 
 	def locate_address(self):
 		"""
-		Returns an ID of a processor and a pipeline.
+		Returns an ID of a :meth:`processor <bspump.Processor()>` and a pipeline.
 
 		:return: ID of the :meth:`Pipeline <bspump.Pipeline()>` and self.Id.
 
