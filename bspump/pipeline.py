@@ -314,8 +314,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		who : ID of a processor.
-			Name of a processor that we want to throttle.
+		who : ID of a :meth:`processor <bspump.Processor()>`.
+			Name of a :meth:`processor <bspump.Processor()>` that we want to throttle.
 
 		enable : bool, defualt True
 			When True, content of argument 'who' is added to _throttles list.
@@ -565,7 +565,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		**Parameters**
 
 		processor : str
-			ID of a processor.
+			ID of a :meth:`processor <bspump.Processor()>`.
 
 		:hint: Generator can be added by using this method. It requires a depth parameter.
 
@@ -582,14 +582,14 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def remove_processor(self, processor_id):
 		"""
-		Removes a specific processor from the :meth:`Pipeline <bspump.Pipeline()>`.
+		Removes a specific :meth:`processor <bspump.Processor()>` from the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		**Parameters**
 
 		processor_id : str
-			ID of a processor.
+			ID of a :meth:`processor <bspump.Processor()>`.
 
-		:return: Error when processor is not found.
+		:return: Error when :meth:`processor <bspump.Processor()>` is not found.
 
 		"""
 		for depth in self.Processors:
@@ -605,15 +605,15 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def insert_before(self, id, processor):
 		"""
-		Inserts the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` in front of another processor specified by ID.
+		Inserts the :meth:`Processor <bspump.Processor()>` into the :meth:`Pipeline <bspump.Pipeline()>` in front of another :meth:`processor <bspump.Processor()>` specified by ID.
 
 		**Parameters**
 
 		id : str
-			ID of a processor that we want to insert.
+			ID of a :meth:`processor <bspump.Processor()>` that we want to insert.
 
 		processor : str
-			Name of the processor before which we insert our processor.
+			Name of the :meth:`processor <bspump.Processor()>` before which we insert our :meth:`processor <bspump.Processor()>`.
 
 		:return: True on success. False if ID was not found.
 
@@ -636,7 +636,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			ID of a processor that we want to insert.
 
 		processor : str
-			Name of a processor after which we insert our processor.
+			Name of a :meth:`processor <bspump.Processor()>` after which we insert our :meth:`processor <bspump.Processor()>`.
 
 		:return: True on success. False if ID was not found.
 
