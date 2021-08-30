@@ -57,7 +57,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-			app : `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
+			app : Application
 				name of the ASAB `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
 
 			id : str, default None
@@ -183,6 +183,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Returns False when there is no error, otherwise it returns True.
 
 		:return: self._error is not None.
+
         """
 		return self._error is not None
 
@@ -724,7 +725,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-		app : `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
+		app : Application
 			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_.
 
 		connection_id : str
