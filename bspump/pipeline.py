@@ -57,7 +57,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		**Parameters**
 
-			app : Application :meth:`Application <https://asab.readthedocs.io/en/latest/asab/application.html>`
+			app : Application :ref:`Application <https://asab.readthedocs.io/en/latest/asab/application.html>`
 				Name of an Application.
 
 			id : str, default None
