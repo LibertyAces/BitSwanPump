@@ -60,7 +60,7 @@ class KafkaConnection(Connection):
 		**Parameters**
 
 		app : Application
-			Name of the Application.
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_.
 
 		id :  , default = None
 			ID information.
@@ -74,10 +74,12 @@ class KafkaConnection(Connection):
 
 	async def create_producer(self, **kwargs):
 		"""
+		Creates a Producer.
 
 		**Parameters**
 
 		**kwargs :
+			Additional information can be passed to this method.
 
 		:returns: producer
 
@@ -98,13 +100,15 @@ class KafkaConnection(Connection):
 
 	def create_consumer(self, *topics, **kwargs):
 		"""
-		Description:
+		Creates a consumer.
 
 		**Parameters**
 
 		*topics :
+			any number of topics can be passed to this method.
 
 		**kwargs :
+			additional information can be passed to this method.
 
 
 		:returns: consumer
@@ -127,9 +131,9 @@ class KafkaConnection(Connection):
 
 	def get_bootstrap_servers(self):
 		"""
-		Description:
+		Returns parsed bootstrap servers found in config.
 
-		:returns: ???
+		:returns: list of url
 
 		|
 
