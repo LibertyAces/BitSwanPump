@@ -31,6 +31,17 @@ class InfluxDBSink(Sink):
 		"""
 		Description:
 
+		**Parameters**
+
+		app :
+
+		pipeline :
+
+		connection :
+
+		id : ID, default = None
+
+		config : str,JSON, default = None
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -44,6 +55,12 @@ class InfluxDBSink(Sink):
 	def process(self, context, event):
 		"""
 		Description:
+
+		**Parameters**
+
+		context :
+
+		event :
 
 
 		"""
