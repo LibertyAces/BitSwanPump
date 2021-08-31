@@ -30,7 +30,8 @@ class FTPConnection(Connection):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the Application
 
 		id : ID, default = None
 
