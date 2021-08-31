@@ -18,7 +18,22 @@ class ElasticSearchSource(TriggerSource):
 
 	def __init__(self, app, pipeline, connection, request_body=None, paging=True, id=None, config=None):
 		"""
-		Description:
+
+		**Parameters**
+
+		app :
+
+		pipeline :
+
+		connection :
+
+		request_body ?, default = None
+
+		paging : ?, default = True
+
+		id : ID, default = None
+
+		config : JSON, default = None
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -99,6 +114,20 @@ class ElasticSearchAggsSource(TriggerSource):
 		"""
 		Description:
 
+		**Parameters**
+
+		app :
+
+		pipeline :
+
+		connection :
+
+		request_body ?, default = None
+
+		id : ID, default = None
+
+		config : JSON, default = None
+
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Connection = pipeline.locate_connection(app, connection)
@@ -159,6 +188,14 @@ class ElasticSearchAggsSource(TriggerSource):
 		"""
 		Description:
 
+		**Parameters**
+
+		path :
+
+		aggs_name :
+
+		agss :
+
 		"""
 		if 'buckets' in aggs:
 			await self.process_buckets(path, aggs_name, aggs["buckets"])
@@ -177,6 +214,14 @@ class ElasticSearchAggsSource(TriggerSource):
 		It iterates through keys of the dictionary, looking for 'buckets' or 'value'.
 		If there are 'buckets', calls itself, if there is 'value', calls process_aggs
 		and sends an event to process
+
+		**Parameters**
+
+		* path :
+
+		* parent :
+
+		* buckets :
 
 		"""
 		for bucket in buckets:
