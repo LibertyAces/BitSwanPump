@@ -36,6 +36,16 @@ class FileABCSource(TriggerSource):
 		"""
 		Description:
 
+		**Parameters**
+
+		app :
+
+		pipeline :
+
+		id : ID, default = None
+
+		config : JSON, default = None
+
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.path = self.Config['path']
@@ -84,10 +94,6 @@ class FileABCSource(TriggerSource):
 	async def cycle(self):
 		"""
 		Description:
-
-		:returns: ??
-
-		|
 
 		"""
 		filename = None
@@ -217,5 +223,12 @@ class FileABCSource(TriggerSource):
 		"""
 		Description: Override this method to implement your File Source.
 		`f` is an opened file object.
+
+		**Parameters**
+
+		filename :
+
+		f :
+
 		"""
 		raise NotImplementedError()
