@@ -28,7 +28,13 @@ class FTPConnection(Connection):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		app :
+
+		id : ID, default = None
+
+		config : JSON, default = None
 
 		"""
 		super().__init__(app, id=id, config=config)
