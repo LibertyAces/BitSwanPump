@@ -21,7 +21,18 @@ class FileLineSource(FileABCSource):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		app: Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
+
+		pipeline : Pipeline
+			Name of the Pipeline
+
+		id : ID, default = None
+
+		config : JSON, default = None
+			Configuration file with additional information
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -31,7 +42,11 @@ class FileLineSource(FileABCSource):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		filename :
+
+		f :
 
 		"""
 
@@ -67,7 +82,20 @@ class FileMultiLineSource(FileABCSource):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		app: Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
+
+		pipeline : Pipeline
+			Name of the Pipeline
+
+		separator :
+
+		id : ID, default = None
+
+		config : JSON, default = None
+			Configuration file with additional information
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -83,7 +111,11 @@ class FileMultiLineSource(FileABCSource):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		filename :
+
+		f :
 
 		"""
 		latch = None
