@@ -42,6 +42,12 @@ class FileCSVSink(Sink):
 		"""
 		Description: Override this method to gain control over output file name.
 
+		**Parameters**
+
+		context :
+
+		event :
+
 		:return: path of context and config
 
 		|
@@ -54,6 +60,12 @@ class FileCSVSink(Sink):
 	def writer(self, f, fieldnames):
 		"""
 		Description:
+
+		**Parameters**
+
+		f :
+
+		fieldnames :
 
 		:return: dialect and fieldnames
 
@@ -85,6 +97,12 @@ class FileCSVSink(Sink):
 	def process(self, context, event):
 		"""
 		Description:
+
+		**Parameters**
+
+		context :
+
+		event :
 
 		"""
 		if self._csv_writer is None:
