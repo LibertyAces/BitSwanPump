@@ -29,7 +29,19 @@ class FTPSource(TriggerSource):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		app : Application
+			Name of the Application
+
+		pipeline :
+
+		connection :
+
+		id : ID, default = None
+
+		config : JSON, default = None
+
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
