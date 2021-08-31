@@ -18,6 +18,18 @@ class FileJSONSource(FileABCSource):
 		'''
 		Description:
 
+		**Parameters**
+
+		app :
+
+		pipeline :
+
+		id : ID, default= None
+			ID
+
+		config : JSON, default = None
+			configuration file with additional information
+
 		'''
 		super().__init__(app, pipeline, id=id, config=config)
 		self.ProactorService = app.get_service("asab.ProactorService")
@@ -26,6 +38,12 @@ class FileJSONSource(FileABCSource):
 	async def read(self, filename, f):
 		"""
 		Description:
+
+		**Parameters**
+
+		filename :
+
+		f :
 
 		"""
 		await self.Pipeline.ready()
