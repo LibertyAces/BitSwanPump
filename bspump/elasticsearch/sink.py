@@ -49,6 +49,22 @@ class ElasticSearchSink(Sink):
 		"""
 		Description:
 
+		**Parameters**
+
+		app :
+
+		pipeline :
+
+		connection :
+
+		id : ID, default= None
+
+		config : JSON, default= None
+
+		bulk_class=ElasticBulk :
+
+		data_feeder=data_feeder_create_or_index :
+
 		|
 
 		"""
@@ -77,7 +93,12 @@ class ElasticSearchSink(Sink):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		context :
+
+		event :
+
 
 		"""
 		self.Connection.consume(
