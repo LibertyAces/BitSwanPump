@@ -15,7 +15,11 @@ class AggregationStrategy(ABC):
         """
         Description:
 
-        |
+        **Parameters**
+
+        context :
+
+        event :
 
         """
         raise NotImplementedError()
@@ -64,7 +68,11 @@ class ListAggregationStrategy(AggregationStrategy):
         """
         Description:
 
-        |
+        **Parameters**
+
+        context :
+
+        event :
 
         """
         self.AggregatedEvent.append((context, event))
@@ -116,7 +124,11 @@ class ListEventAggregationStrategy(AggregationStrategy):
         """
         Description:
 
-        |
+        **Parameters**
+
+        context :
+
+        event :
 
         """
         self.AggregatedEvent.append(event)
@@ -158,7 +170,6 @@ class StringAggregationStrategy(AggregationStrategy):
         """
         Description:
 
-        |
 
         """
         super().__init__()
@@ -169,7 +180,11 @@ class StringAggregationStrategy(AggregationStrategy):
         """
         Description:
 
-        |
+        **Parameters**
+
+        context :
+
+        event :
 
         """
         self.AggregatedEvent += str(event) + self.Delimiter
@@ -276,7 +291,11 @@ class Aggregator(Generator):
         """
         Description:
 
-        |
+        **Parameters**
+
+        context :
+
+        event :
 
         """
         self.AggregationStrategy.append(context, event)
@@ -290,7 +309,13 @@ class Aggregator(Generator):
         """
         Description:
 
-        |
+        **Parameters**
+
+        context :
+
+        aggregated_event :
+
+        depth :
 
         """
         self.LastFlushTime = self.App.time()
