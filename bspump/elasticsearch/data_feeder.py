@@ -9,6 +9,10 @@ def data_feeder_create_or_index(event):
 	"""
 	Description:
 
+	**Parameters**
+
+	event :
+
 	"""
 	_id = event.pop("_id", None)
 
@@ -25,6 +29,10 @@ def data_feeder_create_or_index(event):
 def data_feeder_create(event):
 	"""
 	Description:
+
+	**Parameters**
+
+	event :
 
 	"""
 	_id = event.pop("_id", None)
@@ -43,6 +51,10 @@ def data_feeder_index(event):
 	"""
 	Description:
 
+	**Parameters**
+
+	event :
+
 	"""
 	_id = event.pop("_id", None)
 
@@ -60,6 +72,10 @@ def data_feeder_update(event):
 	"""
 	Description:
 
+	**Parameters**
+
+	event :
+
 	"""
 	_id = event.pop("_id", None)
 
@@ -75,6 +91,10 @@ def data_feeder_update(event):
 def data_feeder_delete(event):
 	"""
 	Description:
+
+	**Parameters**
+
+	event :
 
 	"""
 	_id = event.pop("_id", None)
