@@ -61,6 +61,13 @@ class FileBatchLookupProvider(LookupBatchProviderABC):
 		return None
 
 	async def save(self, data):
+		"""
+
+		**Parameters**
+
+		data :
+
+		"""
 		dirname = os.path.dirname(self.URL)
 		if not os.path.isdir(dirname):
 			os.makedirs(dirname)
