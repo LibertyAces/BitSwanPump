@@ -28,6 +28,16 @@ class FileBlockSink(Sink):
 		"""
 		Description:
 
+		**Parameters**
+
+		app :
+
+		pipeline :
+
+		id : ID, default = None
+
+		config : JSON, default = None
+
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
@@ -44,6 +54,13 @@ class FileBlockSink(Sink):
 		"""
 		Description: 	Override this method to gain control over output file name.
 
+		**Parameters**
+
+		context :
+
+		event : any type
+			a single unit of information that is propagated through the pipeline
+
 		:return: config path
 
 		|
@@ -55,6 +72,13 @@ class FileBlockSink(Sink):
 	def process(self, context, event):
 		"""
 		Description:
+
+		**Parameters**
+
+		context :
+
+		event : any type
+			a single unit of information that is propagated through the pipeline
 
 		"""
 		fname = self.get_file_name(context, event)
