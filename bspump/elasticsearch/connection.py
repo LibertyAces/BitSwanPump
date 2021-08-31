@@ -33,6 +33,10 @@ class ElasticSearchBulk(object):
 		"""
 		Description:
 
+		**Parameters**
+
+		data_feeder_generator :
+
 		:return: self.Capacity <= 0
 
 		|
@@ -56,6 +60,14 @@ class ElasticSearchBulk(object):
 	async def upload(self, url, session, timeout):
 		"""
 		Description:
+
+		**Parameters**
+
+		url :
+
+		session :
+
+		timeout :
 
 		:return: ?
 
@@ -149,6 +161,10 @@ class ElasticSearchBulk(object):
 		Description: When an upload to ElasticSearch fails for error items (document could not be inserted),
 		this callback is called.
 
+		**Parameters**
+
+		response_items :
+
 		:param response_items: list with dict items: {"index": {"_id": ..., "error": ...}}
 
 		"""
@@ -158,9 +174,13 @@ class ElasticSearchBulk(object):
 		Description: When an upload to ElasticSearch fails b/c of ElasticSearch error,
 		this callback is called.
 
-		:param bulk_items: list with tuple items: (_id, data)
+		**Parameters**
 
-		:param return_code: ElasticSearch return code
+		bulk_items : list
+			list with tuple items: (_id, data)
+
+		return_code :
+			ElasticSearch return code
 
 		:return: False if the bulk is to be resumbitted again
 
@@ -192,6 +212,15 @@ class ElasticSearchConnection(Connection):
 	def __init__(self, app, id=None, config=None):
 		"""
 		Description:
+
+		**Parameters**
+
+		app :
+
+		id : ID, default= None
+
+		config : JSON, default= None
+			configuration file
 
 		"""
 		super().__init__(app, id=id, config=config)
@@ -287,6 +316,14 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
+		**Parameters**
+
+		index :
+
+		data_feeder_generator :
+
+		bulk_class=ElasticSearchBulk :
+
 		:return: ?
 
 		|
@@ -310,6 +347,10 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
+		**Parameters**
+
+		event_name :
+
 		"""
 		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
@@ -317,6 +358,10 @@ class ElasticSearchConnection(Connection):
 	async def _on_exit(self, event_name):
 		"""
 		Description:
+
+		**Parameters**
+
+		event_name :
 
 		"""
 		# Wait till the queue is empty
@@ -341,6 +386,10 @@ class ElasticSearchConnection(Connection):
 	def _on_tick(self, event_name):
 		"""
 		Description:
+
+		**Parameters**
+
+		event_name :
 
 		"""
 		self.QueueMetric.set("size", int(self._output_queue.qsize()))
@@ -373,6 +422,10 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description:
 
+		**Parameters**
+
+		forced : ?, default= None
+
 		"""
 		aged = []
 		for index, bulk in self._bulks.items():
@@ -388,6 +441,10 @@ class ElasticSearchConnection(Connection):
 		"""
 		Description: Properly enqueue the bulk.
 
+		**Parameters**
+
+		bulk :
+
 		"""
 		self._output_queue.put_nowait(bulk)
 
@@ -396,10 +453,6 @@ class ElasticSearchConnection(Connection):
 			self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
 	async def _loader(self, url):
-		"""
-		Description:
-
-		"""
 		async with self.get_session() as session:
 
 			# Preflight check
