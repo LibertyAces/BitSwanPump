@@ -43,6 +43,16 @@ class InfluxDBConnection(Connection):
 		"""
 		Description:
 
+		**Parameters**
+
+		app : Application
+			Name of the Application.
+
+		id : ID, default = None
+
+		config : JSON, default = None
+			Configuration file with additional information.
+
 		"""
 		super().__init__(app, id=id, config=config)
 
@@ -76,6 +86,10 @@ class InfluxDBConnection(Connection):
 		"""
 		Description: Consumes user-defined data to be stored in the InfluxDB database.
 
+		**Parameters**
+
+		data :
+
 		"""
 		self._output_bucket += data
 		if len(self._output_bucket) > self._output_bucket_max_size:
@@ -103,6 +117,10 @@ class InfluxDBConnection(Connection):
 	def flush(self, event_name=None):
 		"""
 		Description: Directly flushes the content of the internal bucket with data to InfluxDB database.
+
+		**Parameters**
+
+		event_name : ?, default = None
 
 		"""
 		if len(self._output_bucket) == 0:
