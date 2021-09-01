@@ -364,6 +364,7 @@ class ElasticSearchConnection(Connection):
 		data_feeder_generator :
 
 		bulk_class=ElasticSearchBulk :
+			creates a instance of the ElasticSearchBulk class
 
 		"""
 		if data_feeder_generator is None:
