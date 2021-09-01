@@ -330,11 +330,9 @@ class ElasticSearchConnection(Connection):
 
 	def get_session(self):
 		"""
-		Not implemented
+		Returns current Client Session Authentication and Loop
 
-		:return: ??
-
-		|
+		:return: aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
 		"""
 		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
