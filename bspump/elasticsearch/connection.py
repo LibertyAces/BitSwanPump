@@ -30,7 +30,7 @@ class ElasticSearchBulk(object):
 			Name of the Connection.
 
 		index : str
-			Index used for Rest API.
+			???
 
 		max_size : int
 			Maximal size of bulks.
@@ -172,7 +172,7 @@ class ElasticSearchBulk(object):
 
 	def partial_error_callback(self, response_items):
 		"""
-		Description: When an upload to ElasticSearch fails for error items (document could not be inserted),
+		When an upload to ElasticSearch fails for error items (document could not be inserted),
 		this callback is called.
 
 		**Parameters**
@@ -185,7 +185,7 @@ class ElasticSearchBulk(object):
 
 	def full_error_callback(self, bulk_items, return_code):
 		"""
-		Description: When an upload to ElasticSearch fails b/c of ElasticSearch error,
+		When an upload to ElasticSearch fails b/c of ElasticSearch error,
 		this callback is called.
 
 		**Parameters**
