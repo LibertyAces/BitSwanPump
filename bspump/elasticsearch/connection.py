@@ -59,11 +59,13 @@ class ElasticSearchBulk(object):
 
 		**Parameters**
 
-		url :
+		url : string
+			Uses URL from config to connect to ElasticSearch Rest API.
 
 		session :
 
-		timeout :
+		timeout : int
+			uses timout from config
 
 		:return: ?
 
@@ -192,13 +194,14 @@ class ElasticSearchConnection(Connection):
 
 	**Sample Config**
 
-	url : 'http://{IP/LOCALHOST}:{PORT}'
+	url : 'http://{ip/localhost}:{port}'
 		URL of the source. Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster.
 
 	username : 'string' , default = ''
+		Used when authentication is required
 
 	password : 'string', default = ''
-		Used for APIs that need a key.
+		Used when authentication is required
 
 	loader_per_url : int, default = 4
 		Number of parallel loaders per URL.
@@ -241,12 +244,14 @@ class ElasticSearchConnection(Connection):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the Application
 
 		id : ID, default= None
+			ID
 
 		config : JSON, default= None
-			configuration file
+			configuration file with additional information for the methods.
 
 		"""
 		super().__init__(app, id=id, config=config)
@@ -318,11 +323,7 @@ class ElasticSearchConnection(Connection):
 
 	def get_url(self):
 		"""
-
-
 		:return: list of URLS of nodes connected to the cluster
-
-		|
 
 		"""
 		return random.choice(self.node_urls)
