@@ -46,7 +46,7 @@ class ElasticSearchBulk(object):
 
 	def consume(self, data_feeder_generator):
 		"""
-		Description:
+		Appends all items in data_feeder_generator to Items list. Consumer also resets Aging and Capacity.
 
 		**Parameters**
 
@@ -77,7 +77,8 @@ class ElasticSearchBulk(object):
 		url : string
 			Uses URL from config to connect to ElasticSearch Rest API.
 
-		session :
+		session : ?
+			?
 
 		timeout : int
 			uses timout from config
