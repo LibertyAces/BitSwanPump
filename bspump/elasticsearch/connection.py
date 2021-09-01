@@ -50,10 +50,6 @@ class ElasticSearchBulk(object):
 		return self.Capacity <= 0
 
 	async def _get_data_from_items(self):
-		"""
-		Description:
-
-		"""
 		for item in self.Items:
 			yield item
 
@@ -194,6 +190,36 @@ class ElasticSearchConnection(Connection):
 	"""
 	Description:
 
+	**Sample Config**
+
+	url : 'http://{IP/LOCALHOST}:{PORT}'
+		URL of the source. Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster.
+
+	username : 'string' , default = ''
+
+	password : 'string', default = ''
+		Used for APIs that need a key.
+
+	loader_per_url : int, default = 4
+		Number of parallel loaders per URL.
+
+	output_queue_max_size : int, default = 10
+		Maximum queue size.
+
+	bulk_out_max_size : ? * ? * ?, default = 12 * 1024 * 1024
+		??
+
+	timeout : int, default = 300
+		Timout value.
+
+	fail_log_max_size : int, default =  20
+		Maximum size of failed log messages.
+
+	precise_error_handling : bool, default = False
+		If True all Errors will be logged, If false soft errors will be omitted in the Logs.
+
+
+
 	"""
 
 	ConfigDefaults = {
@@ -201,7 +227,7 @@ class ElasticSearchConnection(Connection):
 		# Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
 		'username': '',
 		'password': '',
-		'loader_per_url': 4,  # Number of parael loaders per URL
+		'loader_per_url': 4,  # Number of parallel loaders per URL
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 12 * 1024 * 1024,
 		'timeout': 300,
@@ -292,9 +318,9 @@ class ElasticSearchConnection(Connection):
 
 	def get_url(self):
 		"""
-		Description:
 
-		:return: ?
+
+		:return: list of URLS of nodes connected to the cluster
 
 		|
 
@@ -303,7 +329,7 @@ class ElasticSearchConnection(Connection):
 
 	def get_session(self):
 		"""
-		Description:
+		Not implemented
 
 		:return: ??
 
@@ -324,10 +350,6 @@ class ElasticSearchConnection(Connection):
 
 		bulk_class=ElasticSearchBulk :
 
-		:return: ?
-
-		|
-
 		"""
 		if data_feeder_generator is None:
 			return
@@ -344,26 +366,10 @@ class ElasticSearchConnection(Connection):
 			self.enqueue(bulk)
 
 	def _start(self, event_name):
-		"""
-		Description:
-
-		**Parameters**
-
-		event_name :
-
-		"""
 		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
 
 	async def _on_exit(self, event_name):
-		"""
-		Description:
-
-		**Parameters**
-
-		event_name :
-
-		"""
 		# Wait till the queue is empty
 		self.flush(forced=True)
 		while self._output_queue.qsize() > 0:
@@ -384,14 +390,6 @@ class ElasticSearchConnection(Connection):
 
 
 	def _on_tick(self, event_name):
-		"""
-		Description:
-
-		**Parameters**
-
-		event_name :
-
-		"""
 		self.QueueMetric.set("size", int(self._output_queue.qsize()))
 
 		for i in range(len(self._futures)):
@@ -420,11 +418,12 @@ class ElasticSearchConnection(Connection):
 
 	def flush(self, forced=False):
 		"""
-		Description:
+		Empties the two last bulks from the queue or all if forced is set to True.
 
 		**Parameters**
 
-		forced : ?, default= None
+		forced : bool, default = False
+			for True it empties the whole
 
 		"""
 		aged = []
