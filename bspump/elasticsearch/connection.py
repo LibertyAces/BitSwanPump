@@ -81,7 +81,7 @@ class ElasticSearchBulk(object):
 			?
 
 		timeout : int
-			uses timout from config
+			uses timout value from config. Value of time for how long we want to be connected to ElasticSearch.
 
 		:return: ?
 
