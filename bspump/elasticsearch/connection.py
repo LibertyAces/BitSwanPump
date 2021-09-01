@@ -194,13 +194,13 @@ class ElasticSearchConnection(Connection):
 
 	**Sample Config**
 
-	url : 'http://{ip/localhost}:{port}'
+	url : ''http'://{ip/localhost}:{port}'
 		URL of the source. Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster.
 
-	username : 'string' , default = ''
+	username : 'string' , default = ' '
 		Used when authentication is required
 
-	password : 'string', default = ''
+	password : 'string', default = ' '
 		Used when authentication is required
 
 	loader_per_url : int, default = 4
