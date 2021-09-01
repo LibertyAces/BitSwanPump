@@ -434,12 +434,11 @@ class ElasticSearchConnection(Connection):
 
 	def flush(self, forced=False):
 		"""
-		Empties the two last bulks from the queue or all if forced is set to True.
+		It goes through the list of bulks and calls enqueue for each of them.
 
 		**Parameters**
 
 		forced : bool, default = False
-			for True it empties the whole
 
 		"""
 		aged = []
