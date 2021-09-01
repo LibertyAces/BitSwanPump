@@ -21,6 +21,21 @@ class ElasticSearchBulk(object):
 	"""
 
 	def __init__(self, connection, index, max_size):
+		"""
+		Initializes the variables
+
+		**Parameters**
+
+		connection : Connection
+			Name of the Connection.
+
+		index : str
+			Index used for Rest API.
+
+		max_size : int
+			Maximal size of bulks.
+
+		"""
 		self.Index = index
 		self.Aging = 0
 		self.Capacity = max_size
@@ -250,7 +265,7 @@ class ElasticSearchConnection(Connection):
 		id : ID, default= None
 			ID
 
-		config : JSON, default= None
+		config : JSON or dict, default= None
 			configuration file with additional information for the methods.
 
 		"""
