@@ -439,7 +439,7 @@ class ElasticSearchConnection(Connection):
 
 	def enqueue(self, bulk):
 		"""
-		Description: Properly enqueue the bulk.
+		Properly enqueue the bulk.
 
 		**Parameters**
 
