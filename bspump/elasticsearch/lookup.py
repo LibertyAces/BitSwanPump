@@ -17,7 +17,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 	The lookup that is linked with a ES.
 	It provides a mapping (dictionary-like) interface to pipelines.
 	It feeds lookup data from ES using a query.
-	It also has a simple cache to reduce a number of datbase hits.
+	It also has a simple cache to reduce a number of database hits.
 
 	**configs**
 
