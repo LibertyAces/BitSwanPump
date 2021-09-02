@@ -50,11 +50,10 @@ class ElasticSearchBulk(object):
 
 		**Parameters**
 
-		data_feeder_generator :
+		data_feeder_generator : list
+			list of our data that will be passed to a generator and later Uploaded to ElasticSearch.
 
 		:return: self.Capacity <= 0
-
-		|
 
 		"""
 		for item in data_feeder_generator:
