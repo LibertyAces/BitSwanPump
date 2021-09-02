@@ -354,7 +354,7 @@ class ElasticSearchConnection(Connection):
 
 	def consume(self, index, data_feeder_generator, bulk_class=ElasticSearchBulk):
 		"""
-		Description:
+		Checks the content of data_feeder_generator and bulk and if There is data to be send it calls enqueue method.
 
 		**Parameters**
 
