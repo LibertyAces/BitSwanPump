@@ -53,7 +53,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def __init__(self, app, id=None, config=None):
 		"""
-		Setups basic variables used in the other :meth:`Pipeline <bspump.Pipeline()>` methods. You can also add more information using parameters.
+		Initializes basic variables used in the other :meth:`Pipeline <bspump.Pipeline()>` methods. You can also add more information using parameters.
 
 		**Parameters**
 
@@ -198,7 +198,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		context : type?
 			Context of an error.
 
-		event : Data with time stamp stored in any data type, usually it is in JSON.
+		event : Data with time stamp stored in any data type usually is in JSON.
 			You can specify an event that is passed to the method.
 
 		exc : Exception.
@@ -239,7 +239,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def handle_error(self, exception, context, event):
 		"""
-		Used for setting up exceptions and conditions for errors. Implement to be able to evaluate processing errors.
+		Used for setting up exceptions and conditions for errors. You can implement it to evaluate processing errors.
 
 		**Parameters**
 
@@ -284,7 +284,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		Links this :meth:`Pipeline <bspump.Pipeline()>` with an ancestral :meth:`Pipeline <bspump.Pipeline()>`.
 		This is needed e. g. for a propagation of the throttling from child :meth:`Pipelines <bspump.Pipeline()>` back to their ancestors.
-		If the child :meth:`Pipeline <bspump.Pipeline()>` uses InternalSource, which may become throttled because the internal queue is full,
+		If the child :meth:`Pipeline <bspump.Pipeline()>` uses InternalSource, it may become throttled because the internal queue is full. If so,
 		the throttling is propagated to the ancestral :meth:`Pipeline <bspump.Pipeline()>`, so that its source may block incoming events until the
 		internal queue is empty again.
 
@@ -312,7 +312,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def throttle(self, who, enable=True):
 		"""
-		Enables throttling method for a chosen :meth:`pipeline <bspump.Pipeline()>` and its ancestral :meth:`pipelines <bspump.Pipeline()>` if needed.
+		Enables throttling method for a chosen :meth:`pipeline <bspump.Pipeline()>` and its ancestral :meth:`pipelines <bspump.Pipeline()>`, if needed.
 
 
 		**Parameters**
@@ -363,7 +363,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	async def ready(self):
 		"""
-		Checks if the :meth:`Pipeline <bspump.Pipeline()>` is ready. Can be used in source: `await self.Pipeline.ready()`.
+		Checks if the :meth:`Pipeline <bspump.Pipeline()>` is ready. The method can be used in source: `await self.Pipeline.ready()`.
 
 		"""
 
@@ -377,7 +377,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def is_ready(self):
 		"""
-		It is a checkup of the event in the Event class.
+		This method is a check up of the event in the Event class.
 
 		:return: _ready.is_set().
 
@@ -554,7 +554,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		source : str, list optional
 			ID of a source.
 
-		If a list of sources is passed to the method. It adds the whole list of sources to the :meth:`Pipeline <bspump.Pipeline()>`.
+		If a list of sources is passed to the method, it adds the entire list of sources to the :meth:`Pipeline <bspump.Pipeline()>`.
 		"""
 		if isinstance(source, Source):
 			self.Sources.append(source)
@@ -570,7 +570,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		processor : str
 			ID of a :meth:`processor <bspump.Processor()>`.
 
-		:hint: Generator can be added by using this method. It requires a depth parameter.
+		:hint: The Generator can be added by using this method. It requires a depth parameter.
 
 		"""
 		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
@@ -616,7 +616,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			ID of a :meth:`processor <bspump.Processor()>` that we want to insert.
 
 		processor : str
-			Name of the :meth:`processor <bspump.Processor()>` before which we insert our :meth:`processor <bspump.Processor()>`.
+			Name of the :meth:`processor <bspump.Processor()>` in front of which will be inserted the new :meth:`processor <bspump.Processor()>`.
 
 		:return: True on success. False if ID was not found.
 
@@ -641,7 +641,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		processor : str
 			Name of a :meth:`processor <bspump.Processor()>` after which we insert our :meth:`processor <bspump.Processor()>`.
 
-		:return: True on success. False if ID was not found.
+		:return: True if successful. False if ID was not found.
 
 		"""
 		for processors in self.Processors:
@@ -692,9 +692,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	def iter_processors(self):
 		"""
-		uses python generator routine that iterates through all :meth:`Processors <bspump.Processor()>` in the :meth:`Pipeline <bspump.Pipeline()>`.
+		Uses python generator routine that iterates through all :meth:`Processors <bspump.Processor()>` in the :meth:`Pipeline <bspump.Pipeline()>`.
 
-		:yields: Processor from a list in the :meth:`Pipeline <bspump.Pipeline()>`.
+		:yields: A Processor from a list in the :meth:`Pipeline <bspump.Pipeline()>`.
 
 		"""
 		for processors in self.Processors:
