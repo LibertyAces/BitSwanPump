@@ -21,19 +21,25 @@ class ElasticSearchSource(TriggerSource):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_.
 
-		pipeline :
+		pipeline : Pipeline
+			Name of the Pipeline.
 
-		connection :
+		connection : Connection
+			Information of the connection.
 
-		request_body ?, default = None
+		request_body JSON, default = None
+			Request body needed for the request API call.
 
 		paging : ?, default = True
 
 		id : ID, default = None
+			ID
 
-		config : JSON, default = None
+		config : JSON/dict, default = None
+			configuration file with additional information.
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -116,17 +122,23 @@ class ElasticSearchAggsSource(TriggerSource):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_.
 
-		pipeline :
+		pipeline : Pipeline
+			Name of the Pipeline.
 
-		connection :
+		connection : Connection
+			Information of the connection.
 
-		request_body ?, default = None
+		request_body JSON, default = None
+			Request body needed for the request API call.
 
 		id : ID, default = None
+			ID
 
-		config : JSON, default = None
+		config : JSON/dict, default = None
+			configuration file with additional information.
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
