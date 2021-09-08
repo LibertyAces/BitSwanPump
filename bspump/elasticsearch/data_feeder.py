@@ -11,7 +11,8 @@ def data_feeder_create_or_index(event):
 
 	**Parameters**
 
-	event :
+	event : Data with time stamp stored in any data type usually is in JSON.
+		You can specify an event that is passed to the method.
 
 	"""
 	_id = event.pop("_id", None)
