@@ -39,7 +39,7 @@ class ElasticSearchSource(TriggerSource):
 			ID
 
 		config : JSON/dict, default = None
-			configuration file with additional information.
+			Configuration file with additional information.
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -63,7 +63,7 @@ class ElasticSearchSource(TriggerSource):
 
 	async def cycle(self):
 		"""
-		Description:
+		Gets data from Elastic and injects them into the pipeline.
 
 		"""
 		scroll_id = None
@@ -220,18 +220,18 @@ class ElasticSearchAggsSource(TriggerSource):
 
 	async def process_buckets(self, path, parent, buckets):
 		"""
-		Description: Recursive function for buckets processing.
+		Recursive function for buckets processing.
 		It iterates through keys of the dictionary, looking for 'buckets' or 'value'.
 		If there are 'buckets', calls itself, if there is 'value', calls process_aggs
 		and sends an event to process
 
 		**Parameters**
 
-		* path :
+		path :
 
-		* parent :
+		parent :
 
-		* buckets :
+		buckets :
 
 		"""
 		for bucket in buckets:
