@@ -135,7 +135,7 @@ class ElasticSearchAggsSource(TriggerSource):
 			Request body needed for the request API call.
 
 		id : ID, default = None
-			ID
+			ID info
 
 		config : JSON/dict, default = None
 			configuration file with additional information.
