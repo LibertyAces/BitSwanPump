@@ -33,7 +33,8 @@ def data_feeder_create(event):
 
 	**Parameters**
 
-	event :
+	event : Data with time stamp stored in any data type usually is in JSON.
+		You can specify an event that is passed to the method.
 
 	"""
 	_id = event.pop("_id", None)
@@ -54,7 +55,8 @@ def data_feeder_index(event):
 
 	**Parameters**
 
-	event :
+	event : Data with time stamp stored in any data type usually is in JSON.
+		You can specify an event that is passed to the method.
 
 	"""
 	_id = event.pop("_id", None)
@@ -75,7 +77,8 @@ def data_feeder_update(event):
 
 	**Parameters**
 
-	event :
+	event : Data with time stamp stored in any data type usually is in JSON.
+		You can specify an event that is passed to the method.
 
 	"""
 	_id = event.pop("_id", None)
@@ -95,7 +98,8 @@ def data_feeder_delete(event):
 
 	**Parameters**
 
-	event :
+	event : Data with time stamp stored in any data type usually is in JSON.
+		You can specify an event that is passed to the method.
 
 	"""
 	_id = event.pop("_id", None)
