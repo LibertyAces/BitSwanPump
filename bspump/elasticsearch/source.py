@@ -163,7 +163,7 @@ class ElasticSearchAggsSource(TriggerSource):
 		"""
 		Description:
 
-		:return: ??
+		:return: ?
 
 		|
 
