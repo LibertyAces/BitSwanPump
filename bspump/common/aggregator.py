@@ -184,7 +184,8 @@ class StringAggregationStrategy(AggregationStrategy):
 
         context :
 
-        event :
+        event : Data with time stamp stored in any data type usually is in JSON.
+            You can specify an event that is passed to the method.
 
         """
         self.AggregatedEvent += str(event) + self.Delimiter
