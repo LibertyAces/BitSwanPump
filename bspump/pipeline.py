@@ -480,11 +480,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		Creates a dictionary with information about the :meth:`Pipeline <bspump.Pipeline()>`. It contains eps (events per second), warnings and errors.
 
 		:return: self.MetricsService
-
 			Creates eps counter using MetricsService.
 
 		:note: EPS counter can be created using this method or dicertly by using MatricsService method.
-
+		
 		"""
 		return self.MetricsService.create_eps_counter(
 			"bspump.pipeline.eps",
