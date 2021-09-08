@@ -109,7 +109,7 @@ class ElasticSearchSource(TriggerSource):
 
 class ElasticSearchAggsSource(TriggerSource):
 	"""
-	Description: d
+	Description:
 
 	"""
 	ConfigDefaults = {
