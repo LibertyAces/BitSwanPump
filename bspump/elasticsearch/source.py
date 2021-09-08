@@ -161,9 +161,7 @@ class ElasticSearchAggsSource(TriggerSource):
 
 	async def cycle(self):
 		"""
-		Description:
-
-		:return: ?
+		Description: cycle through...
 
 		|
 
