@@ -16,7 +16,7 @@ class Analyzer(Processor):
 	"""
 	Description:
 
-	:return:
+
 	"""
 
 	ConfigDefaults = {
@@ -40,7 +40,7 @@ class Analyzer(Processor):
 		"""
 		Description:
 
-		:return:
+
 		"""
 		self.Timer.start(self.AnalyzePeriod)
 
@@ -48,7 +48,6 @@ class Analyzer(Processor):
 		"""
 		Description:
 
-		:return:
 		"""
 		pass
 
@@ -58,8 +57,12 @@ class Analyzer(Processor):
 		The function which records the information from the event into the analyzed object.
 			Specific for each analyzer.
 
+		**Parameters**
 
-		:return:
+		context :
+
+		event : any data type
+			information with timestamp.
 		"""
 		pass
 
@@ -67,10 +70,17 @@ class Analyzer(Processor):
 	def predicate(self, context, event):
 		"""
 		This function is meant to check, if the event is worth to process.
-			If it is, should return True.
-			Specific for each analyzer, but default one always returns True.
+		If it is, should return True.
+		specific for each analyzer, but default one always returns True.
 
-		:return:
+		**Parameters**
+
+		context :
+
+		event : any data type
+			information with timestamp.
+
+		:return: True
 		"""
 		return True
 
@@ -80,7 +90,14 @@ class Analyzer(Processor):
 		The event passes through `process(context, event)` unchanged.
 			Meanwhile it is evaluated.
 
-		:return:
+		**Parameters**
+
+		context :
+
+		event : any data type
+			information with timestamp.
+
+		:return: event
 		"""
 		if self.predicate(context, event):
 			self.evaluate(context, event)
@@ -92,7 +109,6 @@ class Analyzer(Processor):
 		"""
 		Run analyzis every tick.
 
-		:return:
 		"""
 		t0 = time.perf_counter()
 		self.analyze()
