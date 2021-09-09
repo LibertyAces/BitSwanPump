@@ -1,9 +1,3 @@
-BSPump
---------------------
-
-Get started
-
-
 Reference Documentation
 =======================
 
