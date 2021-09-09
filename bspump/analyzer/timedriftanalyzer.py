@@ -16,6 +16,17 @@ class TimeDriftAnalyzer(Analyzer):
 		The analyzer, which shows how different is time of the stream from the current time.
 		The output of the analyzis is a metric with average time, median time, minimum time,
 		maximum time and a standart deviation.
+
+		**Default Config**
+
+		analyze_period : 5*60
+			Once per 5 minutes.
+		history_size : 100
+			Keep maximum 100 array members.
+		sparse_count : 1
+			Process every single event.
+		timestamp_attr : @timestamp
+			Timestamp attribute present in the event to perform the drift analyzer on.
 	'''
 
 	ConfigDefaults = {
@@ -28,6 +39,20 @@ class TimeDriftAnalyzer(Analyzer):
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Description:
+
+		**Parameters**
+
+		app : Application
+			Name of the Application.
+
+		pipeline : Pipeline
+			Name of the Pipeline.
+
+		id : str, default = None
+			ID
+
+		config : JSON, default = None
+			Configuration file with additional information.
 
 		"""
 		# def __init__(self, app, pipeline, analyze_on_clock=False, analyze_period=None, id=None, config=None):
@@ -65,9 +90,14 @@ class TimeDriftAnalyzer(Analyzer):
 		"""
 		Description:
 
-		:return: True
+		**Parameters**
 
-		|
+		context :
+
+		event : any data type
+			information with timestamp
+
+		:return: True
 
 		"""
 		if self.TimestampAttr not in event:
@@ -83,6 +113,10 @@ class TimeDriftAnalyzer(Analyzer):
 	def get_diff(self, event_timestamp):
 		'''
 		Returns the time difference of current event.
+
+		**Parameters**
+
+		event_timestamp : ?
 
 		:return: diff
 		'''
