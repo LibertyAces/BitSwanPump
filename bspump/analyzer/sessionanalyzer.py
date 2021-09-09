@@ -53,6 +53,27 @@ class SessionAnalyzer(Analyzer):
 		"""
 		Description:
 
+		**Parameters**
+
+		app : Application
+			Name of the Application.
+
+		pipeline : Pipeline
+			Name of the Pipeline
+
+		matrix_id : str, default = None
+
+		dtype : str, default = 'float_'
+
+		analyze_on_clock : bool, default = False
+
+		persistent : bool, defualt = False
+
+		id : str, defualt = None
+
+		config : JSON, default = None
+			configuration file with additional information.
+
 		"""
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
