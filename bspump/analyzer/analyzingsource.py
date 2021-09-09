@@ -18,6 +18,24 @@ class AnalyzingSource(TriggerSource):
 		"""
 		Description:
 
+		**Parameters**
+
+		app : Application
+			Name of the Application
+
+		pipeline : Pipeline
+			Name of the Pipeline
+
+		matrix_id : str
+			ID of the matrix.
+
+		id : str, default = None
+			ID
+
+		config : JSON, default = None
+			configuration file containing additional information.
+
+
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
