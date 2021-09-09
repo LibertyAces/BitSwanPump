@@ -62,6 +62,19 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		"""
 		Description:
 
+		**Parameters**
+
+		app : Application
+			Name of the Application
+
+		pipeline : Pipeline
+			Name of the Pipeline
+
+		id : str, default = None
+
+		config : JSON, default = None
+			configuration file with additional information.
+
 		"""
 
 		super().__init__(app, pipeline, analyze_on_clock=True, clock_driven=True, id=id, config=config)
@@ -79,6 +92,13 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		"""
 		Description:
 
+		**Parameters**
+
+		context :
+
+		event : any data type
+			Information with timestamp.
+
 		:return: True
 		"""
 		if self.EventAttribute not in event:
@@ -94,7 +114,13 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 		"""
 		Description:
 
-		:return: ??
+		**Parameters**
+
+		context :
+
+		event : any data type
+			Information with timestamp.
+
 		"""
 		attribute = event[self.EventAttribute]
 		time_stamp = event["@timestamp"]
