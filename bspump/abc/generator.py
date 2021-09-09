@@ -13,7 +13,19 @@ class Generator(ProcessorBase):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		app : Application
+			Name of the Application.
+
+		pipeline : Pipeline
+			Name of the Pipeline.
+
+		id : str, default = None
+			ID
+
+		config : JSON, defualt = None
+			configuration file containing additional information.
 
 		"""
 		super().__init__(app, pipeline, id, config)
@@ -24,7 +36,10 @@ class Generator(ProcessorBase):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		depth : int
+
 
 		"""
 		assert(self.PipelineDepth is None)
@@ -34,7 +49,13 @@ class Generator(ProcessorBase):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		context :
+
+		event : any data type
+			information of any data type with timestamp.
+
 
 		"""
 		self.Pipeline.ensure_future(
@@ -47,7 +68,15 @@ class Generator(ProcessorBase):
 		"""
 		Description:
 
-		|
+		**Parameters**
+
+		context :
+
+		event : any data type
+			information of any data type with timestamp.
+
+		depth : int
+
 
 		"""
 		raise NotImplementedError()
