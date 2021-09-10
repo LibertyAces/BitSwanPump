@@ -51,15 +51,20 @@ class ElasticSearchSink(Sink):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the Application
 
-		pipeline :
+		pipeline : Pipeline
+			Name of the Pipeline
 
-		connection :
+		connection : Connection
+			Name of the Connection
 
 		id : ID, default= None
+			ID
 
 		config : JSON, default= None
+			Configuration file with additional information.
 
 		bulk_class=ElasticBulk :
 
@@ -97,7 +102,8 @@ class ElasticSearchSink(Sink):
 
 		context :
 
-		event :
+		event : any data type
+			Information with timestamp.
 
 
 		"""
