@@ -161,7 +161,7 @@ class ElasticSearchAggsSource(TriggerSource):
 
 	async def cycle(self):
 		"""
-		Description: cycle through...
+		Sets request body and path to create query call. 
 
 		|
 
