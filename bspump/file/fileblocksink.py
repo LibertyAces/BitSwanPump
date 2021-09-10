@@ -26,17 +26,20 @@ class FileBlockSink(Sink):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
-		Description:
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the Application
 
-		pipeline :
+		pipeline : Pipeline
+			Name of the Pipeline.
 
 		id : ID, default = None
+			ID
 
 		config : JSON, default = None
+			Configuration file with additional information.
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -52,7 +55,7 @@ class FileBlockSink(Sink):
 
 	def get_file_name(self, context, event):
 		"""
-		Description: 	Override this method to gain control over output file name.
+		Override this method to gain control over output file name.
 
 		**Parameters**
 
@@ -71,7 +74,7 @@ class FileBlockSink(Sink):
 
 	def process(self, context, event):
 		"""
-		Description:
+		Opens a file. 
 
 		**Parameters**
 
