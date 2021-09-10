@@ -27,6 +27,22 @@ class InfluxDBConnection(Connection):
 		bspump.influxdb.InfluxDBConnection(app, "InfluxConnection1")
 	)
 
+	**Config Default**
+
+	url : http://localhost:8086/
+
+	db : mydb
+
+	output_queue_max_size : 10
+
+	output_bucket_max_size : 1000 * 1000
+
+	timout : 30
+
+	retry_enabled : False
+
+	response_codes_to_retry : 404, 502, 503, 504
+
 	"""
 
 	ConfigDefaults = {
