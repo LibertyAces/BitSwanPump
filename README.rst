@@ -16,6 +16,12 @@ BSPump: A real-time stream processor for Python 3.5+
 .. image:: https://badges.gitter.im/TeskaLabs/bspump.svg
     :alt: Join the chat at https://gitter.im/TeskaLabs/bspump
     :target: https://gitter.im/TeskaLabs/bspump?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+    
+
+Documentation
+-------------
+
+https://bitswanpump.readthedocs.io/en/latest/index.html
 
 Principles
 ----------
