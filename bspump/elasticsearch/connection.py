@@ -69,7 +69,7 @@ class ElasticSearchBulk(object):
 
 	async def upload(self, url, session, timeout):
 		"""
-		Description:
+		Uploads data to Elastic Search.
 
 		**Parameters**
 
