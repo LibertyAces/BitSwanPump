@@ -65,13 +65,17 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the Application.
 
-		connection :
+		connection : Connection
+			Name of the Connection
 
 		id : ID, default= None
+			ID
 
 		config : JSON, default= None
+			Configuration file with additional information.
 
 		cache : ?,default= None
 
@@ -209,7 +213,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 	async def load(self):
 		"""
-		Description:
+		Sets the length of Cache to Count.
 
 		:return: True
 
@@ -285,13 +289,15 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 	@classmethod
 	def construct(cls, app, definition: dict):
 		"""
-		Description:
+		Constructs config, id, and connection based on config.
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the Application.
 
-		definition:dict :
+		definition:dict : Definition
+			Definition containing information about certain variables.
 
 		:return: cls(app, newid, connection, config)
 
