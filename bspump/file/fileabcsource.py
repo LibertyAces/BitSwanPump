@@ -38,13 +38,17 @@ class FileABCSource(TriggerSource):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the Application.
 
-		pipeline :
+		pipeline : Pipeline
+			Name of the Pipeline.
 
 		id : ID, default = None
+			ID
 
 		config : JSON, default = None
+			Configuration file with additional information.
 
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
@@ -93,7 +97,7 @@ class FileABCSource(TriggerSource):
 
 	async def cycle(self):
 		"""
-		Description:
+		Cycles through a file.
 
 		"""
 		filename = None
@@ -208,7 +212,7 @@ class FileABCSource(TriggerSource):
 
 	async def simulate_event(self):
 		"""
-		Description:	The simulate_event method should be called in read method after a file line has been processed.
+		The simulate_event method should be called in read method after a file line has been processed.
 
 		It ensures that all other asynchronous events receive enough time to perform their tasks.
 		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
@@ -226,7 +230,8 @@ class FileABCSource(TriggerSource):
 
 		**Parameters**
 
-		filename :
+		filename : file
+			Name of the file.
 
 		f :
 
