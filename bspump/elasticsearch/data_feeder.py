@@ -7,7 +7,7 @@ Data feeders to be used in ElasticSearchSink.
 
 def data_feeder_create_or_index(event):
 	"""
-	Description:
+	Creates an index.
 
 	**Parameters**
 
@@ -29,7 +29,7 @@ def data_feeder_create_or_index(event):
 
 def data_feeder_create(event):
 	"""
-	Description:
+	Creates a data feeder.
 
 	**Parameters**
 
@@ -73,7 +73,7 @@ def data_feeder_index(event):
 
 def data_feeder_update(event):
 	"""
-	Description:
+	U76pdates data feeder.
 
 	**Parameters**
 
@@ -94,7 +94,7 @@ def data_feeder_update(event):
 
 def data_feeder_delete(event):
 	"""
-	Description:
+	Deletes data feeder.
 
 	**Parameters**
 
