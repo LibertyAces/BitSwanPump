@@ -60,7 +60,8 @@ class InfluxDBSink(Sink):
 
 		context :
 
-		event :
+		event : any data type
+			Information with timestamp.
 
 
 		"""
