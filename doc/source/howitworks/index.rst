@@ -12,7 +12,7 @@ Each :meth:`Pipeline <bspump.Pipeline()>` is usually in charge of **one** concre
 
 Pipeline has three main components:
 
-- :meth:`Source <bspump.Source()>`
+- :meth:`Source <bspump.abc.source.Source()>`
 - :meth:`Processor <bspump.Processor()>`
 - :meth:`Sink <bspump.Sink()>`
 
@@ -81,7 +81,7 @@ The BSPump contains a lot of universally usable, specific source objects, which 
 The BitSwan product further expands these objects by adding source objects directly usable for specific cases of use in industry field given.
 
 Each source represent a coroutine/Future/Task that is running in the context of the main loop.
-The coroutine method :meth:`main() <bspump.Source.main()>` contains an implementation of each particular source.
+The coroutine method :meth:`main() <bspump.abc.source.Source.main()>` contains an implementation of each particular source.
 
 Source MUST await a :meth:`Pipeline <bspump.Pipeline()>` ready state prior producing the event.
 It is acomplished by `await self.Pipeline.ready()` call.
@@ -96,7 +96,7 @@ You need to provide a trigger class and implement :meth:`cycle() <bspump.Trigger
 Trigger source will stop execution, when a :meth:`Pipeline <bspump.Pipeline()>` is cancelled (raises concurrent.futures.CancelledError).
 This typically happens when a program wants to quit in reaction to a on the signal.
 
-You also may overload the :meth:`main() <bspump.Source.main()>` method to provide additional parameters for a :meth:`cycle() <bspump.TriggerSource.cycle()>` method.
+You also may overload the :meth:`main() <bspump.abc.source.Source.main()>` method to provide additional parameters for a :meth:`cycle() <bspump.TriggerSource.cycle()>` method.
 
 .. code:: python
 
@@ -112,7 +112,7 @@ You also may overload the :meth:`main() <bspump.Source.main()>` method to provid
 Processor
 ---------
 
-The main component of the BSPump architecture is a so called processor.
+The main component of the BSPump architecture is a so called :meth:`processor <bspump.Processor()>`.
 This object modifies, transforms and enriches events.
 Moreover, it is capable of calculating metrics and creating aggregations, detecting anomalies or react to known as well as unknown system behavior patterns.
 
