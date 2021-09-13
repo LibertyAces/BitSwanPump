@@ -19,7 +19,7 @@ Use command in your command prompt
 
 ..
 
-or you can clone the github repository `BitSwanPump<https://github.com/LibertyAces/BitSwanPump>`_
+or you can clone the github repository `BitsSwanPump <https://github.com/LibertyAces/BitSwanPump>`_
 
 .. code-block:: python
 
