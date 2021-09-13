@@ -15,6 +15,28 @@ class FileCSVSink(Sink):
 	"""
 	Description:
 
+	** Default Config**
+
+	path : ''
+
+	dialect : 'excel'
+
+	delimiter : ','
+
+	doublequote : True
+
+	escapechar : ""
+
+	lineterminator : os.linesep
+
+	quotechar : '"'
+
+	quoting : csv.QUOTE_MINIMAL
+
+	skipinitialspace : False
+
+	strict : False
+
 	"""
 	ConfigDefaults = {
 		'path': '',
@@ -65,7 +87,8 @@ class FileCSVSink(Sink):
 
 		f :
 
-		fieldnames :
+		fieldnames : file
+			Name of the file.
 
 		:return: dialect and fieldnames
 
