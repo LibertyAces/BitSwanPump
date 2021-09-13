@@ -13,7 +13,7 @@ class AggregationStrategy(ABC):
     @abstractmethod
     def append(self, context, event):
         """
-        Description:
+        Appends
 
         **Parameters**
 
@@ -27,7 +27,7 @@ class AggregationStrategy(ABC):
     @abstractmethod
     def flush(self):
         """
-        Description:
+        Flushes
 
         |
 
