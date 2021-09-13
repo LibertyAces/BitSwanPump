@@ -10,6 +10,14 @@ class FileBlockSink(Sink):
 	"""
 	Description:
 
+	** Config Defaults **
+
+	path : ''
+
+	mode : wb
+
+	flags : O_CREAT
+
 	"""
 
 	ConfigDefaults = {
@@ -74,7 +82,7 @@ class FileBlockSink(Sink):
 
 	def process(self, context, event):
 		"""
-		Opens a file. 
+		Opens a file.
 
 		**Parameters**
 
