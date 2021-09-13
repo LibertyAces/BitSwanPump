@@ -7,7 +7,7 @@ Pipeline
 --------
 
 :meth:`Pipeline <bspump.Pipeline()>` is responsible for **data processing** in BSPump.
-Individual :meth:`Pipeline <bspump.Pipeline()>` objects work **asynchronously** and **independently** of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline) and can be triggered in unlimited numbers.
+Individual :meth:`Pipeline <bspump.Pipeline()>` objects work **asynchronously** and **independently** of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline).
 Each :meth:`Pipeline <bspump.Pipeline()>` is usually in charge of **one** concrete task.
 
 Pipeline has three main components:
