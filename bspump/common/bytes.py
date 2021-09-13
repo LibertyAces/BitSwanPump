@@ -6,6 +6,9 @@ class StringToBytesParser(Processor):
 	Description:
 
 	|
+	** Default Config **
+
+	encoding : utf-8
 
 	"""
 
