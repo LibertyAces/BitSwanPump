@@ -125,7 +125,8 @@ class FileCSVSink(Sink):
 
 		context :
 
-		event :
+		event : any data type
+			Information with timestamp.
 
 		"""
 		if self._csv_writer is None:
