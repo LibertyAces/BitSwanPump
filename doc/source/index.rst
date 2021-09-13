@@ -33,7 +33,6 @@ or you can clone the github repository `BitSwanPump<https://github.com/LibertyAc
 .. toctree::
    :maxdepth: 2
 
-   gettingstarted/index
    howitworks/index
    examples/index
    reference/index
