@@ -17,14 +17,17 @@ class FileBlockSource(FileABCSource):
 
 		**Parameters**
 
-		app :
+		app : Application
+			Name of the Application.
 
-		pipeline :
+		pipeline : Pipeline
+			Name of the Pipeline.
 
 		id : ID, default = None
+			ID
 
 		config : JSON, default = None
-
+			Configuration file with additional information.
 		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.ProactorService = app.get_service("asab.ProactorService")
@@ -32,11 +35,12 @@ class FileBlockSource(FileABCSource):
 
 	async def read(self, filename, f):
 		"""
-		Description:
+		Loads a file.
 
 		**Parameters**
 
-		filename :
+		filename : file
+			Name of the file.
 
 		f :
 
