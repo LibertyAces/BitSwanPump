@@ -62,6 +62,7 @@ class StreamServerSource(Source):
 
 			if " " in addrline or addrline.count(":") == 1:
 				addrinfo = socket.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
+
 				for family, socktype, proto, canonname, sockaddr in addrinfo:
 					s = socket.socket(family, socktype, proto)
 					try:
