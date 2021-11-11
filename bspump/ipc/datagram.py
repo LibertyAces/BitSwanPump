@@ -35,8 +35,10 @@ class DatagramSource(Source):
 		addrline = self.Address.strip()
 		if " " in addrline:
 			host, port = self.Address.rsplit(" ", maxsplit=1)
-			if addrline.count(":") == 1:
-				host, port = self.Address.rsplit(":", maxsplit=1)
+		if addrline.count(":") == 1:
+			host, port = self.Address.rsplit(":", maxsplit=1)
+
+		if " " in addrline or addrline.count(":") == 1:
 			(family, socktype, proto, canonname, sockaddr) = socket.getaddrinfo(host, port)[0]
 
 			self.Socket = socket.socket(family, socket.SOCK_DGRAM)
