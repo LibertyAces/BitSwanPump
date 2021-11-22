@@ -54,9 +54,7 @@ class StreamServerSource(Source):
 		# Create all required sockets, bind them to specific ports and start listening
 		for addrline in self.Address.split('\n'):
 			addrline = addrline.strip()
-			if " " in addrline:
-				# IP server socket server
-				host, port = addrline.rsplit(" ", maxsplit=1)
+
 			if addrline.count(":") == 1:
 				host, port = self.Address.rsplit(":", maxsplit=1)
 
