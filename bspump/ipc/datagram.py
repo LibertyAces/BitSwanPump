@@ -33,8 +33,6 @@ class DatagramSource(Source):
 		self.ReceiveBufferSize = int(self.Config['receiver_buffer_size'])
 
 		addrline = self.Address.strip()
-		if " " in addrline:
-			host, port = self.Address.rsplit(" ", maxsplit=1)
 		if addrline.count(":") == 1:
 			host, port = self.Address.rsplit(":", maxsplit=1)
 
