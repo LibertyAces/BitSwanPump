@@ -49,20 +49,27 @@ To check the version use. ::
 BSPump Highlevel architecture
 =============================
 
+
 BSpump Service
+--------------
 
 Connection
+----------
 
 Pipeline
+--------
 
 Lookup
+------
 
 Source
+------
 
 Processor
+---------
 
 Sink
-
+----
 
 
 ===
