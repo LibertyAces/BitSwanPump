@@ -110,6 +110,8 @@ In this example we
 Connection
 ----------
 
+To be able to connect to a data source you have to make a connection. connection is usually done in Source class and then registered in service class.
+
 
 
 Pipeline
@@ -220,7 +222,7 @@ To use sink in your pipeline ::
 PPrintSink class is added to your pipeline. It should be the last part of the pipeline for the pipeline to work correctly.
 
 to futher explain the code `bspump.common.` is the part where you specify the path to the class `PPrintSink` is the name of the class.
-In the parentheses you can specify the output stream is no is specified stdout is used.
+In the parentheses you can specify the output stream. If none is specified stdout is used.
 
 code ::
 
