@@ -290,7 +290,6 @@ class ElasticSearchConnection(Connection):
 		if bulk.consume(data_feeder_generator):
 			# Bulk is ready, schedule to be send
 			del self._bulks[index]
-			self._bulks[index] = None
 			self.enqueue(bulk)
 
 	def _start(self, event_name):
