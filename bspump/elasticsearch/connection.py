@@ -366,8 +366,14 @@ class ElasticSearchConnection(Connection):
 		:return:
 		"""
 		aged = []
+
 		for index, bulk in self._bulks.items():
+
+			if bulk is None:
+				continue
+
 			bulk.Aging += 1
+
 			if (bulk.Aging >= 2) or forced:
 				aged.append(index)
 
