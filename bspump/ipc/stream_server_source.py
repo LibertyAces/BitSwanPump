@@ -54,28 +54,27 @@ class StreamServerSource(Source):
 		# Create all required sockets, bind them to specific ports and start listening
 		for addrline in self.Address.split('\n'):
 			addrline = addrline.strip()
-			if " " in addrline:
-				# IP server socket server
-				host, port = addrline.rsplit(" ", maxsplit=1)
-			elif addrline.count(":") == 1:
+
+			if addrline.count(":") == 1:
 				host, port = self.Address.rsplit(":", maxsplit=1)
 
-			addrinfo = socket.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
-			for family, socktype, proto, canonname, sockaddr in addrinfo:
-				s = socket.socket(family, socktype, proto)
-				try:
-					s.bind(sockaddr)
-				except OSError as e:
-					L.warning("Failed to start listening at '{}': {}".format(addrline, e))
-					continue
+				addrinfo = socket.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
 
-				backlog = self.Config['backlog']
-				if backlog == '':
-					s.listen()
-				else:
-					s.listen(int(backlog))
-					s.setblocking(False)
-					self.AcceptingSockets.append(s)
+				for family, socktype, proto, canonname, sockaddr in addrinfo:
+					s = socket.socket(family, socktype, proto)
+					try:
+						s.bind(sockaddr)
+					except OSError as e:
+						L.warning("Failed to start listening at '{}': {}".format(addrline, e))
+						continue
+
+					backlog = self.Config['backlog']
+					if backlog == '':
+						s.listen()
+					else:
+						s.listen(int(backlog))
+						s.setblocking(False)
+						self.AcceptingSockets.append(s)
 			else:
 				self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 				self.Socket.setblocking(False)
