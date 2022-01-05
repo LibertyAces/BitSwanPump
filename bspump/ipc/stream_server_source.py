@@ -73,8 +73,11 @@ class StreamServerSource(Source):
 						s.listen()
 					else:
 						s.listen(int(backlog))
-						s.setblocking(False)
-						self.AcceptingSockets.append(s)
+
+					s.setblocking(False)
+					self.AcceptingSockets.append(s)
+
+
 			else:
 				self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 				self.Socket.setblocking(False)
@@ -99,7 +102,7 @@ class StreamServerSource(Source):
 
 	async def main(self):
 		if len(self.AcceptingSockets) == 0:
-			L.warning("No listening socket configured")
+			L.error("No listening socket configured")
 			return
 
 		await asyncio.gather(
