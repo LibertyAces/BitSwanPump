@@ -73,8 +73,11 @@ class StreamServerSource(Source):
 						s.listen()
 					else:
 						s.listen(int(backlog))
-						s.setblocking(False)
-						self.AcceptingSockets.append(s)
+
+					s.setblocking(False)
+					self.AcceptingSockets.append(s)
+
+
 			else:
 				self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 				self.Socket.setblocking(False)
