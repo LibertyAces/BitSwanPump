@@ -102,7 +102,7 @@ class StreamServerSource(Source):
 
 	async def main(self):
 		if len(self.AcceptingSockets) == 0:
-			L.warning("No listening socket configured")
+			L.error("No listening socket configured")
 			return
 
 		await asyncio.gather(
