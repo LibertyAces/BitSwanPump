@@ -8,7 +8,7 @@ You will learn more about the BSPump architecture and how each component works. 
 start on your journey you should know basics of python and be able to set up your programming environment.
 
 Prerequisites
-=============
+-------------
 
 Here are some quick tutorials that will help you installing python and BSPump module using package installer for Python called pip.
 
