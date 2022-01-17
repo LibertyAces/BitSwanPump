@@ -245,3 +245,8 @@ code ::
             self.Stream = stream if stream is not None else sys.stdout
 
 The whole code can be found at `BitSwan BlankApp <https://github.com/LibertyAces/BitSwanPump-BlankApp>`_
+
+.. toctree::
+   :maxdepth: 2
+
+    blankapp/index
