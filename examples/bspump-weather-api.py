@@ -5,6 +5,7 @@ import bspump.common
 import bspump.http
 import bspump.trigger
 import requests
+import aiohttp
 
 ###
 
