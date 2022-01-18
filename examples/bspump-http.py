@@ -19,8 +19,8 @@ class EnrichProcessor(bspump.Processor):
 
 	def process(self, context, event):
 
-		event["bpi"]["CZK"] = "code"
-		print("hit")
+		# event["bpi"]["CZK"] = "code"
+		# print("hit")
 		return event
 
 class SamplePipeline(bspump.Pipeline):
@@ -38,7 +38,7 @@ class SamplePipeline(bspump.Pipeline):
 			bspump.common.StdJsonToDictParser(app, self),
 			#Prints the incoming event
 			EnrichProcessor(app, self),
-			# bspump.common.PPrintSink(app, self),
+			bspump.common.PPrintSink(app, self),
 		)
 
 
