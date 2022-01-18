@@ -18,7 +18,7 @@ class EnrichProcessor(bspump.Processor):
         super().__init__(app, pipeline, id=None, config=None)
 
     def convertUSDCZK(self, usd):
-        return usd * 21.41
+        return usd * 21.41 #outdated rate
 
     def process(self, context, event):
         czkPrice = str(self.convertUSDCZK(event["bpi"]["USD"]["rate_float"]))
