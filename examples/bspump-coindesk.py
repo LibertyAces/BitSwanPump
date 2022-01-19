@@ -10,7 +10,6 @@ import bspump.trigger
 
 L = logging.getLogger(__name__)
 
-
 ###
 
 class EnrichProcessor(bspump.Processor):
