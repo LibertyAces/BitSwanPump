@@ -5,6 +5,6 @@ Bitswan Tutorials
    :maxdepth: 2
 
    howitworks/index.rst
-   blankapp/index.rst
+   coindeskAPI/index.rst
 
 
