@@ -25,6 +25,7 @@ parameters are the single components of the pipeline. In this part we will use t
 Source and Sink.
 
 ::
+
    class SamplePipeline(bspump.Pipeline):
 
        def __init__(self, app, pipeline_id):
@@ -36,6 +37,8 @@ Source and Sink.
                }).on(bspump.trigger.PeriodicTrigger(app, 5)),
                bspump.common.PPrintSink(app, self),
            )
+
+
 
 Source as figured from the name is source of data. In our example we will use a specific type of source. Because we need
 to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
@@ -84,6 +87,7 @@ can folow our guide <<todo link>>.
        svc.add_pipeline(pl)
        app.run()
 
+
 part3 - first processor
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -92,6 +96,7 @@ component which works with data in the event. In this example we will use a simp
 incoming JSON to python Dict type, which is much more easier to work with and it is clearer.
 
 ::
+
    class SamplePipeline(bspump.Pipeline):
 
        def __init__(self, app, pipeline_id):
@@ -104,6 +109,7 @@ incoming JSON to python Dict type, which is much more easier to work with and it
                bspump.common.StdJsonToDictParser(app, self),
                bspump.common.PPrintSink(app, self),
            )
+
 
 Processor is added simply by adding it to ``self.build()`` between source and sink.
 
@@ -119,6 +125,7 @@ creating custom processor
 Explain the template
 
 ::
+
    class EnrichProcessor(bspump.Processor):
     def __init__(self, app, pipeline, id=None, config=None):
         super().__init__(app, pipeline, id=None, config=None)
@@ -131,6 +138,7 @@ Explain the template
 Explain the reference of the procesor in self.build
 
 ::
+
    class SamplePipeline(bspump.Pipeline):
 
        def __init__(self, app, pipeline_id):
@@ -149,6 +157,7 @@ Explain the reference of the procesor in self.build
 Explain the final code
 
 ::
+
    class EnrichProcessor(bspump.Processor):
     def __init__(self, app, pipeline, id=None, config=None):
         super().__init__(app, pipeline, id=None, config=None)
