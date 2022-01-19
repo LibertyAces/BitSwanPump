@@ -64,6 +64,7 @@ to handle and register connetions, pipelines etc.
    :alt: alternate text
    :align: left
 
+
 Firstly, we will walk you through each of components and its functionality, so you can later build your own pipeline. Doesn't that sounds cool?
 
 
@@ -148,31 +149,75 @@ Lookup
 ------
 
 Source
-------
+======
+
+Description about source. What is it ..
+
+
+Streaming Source
+----------------
+
+As can be derived form the name. Events enter this source in so-called stream. real time as they are being delivered by the input technology.
+
+Following technologies can be used as a streaming source
+
+1. Kafka
+2. Elastic Search
+3. RabbitMQ
+
+Elastic Search Source
+^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Description
+
+Example
+
+Explanation
+
+
+Kafka Source
+^^^^^^^^^^^^
+
+TODO
+
+Description
+
+Example
+
+Explanation
+
+
+
+
+Trigger Source
+--------------
+
+Unlike streaming source, Trigger Source is used when we need to pump data from SQL-like databases or files.
+They have to be triggered by an external event or a repeating timer (requesting JSON data from APIs every 10 mins).
+
+Trigger Source can be used for:
+
+1. HTTP client/server
+2. SQL query
+3. TCP
+4. Files: csv, json etc.
 
 TCP source
 ^^^^^^^^^^
 
+**Description**
+
+TCP Source can be to obtain data from peer to peer connection using TCP.
+
+**Use case**
+
+TODO
+
+**Example**
+
 ::
-
-    #!/usr/bin/env python3
-    import bspump
-    import bspump.ipc
-    import bspump.common
-
-
-    class EchoSink(bspump.Sink):
-
-        def process(self, context, event):
-            '''
-            Send the event back to the client socket.
-            '''
-            print(event)
-            sock = context['stream']
-            sock.send(event.encode('utf-8'))
-            sock.send(b'\n')
-
-
     class EchoPipeline(bspump.Pipeline):
 
         '''
@@ -184,15 +229,7 @@ TCP source
             super().__init__(app, pipeline_id)
             self.build(
                 bspump.ipc.StreamServerSource(app, self, config={'address': '0.0.0.0 8083'}),
-                EchoSink(app, self)
             )
-
-
-    if __name__ == '__main__':
-        app = bspump.BSPumpApplication()
-        svc = app.get_service("bspump.PumpService")
-        svc.add_pipeline(EchoPipeline(app, "EchoPipeline"))
-        app.run()
 
 HTTP Client Source
 ^^^^^^^^^^^^^^^^^^
@@ -230,7 +267,32 @@ You will need to specify your Trigger type. You can choose your Trigger here : T
 
 Full functional example with this source can be found here: `Example <https://bitswanpump.readthedocs.io/en/latest/examples/blankapp/index.html>`_
 
+MySQL
+^^^^^
 
+Description
+
+Example
+
+Explanation
+
+JSON File
+^^^^^^^^^
+
+Description
+
+Example
+
+Explanation
+
+CSV File
+^^^^^^^^
+
+Description
+
+Example
+
+Explanation
 
 
 Processor
@@ -252,7 +314,16 @@ Processor ::
 
 Sink
 ----
-Sink is the part responsible for the output of the data to a database, standard output in your computer on into another pipeline. In this example we are going to use PPrintSink
+
+Sink is the part responsible for the output of the data to a database, standard output in your computer on into another pipeline.
+
+
+
+
+PPrintSink
+^^^^^^^^^^
+
+In this example we are going to use PPrintSink
 which prints the data from pipeline to stdout or any other stream that is connected to the pipeline.
 
 To use sink in your pipeline ::
