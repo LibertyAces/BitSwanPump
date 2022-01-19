@@ -1,34 +1,24 @@
 #!/usr/bin/env python3
-import logging
+
 import bspump
 import bspump.common
 import bspump.http
 import bspump.trigger
-import requests
 import aiohttp
-
-###
-
-L = logging.getLogger(__name__)
-token = ""
-
-###
-
 
 class LoadSource(bspump.TriggerSource):
 
     def __init__(self, app, pipeline, choice=None, id=None, config=None):
         super().__init__(app, pipeline, id=id, config=config)
-        self.cities = ['Prague','Brno','Ostrava']
+        self.cities = ['Prague','Brno','Ostrava'] #List of cities
 
     async def cycle(self):
-        print("START ----")
-        #goes through the list of cities and requests from API for each city
-        for city in self.cities:
-            event = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={token}")
-            await self.process(event.json())
-        print("END ----")
-
+        async with aiohttp.ClientSession() as session:
+            #goes through the list of cities and requests from API for each city
+            for city in self.cities:
+                async with session.get(url=f"https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={self.Config['api_key']}") as response:
+                    event = await response.content.read()
+                    await self.process(event)
 
 class SamplePipeline(bspump.Pipeline):
 
@@ -39,9 +29,9 @@ class SamplePipeline(bspump.Pipeline):
             LoadSource(app, self).on(
                 bspump.trigger.PeriodicTrigger(app, 5)
             ),
+            bspump.common.StdJsonToDictParser(app, self),
             bspump.common.PPrintSink(app, self),
         )
-
 
 if __name__ == '__main__':
     app = bspump.BSPumpApplication()
@@ -51,3 +41,5 @@ if __name__ == '__main__':
     # Construct and register Pipeline
     pl = SamplePipeline(app, 'SamplePipeline')
     svc.add_pipeline(pl)
+
+    app.run()
