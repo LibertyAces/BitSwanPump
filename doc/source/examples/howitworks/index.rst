@@ -150,7 +150,10 @@ Lookup
 Source
 ------
 
-TCP source ::
+TCP source
+^^^^^^^^^^
+
+::
 
     #!/usr/bin/env python3
     import bspump
@@ -190,6 +193,45 @@ TCP source ::
         svc = app.get_service("bspump.PumpService")
         svc.add_pipeline(EchoPipeline(app, "EchoPipeline"))
         app.run()
+
+HTTP Client Source
+^^^^^^^^^^^^^^^^^^
+
+**Description**
+
+HTTP Client Source gets data from a specified API URL.
+
+**Use case**
+
+if you need pump data from a single API URL you can use this Source.
+
+
+**Example**
+
+::
+
+    class SamplePipeline(bspump.Pipeline):
+
+    def __init__(self, app, pipeline_id):
+        super().__init__(app, pipeline_id)
+
+        self.build(
+            bspump.http.HTTPClientSource(app, self, config={
+                'url': '<<API URL>>'
+            }).on(<<Here you will use some type of trigger>>),
+        )
+
+
+The API URL can be any API you wish to get data from.
+
+You will need to specify your Trigger type. You can choose your Trigger here : TODO <<reference>>
+
+**Note**
+
+Full functional example with this source can be found here: `Example <https://bitswanpump.readthedocs.io/en/latest/examples/blankapp/index.html>`_
+
+
+
 
 Processor
 ---------
