@@ -17,10 +17,12 @@ The following code can be found
 `here <https://github.com/LibertyAces/BitSwanPump/blob/feature/restructured-text/examples/bspump-http.py>`_
 in our GitHub repo.
 
-
-
 source and sink
 ^^^^^^^^^^^^^^^
+
+In the code below you can see the basic structure of pipeline. The important part is the ``self.build()`` method where its
+parameters are the single components of the pipeline. In this part we will use two main components each pipeline has to have
+Source and Sink.
 
 ::
    class SamplePipeline(bspump.Pipeline):
@@ -35,18 +37,59 @@ source and sink
                bspump.common.PPrintSink(app, self),
            )
 
+Source as figured from the name is source of data. In our example we will use a specific type of source. Because we need
+to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
+"triggered" when we get our response. For this reason we will be using so-called trigger source. More about Trigger
+Source <<link TODO>>.
 
+HTTP Client Source can have many configurations, but in our example we just need to specify our URL address, using
+``config={'url': '<OUR URL>'}`` in the parameter of HTTP Client Source.
 
-Describe the purpose of the source
+Because we are using Trigger Source. We need to specify which trigger we will be using. There are more types of
+triggers, but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the
+parameter. ``bspump.trigger.PeriodicTrigger(app, <<Time parameter in seconds>>))``
 
-explain the parametr URL
+Each pipeline has to have sink. In our example we want to see the result of the data, so we will be using PPrintSink
+which simply prints the data to the Command Prompt.
 
-explain the periodic trigger
+You can try to copy paste this chunk of code and try it yourself. Make use you have bspump module installed, if not you
+can folow our guide <<todo link>>.
 
-explain sink and printsink
+::
+
+   #!/usr/bin/env python3
+   import logging
+
+   import bspump
+   import bspump.common
+   import bspump.http
+   import bspump.trigger
+
+   class SamplePipeline(bspump.Pipeline):
+
+       def __init__(self, app, pipeline_id):
+           super().__init__(app, pipeline_id)
+
+           self.build(
+               bspump.http.HTTPClientSource(app, self, config={
+                   'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
+               }).on(bspump.trigger.PeriodicTrigger(app, 5)),
+               bspump.common.PPrintSink(app, self),
+           )
+
+   if __name__ == '__main__':
+       app = bspump.BSPumpApplication()
+       svc = app.get_service("bspump.PumpService")
+       pl = SamplePipeline(app, 'SamplePipeline')
+       svc.add_pipeline(pl)
+       app.run()
 
 part3 - first processor
 ^^^^^^^^^^^^^^^^^^^^^^^
+
+After we have a functional pipeline. We can start adding the more interesing part, the processors. Processor is the
+component which works with data in the event. In this example we will use a simple processor which only converts the
+incoming JSON to python Dict type, which is much more easier to work with and it is clearer.
 
 ::
    class SamplePipeline(bspump.Pipeline):
@@ -62,11 +105,14 @@ part3 - first processor
                bspump.common.PPrintSink(app, self),
            )
 
-explain the purpose of the processor
+Processor is added simply by adding it to ``self.build()`` between source and sink.
 
 
 Part4 - Custom processor
 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+Because most of your use cases will be unique, it is most likely that there will be no existing processor that could do
+the work. So you will be forced to implement your own processor.
 
 creating custom processor
 
