@@ -120,9 +120,8 @@ Part4 - Custom processor
 Because most of your use cases will be unique, it is most likely that there will be no existing processor that could do
 the work. So you will be forced to implement your own processor.
 
-creating custom processor
-
-Explain the template
+Creating new processor is not a complicated task. You will need to follow the basic structure of an general processor.
+You can simply copy-paste the code below:
 
 ::
 
@@ -134,8 +133,12 @@ Explain the template
 
         return event
 
+This class is the class of your processor. The most important part is the process method. This method will be called when
+an event is passed to the processor. As you can see the default implementation is that process method returns the event
+`return event`. Event must be always passed to the following component, another processor or sink.
 
-Explain the reference of the procesor in self.build
+If you wish to use your new processor in our case `EnrichProcessor` You will need to reference it in `self.build` method.
+You can do that simply by adding it to `self.build` parameters.
 
 ::
 
@@ -153,6 +156,9 @@ Explain the reference of the procesor in self.build
                bspump.common.PPrintSink(app, self),
            )
 
+
+The last take is the implementation. In our example I created a simple script that takes the incoming event (
+JSON that cointains price of Bitcoin in USD, Euro, and Pounds) and adds a czech currency 
 
 Explain the final code
 
