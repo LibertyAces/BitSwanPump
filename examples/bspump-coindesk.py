@@ -6,12 +6,6 @@ import bspump.common
 import bspump.http
 import bspump.trigger
 
-###
-
-L = logging.getLogger(__name__)
-
-###
-
 class EnrichProcessor(bspump.Processor):
     def __init__(self, app, pipeline, id=None, config=None):
         super().__init__(app, pipeline, id=None, config=None)
@@ -32,7 +26,6 @@ class EnrichProcessor(bspump.Processor):
 
         return event
 
-
 class SamplePipeline(bspump.Pipeline):
 
     def __init__(self, app, pipeline_id):
@@ -48,6 +41,7 @@ class SamplePipeline(bspump.Pipeline):
             bspump.common.StdJsonToDictParser(app, self),
             # Adds a CZK currency to the dict
             EnrichProcessor(app, self),
+            bspump.common.StdDictToJsonParser(app,self),
             # prints the event to a console
             bspump.common.PPrintSink(app, self),
         )
