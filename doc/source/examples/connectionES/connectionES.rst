@@ -85,10 +85,6 @@ You can implement your own ElasticSearch connection but the default connection w
             bspump.kafka.KafkaConnection(app, "KafkaConnection")
         )
 
-        svc.add_pipeline(
-            KafkaPipeline(app, "KafkaPipeline")
-        )
-
         app.run()
 
 It is important to include `"ESConnection"` as a parameter in ElasticSearch connection and sink methods.
