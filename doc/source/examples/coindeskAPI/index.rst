@@ -55,7 +55,7 @@ parameter. ``bspump.trigger.PeriodicTrigger(app, <<Time parameter in seconds>>))
 Each pipeline has to have sink. In our example we want to see the result of the data, so we will be using PPrintSink
 which simply prints the data to the Command Prompt.
 
-You can try to copy paste this chunk of code and try it yourself. Make use you have bspump module installed, if not you
+You can try to copy paste this chunk of code and try it yourself. Make use you have BSPump module installed, if not you
 can folow our guide <<todo link>>.
 
 ::
@@ -91,7 +91,7 @@ can folow our guide <<todo link>>.
 part3 - first processor
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-After we have a functional pipeline. We can start adding the more interesing part, the processors. Processor is the
+After we have a functional pipeline. We can start adding the more interesting part, the processors. Processor is the
 component which works with data in the event. In this example we will use a simple processor which only converts the
 incoming JSON to python Dict type, which is much more easier to work with and it is clearer.
 
@@ -188,4 +188,5 @@ part5 - Connecting to ES
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 TODO
+
 
