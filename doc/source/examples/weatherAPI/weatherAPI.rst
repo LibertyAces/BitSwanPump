@@ -11,7 +11,7 @@ dictionary and output the data to Command Prompt.
 In this example we will be using API from https://openweathermap.org/ to get current weather data like temperature,
 feels like temperature, pressure etc.
 
-In this example we will use .conf file to store configuration for our pump. More about how to write configuration is
+In this example we will use ``.conf`` file to store configuration for our pump. More about how to write configuration is
 here <<link TODO>>
 
 Pipeline
