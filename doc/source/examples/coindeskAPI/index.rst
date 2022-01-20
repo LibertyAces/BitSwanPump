@@ -193,7 +193,11 @@ To Summarize what we did in this exmaple: Firstly, we created a sample pipeline 
 a new processor that simply converted the incoming event to python dictionary, and lastly we created a custom processor
 which adds a information about czech currency to the incoming event and passes it to sink component.
 
-part5 - Connecting to ES
-^^^^^^^^^^^^^^^^^^^^^^^^
+Next steps
+^^^^^^^^^^
 
 TODO
+
+connecting to ES etc.
+
+
