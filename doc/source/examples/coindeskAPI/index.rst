@@ -9,7 +9,7 @@ We will be using HTTP Client Source for the API request.
 
 The final pipeline will simply get data from the API request as a JSON,
 covert it to python dictionary and output the data to Command Prompt.
-Additinaly, I will show you how to create your own processor that in this example will enrich the data.
+Additionally, I will show you how to create your own processor that in this example will enrich the data.
 
 In this example we will be using API from ` Coindesk <https://www.coindesk.com/>`_ to get current price of Bitcoin.
 
@@ -56,7 +56,7 @@ Each pipeline has to have sink. In our example we want to see the result of the 
 which simply prints the data to the Command Prompt.
 
 You can try to copy paste this chunk of code and try it yourself. Make use you have BSPump module installed, if not you
-can folow our guide <<todo link>>.
+can follow our guide <<todo link>>.
 
 ::
 
@@ -157,10 +157,10 @@ You can do that simply by adding it to `self.build` parameters.
            )
 
 
-The last take is the implementation. In our example I created a simple script that takes the incoming event (
-JSON that cointains price of Bitcoin in USD, Euro, and Pounds) and adds a czech currency 
-
-Explain the final code
+The last take is the implementation. In our example I created a simple script that takes the incoming event (python
+dictionary that contains price of Bitcoin in USD, Euro, and Pounds) and adds a new branch with a czech currency. I added
+a new method `convertUSDCZK` method that calculates the czech price based on USD conversion rate (Note: the exchange rate
+is outdated for sake of simplicity in real use case you would need to get an updated rate).
 
 ::
 
@@ -184,11 +184,14 @@ Explain the final code
 
         return event
 
+When we add all parts together we get this functional code.
 
 .. literalinclude :: C:\Users\jachy\Documents\GitHub\BitSwanPump\examples\bspump-coindesk.py
    :language: python
 
-Summarize what the whole pipeline does
+To Summarize what we did in this exmaple: Firstly, we created a sample pipeline with a source and sink, then we added a
+a new processor that simply converted the incoming event to python dictionary, and lastly we created a custom processor
+which adds a information about czech currency to the incoming event and passes it to sink component.
 
 part5 - Connecting to ES
 ^^^^^^^^^^^^^^^^^^^^^^^^
