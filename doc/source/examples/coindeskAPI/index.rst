@@ -197,5 +197,3 @@ part5 - Connecting to ES
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 TODO
-
-
