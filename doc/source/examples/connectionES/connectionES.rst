@@ -46,9 +46,9 @@ you will need to create`.conf` file using following syntax
 The configuration file can contain additional information depending on your implementation. However it is important that
 it contains:
 
-- index: name of the index that will be used to store your data in ES
-- url: URL of your connection with ES
-- doctype: type of the document, default is `_doc`
+- `index` : name of the index that will be used to store your data in ES
+- `url` : URL of your connection with ES
+- `doctype` : type of the document, default is `_doc`
 
 
 For more information visit our quickstart to using configs <link TODO>
