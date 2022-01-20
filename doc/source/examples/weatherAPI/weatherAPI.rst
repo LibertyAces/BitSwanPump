@@ -11,14 +11,13 @@ dictionary and output the data to Command Prompt.
 In this example we will be using API from https://openweathermap.org/ to get current weather data like temperature,
 feels like temperature, pressure etc.
 
-In this example we will use .conf file to store configuration for our pump. More about how to write configuration is
+In this example we will use ``.conf`` file to store configuration for our pump. More about how to write configuration is
 here <<link TODO>>
 
 Pipeline
 --------
 In the code below you can see the structure of pipeline which we need for this use case. The important part is the
 ``self.build()`` method where its parameters are the single components of the pipeline. Every pipeline need source and sink.
-
 ::
     class SamplePipeline(bspump.Pipeline):
 
@@ -47,7 +46,6 @@ which simply prints the data to the Command Prompt.
 
 You can try to copy paste this chunk of code and try it yourself. Make sure you have BSPump module installed, if
 don't have follow our guide <<todo link>>
-
 ::
     #!/usr/bin/env python3
     import logging
@@ -83,7 +81,6 @@ Multiple location source
 ------------------------
 In the code above the pump simply return data from one location. But in our use case we need to get data from multiple
 location which means we need to get data from multiple API's URL. Now we define our specify trigger source.
-
 ::
     class LoadSource(bspump.TriggerSource):
 
@@ -103,7 +100,6 @@ You can see that in this example we using ``self.Config`` method to get API key 
 good to have API key and url in configuration file, because when you will want to change it you just simply change it
 in configuration file.
 You just need to create for example ``key.conf`` file and into that file you can copy past code below
-
 ::
     [pipeline:SamplePipeline:LoadSource]
     url = https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={api_key}
@@ -113,7 +109,6 @@ You can change the list of cities to locations you wish. The important part of t
 method where we request API's url for every location from our list and process them in pipeline.
 
 Just be sure that you import ``aiohttp`` package and you change ``HTTPClientSource`` with our new specified ``LoadSource``.
-
 ::
     #!/usr/bin/env python3
 
@@ -160,7 +155,6 @@ easier to work with and its more readable.
 You can read more about processor here <<TODO link>>
 
 The final pipeline structure will looks like this
-
 ::
     class SamplePipeline(bspump.Pipeline):
 
