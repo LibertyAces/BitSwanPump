@@ -33,7 +33,6 @@ Configuration File
 ^^^^^^^^^^^^^^^^^^
 
 you will need to create`.conf` file using following syntax
-
 ::
     # Elasticsearch connection
     [connection:ESConnection]
@@ -63,7 +62,6 @@ To create connection with Elastic Search you will need to do two things:
 2. create a service of your ES Connection.
 
 You can implement your own ElasticSearch connection but the default connection will look like this:
-
 ::
     class SamplePipeline(bspump.Pipeline):
 
@@ -74,7 +72,6 @@ You can implement your own ElasticSearch connection but the default connection w
                 #Adding ES Sink component
                 bspump.elasticsearch.ElasticSearchSink(app, self, "ESConnection"),
             )
-
 
     if __name__ == '__main__':
         app = bspump.BSPumpApplication()
