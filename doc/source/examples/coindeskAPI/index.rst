@@ -1,3 +1,5 @@
+.. _coindesk:
+
 Coindesk API Example
 ====================
 
@@ -11,7 +13,7 @@ The final pipeline will simply get data from the API request as a JSON,
 covert it to python dictionary and output the data to Command Prompt.
 Additionally, I will show you how to create your own processor that in this example will enrich the data.
 
-In this example we will be using API from ` Coindesk <https://www.coindesk.com/>`_ to get current price of Bitcoin.
+In this example we will be using API from `Coindesk <https://www.coindesk.com/>`_ to get current price of Bitcoin.
 
 The following code can be found
 `here <https://github.com/LibertyAces/BitSwanPump/blob/feature/restructured-text/examples/bspump-http.py>`_
@@ -42,8 +44,7 @@ Source and Sink.
 
 Source as figured from the name is source of data. In our example we will use a specific type of source. Because we need
 to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
-"triggered" when we get our response. For this reason we will be using so-called trigger source. More about Trigger
-Source <<link TODO>>.
+"triggered" when we get our response. For this reason we will be using so-called trigger source. More about :ref:`trigger` .
 
 HTTP Client Source can have many configurations, but in our example we just need to specify our URL address, using
 ``config={'url': '<OUR URL>'}`` in the parameter of HTTP Client Source.
