@@ -47,7 +47,7 @@ Each pipeline has to have a sink. In our example we want to see the result of th
 which simply prints the data to the Command Prompt.
 
 You can try to copy paste this chunk of code and try it yourself. Make sure you have BSPump module installed, if
-don't have follow our guide :ref:`bsmodule` .
+don't have follow our guide :ref:`bsmodule`.
 ::
     #!/usr/bin/env python3
     import logging
@@ -99,10 +99,11 @@ location which means we need to get data from multiple API's URL. Now we define 
                         event = await response.content.read()
                         await self.process(event)
 
-You can see that in this example we using ``self.Config`` method to get API key and url from configuration file. It's
+You can see that in this example we are using ``self.Config`` method to get API key and url from configuration file. It is
 good to have API key and url in configuration file, because when you will want to change it you just simply change it
 in configuration file.
-You just need to create for example ``key.conf`` file and into that file you can copy past code below
+
+For example, create ``key.conf`` file and into that file you can copy past code below
 ::
     [pipeline:SamplePipeline:LoadSource]
     url = https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={api_key}
@@ -154,7 +155,7 @@ Add simple processor
 
 We can add some processor between source and sink. Processor is component which works with data in the event. In this
 example we will use a simple processor which only converts the incoming JSON to python Dict type, which is much more
-easier to work with and its more readable.
+easier to work with and it is much more readable.
 
 You can read more about :ref:`processor`.
 
