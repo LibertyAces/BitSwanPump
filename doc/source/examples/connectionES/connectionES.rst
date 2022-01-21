@@ -21,11 +21,12 @@ config
 Elastic Search Sink
 -------------------
 
-You can use ES sink to store data for further analysis or visualizations using Kibana. The process to create ES sink is
-simple.
+You can use Elastic Search sink to store data for further analysis or visualizations using Kibana.
 
 Prerequisites
 ^^^^^^^^^^^^^
+
+The process to create ES sink is simple and intuitive but you will need few things to start with.
 
 What you will need:
 
@@ -47,8 +48,7 @@ you will need to create`.conf` file using following syntax
     index=<<name of your index>>
     doctype=_doc
 
-The configuration file can contain additional information depending on your implementation. However it is important that
-it contains:
+The configuration file can contain additional information depending on your implementation. However, it is important to contain:
 
 - `index` : name of the index that will be used to store your data in ES
 - `url` : URL of your connection with ES
