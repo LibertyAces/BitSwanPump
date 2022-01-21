@@ -2,20 +2,22 @@ Weather API Example
 ===================
 About
 -----
-In this example we will learn how get data from one or multiple HTTP sources via API. In this case we can't use basic
-HTTPClientSource, because it returns only one API request, so we will have to define new source for this use case.
+In this example we will learn how get data from one or multiple HTTP sources using API request. In this case we cannot use basic
+HTTPClientSource, because it returns data only from one API query, so to get data from different queries we will have
+to define new source for this use case.
 
-The final pipeline will simply get data from multiple API requests in one time as a JSON, convert it to python
+The final pipeline will get data from multiple API requests in one time as a JSON, convert it to python
 dictionary and output the data to Command Prompt.
 
-In this example we will be using API from https://openweathermap.org/ to get current weather data like temperature,
+In this example we will be using API from `Open Weather <https://openweathermap.org/>`_ to get current weather data like temperature,
 feels like temperature, pressure etc.
 
 In this example we will use ``.conf`` file to store configuration for our pump. More about how to write configuration is
-here <<link TODO>>
+here :ref:`config`.
 
 Pipeline
 --------
+
 In the code below you can see the structure of pipeline which we need for this use case. The important part is the
 ``self.build()`` method where its parameters are the single components of the pipeline. Every pipeline need source and sink.
 ::
@@ -41,7 +43,7 @@ Because we are using Trigger Source. We need to specify which trigger we will be
 but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the parameter.
 ``bspump.trigger.PeriodicTrigger(app, <<Time parameter in seconds>>))``
 
-Each pipeline has to have sink. In our example we want to see the result of the data, so we will be using PPrintSink
+Each pipeline has to have a sink. In our example we want to see the result of the data, so we will be using PPrintSink
 which simply prints the data to the Command Prompt.
 
 You can try to copy paste this chunk of code and try it yourself. Make sure you have BSPump module installed, if
