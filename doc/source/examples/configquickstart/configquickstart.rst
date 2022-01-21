@@ -1,6 +1,9 @@
+.. _config:
+
 Configuration Quickstart
 ========================
 
+In this tutorial you will learn about configuration in BSPump and how to use it.
 
 What is configuration?
 ----------------------
