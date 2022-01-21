@@ -1,5 +1,9 @@
+.. _esconnection:
+
 How to connect to Elastic Search
 ================================
+
+
 
 BSPump supports connection to Elastic Search platform. It is possible to connect to ES just in few lines of code.
 
@@ -51,7 +55,7 @@ it contains:
 - `doctype` : type of the document, default is `_doc`
 
 
-For more information visit our quickstart to using configs <link TODO>
+For more information visit our quickstart to using configs: :ref:`config`.
 
 Code example
 ^^^^^^^^^^^^
