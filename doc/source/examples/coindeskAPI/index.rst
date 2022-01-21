@@ -18,7 +18,7 @@ In this example we will be using API from `Coindesk <https://www.coindesk.com/>`
 The following code can be found
 `here <https://github.com/LibertyAces/BitSwanPump/blob/feature/restructured-text/examples/bspump-http.py>`_ in our GitHub repo.
 
-source and sink
+Source and Sink
 ^^^^^^^^^^^^^^^
 
 In the code below you can see the basic structure of pipeline. The important part is the ``self.build()`` method where its
@@ -88,8 +88,8 @@ can follow our guide :ref:`bsmodule` .
        app.run()
 
 
-part3 - first processor
-^^^^^^^^^^^^^^^^^^^^^^^
+Your First processor
+^^^^^^^^^^^^^^^^^^^^
 
 After we have a functional pipeline. We can start with the more interesting part, the processors. Processor is the
 component which works with data in the event. In this example we will use a simple processor which only converts the
@@ -114,8 +114,8 @@ incoming JSON to python Dict type, which is much more easier to work with and it
 Processor is added simply by adding it to ``self.build()`` between source and sink.
 
 
-Part4 - Custom processor
-^^^^^^^^^^^^^^^^^^^^^^^^
+Creating Custom processor
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Because most of your use cases will be unique, it is most likely that there will be no existing processor that could do
 the work. So you will have to implement your own processor.
