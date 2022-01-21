@@ -1,13 +1,15 @@
 import orjson
+import logging
+
+
+L = logging.getLogger(__name__)
 
 """
 Data feeders to be used in ElasticSearchSink.
 """
 
 
-def data_feeder_create_or_index(event):
-	_id = event.pop("_id", None)
-
+def data_feeder_create_or_index(event, _id):
 	if _id is None:
 		yield b'{"create":{}}\n'
 	else:
@@ -18,9 +20,7 @@ def data_feeder_create_or_index(event):
 	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_create(event):
-	_id = event.pop("_id", None)
-
+def data_feeder_create(event, _id):
 	if _id is None:
 		yield b'{"create":{}}\n'
 	else:
@@ -31,9 +31,7 @@ def data_feeder_create(event):
 	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_index(event):
-	_id = event.pop("_id", None)
-
+def data_feeder_index(event, _id):
 	if _id is None:
 		yield b'{"index":{}}\n'
 	else:
@@ -44,9 +42,7 @@ def data_feeder_index(event):
 	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_update(event):
-	_id = event.pop("_id", None)
-
+def data_feeder_update(event, _id):
 	assert _id is not None, "_id must be present in the event when updating a document in ElasticSearch"
 
 	yield orjson.dumps(
@@ -56,9 +52,7 @@ def data_feeder_update(event):
 	yield orjson.dumps({"doc": event}, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_delete(event):
-	_id = event.pop("_id", None)
-
+def data_feeder_delete(event, _id):
 	assert _id is not None, "_id must be present in the event when deleting a document from ElasticSearch"
 
 	yield orjson.dumps(

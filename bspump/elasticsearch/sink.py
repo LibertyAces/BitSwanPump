@@ -56,18 +56,24 @@ class ElasticSearchSink(Sink):
 			self.Index = self.Config.get('index_prefix')
 
 		if data_feeder is None:
-			raise RuntimeError("data_feeder must not be None.".format(data_feeder))
+			raise RuntimeError("data_feeder must not be None.")
 
-		self.DataFeeder = data_feeder
+		self.__data_feeder = data_feeder
 
 		app.PubSub.subscribe("ElasticSearchConnection.pause!", self._connection_throttle)
 		app.PubSub.subscribe("ElasticSearchConnection.unpause!", self._connection_throttle)
 
 
 	def process(self, context, event):
+		try:
+			_id = event.pop("_id", None)
+		except TypeError:
+			if isinstance(event, dict) is False:
+				L.error("You are trying to pass event of type: {} to ElasticSearchSink, but only dict is supported".format(type(event)))
+			raise
 		self.Connection.consume(
 			context.get("es_index", self.Index),
-			self.DataFeeder(event),
+			self.__data_feeder(event, _id),
 			bulk_class=self.BulkClass,
 		)
 
