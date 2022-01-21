@@ -19,8 +19,8 @@ Pipeline
 --------
 
 In the code below you can see the structure of pipeline which we need for this use case. The important part is the
-``self.build()`` method where its parameters are the single components of the pipeline. Do not forger that every pipeline
-has to have both source and sink to function correctly.
+``self.build()`` method where its parameters are the single components of the pipeline. Do not forget that every
+requires both source and sink to function correctly.
 ::
     class SamplePipeline(bspump.Pipeline):
 
