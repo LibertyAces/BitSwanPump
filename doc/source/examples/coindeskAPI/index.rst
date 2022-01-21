@@ -187,10 +187,10 @@ is outdated for sake of simplicity in real use case you would need to get an upd
 
 When we add all parts together we get this functional code.
 
-.. literalinclude :: C:\Users\jachy\Documents\GitHub\BitSwanPump\examples\bspump-coindesk.py
+.. literalinclude :: BitSwanPump/examples/bspump-coindesk.py
    :language: python
 
-To Summarize what we did in this exmaple: Firstly, we created a sample pipeline with a source and sink, then we added a
+To Summarize what we did in this example: Firstly, we created a sample pipeline with a source and sink, then we added a
 a new processor that simply converted the incoming event to python dictionary, and lastly we created a custom processor
 which adds a information about czech currency to the incoming event and passes it to sink component.
 
@@ -201,4 +201,5 @@ TODO
 
 connecting to ES etc.
 
+:ref:`esconnection` .
 
