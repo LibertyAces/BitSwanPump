@@ -58,4 +58,4 @@ In next step we build sample pipeline which gets data through https://openweathe
 			bspump.common.PPrintSink(app, self),
 		)
 
-Configuration in .conf file is accessible via self.Config method (in this case we use self.Config['api_key'] to get API key from our .conf file)
+Configuration in .conf file is accessible via self.Config method (in this case we use ``self.Config['api_key']`` to get API key from our ``.conf`` file)
