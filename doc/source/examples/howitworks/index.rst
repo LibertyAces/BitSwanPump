@@ -26,6 +26,11 @@ if your python version is lower than 3.8 check `Python.org <https://www.python.o
 If you are a complete beginner to python or you want more information
 about python check out the `Python tutorial <https://docs.python.org/3/tutorial/index.html>`_
 
+
+
+.. _bsmodule:
+
+
 Installing BSPump module
 ------------------------
 
@@ -219,6 +224,7 @@ TODO
 **Example**
 
 ::
+
     class EchoPipeline(bspump.Pipeline):
 
         '''
