@@ -6,8 +6,8 @@ Bitswan Tutorials
 
    howitworks/index.rst
    coindeskAPI/index.rst
-   configquickstart/configquickstart.rst
    weatherAPI/weatherAPI.rst
+   configquickstart/configquickstart.rst
    connectionES/connectionES.rst
 
 
