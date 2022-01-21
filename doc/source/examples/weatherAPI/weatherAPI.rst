@@ -32,10 +32,10 @@ In the code below you can see the structure of pipeline which we need for this u
                 ),
                 bspump.common.PPrintSink(app, self),
             )
+
 Source as figured from the name is source of data. In our example we will use a specific type of source. Because we need
 to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
-“triggered” when we get our response. For this reason we will be using so-called trigger source. More about Trigger
-Source <<link TODO>>.
+“triggered” when we get our response. For this reason we will be using so-called trigger source. More about :ref:`trigger`.
 
 Because we are using Trigger Source. We need to specify which trigger we will be using. There are more types of triggers,
 but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the parameter.
@@ -45,7 +45,7 @@ Each pipeline has to have sink. In our example we want to see the result of the 
 which simply prints the data to the Command Prompt.
 
 You can try to copy paste this chunk of code and try it yourself. Make sure you have BSPump module installed, if
-don't have follow our guide <<todo link>>
+don't have follow our guide :ref:`bsmodule` .
 ::
     #!/usr/bin/env python3
     import logging
@@ -74,11 +74,12 @@ don't have follow our guide <<todo link>>
         svc.add_pipeline(pl)
         app.run()
 
-Just simply rewrite <<LOCATION>> to whatever location you want to get weather data from and put your API key which you
-will get after register on https://openweathermap.org/ to <<YOUR PRIVATE API KEY>> section.
+Just simply rewrite ``<<LOCATION>>`` to whatever location you want to get weather data from and put your API key which you
+will get after register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
 
 Multiple location source
 ------------------------
+
 In the code above the pump simply return data from one location. But in our use case we need to get data from multiple
 location which means we need to get data from multiple API's URL. Now we define our specify trigger source.
 ::
@@ -147,12 +148,13 @@ Just be sure that you import ``aiohttp`` package and you change ``HTTPClientSour
             )
 
 Add simple processor
--------------
+--------------------
+
 We can add some processor between source and sink. Processor is component which works with data in the event. In this
 example we will use a simple processor which only converts the incoming JSON to python Dict type, which is much more
 easier to work with and its more readable.
 
-You can read more about processor here <<TODO link>>
+You can read more about :ref:`processor`.
 
 The final pipeline structure will looks like this
 ::
@@ -171,4 +173,8 @@ The final pipeline structure will looks like this
 
 Connect to ES
 -------------
+
+
+More about Elastic search :ref:`esconnection`.
+
 TODO
