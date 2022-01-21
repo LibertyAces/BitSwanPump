@@ -9,15 +9,15 @@ What is configuration?
 ----------------------
 Every BitSwan object inside BSPump application can be configured using user-defined configuration options.
 It's good practice to write configuration in ``.conf`` files, because when you will need to change something
-in your code you basically change it just in .conf file.
+in your code you basically change it just in ``.conf`` file.
 
 Every object has default configuration values set in ``ConfigDefaults``, if you set ``ConfigDefaults`` in your specific
 class you override ``ConfigDefaults`` which are inherited from parent class.
 
-Configuration files in are built-in in ASAB, the platform on which BSPump is build on. You can find more
+Configuration ``.conf`` files in are built-in in ASAB, the platform on which BSPump is build on. You can find more
 about it in `ASAB documentation <https://asab.readthedocs.io/en/latest/asab/config.html>`_
 
-There are 3 types how you can configure object
+**There are 3 types how you can configure object**
 
 1. By defining ``ConfigDefaults`` dictionary inside specific class
 ::
@@ -48,7 +48,8 @@ In first step we create .conf file where we store API key
 ``[pipeline:SamplePipeline:HTTPClientSource]`` in this line we specified which class the configuration applies to.
 Values below this line override the same values in ``ConfigDefaults`` of specified classes.
 
-In next step we build sample pipeline which gets data through https://openweathermap.org/ API using API key from .conf file.
+In next step we have a sample pipeline which gets data through https://openweathermap.org/ API using API key from .conf
+file. See more in :ref:`coindesk`.
 ::
     class SamplePipeline(bspump.Pipeline):
 
