@@ -118,8 +118,6 @@ Connection
 
 To be able to connect to a data source you have to make a connection. connection is usually done in Source class and then registered in service class.
 
-
-
 Pipeline
 --------
 
@@ -162,7 +160,7 @@ Description about source. What is it ..
 Streaming Source
 ----------------
 
-As can be derived form the name. Events enter this source in so-called stream. real time as they are being delivered by the input technology.
+Streaming Source enables events to enter in so-called stream. Events flow through source in real time manner as they are being delivered by the input technology.
 
 Following technologies can be used as a streaming source
 
@@ -201,7 +199,7 @@ Trigger Source
 --------------
 
 Unlike streaming source, Trigger Source is used when we need to pump data from SQL-like databases or files.
-They have to be triggered by an external event or a repeating timer (requesting JSON data from APIs every 10 mins).
+They have to be triggered by an external event or a repeating timer (requesting JSON data from APIs every 10 minutes).
 
 Trigger Source can be used for:
 
@@ -272,7 +270,7 @@ You will need to specify your Trigger type. You can choose your Trigger here : T
 
 **Note**
 
-Full functional example with this source can be found here: `Example <https://bitswanpump.readthedocs.io/en/latest/examples/blankapp/index.html>`_
+Full functional example with this source can be found here :ref:`coindesk`
 
 MySQL
 ^^^^^
@@ -343,7 +341,7 @@ To use sink in your pipeline ::
 
 PPrintSink class is added to your pipeline. It should be the last part of the pipeline for the pipeline to work correctly.
 
-to futher explain the code `bspump.common.` is the part where you specify the path to the class `PPrintSink` is the name of the class.
+to further explain the , `bspump.common.` is the part where you specify the path to the class `PPrintSink` is the name of the class.
 In the parentheses you can specify the output stream. If none is specified stdout is used.
 
 code ::
