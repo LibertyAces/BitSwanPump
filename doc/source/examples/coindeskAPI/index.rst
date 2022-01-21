@@ -9,15 +9,14 @@ About
 In this example we will learn how get data from an HTTP like source in our example API.
 We will be using HTTP Client Source for the API request.
 
-The final pipeline will simply get data from the API request as a JSON,
-covert it to python dictionary and output the data to Command Prompt.
-Additionally, I will show you how to create your own processor that in this example will enrich the data.
+The final pipeline will simply get data from the API request as a JSON, covert it to python dictionary and output the
+data to Command Prompt. Additionally, I will show you how to create your own processor that in this example will enrich
+the data.
 
 In this example we will be using API from `Coindesk <https://www.coindesk.com/>`_ to get current price of Bitcoin.
 
 The following code can be found
-`here <https://github.com/LibertyAces/BitSwanPump/blob/feature/restructured-text/examples/bspump-http.py>`_
-in our GitHub repo.
+`here <https://github.com/LibertyAces/BitSwanPump/blob/feature/restructured-text/examples/bspump-http.py>`_ in our GitHub repo.
 
 source and sink
 ^^^^^^^^^^^^^^^
@@ -47,7 +46,7 @@ to Pump data from API. We need to send request to the API to receive our data. T
 "triggered" when we get our response. For this reason we will be using so-called trigger source. More about :ref:`trigger` .
 
 HTTP Client Source can have many configurations, but in our example we just need to specify our URL address, using
-``config={'url': '<OUR URL>'}`` in the parameter of HTTP Client Source.
+``config={'url': '<OUR URL>'}``  as parameter in HTTP Client Source.
 
 Because we are using Trigger Source. We need to specify which trigger we will be using. There are more types of
 triggers, but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the
@@ -92,7 +91,7 @@ can follow our guide :ref:`bsmodule` .
 part3 - first processor
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-After we have a functional pipeline. We can start adding the more interesting part, the processors. Processor is the
+After we have a functional pipeline. We can start with the more interesting part, the processors. Processor is the
 component which works with data in the event. In this example we will use a simple processor which only converts the
 incoming JSON to python Dict type, which is much more easier to work with and it is clearer.
 
@@ -119,7 +118,7 @@ Part4 - Custom processor
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Because most of your use cases will be unique, it is most likely that there will be no existing processor that could do
-the work. So you will be forced to implement your own processor.
+the work. So you will have to implement your own processor.
 
 Creating new processor is not a complicated task. You will need to follow the basic structure of an general processor.
 You can simply copy-paste the code below:
@@ -134,9 +133,9 @@ You can simply copy-paste the code below:
 
         return event
 
-This class is the class of your processor. The most important part is the process method. This method will be called when
-an event is passed to the processor. As you can see the default implementation is that process method returns the event
-`return event`. Event must be always passed to the following component, another processor or sink.
+This class is the class of your processor. The most important part of processor is the process method. This method will
+be called when an event is passed to the processor. As you can see, the default implementation is that process method
+returns the event `return event`. Event must be always passed to the following component, another processor or sink.
 
 If you wish to use your new processor in our case `EnrichProcessor` You will need to reference it in `self.build` method.
 You can do that simply by adding it to `self.build` parameters.
@@ -158,10 +157,10 @@ You can do that simply by adding it to `self.build` parameters.
            )
 
 
-The last take is the implementation. In our example I created a simple script that takes the incoming event (python
-dictionary that contains price of Bitcoin in USD, Euro, and Pounds) and adds a new branch with a czech currency. I added
-a new method `convertUSDCZK` method that calculates the czech price based on USD conversion rate (Note: the exchange rate
-is outdated for sake of simplicity in real use case you would need to get an updated rate).
+Last step is the implementation. In our example I created a simple script that takes the incoming event (python
+dictionary that contains price of Bitcoin in USD, Euro, and Pounds) and adds a new branch with a czech currency. There is
+also a new method `convertUSDCZK` that calculates the czech price based on USD conversion rate
+(Note: the exchange rate is outdated for sake of simplicity of this example).
 
 ::
 
@@ -190,16 +189,15 @@ When we add all parts together we get this functional code.
 .. literalinclude :: BitSwanPump/examples/bspump-coindesk.py
    :language: python
 
-To Summarize what we did in this example: Firstly, we created a sample pipeline with a source and sink, then we added a
-a new processor that simply converted the incoming event to python dictionary, and lastly we created a custom processor
-which adds a information about czech currency to the incoming event and passes it to sink component.
+To Summarize what we did in this example:
+
+1. we created a sample pipeline with a source and sink
+2. We added a new processor that converts incoming events to python dictionary
+3. we created a custom processor that adds a information about czech currency to the incoming event and passes it to sink .
 
 Next steps
 ^^^^^^^^^^
 
-TODO
-
-connecting to ES etc.
-
-:ref:`esconnection` .
+You can change and modify the pipeline in any manner you want. For example, instead of using PPrintSink you can use our
+Elastic Search Sink which loads the data to Elastic Search. If you want to read more about :ref:`esconnection` .
 
