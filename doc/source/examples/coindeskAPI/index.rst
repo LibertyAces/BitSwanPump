@@ -57,7 +57,7 @@ Each pipeline has to have sink. In our example we want to see the result of the 
 which simply prints the data to the Command Prompt.
 
 You can try to copy paste this chunk of code and try it yourself. Make use you have BSPump module installed, if not you
-can follow our guide <<todo link>>.
+can follow our guide :ref:`bsmodule` .
 
 ::
 
