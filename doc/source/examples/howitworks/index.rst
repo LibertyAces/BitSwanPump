@@ -302,6 +302,8 @@ Example
 Explanation
 
 
+.. _processor:
+
 Processor
 ---------
 
