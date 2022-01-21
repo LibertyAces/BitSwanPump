@@ -7,11 +7,15 @@ In this tutorial you will learn about configuration in BSPump and how to use it.
 
 What is configuration?
 ----------------------
-Every BitSwan object inside BSPump application can be configured using user-defined configuration options. It's good practice to write configuration in ``.conf`` files, because when you will need to change something in your code you basically change it just in .conf file.
+Every BitSwan object inside BSPump application can be configured using user-defined configuration options.
+It's good practice to write configuration in ``.conf`` files, because when you will need to change something
+in your code you basically change it just in .conf file.
 
-Every object has default configuration values set in ``ConfigDefaults``, if you set ``ConfigDefaults`` in your specific class you override ``ConfigDefaults`` which are inherited from parent class.
+Every object has default configuration values set in ``ConfigDefaults``, if you set ``ConfigDefaults`` in your specific
+class you override ``ConfigDefaults`` which are inherited from parent class.
 
-Configuration files in are built-in in ASAB, the platform on which BSPump is build on. You can find more information about it in `ASAB documentation <https://asab.readthedocs.io/en/latest/asab/config.html>`_
+Configuration files in are built-in in ASAB, the platform on which BSPump is build on. You can find more
+about it in `ASAB documentation <https://asab.readthedocs.io/en/latest/asab/config.html>`_
 
 There are 3 types how you can configure object
 
@@ -41,7 +45,8 @@ In first step we create .conf file where we store API key
     [pipeline:SamplePipeline:HTTPClientSource]
     api_key = <YOUR PRIVATE API KEY>
 
-``[pipeline:SamplePipeline:HTTPClientSource]`` in this line we specified which class the configuration applies to. Values below this line override the same values in ``ConfigDefaults`` of specified classes.
+``[pipeline:SamplePipeline:HTTPClientSource]`` in this line we specified which class the configuration applies to.
+Values below this line override the same values in ``ConfigDefaults`` of specified classes.
 
 In next step we build sample pipeline which gets data through https://openweathermap.org/ API using API key from .conf file.
 ::
@@ -58,4 +63,5 @@ In next step we build sample pipeline which gets data through https://openweathe
 			bspump.common.PPrintSink(app, self),
 		)
 
-Configuration in .conf file is accessible via self.Config method (in this case we use ``self.Config['api_key']`` to get API key from our ``.conf`` file)
+Configuration in .conf file is accessible via self.Config method (in this case we use ``self.Config['api_key']`` to get
+API key from our ``.conf`` file)
