@@ -12,7 +12,7 @@ It's good practice to write configuration in ``.conf`` files, because when you w
 in your code you basically change it just in ``.conf`` file.
 
 Every object has default configuration values set in ``ConfigDefaults``, if you set ``ConfigDefaults`` in your specific
-class you override ``ConfigDefaults`` which are inherited from parent class.
+class you override same values in ``ConfigDefaults`` which are inherited from parent class.
 
 Configuration ``.conf`` files in are built-in in ASAB, the platform on which BSPump is build on. You can find more
 about it in `ASAB documentation <https://asab.readthedocs.io/en/latest/asab/config.html>`_
@@ -66,3 +66,5 @@ file. See more in :ref:`coindesk`.
 
 Configuration in .conf file is accessible via self.Config method (in this case we use ``self.Config['api_key']`` to get
 API key from our ``.conf`` file)
+
+To run your pump with configuration file you have to use ``-c`` switch in terminal. For example ``python3 mypumptest.py -c mypumpconfiguration.conf``.
