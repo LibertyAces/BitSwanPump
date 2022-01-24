@@ -16,7 +16,8 @@ In this example we will use ``.conf`` file to store configuration for our pump. 
 here :ref:`config`.
 
 .. image:: weather_pipeline.png
-    :width: 400
+    :width: 800
+    :align: center
     :alt: Weather Pipeline Pic
 
 Pipeline
