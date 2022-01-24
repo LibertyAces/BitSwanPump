@@ -15,6 +15,8 @@ feels like temperature, pressure etc.
 In this example we will use ``.conf`` file to store configuration for our pump. More about how to write configuration is
 here :ref:`config`.
 
+This is diagram how the finished pipeline will looks like
+
 .. image:: weather_pipeline.png
     :width: 800
     :align: center
