@@ -6,22 +6,23 @@ import bspump.common
 import bspump.http
 import bspump.trigger
 
+
 class EnrichProcessor(bspump.Processor):
     def __init__(self, app, pipeline, id=None, config=None):
         super().__init__(app, pipeline, id=None, config=None)
 
-    def convertUSDCZK(self, usd):
-        return usd * 21.41 #outdated rate
+    def convertUSDtoJPY(self, usd):
+        return usd * 113.70  # outdated rate usd/jpy
 
     def process(self, context, event):
-        czkPrice = str(self.convertUSDCZK(event["bpi"]["USD"]["rate_float"]))
+        jpyPrice = str(self.convertUSDtoJPY(event["bpi"]["USD"]["rate_float"]))
 
-        event["bpi"]["CZK"] = {
-            "code": "CZK",
-            "symbol": "K&#269;",
-            "rate": ''.join((czkPrice[:3], ',', czkPrice[3:])),
-            "description": "CZK",
-            "rate_float": czkPrice
+        event["bpi"]["JPY"] = {
+            "code": "JPY",
+            "symbol": "&yen;",
+            "rate": ''.join((jpyPrice[:3], ',', jpyPrice[3:])),
+            "description": "JPY",
+            "rate_float": jpyPrice
         }
 
         return event
