@@ -6,14 +6,14 @@ Coindesk API Example
 About
 -----
 
-In this example we will learn how get data from an HTTP like source in our example API.
+In this example we will learn how get data from an HTTP-like source.
 We will be using HTTP Client Source for the API request.
+
+In this example we will be using API from `Coindesk <https://www.coindesk.com/>`_ to get current price of Bitcoin.
 
 The final pipeline will simply get data from the API request as a JSON, covert it to python dictionary and output the
 data to Command Prompt. Additionally, I will show you how to create your own processor that in this example will enrich
 the data.
-
-In this example we will be using API from `Coindesk <https://www.coindesk.com/>`_ to get current price of Bitcoin.
 
 The following code can be found
 `here <https://github.com/LibertyAces/BitSwanPump/blob/feature/restructured-text/examples/bspump-http.py>`_ in our GitHub repo.
@@ -21,8 +21,8 @@ The following code can be found
 Source and Sink
 ^^^^^^^^^^^^^^^
 
-In the code below you can see the basic structure of pipeline. The important part is the ``self.build()`` method where its
-parameters are the single components of the pipeline. In this part we will use two main components each pipeline has to have
+In the code below you can see the basic structure of a pipeline. The important part is the ``self.build()`` method where its
+parameters are the single components of the pipeline. In this part we will use two main components each pipeline has to have:
 Source and Sink.
 
 ::
@@ -41,7 +41,7 @@ Source and Sink.
 
 
 
-Source as figured from the name is source of data. In our example we will use a specific type of source. Because we need
+Source is the source of data. In our example we will use a specific type of source. Because we need
 to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
 "triggered" when we get our response. For this reason we will be using so-called trigger source. More about :ref:`trigger` .
 
@@ -134,7 +134,7 @@ You can simply copy-paste the code below:
         return event
 
 This class is the class of your processor. The most important part of processor is the process method. This method will
-be called when an event is passed to the processor. As you can see, the default implementation is that process method
+be called when an event is passed to the processor. As you can see, the default implementation of process method
 returns the event `return event`. Event must be always passed to the following component, another processor or sink.
 
 If you wish to use your new processor in our case `EnrichProcessor` You will need to reference it in `self.build` method.
@@ -158,8 +158,8 @@ You can do that simply by adding it to `self.build` parameters.
 
 
 Last step is the implementation. In our example I created a simple script that takes the incoming event (python
-dictionary that contains price of Bitcoin in USD, Euro, and Pounds) and adds a new branch with a czech currency. There is
-also a new method `convertUSDCZK` that calculates the czech price based on USD conversion rate
+dictionary that contains price of Bitcoin in USD, Euro, and Pounds) and adds a new branch with a Japanese yen. There is
+also a new method `convertUSDtoJPY` that calculates the price of yen based on USD conversion rate
 (Note: the exchange rate is outdated for sake of simplicity of this example).
 
 ::
@@ -168,18 +168,18 @@ also a new method `convertUSDCZK` that calculates the czech price based on USD c
     def __init__(self, app, pipeline, id=None, config=None):
         super().__init__(app, pipeline, id=None, config=None)
 
-    def convertUSDCZK(self, usd):
-        return usd * 21.41 #outdated rate
+    def convertUSDtoJPY(self, usd):
+        return usd * 113.70 #outdated rate usd/jpy
 
     def process(self, context, event):
-        czkPrice = str(self.convertUSDCZK(event["bpi"]["USD"]["rate_float"]))
+        jpyPrice = str(self.convertUSDtoJPY(event["bpi"]["USD"]["rate_float"]))
 
-        event["bpi"]["CZK"] = {
-            "code": "CZK",
-            "symbol": "K&#269;",
+        event["bpi"]["JPY"] = {
+            "code": "JPY",
+            "symbol": "&yen;",
             "rate": ''.join((czkPrice[:3], ',', czkPrice[3:])),
-            "description": "CZK",
-            "rate_float": czkPrice
+            "description": "JPY",
+            "rate_float": jpyPrice
         }
 
         return event
