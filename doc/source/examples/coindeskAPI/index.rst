@@ -19,7 +19,7 @@ The following code can be found
 `here <https://github.com/LibertyAces/BitSwanPump/blob/feature/restructured-text/examples/bspump-http.py>`_ in our GitHub repo.
 
 Source and Sink
-^^^^^^^^^^^^^^^
+---------------
 
 In the code below you can see the basic structure of a pipeline. The important part is the ``self.build()`` method where its
 parameters are the single components of the pipeline. In this part we will use two main components each pipeline has to have:
@@ -89,7 +89,7 @@ can follow our guide :ref:`bsmodule` .
 
 
 Your First processor
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 After we have a functional pipeline. We can start with the more interesting part, the processors. Processor is the
 component which works with data in the event. In this example we will use a simple processor which only converts the
@@ -115,7 +115,7 @@ Processor is added simply by adding it to ``self.build()`` between source and si
 
 
 Creating Custom processor
-^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------
 
 Because most of your use cases will be unique, it is most likely that there will be no existing processor that could do
 the work. So you will have to implement your own processor.
@@ -196,7 +196,7 @@ To Summarize what we did in this example:
 3. we created a custom processor that adds a information about Japanese currency to the incoming event and passes it to sink .
 
 Next steps
-^^^^^^^^^^
+----------
 
 You can change and modify the pipeline in any manner you want. For example, instead of using PPrintSink you can use our
 Elastic Search Sink which loads the data to Elastic Search. If you want to read more about :ref:`esconnection` .
