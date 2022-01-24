@@ -19,7 +19,7 @@ Pipeline
 --------
 
 In the code below you can see the structure of pipeline which we need for this use case. The important part is the
-``self.build()`` method where its parameters are the single components of the pipeline. Do not forget that every
+``self.build()`` method where its parameters are the single components of the pipeline. Do not forget that every pipeline
 requires both source and sink to function correctly.
 ::
     class SamplePipeline(bspump.Pipeline):
@@ -90,7 +90,7 @@ location which means we need to get data from multiple API's URL. Now we define 
 
         def __init__(self, app, pipeline, choice=None, id=None, config=None):
             super().__init__(app, pipeline, id=id, config=config)
-            self.cities = ['Prague','Brno','Ostrava'] #List of cities
+            self.cities = ['London','New York','Berlin'] #List of cities
 
         async def cycle(self):
             async with aiohttp.ClientSession() as session:
@@ -104,11 +104,13 @@ You can see that in this example we are using ``self.Config`` method to get API 
 good to have API key and url in configuration file, because when you will want to change it you just simply change it
 in configuration file.
 
-For example, create ``key.conf`` file and into that file you can copy past code below
+For example, create ``weather-pump.conf`` file and into that file you can copy past code below
 ::
     [pipeline:SamplePipeline:LoadSource]
     url = https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={api_key}
     api_key = <<YOUR PRIVATE API KEY>>
+
+When you will want to run your pump with configuration file you have to run it with ``-c`` switch. So after you finish your pump and you want to test it type for example ``python3 weather-pump.py -c weather-pump.conf`` to terminal.
 
 You can change the list of cities to locations you wish. The important part of this source is ``async def cycle(self)``
 method where we request API's url for every location from our list and process them in pipeline.
@@ -128,7 +130,7 @@ Just be sure that you import ``aiohttp`` package and you change ``HTTPClientSour
 
         def __init__(self, app, pipeline, choice=None, id=None, config=None):
             super().__init__(app, pipeline, id=id, config=config)
-            self.cities = ['Prague','Brno','Ostrava'] #List of cities
+            self.cities = ['London','New York','Berlin'] #List of cities
 
         async def cycle(self):
             async with aiohttp.ClientSession() as session:
@@ -180,5 +182,3 @@ Connect to ES
 
 
 More about Elastic search :ref:`esconnection`.
-
-TODO
