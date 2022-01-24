@@ -193,7 +193,7 @@ To Summarize what we did in this example:
 
 1. we created a sample pipeline with a source and sink
 2. We added a new processor that converts incoming events to python dictionary
-3. we created a custom processor that adds a information about czech currency to the incoming event and passes it to sink .
+3. we created a custom processor that adds a information about Japanese currency to the incoming event and passes it to sink .
 
 Next steps
 ^^^^^^^^^^
