@@ -18,6 +18,13 @@ the data.
 The following code can be found
 `here <https://github.com/LibertyAces/BitSwanPump/blob/feature/restructured-text/examples/bspump-http.py>`_ in our GitHub repo.
 
+This is diagram how the finished pipeline will looks like
+
+.. image:: coindesk_pipeline.png
+   :width: 800
+   :align: center
+   :alt: Coindesk pipeline pic
+
 Source and Sink
 ---------------
 
