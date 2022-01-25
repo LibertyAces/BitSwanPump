@@ -43,12 +43,17 @@ This example shows how to create configuration file for get data from API via ba
 In first step we create .conf file where we store API key
 ::
     [pipeline:SamplePipeline:HTTPClientSource]
+    url = https://api.openweathermap.org/data/2.5/weather?q=London&units=metric&appid={api_key}
     api_key = <YOUR PRIVATE API KEY>
 
 ``[pipeline:SamplePipeline:HTTPClientSource]`` in this line we specified which class the configuration applies to.
 Values below this line override the same values in ``ConfigDefaults`` of specified classes.
 
-In next step we have a sample pipeline which gets data through https://openweathermap.org/ API using API key from .conf
+
+Configuration in .conf file is accessible via self.Config method (in this case we use ``self.Config['api_key']`` to get
+API key from our ``.conf`` file)
+
+In next step we have a sample pipeline which gets data through https://openweathermap.org/ API using API's URL and API key from .conf
 file. See more in :ref:`coindesk`.
 ::
     class SamplePipeline(bspump.Pipeline):
@@ -58,13 +63,12 @@ file. See more in :ref:`coindesk`.
 
 		self.build(
 			bspump.http.HTTPClientSource(app, self, config={
-				'url': f"https://api.openweathermap.org/data/2.5/weather?q=London&units=metric&appid={self.Config['api_key']}"
+				'url': self.Config['url'].format(api_key=self.Config['api_key'])
 			}).on(bspump.trigger.PeriodicTrigger(app, 1)),
 			bspump.common.StdJsonToDictParser(app, self),
 			bspump.common.PPrintSink(app, self),
 		)
 
-Configuration in .conf file is accessible via self.Config method (in this case we use ``self.Config['api_key']`` to get
-API key from our ``.conf`` file)
+To run your pump with configuration file you have to use ``-c`` switch in terminal after that switch there has to be ``file_path/file_name.conf``. For example ``python3 mypumptest.py -c mypumpconfiguration.conf``.
 
-To run your pump with configuration file you have to use ``-c`` switch in terminal. For example ``python3 mypumptest.py -c mypumpconfiguration.conf``.
+
