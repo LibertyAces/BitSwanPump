@@ -25,27 +25,13 @@ This is diagram how the finished pipeline will looks like
 Pipeline
 --------
 
-In the code below you can see the structure of pipeline which we need for this use case. The important part is the
+In the code below you can see the structure of ``SamplePipeline`` which we need for this use case. The important part is the
 ``self.build()`` method where its parameters are the single components of the pipeline. Do not forget that every pipeline
 requires both source and sink to function correctly.
-::
-    class SamplePipeline(bspump.Pipeline):
-
-        def __init__(self, app, pipeline_id):
-            super().__init__(app, pipeline_id)
-
-            self.build(
-                bspump.http.HTTPClientSource(app, self, config={
-                'url': 'https://api.openweathermap.org/data/2.5/weather?q=<<LOCATION>>&units=metric&appid=<<YOUR PRIVATE API KEY>>'
-                }).on(
-                    bspump.trigger.PeriodicTrigger(app, 5)
-                ),
-                bspump.common.PPrintSink(app, self),
-            )
 
 Source as figured from the name is source of data. In our example we will use a specific type of source. Because we need
-to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
-“triggered” when we get our response. For this reason we will be using so-called trigger source. More about :ref:`trigger`.
+to Pump data from API. We need to send request to the API to receive our data. This means that our source has to
+“triggered” the request and send it to API. For this reason we will be using so-called trigger source. More about :ref:`trigger`.
 
 Because we are using Trigger Source. We need to specify which trigger we will be using. There are more types of triggers,
 but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the parameter.
@@ -56,9 +42,10 @@ which simply prints the data to the Command Prompt.
 
 You can try to copy paste this chunk of code and try it yourself. Make sure you have BSPump module installed, if
 don't have follow our guide :ref:`bsmodule`.
+
+Just simply rewrite ``<<LOCATION>>`` to whatever location you want to get weather data from and put your API key which you will get after register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
 ::
     #!/usr/bin/env python3
-    import logging
 
     import bspump
     import bspump.common
@@ -84,8 +71,6 @@ don't have follow our guide :ref:`bsmodule`.
         svc.add_pipeline(pl)
         app.run()
 
-Just simply rewrite ``<<LOCATION>>`` to whatever location you want to get weather data from and put your API key which you
-will get after register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
 
 Multiple location source
 ------------------------
@@ -123,6 +108,8 @@ You can change the list of cities to locations you wish. The important part of t
 method where we request API's url for every location from our list and process them in pipeline.
 
 Just be sure that you import ``aiohttp`` package and you change ``HTTPClientSource`` with our new specified ``LoadSource``.
+
+The final code will looks like this, you can copy paste it and try it by yourself.
 ::
     #!/usr/bin/env python3
 
@@ -159,33 +146,15 @@ Just be sure that you import ``aiohttp`` package and you change ``HTTPClientSour
                 ),
                 bspump.common.PPrintSink(app, self),
             )
-
-Add simple processor
---------------------
-
-We can add some processor between source and sink. Processor is component which works with data in the event. In this
-example we will use a simple processor which only converts the incoming JSON to python Dict type, which is much more
-easier to work with and it is much more readable.
-
-You can read more about :ref:`processor`.
-
-The final pipeline structure will looks like this
-::
-    class SamplePipeline(bspump.Pipeline):
-
-        def __init__(self, app, pipeline_id):
-            super().__init__(app, pipeline_id)
-
-            self.build(
-                LoadSource(app, self).on(
-                    bspump.trigger.PeriodicTrigger(app, 5)
-                ),
-                bspump.common.StdJsonToDictParser(app, self),
-                bspump.common.PPrintSink(app, self),
-            )
+    if __name__ == '__main__':
+            app = bspump.BSPumpApplication()
+            svc = app.get_service("bspump.PumpService")
+            pl = SamplePipeline(app, 'SamplePipeline')
+            svc.add_pipeline(pl)
+            app.run()
 
 Connect to ES
 -------------
 
 
-More about Elastic search :ref:`esconnection`.
+You can change and modify the pipeline in any manner you want. For example, instead of using PPrintSink you can use our Elastic Search Sink which loads the data to Elastic Search. If you want to read more about :ref:`esconnection`.
