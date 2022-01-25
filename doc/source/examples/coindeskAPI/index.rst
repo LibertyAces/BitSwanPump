@@ -6,13 +6,13 @@ Coindesk API Example
 About
 -----
 
-In this example we will learn how get data from an HTTP-like source.
+In this example we will learn how get data from an HTTP-like Source.
 We will be using HTTP Client Source for the API request.
 
 In this example we will be using API from `Coindesk <https://www.coindesk.com/>`_ to get current price of Bitcoin.
 
 The final pipeline will simply get data from the API request as a JSON, covert it to python dictionary and output the
-data to Command Prompt. Additionally, I will show you how to create your own processor that in this example will enrich
+data to Command Prompt. Additionally, I will show you how to create your own Processor that in this example will enrich
 the data.
 
 The following code can be found
@@ -33,36 +33,36 @@ Source and Sink.
            super().__init__(app, pipeline_id)
 
            self.build(
+               #Source of the pipeline
                bspump.http.HTTPClientSource(app, self, config={
                    'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
                }).on(bspump.trigger.PeriodicTrigger(app, 5)),
+               #Sink of the pipeline
                bspump.common.PPrintSink(app, self),
            )
 
 
 
-Source is the source of data. In our example we will use a specific type of source. Because we need
-to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
-"triggered" when we get our response. For this reason we will be using so-called trigger source. More about :ref:`trigger` .
+Source is a component that supply the pipeline with data. In our example we will use a specific type of Source. Because we need
+to Pump data from API. We need to send request to the API to receive our data. This means that our Source has to regularly
+and send the request using API. For this reason we will be using so-called Trigger Source. More about :ref:`trigger` .
 
 HTTP Client Source can have many configurations, but in our example we just need to specify our URL address, using
 ``config={'url': '<OUR URL>'}``  as parameter in HTTP Client Source.
 
-Because we are using Trigger Source. We need to specify which trigger we will be using. There are more types of
-triggers, but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the
+Because we are using Trigger Source. We need to specify which Trigger we will be using. There are more types of
+Triggers, but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the
 parameter. ``bspump.trigger.PeriodicTrigger(app, <<Time parameter in seconds>>))``
 
-Each pipeline has to have sink. In our example we want to see the result of the data, so we will be using PPrintSink
+Each pipeline has to have Sink. In our example we want to see the result of the data, so we will be using PPrintSink
 which simply prints the data to the Command Prompt.
 
-You can try to copy paste this chunk of code and try it yourself. Make use you have BSPump module installed, if not you
+You can try to copy paste this chunk of code and try it yourself. Make use you have BSPump module installed for your Python, if not you
 can follow our guide :ref:`bsmodule` .
 
 ::
 
    #!/usr/bin/env python3
-   import logging
-
    import bspump
    import bspump.common
    import bspump.http
@@ -88,12 +88,12 @@ can follow our guide :ref:`bsmodule` .
        app.run()
 
 
-Your First processor
+Your First Processor
 --------------------
 
-After we have a functional pipeline. We can start with the more interesting part, the processors. Processor is the
-component which works with data in the event. In this example we will use a simple processor which only converts the
-incoming JSON to python Dict type, which is much more easier to work with and it is clearer.
+After we have a functional pipeline. We can start with the more interesting part, Processors. The Processor is the
+component which works with data of an event. In this example we will use a simple Processor, StdJsonToDictParser, which only converts the
+incoming JSON to python Dict type, which is much more easier to work with in python.
 
 ::
 
@@ -111,16 +111,16 @@ incoming JSON to python Dict type, which is much more easier to work with and it
            )
 
 
-Processor is added simply by adding it to ``self.build()`` between source and sink.
+this Processor is added simply by adding it to ``self.build()`` between Source and Sink.
 
 
-Creating Custom processor
+Creating Custom Processor
 -------------------------
 
-Because most of your use cases will be unique, it is most likely that there will be no existing processor that could do
-the work. So you will have to implement your own processor.
+Because most of your use cases will be unique, it is most likely that there will be no existing Processor that could do
+the work. So you will have to implement your own Processor.
 
-Creating new processor is not a complicated task. You will need to follow the basic structure of an general processor.
+Creating new Processor is not a complicated task. You will need to follow the basic structure of an general Processor.
 You can simply copy-paste the code below:
 
 ::
@@ -133,11 +133,11 @@ You can simply copy-paste the code below:
 
         return event
 
-This class is the class of your processor. The most important part of processor is the process method. This method will
-be called when an event is passed to the processor. As you can see, the default implementation of process method
-returns the event `return event`. Event must be always passed to the following component, another processor or sink.
+This class is the class of your Processor. The most important part of Processor is the process method. This method will
+be called when an event is passed to the Processor. As you can see, the default implementation of process method
+returns the event `return event`. Event must be always passed to the following component, another Processor or Sink.
 
-If you wish to use your new processor in our case `EnrichProcessor` You will need to reference it in `self.build` method.
+If you wish to use your new Processor in our case `EnrichProcessor` You will need to reference it in `self.build` method.
 You can do that simply by adding it to `self.build` parameters.
 
 ::
@@ -177,7 +177,7 @@ also a new method `convertUSDtoJPY` that calculates the price of yen based on US
         event["bpi"]["JPY"] = {
             "code": "JPY",
             "symbol": "&yen;",
-            "rate": ''.join((czkPrice[:3], ',', czkPrice[3:])),
+            "rate": ''.join((jpyPrice[:3], ',', jpyPrice[3:])),
             "description": "JPY",
             "rate_float": jpyPrice
         }
@@ -191,9 +191,9 @@ When we add all parts together we get this functional code.
 
 To Summarize what we did in this example:
 
-1. we created a sample pipeline with a source and sink
-2. We added a new processor that converts incoming events to python dictionary
-3. we created a custom processor that adds a information about Japanese currency to the incoming event and passes it to sink .
+1. we created a sample pipeline with a Source and Sink
+2. We added a new Processor that converts incoming events to python dictionary
+3. we created a custom Processor that adds a information about Japanese currency to the incoming event and passes it to Sink .
 
 Next steps
 ----------
