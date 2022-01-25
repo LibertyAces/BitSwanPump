@@ -6,8 +6,7 @@ Coindesk API Example
 About
 -----
 
-In this example we will learn how get data from an HTTP-like Source.
-We will be using HTTP Client Source for the API request.
+In this example we will learn how to get any data from API. We will be using a HTTP Client Source for the API request.
 
 In this example we will be using API from `Coindesk <https://www.coindesk.com/>`_ to get current price of Bitcoin.
 
@@ -18,7 +17,7 @@ the data.
 The following code can be found
 `here <https://github.com/LibertyAces/BitSwanPump/blob/feature/restructured-text/examples/bspump-http.py>`_ in our GitHub repo.
 
-This is diagram how the finished pipeline will looks like
+This is a diagram shows how the final pipeline will look like.
 
 .. image:: coindesk_pipeline.png
    :width: 800
