@@ -71,6 +71,13 @@ Just simply rewrite ``<<LOCATION>>`` to whatever location you want to get weathe
         svc.add_pipeline(pl)
         app.run()
 
+You should get output like this:
+
+.. image:: first_output.png
+    :width: 800
+    :align: center
+    :alt: Single Location Output
+
 
 Multiple location source
 ------------------------
@@ -153,6 +160,12 @@ The final code will looks like this, you can copy paste it and try it by yoursel
             svc.add_pipeline(pl)
             app.run()
 
+After you execute this code you should get this output in terminal:
+
+.. image:: second_output.png
+    :width: 800
+    :align: center
+    :alt: Multiple Location Output
 Connect to ES
 -------------
 
