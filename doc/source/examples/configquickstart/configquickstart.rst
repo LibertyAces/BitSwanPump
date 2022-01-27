@@ -69,6 +69,11 @@ file. See more in :ref:`coindesk`.
 			bspump.common.PPrintSink(app, self),
 		)
 
-To run your pump with configuration file you have to use ``-c`` switch in terminal after that switch there has to be ``file_path/file_name.conf``. For example ``python3 mypumptest.py -c mypumpconfiguration.conf``.
+To run your pump with configuration file you have to use ``-c`` switch in terminal after that switch there has to be ``file_path/file_name.conf``.
+
+For example
+::
+    ~python3 mypumptest.py -c mypumpconfiguration.conf
+
 
 
