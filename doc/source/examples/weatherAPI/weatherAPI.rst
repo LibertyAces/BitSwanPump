@@ -72,11 +72,18 @@ Just simply rewrite ``<<LOCATION>>`` to whatever location you want to get weathe
         app.run()
 
 You should get output like this:
-
-.. image:: first_output.png
-    :width: 800
-    :align: center
-    :alt: Single Location Output
+::
+    ~python3 example.py
+    BitSwan BSPump version 21.11-17-g6b346fd
+    27-Jan-2022 18:43:00.177421 NOTICE asab.application is ready.
+    1 pipeline(s) ready.
+    (b'{"coord":{"lon":-0.1257,"lat":51.5085},"weather":[{"id":802,"main":"Clouds",'
+    b'"description":"scattered clouds","icon":"03n"}],"base":"stations","main":{"t'
+    b'emp":8.91,"feels_like":6.86,"temp_min":6.8,"temp_max":10.14,"pressure":1030,'
+    b'"humidity":71},"visibility":10000,"wind":{"speed":3.6,"deg":290},"clouds":{"'
+    b'all":35},"dt":1643304840,"sys":{"type":2,"id":2019646,"country":"GB","sunris'
+    b'e":1643269577,"sunset":1643301595},"timezone":0,"id":2643743,"name":"London"'
+    b',"cod":200}')
 
 
 Multiple location source
@@ -161,11 +168,33 @@ The final code will looks like this, you can copy paste it and try it by yoursel
             app.run()
 
 After you execute this code you should get this output in terminal:
+::
+   ~ python3 example.py -c example.conf
+    BitSwan BSPump version 21.11-17-g6b346fd
+    27-Jan-2022 18:56:14.058308 NOTICE asab.application is ready.
+    1 pipeline(s) ready.
+    (b'{"coord":{"lon":-0.1257,"lat":51.5085},"weather":[{"id":802,"main":"Clouds",'
+    b'"description":"scattered clouds","icon":"03n"}],"base":"stations","main":{"t'
+    b'emp":8.79,"feels_like":6.72,"temp_min":6.8,"temp_max":10.14,"pressure":1030,'
+    b'"humidity":70},"visibility":10000,"wind":{"speed":3.6,"deg":290},"clouds":{"'
+    b'all":35},"dt":1643305383,"sys":{"type":2,"id":2019646,"country":"GB","sunris'
+    b'e":1643269577,"sunset":1643301595},"timezone":0,"id":2643743,"name":"London"'
+    b',"cod":200}')
+    (b'{"coord":{"lon":-74.006,"lat":40.7143},"weather":[{"id":801,"main":"Clouds",'
+    b'"description":"few clouds","icon":"02d"}],"base":"stations","main":{"temp":-'
+    b'1.13,"feels_like":-1.13,"temp_min":-3.36,"temp_max":0.9,"pressure":1030,"hum'
+    b'idity":51},"visibility":10000,"wind":{"speed":0.45,"deg":34,"gust":1.34},"cl'
+    b'ouds":{"all":19},"dt":1643305980,"sys":{"type":2,"id":2039034,"country":"US"'
+    b',"sunrise":1643285428,"sunset":1643321212},"timezone":-18000,"id":5128581,"n'
+    b'ame":"New York","cod":200}')
+    (b'{"coord":{"lon":13.4105,"lat":52.5244},"weather":[{"id":803,"main":"Clouds",'
+    b'"description":"broken clouds","icon":"04n"}],"base":"stations","main":{"temp'
+    b'":6.01,"feels_like":1.09,"temp_min":5.01,"temp_max":6.85,"pressure":1003,"hu'
+    b'midity":91},"visibility":10000,"wind":{"speed":9.39,"deg":251,"gust":15.2},"'
+    b'clouds":{"all":75},"dt":1643305512,"sys":{"type":2,"id":2011538,"country":"D'
+    b'E","sunrise":1643266558,"sunset":1643298116},"timezone":3600,"id":2950159,"n'
+    b'ame":"Berlin","cod":200}')
 
-.. image:: second_output.png
-    :width: 800
-    :align: center
-    :alt: Multiple Location Output
 Connect to ES
 -------------
 
