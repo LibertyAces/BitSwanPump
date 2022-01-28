@@ -43,18 +43,18 @@ requires both source and sink to function correctly.
                 bspump.common.PPrintSink(app, self),
             )
 
-Source as figured from the name is source of data. In our example we will use a specific type of source. Because we need
+`Source` is a component that supply the pipeline with data. In our example we will use a specific type of source. Because we need
 to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
 “triggered” when we get our response. For this reason we will be using so-called trigger source. More about :ref:`trigger`.
 
-Because we are using Trigger Source. We need to specify which trigger we will be using. There are more types of triggers,
+Because we are using `Trigger Source`. We need to specify which trigger we will be using. There are more types of triggers,
 but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the parameter.
 ``bspump.trigger.PeriodicTrigger(app, <<Time parameter in seconds>>))``
 
 Each pipeline has to have a sink. In our example we want to see the result of the data, so we will be using PPrintSink
 which simply prints the data to the Command Prompt.
 
-You can try to copy paste this chunk of code and try it yourself. Make sure you have BSPump module installed, if
+You can try to copy-paste this chunk of code and try it yourself. Make sure you have BSPump module installed, if
 don't have follow our guide :ref:`bsmodule`.
 ::
     #!/usr/bin/env python3
@@ -84,14 +84,14 @@ don't have follow our guide :ref:`bsmodule`.
         svc.add_pipeline(pl)
         app.run()
 
-Just simply rewrite ``<<LOCATION>>`` to whatever location you want to get weather data from and put your API key which you
+Just simply rewrite ``<<LOCATION>>`` to whatever city you want to get weather data from and put your API key which you
 will get after register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
 
 Multiple location source
 ------------------------
 
-In the code above the pump simply return data from one location. But in our use case we need to get data from multiple
-location which means we need to get data from multiple API's URL. Now we define our specify trigger source.
+In the code above, the pump simply returns data from one location. But in our use case we need to get data from multiple
+locations, which means we need to get data from multiple API's URL. Next, we decide which trigger source we will use .
 ::
     class LoadSource(bspump.TriggerSource):
 
