@@ -139,9 +139,9 @@ You can simply copy-paste the code below:
 
         return event
 
-This class is the class of your Processor. The most important part of Processor is the process method. This method will
+This a sample processor class. The most important part of this processor class is the process method. This method will
 be called when an event is passed to the Processor. As you can see, the default implementation of process method
-returns the event `return event`. Event must be always passed to the following component, another Processor or Sink.
+returns the event `return event`. Event must be passed to the following component, another Processor or Sink.
 
 If you wish to use your new Processor in our case `EnrichProcessor` You will need to reference it in `self.build` method.
 You can do that simply by adding it to `self.build` parameters.
