@@ -8,16 +8,15 @@ In this tutorial you will learn about configuration in BSPump and how to use it.
 What is configuration?
 ----------------------
 Every BitSwan object inside BSPump application can be configured using user-defined configuration options.
-It's good practice to write configuration in ``.conf`` files, because when you will need to change something
-in your code you basically change it just in ``.conf`` file.
+It's good practice to write configuration in ``.conf`` files, because making changes will be much easier.
 
-Every object has default configuration values set in ``ConfigDefaults``, if you set ``ConfigDefaults`` in your specific
-class you override same values in ``ConfigDefaults`` which are inherited from parent class.
+Every object has default configuration values set in ``ConfigDefaults``. If you set ``ConfigDefaults`` in your specific
+class you override same values in ``ConfigDefaults``, which are inherited from the parent class.
 
-Configuration ``.conf`` files in are built-in in ASAB, the platform on which BSPump is build on. You can find more
+Configuration ``.conf`` files in are built-in in ASAB, the platform on which BSPump is built. You can find more
 about it in `ASAB documentation <https://asab.readthedocs.io/en/latest/asab/config.html>`_
 
-**There are 3 types how you can configure object**
+**There are 3 methods to configure object**
 
 1. By defining ``ConfigDefaults`` dictionary inside specific class
 ::
@@ -38,7 +37,7 @@ about it in `ASAB documentation <https://asab.readthedocs.io/en/latest/asab/conf
 
 Example
 -------
-This example shows how to create configuration file for get data from API via basic HTTPClientSource.
+This example shows how to create a configuration file to get data from API via basic HTTPClientSource.
 
 In first step we create .conf file where we store API key
 ::
@@ -46,14 +45,14 @@ In first step we create .conf file where we store API key
     url = https://api.openweathermap.org/data/2.5/weather?q=London&units=metric&appid={api_key}
     api_key = <YOUR PRIVATE API KEY>
 
-``[pipeline:SamplePipeline:HTTPClientSource]`` in this line we specified which class the configuration applies to.
+``[pipeline:SamplePipeline:HTTPClientSource]`` in this line we specify which class the configuration applies to.
 Values below this line override the same values in ``ConfigDefaults`` of specified classes.
 
 
 Configuration in .conf file is accessible via self.Config method (in this case we use ``self.Config['api_key']`` to get
 API key from our ``.conf`` file)
 
-In next step we have a sample pipeline which gets data through https://openweathermap.org/ API using API's URL and API key from .conf
+In next step we have a sample pipeline that gets data through https://openweathermap.org/ API using API's URL and API key from .conf
 file. See more in :ref:`coindesk`.
 ::
     class SamplePipeline(bspump.Pipeline):
@@ -69,7 +68,7 @@ file. See more in :ref:`coindesk`.
 			bspump.common.PPrintSink(app, self),
 		)
 
-To run your pump with configuration file you have to use ``-c`` switch in terminal after that switch there has to be ``file_path/file_name.conf``.
+To run your pump with a configuration file, use ``-c`` switch in the terminal, after that switch there has to be ``file_path/file_name.conf``.
 
 For example
 ::
