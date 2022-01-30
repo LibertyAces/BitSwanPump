@@ -2,20 +2,20 @@ Weather API Example
 ===================
 About
 -----
-In this example we will learn how get data from one or multiple HTTP sources using API request. In this case we cannot use basic
+In this example we will learn how get data from one or multiple HTTP sources using an API request. In this case we cannot use basic
 HTTPClientSource, because it returns data only from one API query, so to get data from different queries we will have
-to define new source for this use case.
+to define a new source for this use case.
 
 The final pipeline will get data from multiple API requests in one time as a JSON, convert it to python
-dictionary and output the data to Command Prompt.
+dictionary, and output the data to Command Prompt.
 
-In this example we will be using API from `Open Weather <https://openweathermap.org/>`_ to get current weather data like temperature,
-feels like temperature, pressure etc.
+In this example we will be using API from `Open Weather <https://openweathermap.org/>`_ to get current weather data (e.g, temperature,
+feels like temperature, biometric pressure etc).
 
 In this example we will use ``.conf`` file to store configuration for our pump. More about how to write configuration is
 here :ref:`config`.
 
-This is diagram how the finished pipeline will looks like
+A diagram of the finished pipeline
 
 .. image:: weather_pipeline.png
     :width: 800
@@ -31,19 +31,18 @@ requires both source and sink to function correctly.
 
 `Source` is a component that supply the pipeline with data. In our example we will use a specific type of source. Because we need
 to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
-“triggered” when we get our response. For this reason we will be using so-called trigger source. More about :ref:`trigger`.
+“trigger” when we get our response. For this reason we will be using a so-called trigger source. More about :ref:`trigger`.
 
 Because we are using `Trigger Source`. We need to specify which trigger we will be using. There are more types of triggers,
 but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the parameter.
 ``bspump.trigger.PeriodicTrigger(app, <<Time parameter in seconds>>))``
 
-Each pipeline has to have a sink. In our example we want to see the result of the data, so we will be using PPrintSink
+Each pipeline requires a sink. In our example we want to see the result of the data, so we will be using PPrintSink
 which simply prints the data to the Command Prompt.
 
-You can try to copy-paste this chunk of code and try it yourself. Make sure you have BSPump module installed, if
-don't have follow our guide :ref:`bsmodule`.
+You can try to copy-paste this chunk of code and try it yourself. You must have BSPump module installed. Follow our guide :ref:`bsmodule`.
 
-Just simply rewrite ``<<LOCATION>>`` to whatever city you want to get weather data from and put your API key which you will get after register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
+Simply rewrite ``<<LOCATION>>`` to whatever city you want to get weather data from and put your API key which you will get after register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
 ::
     #!/usr/bin/env python3
 
@@ -106,24 +105,23 @@ locations, which means we need to get data from multiple API's URL. Next, we dec
                         event = await response.content.read()
                         await self.process(event)
 
-You can see that in this example we are using ``self.Config`` method to get API key and url from configuration file. It is
-good to have API key and url in configuration file, because when you will want to change it you just simply change it
-in configuration file.
+You can see that in this example we are using ``self.Config`` method to get the API key and the url from the configuration file. It is
+good to have the API key and the url in configuration file, because changes can be made simply in the configuration file.
 
-For example, create ``weather-pump.conf`` file and into that file you can copy past code below
+For example, create a ``weather-pump.conf`` file, and into that file you can copy/paste code below
 ::
     [pipeline:SamplePipeline:LoadSource]
     url = https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={api_key}
     api_key = <<YOUR PRIVATE API KEY>>
 
-When you will want to run your pump with configuration file you have to run it with ``-c`` switch. So after you finish your pump and you want to test it type for example ``python3 weather-pump.py -c weather-pump.conf`` to terminal.
+When you run your pump with configuration file you have to run it with ``-c`` switch. So after you finish your pump and you need to test it, type ``python3 weather-pump.py -c weather-pump.conf`` to the terminal.
 
-You can change the list of cities to locations you wish. The important part of this source is ``async def cycle(self)``
-method where we request API's url for every location from our list and process them in pipeline.
+You can change the list of cities to any locations you wish. The important part of this source is ``async def cycle(self)``
+method where we request the API's url for every location from our list and process them in the pipeline.
 
 Just be sure that you import ``aiohttp`` package and you change ``HTTPClientSource`` with our new specified ``LoadSource``.
 
-The final code will looks like this, you can copy paste it and try it by yourself.
+You can copy/paste the final code here:
 ::
     #!/usr/bin/env python3
 
