@@ -43,6 +43,7 @@ which simply prints the data to the Command Prompt.
 You can try to copy-paste this chunk of code and try it yourself. You must have BSPump module installed. Follow our guide :ref:`bsmodule`.
 
 Simply rewrite ``<<LOCATION>>`` to city you want to obtain data from and put your API key which you will get after you register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
+You can find more about how to modify your URL here `https://openweathermap.org/current`_
 ::
     #!/usr/bin/env python3
 
