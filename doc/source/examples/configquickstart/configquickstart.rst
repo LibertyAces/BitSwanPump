@@ -32,8 +32,8 @@ about it in `ASAB documentation <https://asab.readthedocs.io/en/latest/asab/conf
 
 3. By creating ``.conf`` file
 ::
-    [pipeline:PipelineID:MySQLSource]
-     'query': 'SELECT id, name, surname FROM people;'
+    [pipeline:PipelineID]
+    query = SELECT id, name, surname FROM people;
 
 Example
 -------
@@ -41,11 +41,11 @@ This example shows how to create a configuration file to get data from API via b
 
 In first step we create .conf file where we store API key
 ::
-    [pipeline:SamplePipeline:HTTPClientSource]
+    [pipeline:SamplePipeline]
     url = https://api.openweathermap.org/data/2.5/weather?q=London&units=metric&appid={api_key}
     api_key = <YOUR PRIVATE API KEY>
 
-``[pipeline:SamplePipeline:HTTPClientSource]`` in this line we specify which class the configuration applies to.
+``[pipeline:SamplePipeline]`` in this line we specify which class the configuration applies to.
 Values below this line override the same values in ``ConfigDefaults`` of specified classes.
 
 
@@ -55,18 +55,37 @@ API key from our ``.conf`` file)
 In next step we have a sample pipeline that gets data through https://openweathermap.org/ API using API's URL and API key from .conf
 file. See more in :ref:`coindesk`.
 ::
+    #!/usr/bin/env python3
+
+    import bspump
+    import bspump.common
+    import bspump.http
+    import bspump.trigger
+
+
     class SamplePipeline(bspump.Pipeline):
 
-	def __init__(self, app, pipeline_id):
-		super().__init__(app, pipeline_id)
+        def __init__(self, app, pipeline_id):
+            super().__init__(app, pipeline_id)
 
-		self.build(
-			bspump.http.HTTPClientSource(app, self, config={
-				'url': self.Config['url'].format(api_key=self.Config['api_key'])
-			}).on(bspump.trigger.PeriodicTrigger(app, 1)),
-			bspump.common.StdJsonToDictParser(app, self),
-			bspump.common.PPrintSink(app, self),
-		)
+            self.build(
+                bspump.http.HTTPClientSource(app, self,
+                config={'url': self.Config['url'].format(api_key = self.Config['api_key'])}).on(bspump.trigger.PeriodicTrigger(app, 2)),
+                bspump.common.StdJsonToDictParser(app, self),
+                bspump.common.PPrintSink(app, self)
+            )
+
+
+    if __name__ == '__main__':
+        app = bspump.BSPumpApplication()
+
+        svc = app.get_service("bspump.PumpService")
+        # Construct and register Pipeline
+        pl = SamplePipeline(app, 'SamplePipeline')
+        svc.add_pipeline(pl)
+
+        app.run()
+
 
 To run your pump with a configuration file, use ``-c`` switch in the terminal, after that switch there has to be ``file_path/file_name.conf``.
 
