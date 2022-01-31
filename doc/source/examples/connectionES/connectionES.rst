@@ -3,7 +3,7 @@
 How to connect to Elastic Search
 ================================
 
-BSPump supports connection to Elastic Search platform. It is possible to connect to ES just in few lines of code.
+BSPump supports the connection to Elastic Search platform. It is possible to connect to ES just in few lines of code.
 
 Elastic Search Source
 ---------------------
@@ -46,7 +46,7 @@ you will need to create`.conf` file using following syntax
     index=<<name of your index>>
     doctype=_doc
 
-The configuration file can contain additional information depending on your implementation. However, it is important to contain:
+The configuration file can contain additional information depending on your implementation. It is essential to include:
 
 - `index` : name of the index that will be used to store your data in ES
 - `url` : URL of your connection with ES
@@ -58,7 +58,7 @@ For more information visit our quickstart to using configs: :ref:`config`.
 Code example
 ^^^^^^^^^^^^
 
-To create connection with Elastic Search you will need to do two things:
+To create a connection with Elastic Search you will need to do two things:
 
 1. Add ElasticSearchSink component to `self.build` method of the pipeline class
 2. create a service of your ES Connection.
