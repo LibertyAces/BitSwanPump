@@ -89,7 +89,7 @@ Multiple location source
 ------------------------
 
 In the code above, the pump simply returns data from one location. But in our use case we need to get data from multiple
-locations, which means we need to get data from multiple API's URL. Next, we decide which trigger source we will use .
+locations, which means we need to get data from multiple API's URL. Next, we decide which trigger source we will use.
 ::
     class LoadSource(bspump.TriggerSource):
 
