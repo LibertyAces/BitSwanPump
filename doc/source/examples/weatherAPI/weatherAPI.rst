@@ -30,8 +30,8 @@ In the code below you can see the structure of ``SamplePipeline`` which we need 
 requires both source and sink to function correctly.
 
 `Source` is a component that supply the pipeline with data. In our example we will use a specific type of source. Because we need
-to Pump data from API. We need to send request to the API to receive our data. This means that our source has to be
-“trigger” when we get our response. For this reason we will be using a so-called trigger source. More about :ref:`trigger`.
+to Pump data from API, we need to send request to the API to receive our data. This means that our source has to be
+“trigger” the request and send it to the API. For this reason we will be using a so-called trigger source. More about :ref:`trigger`.
 
 Because we are using `Trigger Source`. We need to specify which trigger we will be using. There are more types of triggers,
 but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the parameter.
@@ -42,7 +42,7 @@ which simply prints the data to the Command Prompt.
 
 You can try to copy-paste this chunk of code and try it yourself. You must have BSPump module installed. Follow our guide :ref:`bsmodule`.
 
-Simply rewrite ``<<LOCATION>>`` to whatever city you want to get weather data from and put your API key which you will get after register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
+Simply rewrite ``<<LOCATION>>`` to city you want to obtain data from and put your API key which you will get after you register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
 ::
     #!/usr/bin/env python3
 
@@ -85,11 +85,11 @@ You should get output like this:
     b',"cod":200}')
 
 
-Multiple location source
+Multiple locations source
 ------------------------
 
 In the code above, the pump simply returns data from one location. But in our use case we need to get data from multiple
-locations, which means we need to get data from multiple API's URL. Next, we decide which trigger source we will use .
+locations, which means we need to get data from multiple API's URL. Next, we define our specific trigger source.
 ::
     class LoadSource(bspump.TriggerSource):
 
@@ -114,14 +114,14 @@ For example, create a ``weather-pump.conf`` file, and into that file you can cop
     url = https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={api_key}
     api_key = <<YOUR PRIVATE API KEY>>
 
-When you run your pump with configuration file you have to run it with ``-c`` switch. So after you finish your pump and you need to test it, type ``python3 weather-pump.py -c weather-pump.conf`` to the terminal.
+When you run your pump with configuration file you have to run it with ``-c`` switch. So after you finish your pump and you need to test it, type ``python3 your-pump-name.py -c weather-pump.conf`` to the terminal.
 
 You can change the list of cities to any locations you wish. The important part of this source is ``async def cycle(self)``
 method where we request the API's url for every location from our list and process them in the pipeline.
 
-Just be sure that you import ``aiohttp`` package and you change ``HTTPClientSource`` with our new specified ``LoadSource``.
+Just be sure that you import ``aiohttp`` package and change ``HTTPClientSource`` with our new specified ``LoadSource``.
 
-You can copy/paste the final code here:
+You can copy-paste the final code here:
 ::
     #!/usr/bin/env python3
 
