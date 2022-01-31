@@ -6,6 +6,10 @@ import bspump.http
 import bspump.trigger
 import aiohttp
 
+"""
+make sure to register on Open Weather Map to obtain the API key.
+"""
+
 class LoadSource(bspump.TriggerSource):
 
     def __init__(self, app, pipeline, choice=None, id=None, config=None):
