@@ -29,7 +29,7 @@ Source and Sink
 
 In the code below, you can see the basic structure of a pipeline. The important part is the ``self.build()`` method, where its
 parameters are the single components of the pipeline. In this part we will use two main components each pipeline must contain:
-Source and Sink.
+Source and Sink. Do not copy this part of code yet, because it is not example on its own
 
 ::
 
@@ -93,6 +93,21 @@ can follow our guide :ref:`bsmodule` .
        svc.add_pipeline(pl)
        app.run()
 
+The program should output a JSON similar to this
+
+::
+
+   (b'{"time":{"updated":"Jan 31, 2022 15:47:00 UTC","updatedISO":"2022-01-31T15:4'
+    b'7:00+00:00","updateduk":"Jan 31, 2022 at 15:47 GMT"},"disclaimer":"This data'
+    b' was produced from the CoinDesk Bitcoin Price Index (USD). Non-USD currency '
+    b'data converted using hourly conversion rate from openexchangerates.org","cha'
+    b'rtName":"Bitcoin","bpi":{"USD":{"code":"USD","symbol":"&#36;","rate":"37,789'
+    b'.6250","description":"United States Dollar","rate_float":37789.625},"GBP":{"'
+    b'code":"GBP","symbol":"&pound;","rate":"28,145.2970","description":"British P'
+    b'ound Sterling","rate_float":28145.297},"EUR":{"code":"EUR","symbol":"&euro;"'
+    b',"rate":"33,772.9280","description":"Euro","rate_float":33772.928}}}')
+
+As you can see this is not ideal format to read our data from. We will need to convert our incoming data.
 
 Your First Processor
 --------------------
@@ -119,6 +134,32 @@ incoming JSON to python Dict type, that is much easier to work with in python.
 
 this Processor is added simply by adding it to ``self.build()`` between Source and Sink.
 
+You should be getting more organized output
+
+::
+
+   {'bpi': {'EUR': {'code': 'EUR',
+                    'description': 'Euro',
+                    'rate': '33,794.5989',
+                    'rate_float': 33794.5989,
+                    'symbol': '&euro;'},
+            'GBP': {'code': 'GBP',
+                    'description': 'British Pound Sterling',
+                    'rate': '28,163.3569',
+                    'rate_float': 28163.3569,
+                    'symbol': '&pound;'},
+            'USD': {'code': 'USD',
+                    'description': 'United States Dollar',
+                    'rate': '37,813.8733',
+                    'rate_float': 37813.8733,
+                    'symbol': '&#36;'}},
+    'chartName': 'Bitcoin',
+    'disclaimer': 'This data was produced from the CoinDesk Bitcoin Price Index '
+                  '(USD). Non-USD currency data converted using hourly conversion '
+                  'rate from openexchangerates.org',
+    'time': {'updated': 'Jan 31, 2022 15:49:00 UTC',
+             'updatedISO': '2022-01-31T15:49:00+00:00',
+             'updateduk': 'Jan 31, 2022 at 15:49 GMT'}}
 
 Creating Custom Processor
 -------------------------
@@ -194,6 +235,38 @@ When we add all parts together we get this functional code.
 
 .. literalinclude :: BitSwanPump/examples/bspump-coindesk.py
    :language: python
+
+Your ouput should look something like this:
+
+::
+
+   {'bpi': {'EUR': {'code': 'EUR',
+                    'description': 'Euro',
+                    'rate': '33,796.7930',
+                    'rate_float': 33796.793,
+                    'symbol': '&euro;'},
+            'GBP': {'code': 'GBP',
+                    'description': 'British Pound Sterling',
+                    'rate': '28,165.1854',
+                    'rate_float': 28165.1854,
+                    'symbol': '&pound;'},
+            'JPY': {'code': 'JPY',
+                    'description': 'JPY',
+                    'rate': '429,9716.52771',
+                    'rate_float': '4299716.52771',
+                    'symbol': '&yen;'},
+            'USD': {'code': 'USD',
+                    'description': 'United States Dollar',
+                    'rate': '37,816.3283',
+                    'rate_float': 37816.3283,
+                    'symbol': '&#36;'}},
+    'chartName': 'Bitcoin',
+    'disclaimer': 'This data was produced from the CoinDesk Bitcoin Price Index '
+                  '(USD). Non-USD currency data converted using hourly conversion '
+                  'rate from openexchangerates.org',
+    'time': {'updated': 'Jan 31, 2022 15:53:00 UTC',
+             'updatedISO': '2022-01-31T15:53:00+00:00',
+             'updateduk': 'Jan 31, 2022 at 15:53 GMT'}}
 
 To Summarize what we did in this example:
 
