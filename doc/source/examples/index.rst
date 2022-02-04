@@ -9,5 +9,6 @@ Bitswan Tutorials
    weatherAPI/weatherAPI.rst
    configquickstart/configquickstart.rst
    connectionES/connectionES.rst
+   fortnitecurrentshop/fortnitecurrentshop.rst
 
 
