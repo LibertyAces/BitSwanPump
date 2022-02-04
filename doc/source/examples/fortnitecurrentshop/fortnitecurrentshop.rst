@@ -26,7 +26,7 @@ but in our example we will be using PeriodicTrigger, which triggers in time inte
 
 Each pipeline requires a sink. We will use PPrintSink for now to see incoming data. But in the next steps we will be using NullSink which I describe later.
 
-First we need to create configuration file. Create ``config.conf`` file in your pump folder. To this configuration file copy-paste this chunk of code and rewrite ``<YOUR PRIVATE API>`` section with your API key which you will get by following steps `here <https://fortnitetracker.com/site-api>'_
+First we need to create configuration file. Create ``config.conf`` file in your pump folder. To this configuration file copy-paste this chunk of code and rewrite ``<YOUR PRIVATE API>`` section with your API key which you will get by following steps `here <https://fortnitetracker.com/site-api>`_
 ::
     [pipeline:SamplePipeline]
     url = https://api.fortnitetracker.com/v1/store
