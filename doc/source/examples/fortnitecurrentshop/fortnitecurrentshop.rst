@@ -2,13 +2,19 @@ Fortnite Current Store Example
 ==============================
 About
 -----
-In this example we will get data from one HTTP course using an API request and use filtering processors on those datas and export the data to ``.csv`` file which can be used for example for Discord bot.
+In this example we will get data from one HTTP course using an API request and use filtering processors on those datas
 
-The final pipeline will get data form API request, filter some values from dataframe, does some calculation with values and then export it to CSV file.
+and export the data to ``.csv`` file which can be used for example for Discord bot.
+
+The final pipeline will get data form API request, filter some values from dataframe, does some calculation with values
+
+and then export it to CSV file.
 
 We will be using API from `Fortnite Tracker <https://fortnitetracker.com/site-api>`_ to get current Fortnite store items.
 
-We will work with configuration files in this example. If you already doesn't know how to work with configuration files try this quickstart :ref:`config`.
+We will work with configuration files in this example. If you already doesn't know how to work with configuration files
+
+try this quickstart :ref:`config`.
 
 First sample pipeline
 ---------------------
@@ -24,15 +30,23 @@ Because we are using `Trigger Source`. We need to specify which trigger we will 
 but in our example we will be using PeriodicTrigger, which triggers in time intervals specified in the parameter.
 ``bspump.trigger.PeriodicTrigger(app, <<Time parameter in seconds>>))``
 
-Each pipeline requires a sink. We will use PPrintSink for now to see incoming data. But in the next steps we will be using NullSink which I describe later.
+Each pipeline requires a sink. We will use PPrintSink for now to see incoming data. But in the next steps we will be
 
-First we need to create configuration file. Create ``config.conf`` file in your pump folder. To this configuration file copy-paste this chunk of code and rewrite ``<YOUR PRIVATE API>`` section with your API key which you will get by following steps `here <https://fortnitetracker.com/site-api>`_
+using NullSink which I describe later.
+
+First we need to create configuration file. Create ``config.conf`` file in your pump folder. To this configuration file
+
+copy-paste this chunk of code and rewrite ``<YOUR PRIVATE API>`` section with your API key which you will get by
+
+following steps `here <https://fortnitetracker.com/site-api>`_
 ::
     [pipeline:SamplePipeline]
     url = https://api.fortnitetracker.com/v1/store
     api_key = <YOUR PRIVATE API KEY>
 
-After you have your configuration file finished you can copy-paste code below and try it yourself. Be sure you have BSPump module installed. If not follow our guide :ref:`bsmodule`
+After you have your configuration file finished you can copy-paste code below and try it yourself. Be sure you have
+
+BSPump module installed. If not follow our guide :ref:`bsmodule`
 ::
     import bspump
     import bspump.common
@@ -61,7 +75,9 @@ After you have your configuration file finished you can copy-paste code below an
 
         app.run()
 
-You can run this code with ``~ python3 yourpumpname.py -c config.conf`` command in terminal. Well done! Now we are pumping data about items which are in Fortnite store right now.
+You can run this code with ``~ python3 yourpumpname.py -c config.conf`` command in terminal. Well done! Now we are
+
+pumping data about items which are in Fortnite store right now.
 
 You should get output like this:
 ::
@@ -96,11 +112,17 @@ You should get output like this:
 
 Export to CSV
 -------------
-Awesome! Now we are pumping data but we want to store them somewhere. In the end we want to create Discord Bot which will show us current Fortnite Store when we write command to discord chat. Discord bot can work easily with CSV file so we need to export our data do `.csv` file.
+Awesome! Now we are pumping data but we want to store them somewhere. In the end we want to create Discord Bot which will
+
+show us current Fortnite Store when we write command to discord chat. Discord bot can work easily with CSV file so we
+
+need to export our data do `.csv` file.
 
 We have to import `pandas` library to our pump which can export JSON file to CSV file and then we define our exporting processor.
 
-The processor convert JSON file to dataframe with pandas library and then export it as CSV file and create specified file in same folder like our pump (you can define path you want).
+The processor convert JSON file to dataframe with pandas library and then export it as CSV file and create specified file
+
+in same folder like our pump (you can define path you want).
 This will be our processor:
 ::
     class JSONtoCSV(bspump.Processor):
@@ -110,7 +132,9 @@ This will be our processor:
             event = df.to_csv('data.csv', index=False)
             return event
 
-Now we add this processor to our pump, we have to change PPrintSink to NullSink because we don't want to store or print data anywhere, we will have it in our CSV file.
+Now we add this processor to our pump, we have to change PPrintSink to NullSink because we don't want to store or print
+
+data anywhere, we will have it in our CSV file.
 You can copy-paste code below and look into your pump folder if there is a CSV file with our data.
 ::
     import bspump
@@ -160,9 +184,15 @@ The CSV file should looks this way:
 
 Processor with pandas script
 ----------------------------
-You can see that in our data set there aren't so many interesting datas. So we want to add column with coefficient of price over rarity which will be useful in our Discord bot, because player could know which items is the most advantageous for purchase.
+You can see that in our data set there aren't so many interesting datas. So we want to add column with coefficient of
 
-We create basic pandas script to go through rows and calculate the coefficient from rarity and vBucks column values and then add to list which will create new column called `Coef` at the end. More about pandas `here <https://pandas.pydata.org/docs/>`_
+price over rarity which will be useful in our Discord bot, because player could know which items is the most advantageous
+
+for purchase.
+
+We create basic pandas script to go through rows and calculate the coefficient from rarity and vBucks column values
+
+and then add to list which will create new column called `Coef` at the end. More about pandas `here <https://pandas.pydata.org/docs/>`_
 
 You have to convert the dataframe back to JSON file, because pipeline can't work with dataframes.
 
@@ -196,7 +226,8 @@ The processor:
             event = df.to_json()
             return event
 
-Now we add the processor to our pump and after you copy-paste the code and run the pump you can see that the new column was added with our calculated values.
+Now we add the processor to our pump and after you copy-paste the code and run the pump you can see that the new column
+was added with our calculated values.
 ::
     #!/usr/bin/env python3
 
@@ -282,7 +313,9 @@ Data in CSV file:
 
 Conclusion
 ----------
-So, in this example we learnt how to get data from basic API request and export it to CSV file. Then we create script with pandas library to make price over rarity coefficient and add it as a new column to our dataset. You can also add some other processors which can filter data or make some calculation over the datas.
+So, in this example we learnt how to get data from basic API request and export it to CSV file. Then we create script
+with pandas library to make price over rarity coefficient and add it as a new column to our dataset. You can also add
+some other processors which can filter data or make some calculation over the datas.
 
 What next?
 ----------
