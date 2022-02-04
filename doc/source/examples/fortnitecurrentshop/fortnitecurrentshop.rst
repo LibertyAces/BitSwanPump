@@ -26,7 +26,7 @@ but in our example we will be using PeriodicTrigger, which triggers in time inte
 
 Each pipeline requires a sink. We will use PPrintSink for now to see incoming data. But in the next steps we will be using NullSink which I describe later.
 
-First we need to create configuration file. Create ``config.conf`` file in your pump folder. To this configuration file copy-paste this chunk of code and rewrite ``<YOUR PRIVATE API>`` section with your API key which you will get by following steps on `Fortnite Tracker<https://fortnitetracker.com/site-api>'_
+First we need to create configuration file. Create ``config.conf`` file in your pump folder. To this configuration file copy-paste this chunk of code and rewrite ``<YOUR PRIVATE API>`` section with your API key which you will get by following steps on `Fortnite Tracker <https://fortnitetracker.com/site-api>'_
 ::
     [pipeline:SamplePipeline]
     url = https://api.fortnitetracker.com/v1/store
@@ -162,7 +162,7 @@ Processor with pandas script
 ----------------------------
 You can see that in our data set there aren't so many interesting datas. So we want to add column with coefficient of price over rarity which will be useful in our Discord bot, because player could know which items is the most advantageous for purchase.
 
-We create basic pandas script to go through rows and calculate the coefficient from rarity and vBucks column values and then add to list which will create new column called `Coef` at the end. More about pandas `here<https://pandas.pydata.org/docs/>`_
+We create basic pandas script to go through rows and calculate the coefficient from rarity and vBucks column values and then add to list which will create new column called `Coef` at the end. More about pandas `here <https://pandas.pydata.org/docs/>`_
 
 You have to convert the dataframe back to JSON file, because pipeline can't work with dataframes.
 
@@ -274,6 +274,7 @@ Now we add the processor to our pump and after you copy-paste the code and run t
 
 
 Data in CSV file:
+
 .. image:: thirdoutput.png
     :width: 800
     :align: center
@@ -290,6 +291,7 @@ Now I will show you how can you use the pump to create your Discord bot for your
 You can find how to create Discord bot `here <https://realpython.com/how-to-make-a-discord-bot-python/>`_
 
 The following discord bot can looks like this:
+
 .. image:: discordbot1.png
     :width: 800
     :align: center
