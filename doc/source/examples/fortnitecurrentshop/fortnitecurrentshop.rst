@@ -13,8 +13,14 @@ and then export it to CSV file.
 We will be using API from `Fortnite Tracker <https://fortnitetracker.com/site-api>`_ to get current Fortnite store items.
 
 We will work with configuration files in this example. If you already doesn't know how to work with configuration files
-
 try this quickstart :ref:`config`.
+
+A diagram of the finished pipeline
+
+.. image:: fortnitepump_diagram.png
+    :width: 800
+    :align: center
+    :alt: Finished pipeline diagram
 
 First sample pipeline
 ---------------------
@@ -31,13 +37,10 @@ but in our example we will be using PeriodicTrigger, which triggers in time inte
 ``bspump.trigger.PeriodicTrigger(app, <<Time parameter in seconds>>))``
 
 Each pipeline requires a sink. We will use PPrintSink for now to see incoming data. But in the next steps we will be
-
 using NullSink which I describe later.
 
 First we need to create configuration file. Create ``config.conf`` file in your pump folder. To this configuration file
-
 copy-paste this chunk of code and rewrite ``<YOUR PRIVATE API>`` section with your API key which you will get by
-
 following steps `here <https://fortnitetracker.com/site-api>`_
 ::
     [pipeline:SamplePipeline]
@@ -45,7 +48,6 @@ following steps `here <https://fortnitetracker.com/site-api>`_
     api_key = <YOUR PRIVATE API KEY>
 
 After you have your configuration file finished you can copy-paste code below and try it yourself. Be sure you have
-
 BSPump module installed. If not follow our guide :ref:`bsmodule`
 ::
     import bspump
@@ -76,7 +78,6 @@ BSPump module installed. If not follow our guide :ref:`bsmodule`
         app.run()
 
 You can run this code with ``~ python3 yourpumpname.py -c config.conf`` command in terminal. Well done! Now we are
-
 pumping data about items which are in Fortnite store right now.
 
 You should get output like this:
@@ -113,16 +114,14 @@ You should get output like this:
 Export to CSV
 -------------
 Awesome! Now we are pumping data but we want to store them somewhere. In the end we want to create Discord Bot which will
-
 show us current Fortnite Store when we write command to discord chat. Discord bot can work easily with CSV file so we
-
 need to export our data do `.csv` file.
 
 We have to import `pandas` library to our pump which can export JSON file to CSV file and then we define our exporting processor.
 
 The processor convert JSON file to dataframe with pandas library and then export it as CSV file and create specified file
-
 in same folder like our pump (you can define path you want).
+
 This will be our processor:
 ::
     class JSONtoCSV(bspump.Processor):
@@ -133,8 +132,8 @@ This will be our processor:
             return event
 
 Now we add this processor to our pump, we have to change PPrintSink to NullSink because we don't want to store or print
-
 data anywhere, we will have it in our CSV file.
+
 You can copy-paste code below and look into your pump folder if there is a CSV file with our data.
 ::
     import bspump
@@ -185,13 +184,10 @@ The CSV file should looks this way:
 Processor with pandas script
 ----------------------------
 You can see that in our data set there aren't so many interesting datas. So we want to add column with coefficient of
-
 price over rarity which will be useful in our Discord bot, because player could know which items is the most advantageous
-
 for purchase.
 
 We create basic pandas script to go through rows and calculate the coefficient from rarity and vBucks column values
-
 and then add to list which will create new column called `Coef` at the end. More about pandas `here <https://pandas.pydata.org/docs/>`_
 
 You have to convert the dataframe back to JSON file, because pipeline can't work with dataframes.
