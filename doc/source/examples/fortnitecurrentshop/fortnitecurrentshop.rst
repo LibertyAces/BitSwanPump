@@ -3,11 +3,9 @@ Fortnite Current Store Example
 About
 -----
 In this example we will get data from one HTTP course using an API request and use filtering processors on those datas
-
 and export the data to ``.csv`` file which can be used for example for Discord bot.
 
 The final pipeline will get data form API request, filter some values from dataframe, does some calculation with values
-
 and then export it to CSV file.
 
 We will be using API from `Fortnite Tracker <https://fortnitetracker.com/site-api>`_ to get current Fortnite store items.
@@ -77,8 +75,9 @@ BSPump module installed. If not follow our guide :ref:`bsmodule`
 
         app.run()
 
-You can run this code with ``~ python3 yourpumpname.py -c config.conf`` command in terminal. Well done! Now we are
-pumping data about items which are in Fortnite store right now.
+You can run this code with ``~ python3 yourpumpname.py -c config.conf`` command in terminal.
+
+Well done! Now we are pumping data about items which are in Fortnite store right now.
 
 You should get output like this:
 ::
@@ -218,6 +217,8 @@ The processor:
                     coefs.append((6/price)*100)
                 elif row.rarity.lower() == 'exotic':
                     coefs.append((7/price)*100)
+                else:
+                    coefs.append(1)
             df['Coef'] = coefs
             event = df.to_json()
             return event
@@ -267,6 +268,8 @@ was added with our calculated values.
                     coefs.append((6/price)*100)
                 elif row.rarity.lower() == 'exotic':
                     coefs.append((7/price)*100)
+                else:
+                    coefs.append(1)
             df['Coef'] = coefs
             event = df.to_json()
             return event
