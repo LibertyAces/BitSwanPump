@@ -15,7 +15,7 @@ try this quickstart :ref:`config`.
 
 A diagram of the finished pipeline
 
-.. image:: fortnitepump_diagram.drawio.png
+.. image:: fortnitepump_diagram.png
     :width: 800
     :align: center
     :alt: Finished pipeline diagram
