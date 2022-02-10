@@ -324,7 +324,4 @@ You can find how to create Discord bot `here <https://realpython.com/how-to-make
 
 The following discord bot can looks like this:
 
-.. image:: discordbot1.png
-    :width: 800
-    :align: center
-    :alt: Discord bot first pic
+.. youtube:: UloUHgymFo8
