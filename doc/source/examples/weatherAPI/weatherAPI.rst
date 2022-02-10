@@ -93,6 +93,8 @@ Multiple locations source
 In the code above, the pump simply returns data from one location. But in our use case we need to get data from multiple
 locations, which means we need to get data from multiple API's URL. Next, we define our specific trigger source.
 
+We use ClientSession from aiohttp library to create session where get data from GET method as response for every city in our list. Then we
+store the data from response to event variable and process the event to pipeline. More about aiohttp session can be found `here <https://docs.aiohttp.org/en/stable/client_quickstart.html>`_
 ::
     class LoadSource(bspump.TriggerSource):
 
