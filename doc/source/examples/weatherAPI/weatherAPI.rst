@@ -42,7 +42,8 @@ which simply prints the data to the Command Prompt.
 
 You can try to copy-paste this chunk of code and try it yourself. You must have BSPump module installed. Follow our guide :ref:`bsmodule`.
 
-Simply rewrite ``<<LOCATION>>`` to city you want to obtain data from and put your API key which you will get after you register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
+Simply rewrite ``<<LOCATION>>`` to city you want to obtain data from and put your API key which you will get after you
+register on https://openweathermap.org/ to ``<<YOUR PRIVATE API KEY>>`` section.
 You can find more about how to modify your URL here `https://openweathermap.org/current`_
 ::
     #!/usr/bin/env python3
@@ -116,7 +117,8 @@ For example, create a ``weather-pump.conf`` file, and into that file you can cop
     url = https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={api_key}
     api_key = <<YOUR PRIVATE API KEY>>
 
-When you run your pump with configuration file you have to run it with ``-c`` switch. So after you finish your pump and you need to test it, type ``python3 your-pump-name.py -c weather-pump.conf`` to the terminal.
+When you run your pump with configuration file you have to run it with ``-c`` switch. So after you finish your pump and
+you need to test it, type ``python3 your-pump-name.py -c weather-pump.conf`` to the terminal.
 
 You can change the list of cities to any locations you wish. The important part of this source is ``async def cycle(self)``
 method where we request the API's url for every location from our list and process them in the pipeline.
@@ -199,4 +201,5 @@ Connect to ES
 -------------
 
 
-You can change and modify the pipeline in any manner you want. For example, instead of using PPrintSink you can use our Elastic Search Sink which loads the data to Elastic Search. If you want to read more about :ref:`esconnection`.
+You can change and modify the pipeline in any manner you want. For example, instead of using PPrintSink you can use our
+Elasticsearch Sink which loads the data to Elasticsearch. If you want to read more about :ref:`esconnection`.
