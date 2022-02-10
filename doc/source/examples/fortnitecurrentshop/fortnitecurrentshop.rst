@@ -324,8 +324,7 @@ You can find how to create Discord bot `here <https://realpython.com/how-to-make
 
 The following discord bot can looks like this:
 
-.. youtube:: https://youtu.be/UloUHgymFo8
+.. youtube:: https://www.youtube.com/watch?v=UloUHgymFo8
     :width: 640
     :height: 480
     :align: center
-    :alt: Fortnite Current Store Bot Video
