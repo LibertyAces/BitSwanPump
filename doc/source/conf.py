@@ -55,7 +55,7 @@ release = 'v1903'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinxcontrib.youtube',
+    'sphinxcontrib.yt',
     'sphinx.ext.coverage',
     'sphinx.ext.imgmath',
     'sphinx.ext.viewcode',
