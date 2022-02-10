@@ -173,12 +173,12 @@ You can simply copy-paste the code below:
 ::
 
    class EnrichProcessor(bspump.Processor):
-    def __init__(self, app, pipeline, id=None, config=None):
-        super().__init__(app, pipeline, id=None, config=None)
+      def __init__(self, app, pipeline, id=None, config=None):
+         super().__init__(app, pipeline, id=None, config=None)
 
-    def process(self, context, event):
+      def process(self, context, event):
 
-        return event
+         return event
 
 This a sample processor class. The most important part of this processor class is the process method. This method will
 be called when an event is passed to the Processor. As you can see, the default implementation of process method
@@ -205,8 +205,8 @@ You can do that simply by adding it to `self.build` parameters.
 
 
 The last step is implementation. For our example, I created a simple script that takes the incoming event (python
-dictionary that contains price of Bitcoin in USD, Euro, and Pounds) and adds a new branch with a Japanese yen. There is
-also a new method `convertUSDtoJPY` that calculates the price of yen based on USD conversion rate
+dictionary that contains price of Bitcoin in USD, Euro, and Pounds) and adds a new branch with a Japanese yen. The
+EnrichProcessor class has a new method `convertUSDtoJPY` which calculates the price of yen based on USD conversion rate
 (Note: The exchange rate is outdated for sake of simplicity of this example).
 
 ::
@@ -278,5 +278,5 @@ Next steps
 ----------
 
 You can change and modify the pipeline in any manner you want. For example, instead of using PPrintSink you can use our
-Elastic Search Sink which loads the data to Elastic Search. Read more about :ref:`esconnection` .
+Elasticsearch Sink which loads the data to Elasticsearch. Read more about :ref:`esconnection` .
 
