@@ -324,7 +324,7 @@ You can find how to create Discord bot `here <https://realpython.com/how-to-make
 
 The following discord bot can looks like this:
 
-.. youtube:: https://www.youtube.com/watch?v=UloUHgymFo8
-    :width: 640
-    :height: 480
+.. image:: fortnitebot.gif
+    :width: 800
     :align: center
+    :alt: Fortnite Bot Gif
