@@ -134,8 +134,63 @@ Filter Processor
 ----------------
 
 
+::
+
+    class FilterByStation(bspump.Processor):
+        def __init__(self, app, pipeline, id=None, config=None):
+            super().__init__(app, pipeline, id=None, config=None)
+
+        def process(self, context, event):
+            my_columns = ['station', 'name', 'output_price_item', 'duration', 'input_price_item', 'profit', 'profit_per_hour']
+            df = pd.DataFrame(columns=my_columns)
+            for item in event["data"]["crafts"]:
+                duration = round((item["duration"])/60/60, ndigits=3)
+                reward = item["rewardItems"][0]
+                name_output = reward["item"]["shortName"]
+                quantity = reward["quantity"]
+                output_item_price = reward["item"]["lastLowPrice"]
+                if output_item_price is None:  # checks for NULL values
+                    output_item_price = 0
+                output_price_item = quantity * int(output_item_price)
+                station_name = item["source"]
+                profit = 0
+                profit_p_hour = 0
+                input_price_item = 0
+                for item2 in range(len(item["requiredItems"])):
+                    required_item = item["requiredItems"][item2]
+                    quantity_i = required_item["quantity"]
+                    input_item = required_item["item"]["lastLowPrice"]
+                    if input_item is None:
+                        input_item = 0
+                    price_of_input_item = input_item * quantity_i
+                    input_price_item = input_price_item + price_of_input_item
+                    profit = output_price_item - input_price_item
+                    profit_p_hour = round(profit / duration, ndigits=3)
+                df = df.append(
+                    pd.Series([station_name,
+                               name_output,
+                               output_price_item,
+                               duration,
+                               input_price_item,
+                               profit,
+                               profit_p_hour],
+                              index=my_columns), ignore_index=True)
+                event = df
+            return event
+
+
 Dataframe to csv Processor
 --------------------------
+
+::
+
+    class DataFrameToCSV(bspump.Processor):
+        def __init__(self, app, pipeline, id=None, config=None):
+            super().__init__(app, pipeline, id=None, config=None)
+
+        def process(self, context, event):
+            event.to_csv('./Data/TarkovData.csv', index=False)
+            return event
 
 
 What next
