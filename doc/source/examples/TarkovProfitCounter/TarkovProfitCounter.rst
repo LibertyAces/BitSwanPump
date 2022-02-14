@@ -68,7 +68,7 @@ I am using post method with a query parameter as seen below.
     }
     """
 
-I created this query using playground interface made by the API authors. Here is the `link<https://tarkov-tools.com/___graphql>`_
+I created this query using playground interface made by the API authors. Here is the `link <https://tarkov-tools.com/___graphql>`_
 if you would like to use this API.
 
 
@@ -307,7 +307,7 @@ What next
 
 Now we have a function pipeline. You can do anything with the output data. For example, I created a simple
 discord bot that sends a message with the updated data you can try to make your own discord bot using this tutorial:
-`Getting Started with Discord Bots<https://realpython.com/how-to-make-a-discord-bot-python/>`_.
+`Getting Started with Discord Bots <https://realpython.com/how-to-make-a-discord-bot-python/>`_.
 
 TODO gif
 
