@@ -247,7 +247,6 @@ Now output in your console should like like this:
 
 ::
 
-    table
                              station         name output_price_item  duration input_price_item   profit  profit_per_hour
     0        Booze generator level 1    Moonshine            286999     3.056           236998    50001        16361.584
     1    Intelligence Center level 2  Flash drive            180000    34.222           151498    28502          832.856
