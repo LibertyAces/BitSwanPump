@@ -39,11 +39,12 @@ We will start by creating our source class. As you can see in the code below.
                         raise Exception("Query failed to run by returning code of {}. {}".format(response.status, query))
                     await self.process(event)
 
-As you can see in the cycle method. We are using asynchronous functions for the API requests.
-
-need for query
+As you can see in the cycle method. We are using asynchronous functions for the API requests. As you can see in the code
+I am creating Session which is used in aiohttp for more information check `AIOHTTP Documentation <https://docs.aiohttp.org/en/stable/client_reference.html#basic-api>`_.
+I am using post method with a query parameter as seen below.
 
 ::
+
         query = """
     query {
       crafts {
@@ -67,7 +68,11 @@ need for query
     }
     """
 
-You can try it yourself.
+I created this query using playground interface made by the API authors. Here is the `link<https://tarkov-tools.com/___graphql>`_
+if you would like to use this API.
+
+
+Now you can try to copy-paste the code below and try it for yourself.
 
 ::
 
@@ -128,11 +133,50 @@ You can try it yourself.
                 bspump.common.NullSink(app, self),
             )
 
-You can copy the code above and try the pump yourself.
+If everything works correctly, you should be getting similar output.
+
+::
+
+    'source': 'Workbench level 3'},
+    {'duration': 60000,
+    'requiredItems': [{'item': {'lastLowPrice': 39000,
+                              'shortName': 'Eagle'},
+                     'quantity': 2},
+                    {'item': {'lastLowPrice': 15000,
+                              'shortName': 'Kite'},
+                     'quantity': 2}],
+    'rewardItems': [{'item': {'lastLowPrice': None,
+                            'shortName': 'BP'},
+                   'quantity': 120}],
+    'source': 'Workbench level 3'},
+    {'duration': 61270,
+    'requiredItems': [{'item': {'lastLowPrice': 15000,
+                              'shortName': 'Kite'},
+                     'quantity': 2},
+                    {'item': {'lastLowPrice': 39000,
+                              'shortName': 'Eagle'},
+                     'quantity': 2},
+                    {'item': {'lastLowPrice': 31111,
+                              'shortName': 'Hawk'},
+                     'quantity': 2}],
+    'rewardItems': [{'item': {'lastLowPrice': None,
+                            'shortName': 'PPBS'},
+                   'quantity': 150}],
+                        .
+                        .
+                        .
+
+There are probably hundreds of JSON lines in your console right now. It is not a nice way to output your data right? Let's
+implement our filter processor then.
+
 
 Filter Processor
 ----------------
 
+This filter processor is used for very specific use-case in this example. The goal as you can remember was to filter incoming data.
+The goal is to create a dataframe that contains data where each row has information about station in which the craft is created, duration of the craft
+,price of items needed to perform the craft, name and price of item/s that we obtain by the craft, profit of the craft, and profit per hour. As you can see
+there is a lot of indexes we have to create.
 
 ::
 
@@ -178,9 +222,56 @@ Filter Processor
                 event = df
             return event
 
+You can copy-paste the code above and everything should work just fine. Don't forget to reference the processor in the self.build() method.
+
+::
+
+    class SamplePipeline(bspump.Pipeline):
+
+        def __init__(self, app, pipeline_id):
+            super().__init__(app, pipeline_id)
+
+            self.build(
+                IOHTTPSource(app, self).on(bspump.trigger.PeriodicTrigger(app, 5)),
+                FilterByStation(app, self),
+                bspump.common.PPrintProcessor(app, self),
+                bspump.common.NullSink(app, self),
+            )
+
+
+If you want more detail of what it does. It firstly goes through the whole json,
+then it gets data for each of the index if possible (otherwise zero is used instead of null), and appends the record as a row in our dataframe.
+I am using Pandas in this example. If you are not familiar with Pandas make sure you checked their `Documentation <https://pandas.pydata.org/docs/>`_
+
+Now output in your console should like like this:
+
+::
+                             station         name output_price_item  duration input_price_item   profit  profit_per_hour
+    0        Booze generator level 1    Moonshine            286999     3.056           236998    50001        16361.584
+    1    Intelligence Center level 2  Flash drive            180000    34.222           151498    28502          832.856
+    2    Intelligence Center level 2       Virtex             88000    37.611           210993  -122993        -3270.134
+    3    Intelligence Center level 2       SG-C10            130000    38.889           206978   -76978        -1979.429
+    4    Intelligence Center level 2        RFIDR            215000    53.333            40000   175000         3281.271
+    ..                           ...          ...               ...       ...              ...      ...              ...
+    128            Workbench level 3          PBP                 0    11.972           265888  -265888       -22209.155
+    129            Workbench level 3         M995                 0    15.994           211000  -211000       -13192.447
+    130            Workbench level 3          M61                 0    16.644           233331  -233331       -14018.926
+    131            Workbench level 3           BP                 0    16.667           108000  -108000        -6479.870
+    132            Workbench level 3         PPBS                 0    17.019           170222  -170222       -10001.880
+
+    [133 rows x 7 columns]
+
+We can agree that this looks much more better than raw JSON, but this is not the end we still need to send the data
+somewhere for out bot
+
 
 Dataframe to csv Processor
 --------------------------
+
+To make the data available for our Discord bot, we will save them to a directory as a csv file. This processor is really simple
+as we call only one function from the Pandas library.
+
+You can copy paste the code of the processor
 
 ::
 
@@ -192,16 +283,32 @@ Dataframe to csv Processor
             event.to_csv('./Data/TarkovData.csv', index=False)
             return event
 
+Once again dont forget to include the processor in our self.build() method.
+
+::
+
+    class SamplePipeline(bspump.Pipeline):
+
+        def __init__(self, app, pipeline_id):
+            super().__init__(app, pipeline_id)
+
+            self.build(
+                IOHTTPSource(app, self).on(bspump.trigger.PeriodicTrigger(app, 5)),
+                FilterByStation(app, self),
+                bspump.common.PPrintProcessor(app, self),
+                DataFrameToCSV(app, self),
+                bspump.common.NullSink(app, self),
+            )
+
+This wont change our output in console, but it should create a csv file in your current directory.
 
 What next
 ---------
 
-if you have a functional pipeline. You can do anything with the output data. For example, I created a simple
-discord bot <link to a discord bot tutorial> that sends a message with the updated data.
+Now we have a function pipeline. You can do anything with the output data. For example, I created a simple
+discord bot that sends a message with the updated data you can try to make your own discord bot using this tutorial:
+`Getting Started with Discord Bots<https://realpython.com/how-to-make-a-discord-bot-python/>`_.
 
-image
-
-The bot simply reads data from a csv file in data directory that is updated by the pipeline. Instead of this <reseni> you
-can use database or any other way.
+TODO gif
 
 
