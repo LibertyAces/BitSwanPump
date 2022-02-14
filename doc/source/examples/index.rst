@@ -9,6 +9,7 @@ Bitswan Tutorials
    weatherAPI/weatherAPI.rst
    configquickstart/configquickstart.rst
    connectionES/connectionES.rst
+   TarkovProfitCounter/TarkovProfitCounter.rst
    fortnitecurrentshop/fortnitecurrentshop.rst
 
 
