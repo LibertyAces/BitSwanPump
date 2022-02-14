@@ -311,6 +311,10 @@ Now we have a function pipeline. You can do anything with the output data. For e
 discord bot that sends a message with the updated data you can try to make your own discord bot using this tutorial:
 `Getting Started with Discord Bots <https://realpython.com/how-to-make-a-discord-bot-python/>`_.
 
-TODO gif
+
+.. image:: tarkovbot.gif
+    :width: 800
+    :align: center
+    :alt: Fortnite Bot Gif
 
 
