@@ -1,3 +1,5 @@
+.. _weatherpump:
+
 Weather API Example
 ===================
 About
