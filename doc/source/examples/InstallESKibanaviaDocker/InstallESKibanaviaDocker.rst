@@ -62,6 +62,7 @@ The ``-d`` flag means that your app will be running in detached mode. You can ch
 if all containers are running with ``docker ps`` command.
 
 You should see this:
+
 .. image:: output1.png
     :width: 800
     :align: center
@@ -71,6 +72,7 @@ You can also enter the Kibana GUI. Go to your browser and type ``localhost:5601`
 we define in the docker compose file.
 
 Wow! If everything is okay you will see this:
+
 .. image:: output2.png
     :width: 800
     :align: center
@@ -127,6 +129,7 @@ which we build up before. Now you can type ``docker compose up -d`` into termina
 
 The incoming output in terminal should be this:
 Wow! If everything is okay you will see this:
+
 .. image:: output3.png
     :width: 800
     :align: center
@@ -137,6 +140,7 @@ see all of your stored indexes.
 
 If your containers are running correctly you can see that there is index called ``weather-pump-test``. This is the index where we store data from
 our weather pump.
+
 .. image:: output4.png
     :width: 800
     :align: center
