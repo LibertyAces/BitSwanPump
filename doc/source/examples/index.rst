@@ -11,5 +11,6 @@ Bitswan Tutorials
    connectionES/connectionES.rst
    TarkovProfitCounter/TarkovProfitCounter.rst
    fortnitecurrentshop/fortnitecurrentshop.rst
+   InstallESKibanaviaDocker/InstallESKibanaviaDocker.rst
 
 
