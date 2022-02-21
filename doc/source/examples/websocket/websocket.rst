@@ -6,10 +6,15 @@ WebSocket Example
 About
 -----
 
+what is socket
+--------------
 
-client
-------
+explain server/client consumer/producer
+---------------------------------------
 
+Server consumer
+---------------
 
-server
-------
+Client producer
+---------------
+
