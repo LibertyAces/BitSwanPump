@@ -1,9 +1,8 @@
 About
 =====
 
-In this tutorial .... docker tutorial
-
-break down what we will do
+This tutorial is an overview of how get familiar with docker if you have never used it. I would recommend you to go through
+`Docker Documentation<https://docs.docker.com/get-started/>`_ first
 
 1.
 
