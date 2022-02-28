@@ -28,28 +28,29 @@ Just copy-paste this chunk of code into your ``docker-compose.yml`` file:
 ::
     version: '3.9'
     services:
+      # Elastic Search single node cluster
       elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
         container_name: elasticsearch
         restart: always
-        environment:
+        environment: 
           - xpack.security.enabled=false
           - discovery.type=single-node
-        volumes:
+        volumes: 
           - elasticsearch-data-volume:/usr/share/elasticsearch/data/
-        ports:
+        ports: 
           - 9200:9200
           - 9300:9300
-
+      # Kibana UI for Elastic Search  
       kibana:
-        container_name: kibana
         image: docker.elastic.co/kibana/kibana:8.0.0
+        container_name: kibana
         restart: always
-        environment:
+        environment: 
           - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-        ports:
+        ports: 
           - 5601:5601
-        depends_on:
+        depends_on: 
           - elasticsearch
 
     volumes:
@@ -64,7 +65,6 @@ if all containers are running with ``docker ps`` command.
 You should see this:
 
 .. image:: output1.png
-    :width: 800
     :align: center
     :alt: Terminal Output 1
 
@@ -88,39 +88,40 @@ The following docker-compose file will looks like this:
 ::
     version: '3.9'
     services:
+      # Elastic Search single node cluster
       elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
         container_name: elasticsearch
         restart: always
-        environment:
+        environment: 
           - xpack.security.enabled=false
           - discovery.type=single-node
-        volumes:
+        volumes: 
           - elasticsearch-data-volume:/usr/share/elasticsearch/data/
-        ports:
+        ports: 
           - 9200:9200
           - 9300:9300
-
+      # Kibana UI for Elastic Search  
       kibana:
-        container_name: kibana
         image: docker.elastic.co/kibana/kibana:8.0.0
+        container_name: kibana
         restart: always
-        environment:
+        environment: 
           - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-        ports:
+        ports: 
           - 5601:5601
-        depends_on:
+        depends_on: 
           - elasticsearch
-
+      # BSPump for weather data
       bspump-weather:
         image: lukasvecerka/bspump-weather
         container_name: bspump-weather
-        volumes:
-          - elasticsearch-data-volume:/usr/share/bspump-weather/
-        depends_on:
+        volumes: 
+          - elasticsearch-data-volume:/etc/bspump-weather/
+        depends_on: 
           - kibana
 
-    volumes:
+    volumes: 
       elasticsearch-data-volume:
         driver: local
 
@@ -131,7 +132,6 @@ The incoming output in terminal should be this:
 Wow! If everything is okay you will see this:
 
 .. image:: output3.png
-    :width: 800
     :align: center
     :alt: Terminal Output 3
 
