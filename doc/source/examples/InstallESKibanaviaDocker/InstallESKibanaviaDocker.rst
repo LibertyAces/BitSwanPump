@@ -116,8 +116,6 @@ The following docker-compose file will looks like this:
       bspump-weather:
         image: lukasvecerka/bspump-weather
         container_name: bspump-weather
-        volumes: 
-          - elasticsearch-data-volume:/etc/bspump-weather/
         depends_on: 
           - kibana
 
