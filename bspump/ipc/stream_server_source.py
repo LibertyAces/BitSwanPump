@@ -18,7 +18,13 @@ L = logging.getLogger(__name__)
 class StreamServerSource(Source):
 
 	ConfigDefaults = {
+
+		# Specify the address with port to listen on
+		'listen': '',
+
+		# For backward compatibility (listen is the latest config option)
 		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
+
 		'backlog': '',
 		# Specify 'cert' or 'key' to enable SSL / TLS mode
 
@@ -30,7 +36,10 @@ class StreamServerSource(Source):
 	def __init__(self, app, pipeline, id=None, config=None, protocol_class=LineSourceProtocol):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self.Address = self.Config['address']
+		self.Address = self.Config['listen']
+
+		if len(self.Address) == 0:
+			self.Address = self.Config['address']
 
 		if 'cert' in self.Config or 'key' in self.Config:
 			import asab.net
