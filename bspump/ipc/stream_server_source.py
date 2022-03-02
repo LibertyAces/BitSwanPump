@@ -20,10 +20,7 @@ class StreamServerSource(Source):
 	ConfigDefaults = {
 
 		# Specify the address with port to listen on
-		'listen': '',
-
-		# For backward compatibility (listen is the latest config option)
-		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
+		'listen': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
 
 		'backlog': '',
 		# Specify 'cert' or 'key' to enable SSL / TLS mode
@@ -39,7 +36,8 @@ class StreamServerSource(Source):
 		self.Address = self.Config['listen']
 
 		if len(self.Address) == 0:
-			self.Address = self.Config['address']
+			# For backward compatibility (listen is the latest config option)
+			self.Address = self.Config.get('address')
 
 		if 'cert' in self.Config or 'key' in self.Config:
 			import asab.net
