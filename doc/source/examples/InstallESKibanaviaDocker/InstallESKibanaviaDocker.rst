@@ -1,3 +1,5 @@
+.. _dockercompose:
+
 Install ElasticSearch and Kibana via Docker
 ===========================================
 
