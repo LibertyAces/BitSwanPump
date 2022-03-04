@@ -18,7 +18,7 @@ image for our BS Pipeline. To do that we have to firstly create a docker file fo
 
 We will be using code for our TODO LINK
 
-.. literalinclude:: test.py
+.. literalinclude:: /examples/bspump-weather-api.py
 
 docker file
 -----------
