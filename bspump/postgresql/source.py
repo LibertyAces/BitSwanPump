@@ -8,7 +8,7 @@ from ..abc.source import TriggerSource
 L = logging.getLogger(__name__)
 
 
-class PostgresSource(TriggerSource):
+class PostgreSQLSource(TriggerSource):
 
 	ConfigDefaults = {
 		'query': ''
