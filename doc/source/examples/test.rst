@@ -75,19 +75,19 @@ Add Elastic Search connection to main function:
 
 Sink
 ^^^^
-If you want to upload your data to Elastic Search index create `.conf` file with following config, change `topic-name` to your desired
-topic:
+If you want to upload your data to Elastic Search index create ``.conf`` file with following config, change ``INDEX-NAME`` to your desired
+index and ``PIPELINE-NAME`` to name of your pipline:
 ::
     # Elasticsearch connection
     [connection:ESConnection]
     url=http://10.17.168.197:9200
 
     # Elasticsearch sink
-    [pipeline:PipelineName:ElasticSearchSink]
-    index=topic-name
+    [pipeline:PIPELINE-NAME:ElasticSearchSink]
+    index=INDEX-NAME
     doctype=_doc
 
-Then add `bspump.elasticsearch.ElasticSearchSink` to your pipeline like this:
+Then add ``bspump.elasticsearch.ElasticSearchSink`` to your pipeline like this:
 ::
     self.build(
                 # Source of data in pipeline triggered every 5 sec you can replace it for your desired source
@@ -102,7 +102,8 @@ Then add `bspump.elasticsearch.ElasticSearchSink` to your pipeline like this:
 
 Source
 ^^^^^^
-If you want to get data from Elastic Search topic your `.conf` file have to looks like this, change `topic-name` tou your topic:
+If you want to get data from Elastic Search topic your ``.conf`` file have to looks like this, change ``INDEX-NAME`` tou your index
+and ``PIPELINE-NAME`` to name of your pipeline:
 ::
     # Elasticsearch connection
     [connection:ESConnection]
@@ -110,9 +111,9 @@ If you want to get data from Elastic Search topic your `.conf` file have to look
 
     # Elasticsearch source
     [pipeline:PIPELINE-NAME:ElasticSearchSource]
-    index=TOPIC-NAME
+    index=INDEX-NAME
 
-Then add `bspump.elasticsearch.ElasticSearchSource` with `PeriodicTrigger`
+Then add ``bspump.elasticsearch.ElasticSearchSource`` with ``PeriodicTrigger``
 ::
             self.build(
                 # Elastic Search source which get data every 5 sec
@@ -121,4 +122,56 @@ Then add `bspump.elasticsearch.ElasticSearchSource` with `PeriodicTrigger`
                 bspump.common.StdJsonToDictParser(app, self),
                 # Sink for printing data to terminal
                 bspump.common.PPrintSink(app, self),
+            )
+
+Kafka Connection
+----------------
+Import Kafka module from BSPump
+::
+    import bspump
+    import bspump.common
+    import bspump.http
+    import bspump.kafka
+    import asab
+
+Add Kafka connection to main function:
+::
+       if __name__ == '__main__':
+        app = bspump.BSPumpApplication()
+
+        svc = app.get_service("bspump.PumpService")
+
+        # Adding Kafka connection here
+        svc.add_connection(
+        bspump.kafka.KafkaConnection(app, "KafkaConnection")
+        )
+
+        # Construct and register Pipeline
+        pl = SamplePipeline(app, 'SamplePipeline')
+        svc.add_pipeline(pl)
+
+        app.run()
+
+Sink
+^^^^
+If you want to stream your data in Kafka topic create ``.conf`` file with following config (change ``TOPIC-NAME`` to your topic
+and ``PIPELINE-NAME`` to name of your pipeline):
+::
+    [connection:KafkaConnection]
+    bootstrap_servers=10.17.168.197
+
+    # Elasticsearch sink
+    [pipeline:PIPELINE-NAME:KafkaSink]
+    topic=TOPIC-NAME
+Then add ``bspump.kafka.KafkaSink`` to your pipeline like this:
+::
+    self.build(
+                # Source of data in pipeline triggered every 5 sec you can replace it for your desired source
+                bspump.http.HTTPClientSource(app, self, config={
+                   'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
+                }).on(bspump.trigger.PeriodicTrigger(app, 5)),
+                # Processor which convert JSON to Python dictionary
+                bspump.common.StdJsonToDictParser(app, self),
+                # Sink to upload data to Elastic Search topic
+                bspump.kafka.KafkaSink(app, self, "KafkaConnection"),
             )
