@@ -24,7 +24,7 @@ class PostgreSQLConnection(Connection):
 		'user': '',
 		'password': '',
 		'db': '',
-		'connect_timeout': aiopg.connection.TIMEOUT,  # 60.0
+		'connect_timeout': 60,
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
 		'max_bulk_size': 1,  # This is because execute many is not supported by aiopg
@@ -188,7 +188,7 @@ class PostgreSQLConnection(Connection):
 			raise
 
 
-	def acquire(self) -> aiopg.utils._PoolConnectionContextManager:
+	def acquire(self) -> aiopg.pool._PoolConnectionContextManager:
 		"""
 		Acquire asynchronous database connection
 
