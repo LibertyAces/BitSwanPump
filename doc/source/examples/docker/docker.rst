@@ -5,7 +5,6 @@ This tutorial will help you to create your own Docker image for your pipeline. F
 `Docker Documentation<https://docs.docker.com/get-started/>`_ if this is your first time with Docker.
 
 
-
 quickstart to docker
 --------------------
 
@@ -15,6 +14,7 @@ image for our BS Pipeline. To do that we have to firstly create a docker file fo
 
 We will be using code for our TODO LINK
 
+.. literalinclude:: examples/bspump-weather-api.py
 
 docker file
 -----------
@@ -28,7 +28,6 @@ Docker file
     WORKDIR /opt/nameofworkdir
 
     COPY name.py ./name.py
-
 
     CMD ["python3", "name.py"]
 
