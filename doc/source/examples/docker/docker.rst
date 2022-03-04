@@ -85,20 +85,32 @@ If you want to see all containers that were initiated type
 
     docker ps -a
 
+Now if you want to use this image from other devices for docker compose for example. You can push the image to your repository
+using:
+
+::
+
+    docker push <<your docker nickname>>/<<name of your image>>
+
+if you haven't tagged your container before use
+
+::
+
+    docker tag <<name of your image>> <<your docker nickname>>/<<name of your image>>
 
 
-
+Now you should have running docker container and you know how to push it to your docker hub. If you are still not sure how to
+use docker I would recommend to check docker documentation once again. Docker is not complicated, but it takes some time to get used to it.
 
 
 additional commands
 -------------------
 
+TODO
 
 
 what next
 ---------
 
-if you have sucessfully created your own docker image you can try to connected your pipeline with other componenst like elastic search
-or kafka. Check our `tutorial <>` for working with docker compose
-
-..
+if you have successfully created your own docker image you can try to connected your pipeline with other technologies like elastic search
+or kafka. Check our :ref:`dockercompose` for working with docker compose.
