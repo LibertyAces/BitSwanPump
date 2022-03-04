@@ -206,11 +206,11 @@ InfluxDB Connection
 First you have to connect to bs-testing server and create database in InfluxDB container. When you are connected on bs-testing type
 this command:
 ::
-    root@bs-testing:~# docker exec -it single_lm01-influxdb_1 bash
+    root@bs-testing:~ docker exec -it single_lm01-influxdb_1 bash
 
 Now you are in InfluxDB container. To enter the InfluxDB type:
 ::
-    root@72bfd8803691:/# influx
+    root@72bfd8803691:/ influx
 Create new database and insert new measurements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 When you are in InfluxDB you can show all your databases with ``show databases`` command.
