@@ -172,6 +172,121 @@ Then add ``bspump.kafka.KafkaSink`` to your pipeline like this:
                 }).on(bspump.trigger.PeriodicTrigger(app, 5)),
                 # Processor which convert JSON to Python dictionary
                 bspump.common.StdJsonToDictParser(app, self),
-                # Sink to upload data to Elastic Search topic
+                # Sink to stream data to Kafka topic
                 bspump.kafka.KafkaSink(app, self, "KafkaConnection"),
             )
+
+Source
+^^^^^^
+If you want to stream data from Kafka topic create ``.conf``file with following config (change ``TOPIC-NAME`` and ``PIPELINE-NAME``):
+::
+    # KafkaConnection
+    [connection:KafkaConnection]
+    bootstrap_servers=10.17.168.197:9092
+
+    # Kafka source ACS
+    [pipeline:PIPELINE-NAME:KafkaSource]
+    topic=TOPIC-NAME
+
+Add ``bspump.kafka.KafkaSource``to your pipeline:
+::
+            self.build(
+                # Elastic Search source which get data every 5 sec
+                bspump.kafka.KafkaSource(app, self, "KafkaConnection"),
+                # Processor which convert bytes to string because Kafka stream is in bytes
+                bspump.common.BytesToStringParser(app, self),
+                # Processor which convert JSON to Python dictionary
+                bspump.common.StdJsonToDictParser(app, self),
+                # Sink to stream data from Kafka topic
+                bspump.common.PPrintSink(app, self),
+            )
+
+InfluxDB Connection
+-------------------
+First you have to connect to bs-testing server and create database in InfluxDB container. When you are connected on bs-testing type
+this command:
+::
+    root@bs-testing:~# docker exec -it single_lm01-influxdb_1 bash
+
+Now you are in InfluxDB container. To enter the InfluxDB type:
+::
+    root@72bfd8803691:/# influx
+Create new database and insert new measurements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+When you are in InfluxDB you can show all your databases with ``show databases`` command.
+
+Output:
+::
+    name: databases
+    name
+    ----
+    db0
+    _internal
+    ...
+
+To create new database type ``create database DATABASE-NAME`` and change ``DATABASE-NAME`` with name of your desired database.
+
+Now when you type ``show databases`` again you should see this:
+::
+    name: databases
+    name
+    ----
+    db0
+    _internal
+    ...
+    DATABASE-NAME
+
+Now you have to enter your desired database with ``use DATABASE-NAME`` command (change ``DATABASE-NAME`` with your database).
+
+When you are in your database you can display all your measurements with ``show measurements`` command. When your database is empty you will see nothing.
+
+You can insert new measurement with ``INSERT`` command, for example:
+::
+    INSERT cpu,host=serverA value 1
+
+Sink
+^^^^
+If you want to insert data to your InfluxDB with your pump you have to add import ``bspump.influxdb`` module:
+::
+    import bspump
+    import bspump.common
+    import bspump.http
+    import bspump.influxdb
+    import asab
+
+Add InfluxDB Connection to main function of your pump
+::
+    if __name__ == '__main__':
+        app = bspump.BSPumpApplication()
+
+        svc = app.get_service("bspump.PumpService")
+
+        # Adding InfluxDB Connection here
+        svc.add_connection(
+            bspump.influxdb.InfluxDBConnection(app, "InfluxConnection")
+        )
+
+        # Construct and register Pipeline
+        pl = SamplePipeline(app, 'SamplePipeline')
+        svc.add_pipeline(pl)
+
+        app.run()
+
+Now you have to set you ``.conf`` file with this configuration (change ``YOUR-DB-NAME`` to name of your database):
+::
+    # InfluxDB Connection
+    [connection:InfluxConnection]
+    url=http://10.17.168.197:8086
+    db= YOUR-DB-NAME
+
+Add ``bspump.influxdb.InfluxDBSink`` to your pipeline:
+::
+        self.build(
+            bspump.http.HTTPClientSource(app, self, config={
+                'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
+            }).on(bspump.trigger.PeriodicTrigger(app, 5)),
+            # Processor used to print data to terminal
+            bspump.common.PPrintProcessor(app, self),
+            # Sink which send data to InfluxDB
+            bspump.influxdb.InfluxDBSink(app, self, "InfluxConnection")
+        )
