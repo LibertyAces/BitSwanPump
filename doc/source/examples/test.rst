@@ -178,7 +178,7 @@ Then add ``bspump.kafka.KafkaSink`` to your pipeline like this:
 
 Source
 ^^^^^^
-If you want to stream data from Kafka topic create ``.conf``file with following config (change ``TOPIC-NAME`` and ``PIPELINE-NAME``):
+If you want to stream data from Kafka topic create ``.conf`` file with following config (change ``TOPIC-NAME`` and ``PIPELINE-NAME``):
 ::
     # KafkaConnection
     [connection:KafkaConnection]
