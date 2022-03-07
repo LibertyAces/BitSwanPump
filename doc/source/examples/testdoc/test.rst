@@ -124,6 +124,40 @@ Then add ``bspump.elasticsearch.ElasticSearchSource`` with ``PeriodicTrigger``
                 bspump.common.PPrintSink(app, self),
             )
 
+Kibana UI
+^^^^^^^^^
+Kibana is UI for Elastic Search databases and to create dashboards from our stored data. You can access Kibana on bs-testing through
+this url https://bs-testing/kibana/app/home#/ you can also browse your data in Index Management, etc.
+
+When you go to that url you should see this page
+
+.. image:: kibana1.png
+    :width: 800
+    :align: center
+    :alt: Kibana Home Page
+
+You can browse through indexes `here <https://bs-testing/kibana/app/management/data/index_management/indices>`_
+
+.. image:: kibana2.png
+    :width: 800
+    :align: center
+    :alt: Kibana Index Management
+
+When you want to create your dashboard you have to first make index pattern from your index. You can create index pattern
+`here <https://bs-testing/kibana/app/management/kibana/indexPatterns>`_
+
+.. image:: kibana3.png
+    :width: 800
+    :align: center
+    :alt: Kibana Index Patterns
+
+When you have your index pattern you can create dashboard `here <https://bs-testing/kibana/app/dashboards#/create?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-15m,to:now))&_a=(description:'',filters:!(),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),panels:!(),query:(language:kuery,query:''),tags:!(),timeRestore:!f,title:'',viewMode:edit)>`_
+
+.. image:: kibana4.png
+    :width: 800
+    :align: center
+    :alt: Kibana Dashboard
+
 Kafka Connection
 ----------------
 Import Kafka module from BSPump
