@@ -237,7 +237,7 @@ Add ``bspump.kafka.KafkaSource``to your pipeline:
 
 KafkaDrop
 ^^^^^^^^^
-KafkaDrop is UI for Kafka. You can manage your topics and see info about brokers here. KafkaDrop is accessible via http://bs-testing:9000/kafka-ui/
+KafkaDrop is UI for Kafka. You can manage your topics and see info about brokers here. KafkaDrop is accessible via https://bs-testing/kafka-ui/
 
 You should see this home page
 
@@ -257,6 +257,7 @@ When you want to see which data are stored in topic click on ``View Messages``. 
 messages limit, key format and message format and click ``View Messages`` again.
 
 You should see specific messages in topic and its timestamps
+
 .. image:: kafka3.png
     :width: 800
     :align: center
@@ -351,3 +352,38 @@ Add ``bspump.influxdb.InfluxDBSink`` to your pipeline:
             # Sink which send data to InfluxDB
             bspump.influxdb.InfluxDBSink(app, self, "InfluxConnection")
         )
+
+Grafana
+^^^^^^^
+Grafana is UI for creating dashboard from a multiple data sources like InfluxDB, Elastic, MySQL ,etc. We will use it for creating dashboard from InfluxDB records.
+Grafana is accessible via http://bs-testing:3000
+
+You should see this home page
+
+.. image:: grafana1.png
+    :width: 800
+    :align: center
+    :alt: Grafana Home Page
+
+First you have to add your data source, which is database where you have your measurements. You can find data sources
+`here <http://bs-testing:3000/datasources>`_
+
+.. image:: grafana2.png
+    :width: 800
+    :align: center
+    :alt: Grafana Data Sources
+
+Click on ``Add data source`` option and choose ``InfluxDB``. Define name of your data source, change url of source to http://bs-testing:8086, and
+specify name of your database.
+
+.. image:: grafana3.png
+    :width: 800
+    :align: center
+    :alt: Grafana Adding Data Source
+
+Now you can create dashboard `here <http://bs-testing:3000/dashboard/new?orgId=1>`_.
+
+.. image:: grafana4.png
+    :width: 800
+    :align: center
+    :alt: Grafana Panel Creation
