@@ -235,6 +235,33 @@ Add ``bspump.kafka.KafkaSource``to your pipeline:
                 bspump.common.PPrintSink(app, self),
             )
 
+KafkaDrop
+^^^^^^^^^
+KafkaDrop is UI for Kafka. You can manage your topics and see info about brokers here. KafkaDrop is accessible via http://bs-testing:9000/kafka-ui/
+
+You should see this home page
+
+.. image:: kafka1.png
+    :width: 800
+    :align: center
+    :alt: KafkaDrop Home Page
+
+You can see there are already some topics. When you click on one of them you can show info about topic and its partition.
+
+.. image:: kafka2.png
+    :width: 800
+    :align: center
+    :alt: KafkaDrop Topic Page
+
+When you want to see which data are stored in topic click on ``View Messages``. Set from which partition you want to view data, offset,
+messages limit, key format and message format and click ``View Messages`` again.
+
+You should see specific messages in topic and its timestamps
+.. image:: kafka3.png
+    :width: 800
+    :align: center
+    :alt: KafkaDrop View Messages
+
 InfluxDB Connection
 -------------------
 First you have to connect to bs-testing server and create database in InfluxDB container. When you are connected on bs-testing type
