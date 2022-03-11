@@ -24,7 +24,6 @@ ElasticSearchSource is using standard Elastic's search API to fetch data.
 
 	Default is:
 
-
 .. code:: python
 
 	default_request_body = {
@@ -69,7 +68,6 @@ ElasticSearch Aggs Source
 
 	Default is:
 
-
 .. code:: python
 
 	default_request_body = {
@@ -108,7 +106,6 @@ ElasticSearchConnection allows your ES source, sink or lookup to connect to Elas
 
 	usage:
 
-
 .. code:: python
 
 
@@ -117,7 +114,6 @@ ElasticSearchConnection allows your ES source, sink or lookup to connect to Elas
 	svc.add_connection(
 		bspump.elasticsearch.ElasticSearchConnection(app, "ESConnection")
 	)
-
 
 .. code:: python
 
