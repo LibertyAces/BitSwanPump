@@ -1,6 +1,8 @@
 class Anomaly(dict):
 	"""
-	Anomaly is an abstract class to be overriden for a specific anomaly and its type.
+	Description: 	Anomaly is an abstract class to be overriden for a specific anomaly and its type.
+
+	:return:
 
 	Implement: TYPE, on_tick
 
@@ -14,7 +16,7 @@ class Anomaly(dict):
 		"""
 		Description:
 
-		:return: ??
+		:return: sets status to closed
 
 		|
 
