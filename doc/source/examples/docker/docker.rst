@@ -53,7 +53,8 @@ each element is one word of the command. In our case we want to execute our prog
 Creating docker image
 ---------------------
 
-The only thing you ashve
+To build your docker image use this command. Make sure to use -t switch and match <<your docker nickname>>
+to your docker login name. This must match for successful push of the image to the docker desktop.
 
 ::
 
