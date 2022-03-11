@@ -65,7 +65,7 @@ setup(
 		'Source': 'https://github.com/LibertyAces/BitSwanPump'
 	},
 	install_requires=[
-		'asab>=21.11',
+		'asab>=20.7.28',
 		'aiohttp>=3.6.2',
 		'requests>=2.24.0',
 		'aiokafka>=0.7.0',
@@ -86,7 +86,7 @@ setup(
 		'motor>=2.1.0',
 		'mongoquery>=1.3.6',
 		'pybind11>=2.6.1',
-		'cysimdjson==21.11b2',
+		'cysimdjson==21.4a4',
 		'pywinrm>=0.4.1',
 		'pandas>=0.24.2',
 		'xxhash>=1.4.4',
