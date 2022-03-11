@@ -21,6 +21,7 @@ class Lookup(asab.ConfigObject):
 
 	|
 
+	:return:
 	"""
 
 	ConfigDefaults = {
@@ -84,6 +85,11 @@ class Lookup(asab.ConfigObject):
 		raise NotImplementedError("Lookup '{}' __contains__() method not implemented".format(self.Id))
 
 	def _create_provider(self, path: str):
+		"""
+		Description:
+
+		:return:
+		"""
 		if path.startswith("zk:"):
 			from bspump.zookeeper import ZooKeeperBatchLookupProvider
 			self.Provider = ZooKeeperBatchLookupProvider(self, path)
@@ -118,7 +124,7 @@ class Lookup(asab.ConfigObject):
 		"""
 		Description:
 
-		:return: ??
+		:return:
 
 		|
 
@@ -126,6 +132,11 @@ class Lookup(asab.ConfigObject):
 		return asyncio.ensure_future(self._do_update(), loop=loop)
 
 	async def _do_update(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		updated = await self.load()
 		if updated:
 			L.warning(f"{self.Id} bspump.Lookup.changed!")
@@ -134,10 +145,6 @@ class Lookup(asab.ConfigObject):
 	async def load(self) -> bool:
 		"""
 		Description:
-
-		:return: True
-
-		|
 
 		"""
 		data = await self.Provider.load()
@@ -150,8 +157,6 @@ class Lookup(asab.ConfigObject):
 	def serialize(self):
 		"""
 		Description:
-
-		|
 
 		"""
 		raise NotImplementedError("Lookup '{}' serialize() method not implemented".format(self.Id))
@@ -166,6 +171,11 @@ class Lookup(asab.ConfigObject):
 		raise NotImplementedError("Lookup '{}' deserialize() method not implemented".format(self.Id))
 
 	def rest_get(self):
+		"""
+		Description:
+
+		:return:
+		"""
 		response = {
 			"Id": self.Id
 		}
@@ -201,8 +211,6 @@ class AsyncLookupMixin(Lookup):
 	"""
 	Description:
 
-	|
-
 	"""
 
 	async def get(self, key):
@@ -212,8 +220,6 @@ class AsyncLookupMixin(Lookup):
 class DictionaryLookup(MappingLookup):
 	"""
 	Description:
-
-	|
 
 	"""
 
@@ -242,10 +248,9 @@ class DictionaryLookup(MappingLookup):
 		"""
 		Description:
 
-		:return: ??
+		:return: json data
 
 		|
-
 		"""
 		return (json.dumps(self.Dictionary)).encode('utf-8')
 
@@ -270,7 +275,6 @@ class DictionaryLookup(MappingLookup):
 		:return: rest
 
 		|
-
 		"""
 		rest = super().rest_get()
 		rest["Dictionary"] = self.Dictionary
