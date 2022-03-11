@@ -13,5 +13,6 @@ Bitswan Tutorials
    fortnitecurrentshop/fortnitecurrentshop.rst
    InstallESKibanaviaDocker/InstallESKibanaviaDocker.rst
    docker/docker.rst
+   websocket/websocket.rst
 
 
