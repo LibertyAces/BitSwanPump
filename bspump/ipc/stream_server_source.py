@@ -66,10 +66,12 @@ class StreamServerSource(Source):
 		# Create all required sockets, bind them to specific ports and start listening
 		for addrline in self.Address.split('\n'):
 			addrline = addrline.strip()
-			if " " in addrline:
-				# IP server socket server
-				host, port = addrline.rsplit(" ", maxsplit=1)
+
+			if addrline.count(":") == 1:
+				host, port = self.Address.rsplit(":", maxsplit=1)
+
 				addrinfo = socket.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
+
 				for family, socktype, proto, canonname, sockaddr in addrinfo:
 					s = socket.socket(family, socktype, proto)
 					try:
@@ -87,9 +89,14 @@ class StreamServerSource(Source):
 					s.setblocking(False)
 					self.AcceptingSockets.append(s)
 
-			# TODO elif: unix sockets
 
 			else:
+				self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+				self.Socket.setblocking(False)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+				self.Socket.bind(self.Address)
+
 				L.error("Invalid address specification: '{}'".format(addrline))
 
 		super().start(loop)
@@ -115,7 +122,7 @@ class StreamServerSource(Source):
 
 		"""
 		if len(self.AcceptingSockets) == 0:
-			L.warning("No listening socket configured")
+			L.error("No listening socket configured")
 			return
 
 		await asyncio.gather(

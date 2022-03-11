@@ -204,6 +204,10 @@ class RouterMixIn(object):
 
 	"""
 
+	"""
+	Router Mix in a class
+	"""
+
 
 	def _mixin_init(self, app):
 		"""

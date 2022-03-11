@@ -26,7 +26,7 @@ class EchoPipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			bspump.ipc.StreamServerSource(app, self, config={'address': '0.0.0.0 8083'}),
+			bspump.ipc.StreamServerSource(app, self, config={'address': '127.0.0.1:8083'}),
 			EchoSink(app, self)
 		)
 
