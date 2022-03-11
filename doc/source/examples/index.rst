@@ -14,5 +14,6 @@ Bitswan Tutorials
    InstallESKibanaviaDocker/InstallESKibanaviaDocker.rst
    docker/docker.rst
    websocket/websocket.rst
+   blankapp/blankapp.rst
 
 
