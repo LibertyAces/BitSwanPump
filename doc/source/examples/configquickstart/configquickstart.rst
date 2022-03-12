@@ -87,11 +87,24 @@ file. See more in :ref:`coindesk`.
         app.run()
 
 
+Running your pump with configuration files
+------------------------------------------
+When you want to run your pump with configuration file there are two ways to do that.
+
+In terminal
+^^^^^^^^^^^
 To run your pump with a configuration file, use ``-c`` switch in the terminal, after that switch there has to be ``file_path/file_name.conf``.
 
-For example
+For example when you have configuration file in same folder
 ::
     ~python3 mypumptest.py -c mypumpconfiguration.conf
 
+In your IDE
+^^^^^^^^^^^
+To run your pump in IDE you have to set the run parameters. For example in PyCharm you have to go to Run -> Edit Configurations...
+and then change the run parameters to ``-c file_path/nameOfYourConfig.conf``
 
-
+.. image:: ../testdoc/config1.png
+    :width: 800
+    :align: center
+    :alt: IDE Configuration
