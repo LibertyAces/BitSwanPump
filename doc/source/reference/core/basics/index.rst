@@ -6,8 +6,6 @@ Basics covers the most fundamental components of a BSPump. We will start with th
 
 Pipeline
 --------
-
-
 The pipeline class is responsible for construction of the BSPump pipeline itself. Its methods enable us to maintain
 a working lifecycle of the system.
 
