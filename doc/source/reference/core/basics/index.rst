@@ -102,7 +102,6 @@ The following are the core methods of the pipeline.
 
 .. automethod:: bspump.Pipeline.insert_after
 
-<<<<<<< HEAD
 .. automethod:: bspump.Pipeline.iter_processors
 
 
@@ -125,7 +124,6 @@ Other pipeline methods
 
 .. automethod:: bspump.Pipeline.get_throttles
 
-<<<<<<< HEAD
 .. automethod:: bspump.Pipeline.is_error
 
 .. automethod:: bspump.Pipeline.set_error
