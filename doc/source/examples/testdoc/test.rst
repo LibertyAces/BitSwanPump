@@ -46,6 +46,28 @@ Blank app structure
 -------------------
 It is a good practice to have your app in blank app structure like in this tutorial TODO...
 
+Running your pump with configuration file
+-----------------------------------------
+When you want to run your pump with configuration you can do it this way
+
+In Terminal
+^^^^^^^^^^^
+In terminal you have to use ``-c`` flag in your command like this
+::
+    ~ python3 nameOfYourPump.py -c nameOfYourConfig.conf
+
+In your IDE
+^^^^^^^^^^^
+When you want to run your pump in IDE you have to set the run parameters. For example in PyCharm go to Run -> Edit Configurations...
+and then change the parameters to ``-c nameOfYourPump.conf``.
+
+.. image:: config1.png
+    :width: 800
+    :align: center
+    :alt: IDE Configuration
+
+More about configuration files is `here <https://bitswanpump.readthedocs.io/en/latest/examples/configquickstart/configquickstart.html>`_
+
 Elastic search connection
 -------------------------
 Import Elastic Search module from BSPump
