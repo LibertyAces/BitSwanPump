@@ -204,7 +204,3 @@ to start your pipeline create another file. For example, ``bspump-blank-app.py``
 
 Then you create an object of your class and run it.
 
-
-What next
----------
-
