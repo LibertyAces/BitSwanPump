@@ -13,9 +13,8 @@ it is easy to make changes for your own pipeline.
 first you will create similar file hierarchy like on this image.
 
 .. image:: file_hierarchy.png
-    :width: 800
     :align: center
-    :alt: Weather Pipeline Pic
+    :alt: file hierarchy
 
 
 pipeline
