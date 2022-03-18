@@ -132,6 +132,7 @@ In service you have to register your pipeline. You can also register more pipeli
             await svc.initialize(app)
 
 ::
+
     self.SamplePipeline = SamplePipeline(app, "SamplePipeline")
     svc.add_pipeline(self.SamplePipeline)
 
@@ -181,6 +182,7 @@ init
 create this file for initialization of your pipeline.
 
 ::
+
     from .app import BlankAppApplication
 
 
