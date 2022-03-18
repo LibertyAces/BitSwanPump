@@ -9,6 +9,8 @@ This example will show you how can you can connect two pipelines connection usin
 what is socket
 --------------
 
+Socket is a peer-to-peer connection between two computers. You can imagine it like two computers have access to one
+directory and can share data between each other.
 
 
 explain server/client consumer/producer
@@ -118,16 +120,6 @@ We have a running server, so now we have to create a client that can connect to 
 
 Creating the client is much more easier than the server. All you have to do is to use ``HTTPClientSocketSink`` with config
 where you specify the url of the server you want to connect to. In this case it is ``http://127.0.0.1:8080/bspump/ws``
-
-Server Producer
----------------
-
-TODO
-
-Client Consumer
----------------
-
-TODO
 
 what next
 ---------
