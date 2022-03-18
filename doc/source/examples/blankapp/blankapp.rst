@@ -12,7 +12,10 @@ it is easy to make changes for your own pipeline.
 
 first you will create similar file hierarchy like on this image.
 
-#todo add screenshot
+.. image:: file_hierarchy.png
+    :width: 800
+    :align: center
+    :alt: Weather Pipeline Pic
 
 
 pipeline
