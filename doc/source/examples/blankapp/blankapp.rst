@@ -21,6 +21,7 @@ pipeline
 In this file you will have your pipelien with ``self.build`` method. If you want to use your own processors, sources
 or sinks you have to import them from another file. In this example I want to use my processor for coindesk, so I have to use
 
+
 ::
 
     from .processor import EnrichProcessor
@@ -70,6 +71,7 @@ To create processor file you can simply copy-paste your processor class.
 
 :note: Do not forget to import bspump module, so your processor can function normally.
 
+
 ::
 
     import bspump
@@ -102,6 +104,7 @@ service
 In service you have to register your pipeline. You can also register more pipelines.
 
 :note: Remember to import your pipeline class here, so you can register the pipeline.
+
 
 ::
 
@@ -143,6 +146,7 @@ module
 
 In module you create a module of your service. You can create more modules from several services.
 
+
 ::
 
     import asab
@@ -176,10 +180,12 @@ In app you create the whole application. You have to only include the module you
             from .module import BlankModule
             self.add_module(BlankModule)
 
+
 init
 ----
 
 create this file for initialization of your pipeline.
+
 
 ::
 
