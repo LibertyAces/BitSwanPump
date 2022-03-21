@@ -12,7 +12,9 @@ it is easy to make changes for your own pipeline.
 
 first you will create similar file hierarchy like on this image.
 
-#todo add screenshot
+.. image:: file_hierarchy.png
+    :align: center
+    :alt: file hierarchy
 
 
 pipeline
@@ -20,6 +22,7 @@ pipeline
 
 In this file you will have your pipelien with ``self.build`` method. If you want to use your own processors, sources
 or sinks you have to import them from another file. In this example I want to use my processor for coindesk, so I have to use
+
 
 ::
 
@@ -70,6 +73,7 @@ To create processor file you can simply copy-paste your processor class.
 
 :note: Do not forget to import bspump module, so your processor can function normally.
 
+
 ::
 
     import bspump
@@ -103,6 +107,7 @@ In service you have to register your pipeline. You can also register more pipeli
 
 :note: Remember to import your pipeline class here, so you can register the pipeline.
 
+
 ::
 
     import asab
@@ -132,6 +137,7 @@ In service you have to register your pipeline. You can also register more pipeli
             await svc.initialize(app)
 
 ::
+
     self.SamplePipeline = SamplePipeline(app, "SamplePipeline")
     svc.add_pipeline(self.SamplePipeline)
 
@@ -141,6 +147,7 @@ module
 ------
 
 In module you create a module of your service. You can create more modules from several services.
+
 
 ::
 
@@ -175,12 +182,15 @@ In app you create the whole application. You have to only include the module you
             from .module import BlankModule
             self.add_module(BlankModule)
 
+
 init
 ----
 
 create this file for initialization of your pipeline.
 
+
 ::
+
     from .app import BlankAppApplication
 
 
@@ -201,8 +211,4 @@ to start your pipeline create another file. For example, ``bspump-blank-app.py``
 ``mypipeline.app`` is the path to your ``app`` python file. and ``BlankAppApplication`` is the name of your pipeline class.
 
 Then you create an object of your class and run it.
-
-
-What next
----------
 
