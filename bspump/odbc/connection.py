@@ -16,12 +16,11 @@ L = logging.getLogger(__name__)
 class ODBCConnection(Connection):
 	# Caution: Providing incorrect connection configuration terminates the program with 'Abort trap 6'
 	ConfigDefaults = {
-		'host': 'localhost',
-		'port': 3306,
+		'dsn': '',
+		'host': '',
+		'port': -1,
 		'user': '',
 		'password': '',
-		'driver': '',
-		'db': '',
 		'connect_timeout': 1,
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
@@ -36,12 +35,13 @@ class ODBCConnection(Connection):
 		self.PubSub = PubSub(app)
 		self.Loop = app.Loop
 
+		self._dsn = self.Config['dsn']
 		self._host = self.Config['host']
 		self._port = int(self.Config['port'])
 		self._user = self.Config['user']
 		self._password = self.Config['password']
+
 		self._connect_timeout = self.Config['connect_timeout']
-		self._dsn = "Driver={};Database={}".format(self.Config['driver'], self.Config['db'])
 		self._reconnect_delay = self.Config['reconnect_delay']
 		self._output_queue_max_size = self.Config['output_queue_max_size']
 		self._max_bulk_size = int(self.Config['max_bulk_size'])
@@ -120,18 +120,34 @@ class ODBCConnection(Connection):
 
 
 	async def _connection(self):
+		kwargs = {}
+
+		if len(self._host) != 0:
+			kwargs["host"] = self._host
+
+		if self._port != -1:
+			kwargs["port"] = self._port
+
+		if len(self._user) != 0:
+			kwargs["user"] = self._user
+
+		if len(self._password) != 0:
+			kwargs["password"] = self._password
+
+		if len(self._dsn) != 0:
+			kwargs["dsn"] = self._dsn
+
 		try:
 			async with aioodbc.create_pool(
-				host=self._host,
-				port=self._port,
-				user=self._user,
-				password=self._password,
-				dsn=self._dsn,
 				connect_timeout=self._connect_timeout,
-				loop=self.Loop) as pool:
+				loop=self.Loop,
+				**kwargs
+			) as pool:
+
 				self._conn_pool = pool
 				self.ConnectionEvent.set()
 				await self._loader()
+
 		except BaseException:
 			L.exception("Unexpected ODBC connection error")
 			raise
