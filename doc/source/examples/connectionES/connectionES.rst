@@ -13,6 +13,9 @@ You can use Elastic Search Source to take data from Elastic Search index for fur
 Prerequisites
 ^^^^^^^^^^^^^
 
+You can access ElasticSearch only if you have ElasticSearch already installed on your server or you can try to install it locally with
+this tutorial :ref:`dockercompose`.
+
 The process of taking data from Elastic Search index is simple, you will need few things.
 
 What you will need:
