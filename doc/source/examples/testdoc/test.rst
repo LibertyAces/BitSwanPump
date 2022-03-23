@@ -1,4 +1,4 @@
-OV05 BS-Testing Cofiguration Documentation
+OV05 BS-Testing Configuration Documentation
 ==========================================
 
 Basic Pump Template
@@ -9,6 +9,7 @@ This is generic pump template you can use for your app.
 
     import bspump
     import bspump.common
+    import bspump.trigger
     import bspump.http
     import asab
 
