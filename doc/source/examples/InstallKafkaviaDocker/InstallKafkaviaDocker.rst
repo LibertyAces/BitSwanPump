@@ -100,7 +100,7 @@ Wow! If everything work correctly you can see thin page:
     :align: center
     :alt: KafDrop Home Page
 
-Try to pump data Kafka topic
+Pump data to Kafka topic
 ----------------------------
 Well done! We've installed Kafka and KafDrop locally and we are able to see topics in KafDrop. Now we can try to
 run pump which take data from CoinDesk API and store them in Kafka topic. We already build the Coindesk pump image
