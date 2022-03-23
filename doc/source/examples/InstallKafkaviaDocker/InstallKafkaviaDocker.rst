@@ -26,6 +26,7 @@ In our case we define ``zookeeper``, ``kafka`` and ``kafdrop``. ZooKeeper is ess
 which is used to provide a distributed configuration service, synchronization service, and naming registry for large distributed systems.
 
 Services are consist of these values:
+
 1. `image`: we choose which image will be download from DockerHub (after we run the docker compose its automatically pull the image)
 2. `hostname`: name of service in multi-container network
 3. `ports`: specified ports where the container will runs
@@ -33,7 +34,7 @@ Services are consist of these values:
 5. `depends_on`: service will wait until specified service in depends_on will start
 6. `restart`: service try to restart after unexpected end
 
-Just copy-paste this chung od code into you ``docker-compose.yml``file:
+Just copy-paste this chung od code into you ``docker-compose.yml`` file:
 ::
     version: '3.9'
     services:

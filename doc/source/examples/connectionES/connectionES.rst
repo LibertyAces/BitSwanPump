@@ -28,7 +28,7 @@ What you will need:
 Configuration File
 ^^^^^^^^^^^^^^^^^^
 
-You will need to create `.conf` file with this configuration
+You will need to create ``.conf`` file with this configuration
 ::
     # ElasticSearch Source
     [pipeline:<<Name of your pipeline class>>:ElasticSearchSource]
@@ -102,7 +102,7 @@ What you will need:
 Configuration File
 ^^^^^^^^^^^^^^^^^^
 
-you will need to create`.conf` file using following syntax
+you will need to create ``.conf`` file using following syntax
 ::
     # Elasticsearch connection
     [connection:ESConnection]
