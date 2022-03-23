@@ -16,8 +16,8 @@ Here are some quick tutorials that will help you installing python and BSPump mo
 Installing python
 -----------------
 
-Firstly you should check whether you don't already have python installed. Open your command line or terminal and type: ::
-
+Firstly you should check whether you don't already have python installed. Open your command line or terminal and type:
+::
     C:/> python --version
     > Python 3.8.4
 
@@ -34,20 +34,20 @@ about python check out the `Python tutorial <https://docs.python.org/3/tutorial/
 Installing BSPump module
 ------------------------
 
-To install BSPump module: ::
-
+To install BSPump module:
+::
     pip install asab bspump
 
-or alternatively using ::
-
+or alternatively using
+::
     pip install git+https://github.com/LibertyAces/BitSwanPump-BlankApp.git
 
-If you dont have installed pip type: ::
-
+If you dont have installed pip type:
+::
     python get-pip.py
 
-To check the version use. ::
-
+To check the version use.
+::
     pip --version
 
 Have you managed to install everything? Then you are ready for creating your first BSPump.
@@ -79,8 +79,8 @@ BSpump Service
 
 Service is part where pipelines and connections are registered.
 
-We will go through the following code and explain each part ::
-
+We will go through the following code and explain each part
+::
     import asab
 
     from .pipeline import TCPPipeline
@@ -121,8 +121,8 @@ To be able to connect to a data source you have to make a connection. connection
 Pipeline
 --------
 
-pipeline ::
-
+pipeline
+::
     import sys
 
     import bspump
@@ -152,13 +152,13 @@ Lookup
 ------
 
 Source
-======
+------
 
 Description about source. What is it ..
 
 
 Streaming Source
-----------------
+^^^^^^^^^^^^^^^^
 
 Streaming Source enables events to enter in so-called stream. Events flow through source in real time manner as they are being delivered by the input technology.
 
@@ -196,7 +196,7 @@ Explanation
 .. _trigger:
 
 Trigger Source
---------------
+^^^^^^^^^^^^^^
 
 Unlike streaming source, Trigger Source is used when we need to pump data from SQL-like databases or files.
 They have to be triggered by an external event or a repeating timer (requesting JSON data from APIs every 10 minutes).
@@ -305,7 +305,8 @@ Explanation
 Processor
 ---------
 
-Processor ::
+Processor
+::
 
     import bspump
 
@@ -333,7 +334,8 @@ PPrintSink
 In this example we are going to use PPrintSink
 which prints the data from pipeline to stdout or any other stream that is connected to the pipeline.
 
-To use sink in your pipeline ::
+To use sink in your pipeline
+::
 
         self.build(
             bspump.common.PPrintSink(app, self, stream=sys.stderr)
@@ -344,7 +346,8 @@ PPrintSink class is added to your pipeline. It should be the last part of the pi
 to further explain the , `bspump.common.` is the part where you specify the path to the class `PPrintSink` is the name of the class.
 In the parentheses you can specify the output stream. If none is specified stdout is used.
 
-code ::
+code
+::
 
     class PPrintSink(Sink):
         """

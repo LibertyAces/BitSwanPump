@@ -57,7 +57,7 @@ You can implement your own ElasticSearch connection but the default connection w
         def __init__(self, app, pipeline_id):
             super().__init__(app, pipeline_id)
             self.build(
-                # Adding ES Sink component with trigger set up to trigger data every 5 seconds
+                # Adding ES Source component with trigger set up to trigger data every 5 seconds
                 bspump.elasticsearch.ElasticSearchSource(app, self, "ESConnection").on(bspump.trigger.PeriodicTrigger(app, 5)),
                 # Rest of the pipeline with source and processors
             )
