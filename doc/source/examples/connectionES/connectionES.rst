@@ -52,15 +52,15 @@ To create a connection with Elastic Search you will need to do two things:
 
 You can implement your own ElasticSearch connection but the default connection will look like this:
 ::
-      class SamplePipeline(bspump.Pipeline):
+    class SamplePipeline(bspump.Pipeline):
 
-        def __init__(self, app, pipeline_id):
-            super().__init__(app, pipeline_id)
-            self.build(
-                # Adding ES Source component with trigger set up to trigger data every 5 seconds
-                bspump.elasticsearch.ElasticSearchSource(app, self, "ESConnection").on(bspump.trigger.PeriodicTrigger(app, 5)),
-                # Rest of the pipeline with source and processors
-            )
+    def __init__(self, app, pipeline_id):
+        super().__init__(app, pipeline_id)
+        self.build(
+            # Adding ES Source component with trigger set up to trigger data every 5 seconds
+            bspump.elasticsearch.ElasticSearchSource(app, self, "ESConnection").on(bspump.trigger.PeriodicTrigger(app, 5)),
+            # Rest of the pipeline with source and processors
+        )
 
     if __name__ == '__main__':
         app = bspump.BSPumpApplication()
