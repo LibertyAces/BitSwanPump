@@ -55,6 +55,8 @@ To create a connection with Elastic Search you will need to do two things:
 
 You can implement your own ElasticSearch connection but the default connection will look like this:
 ::
+    import bspump.elasticsearch
+
     class SamplePipeline(bspump.Pipeline):
 
     def __init__(self, app, pipeline_id):
@@ -130,6 +132,8 @@ To create a connection with Elastic Search you will need to do two things:
 
 You can implement your own ElasticSearch connection but the default connection will look like this:
 ::
+    import bspump.elasticsearch
+
     class SamplePipeline(bspump.Pipeline):
 
         def __init__(self, app, pipeline_id):
