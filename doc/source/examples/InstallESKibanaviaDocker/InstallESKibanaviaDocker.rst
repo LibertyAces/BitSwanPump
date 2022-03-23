@@ -6,19 +6,19 @@ Install ElasticSearch and Kibana via Docker
 About
 -----
 This example is focused on how to install ElasticSearch and Kibana on your localhost and use the ES via Kibana GUI.
-We will be using Docker and Docker compose to install ElasticSearch enviroment. Be sure you have set up Docker and Docker compose,
+We will be using Docker and Docker compose to install ElasticSearch environment. Be sure you have set up Docker and Docker compose,
 if not follow this guide to install `Docker <https://docs.docker.com/get-docker/>`_ and `Docker compose <https://docs.docker.com/compose/install/>`_.
 
 In the end we use Docker image of our Weather Pump, which can be found here :ref:`weatherpump`, to pump data to index in our local ElasticSearch.
 
 Docker is a platform which provides the ability to package and run an application in a loosely isolated environment called a container.
-More about `Docker <https://docs.docker.com/get-started/overview/>`_ you can also read our quickstart how to use Docker with BSPump module here TODO..
+More about `Docker <https://docs.docker.com/get-started/overview/>`_ you can also read our quickstart how to use Docker with BSPump module here: :ref:`dockerquickstart`
 
 Docker compose is a tool for defining and running multi-container Docker applications. More about `Docker compose <https://docs.docker.com/compose/>`_.
 
 Docker compose with ES and Kibana
 ---------------------------------
-Now we define Docker compose file to run ElasticSearch and Kibana on our localhost. Create ``docker-compose.yml`` file in your specified folder.
+Now we create Docker compose file to run ElasticSearch and Kibana on our localhost. Create ``docker-compose.yml`` file in your specified folder.
 In docker compose you have to define your services which you want to use. In our case we define ``elasticsearch`` and ``kibana``.
 We choose which image of ES and Kibana we want to use. The image will automatically download from official Docker hub of Elastic.
 Then we set a names of container and set a condition when the container restart after unexpected exit. In next step we set the environment of container.
@@ -129,7 +129,6 @@ Before you build up the new docker-compose with our weather pump be sure you typ
 which we build up before. Now you can type ``docker compose up -d`` into terminal again. Check if everything running correctly with ``docker ps``.
 
 The incoming output in terminal should be this:
-Wow! If everything is okay you will see this:
 
 .. image:: output3.png
     :align: center
