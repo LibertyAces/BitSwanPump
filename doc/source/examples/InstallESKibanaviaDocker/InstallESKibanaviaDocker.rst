@@ -80,55 +80,20 @@ Wow! If everything is okay you will see this:
     :align: center
     :alt: Terminal Output 2
 
-Add Weather pump to Docker compose and pump data to index
----------------------------------------------------------
-Well done! We installed ElasticSearch and Kibana locally and we are able to access the ElasticSearch with Kibana GUI. Now we will add the image
-of the weather pump into our docker compose file and pump the data into ElasticSearch index. We already build the weather pump image so it basically
-download it and run it. You just have to set up the weather pump service.
+Run Weather pump to pump data to Elastic Search index
+-----------------------------------------------------
+Well done! We installed ElasticSearch and Kibana locally and we are able to access the ElasticSearch with Kibana GUI.
+Now we can try to run pump which take weather data and we store them in Elasticsearch index. We already build Weather pump
+image so you basically pull the image from Docker hub and run it.
 
-The following docker-compose file will looks like this:
+To do it simply run this command in your terminal:
 ::
-    version: '3.9'
-    services:
-      # Elastic Search single node cluster
-      elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
-        container_name: elasticsearch
-        restart: always
-        environment: 
-          - xpack.security.enabled=false
-          - discovery.type=single-node
-        volumes: 
-          - elasticsearch-data-volume:/usr/share/elasticsearch/data/
-        ports: 
-          - 9200:9200
-          - 9300:9300
-      # Kibana UI for Elastic Search  
-      kibana:
-        image: docker.elastic.co/kibana/kibana:8.0.0
-        container_name: kibana
-        restart: always
-        environment: 
-          - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-        ports: 
-          - 5601:5601
-        depends_on: 
-          - elasticsearch
-      # BSPump for weather data
-      bspump-weather:
-        image: lukasvecerka/bspump-weather
-        container_name: bspump-weather
-        depends_on: 
-          - kibana
+    ~ docker run --network=host -dit lukasvecerka/bspump-weather
 
-    volumes: 
-      elasticsearch-data-volume:
-        driver: local
 
-Before you build up the new docker-compose with our weather pump be sure you type ``docker compose down``, this command stop the application
-which we build up before. Now you can type ``docker compose up -d`` into terminal again. Check if everything running correctly with ``docker ps``.
+You have to set ``--network=host`` which mean that your container can now access the localhost on your host machine.
 
-The incoming output in terminal should be this:
+If you type ``docker ps`` the incoming output in terminal should be this:
 
 .. image:: output3.png
     :align: center
@@ -148,12 +113,11 @@ our weather pump.
 Summarize
 ---------
 That's all for this example! In this example we learnt how to work with Docker and especially with Docker compose tool. How to set services in
-our application in Docker compose and how to add official services and our custom services. As conclusion we installed ElasticSearch and Kibana locally
-and pump data on index in ElasticSearch.
+our application in Docker compose. As conclusion we installed ElasticSearch and Kibana locally and pump data on index in ElasticSearch with our pump.
 
 What next
 ---------
 In the future you can add more services into your docker compose application and extend your environment with this services. You can build your
 own Docker image and push it to Docker hub and then use it in your docker compose.
 
-More about how to create BSPump Docker image is here TODO LINK..
+More about how to create BSPump Docker image is here :ref:`dockerquickstart`
