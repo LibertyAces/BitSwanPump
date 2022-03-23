@@ -12,6 +12,7 @@ Bitswan Tutorials
    TarkovProfitCounter/TarkovProfitCounter.rst
    fortnitecurrentshop/fortnitecurrentshop.rst
    InstallESKibanaviaDocker/InstallESKibanaviaDocker.rst
+   InstallKafkaviaDocker/InstallKafkaviaDocker.rst
    docker/docker.rst
    websocket/websocket.rst
    blankapp/blankapp.rst
