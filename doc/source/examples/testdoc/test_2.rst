@@ -29,6 +29,12 @@ change all disks to hdd/sdd in docker-compose.yaml
 try running docker compose up
 
 
+setup password in ElasticSearch docker exec -it bs01-es01 bash
+
+and run command ./bin/elasticsearch-setup-passwords interactive
+
+set up: [password]
+
 
 
 
@@ -42,3 +48,9 @@ ERRORS and how to fix it
 - from daemon head url image:  no basic auth credential
 
     ask Robin for auth
+
+- elastic search ElasticsearchException[failed to bind service]; nested: AccessDeniedException[/usr/share/elasticsearch/data/nodes]
+
+use chown -R elasticsearch data/ inside the container
+
+- make sure that grafana.db is not a folder but a file, if it is folder delete it and restart grafana
