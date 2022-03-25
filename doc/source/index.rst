@@ -31,7 +31,7 @@ or you can clone the github repository `BitsSwanPump <https://github.com/Liberty
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    howitworks/index
    examples/index
