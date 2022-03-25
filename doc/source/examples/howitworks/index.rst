@@ -1,5 +1,6 @@
+-----------------
 Bitswan Tutorials
-=================
+-----------------
 
 in this series of tutorials we will walk you through basic and more advanced examples and demos
 to initiate your adventure with BSPump.
@@ -54,7 +55,7 @@ Have you managed to install everything? Then you are ready for creating your fir
 
 
 BSPump Highlevel architecture
------------------------------
+=============================
 
 BSPump is made from several components which are going to be explained in this tutorial. As you probably know, Bitswan is a real-time stream processor.
 To be able to process and work with large amount of data, BSpump uses so-called Event Stream Processing, data is propagated through a data pipeline in Events.
