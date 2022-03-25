@@ -9,7 +9,7 @@ You will learn more about the BSPump architecture and how each component works. 
 start on your journey you should know basics of python and be able to set up your programming environment.
 
 Prerequisites
--------------
+=============
 
 Here are some quick tutorials that will help you installing python and BSPump module using package installer for Python called pip.
 
@@ -54,8 +54,10 @@ To check the version use.
 Have you managed to install everything? Then you are ready for creating your first BSPump.
 
 
+
 BSPump Highlevel architecture
 =============================
+
 
 BSPump is made from several components which are going to be explained in this tutorial. As you probably know, Bitswan is a real-time stream processor.
 To be able to process and work with large amount of data, BSpump uses so-called Event Stream Processing, data is propagated through a data pipeline in Events.
