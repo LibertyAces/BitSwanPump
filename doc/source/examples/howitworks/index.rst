@@ -1,6 +1,6 @@
------------------
+=================
 Bitswan Tutorials
------------------
+=================
 
 in this series of tutorials we will walk you through basic and more advanced examples and demos
 to initiate your adventure with BSPump.
