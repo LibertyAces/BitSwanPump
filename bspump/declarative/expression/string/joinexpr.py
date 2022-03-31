@@ -60,4 +60,7 @@ class JOIN(Expression):
 				if v is None:
 					return None
 			arr.append(str(v))
-		return self.Char.join(arr)
+
+		joined_str = self.Char.join(arr)
+		joined_str = joined_str.rsplit(self.Char)
+		return joined_str
