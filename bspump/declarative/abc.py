@@ -59,6 +59,7 @@ class Expression(object):
 
 		for key in current_attributes:
 			v = getattr(self, key, None)
+
 			if isinstance(v, Expression):
 				for x in v.walk(self, key):
 					yield x

@@ -124,11 +124,13 @@ class ExpressionBuilder(object):
 					if not isinstance(obj, Expression):
 						continue
 
-					if isinstance(obj, SELF):
-						# Implement a self-reference or Y-Combinator
-						obj.initialize(expression)
-					else:
-						obj.initialize()
+					if source_name != "<INCLUDE>":
+
+						if isinstance(obj, SELF):
+							# Implement a self-reference or Y-Combinator
+							obj.initialize(expression)
+						else:
+							obj.initialize()
 
 				expressions.append(expression)
 
@@ -212,7 +214,7 @@ class ExpressionBuilder(object):
 		identifier = loader.construct_scalar(node)
 		declaration = self.read(identifier)
 		# Include can be only one expression
-		return self.parse(declaration, identifier)[0]
+		return self.parse(declaration, "<INCLUDE>")[0]
 
 
 	def _construct_config(self, loader: yaml.Loader, node: yaml.Node):

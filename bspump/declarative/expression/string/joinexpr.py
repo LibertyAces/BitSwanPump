@@ -54,6 +54,7 @@ class JOIN(Expression):
 	def __call__(self, context, event, *args, **kwargs):
 		arr = []
 		for item in self.ItemsNormalized:
+
 			v = item(context, event, *args, **kwargs)
 			if v is None:
 				v = self.Miss(context, event, *args, **kwargs)
@@ -61,6 +62,4 @@ class JOIN(Expression):
 					return None
 			arr.append(str(v))
 
-		joined_str = self.Char.join(arr)
-		joined_str = joined_str.rsplit(self.Char)
-		return joined_str
+		return self.Char.join(arr)
