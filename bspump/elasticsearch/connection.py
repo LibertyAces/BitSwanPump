@@ -149,6 +149,8 @@ class ElasticSearchBulk(object):
 
 		:return:
 		"""
+		L.error("Failed to insert items in the elasticsearch: {}".format(response_items[:10]))
+
 
 	def full_error_callback(self, bulk_items, return_code):
 		"""
