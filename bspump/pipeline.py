@@ -689,7 +689,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			# The futures are removed in _future_done
 			await asyncio.wait(
 				self.AsyncFutures,
-				loop=self.Loop,
 				return_when=concurrent.futures.ALL_COMPLETED
 			)
 

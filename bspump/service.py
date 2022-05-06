@@ -242,4 +242,4 @@ class BSPumpService(asab.Service):
 		"""
 		# Stop all started pipelines
 		if len(self.Pipelines) > 0:
-			await asyncio.gather(*[pipeline.stop() for pipeline in self.Pipelines.values()], loop=app.Loop)
+			await asyncio.gather(*[pipeline.stop() for pipeline in self.Pipelines.values()])
