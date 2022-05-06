@@ -1,4 +1,6 @@
+import asyncio
 import logging
+
 from .fileabcsource import FileABCSource
 
 
@@ -16,7 +18,12 @@ class FileBlockSource(FileABCSource):
 		await self.Pipeline.ready()
 		# Load the file in a worker thread (to prevent blockage of the main loop)
 		worker = self.ProactorService.execute(f.read)
-		await worker
+		
+		try:
+			await worker
+		except asyncio.CancelledError:
+			return
+		
 		event = worker.result()
 		await self.process(event, {
 			"filename": filename

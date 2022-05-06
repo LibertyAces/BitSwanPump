@@ -1,13 +1,13 @@
 import logging
 import asyncio
-import concurrent.futures
-from asab import ConfigObject
+
+import asab
 
 
 L = logging.getLogger(__name__)
 
 
-class Source(ConfigObject):
+class Source(asab.ConfigObject):
 	"""
 	Description:
 
@@ -54,7 +54,7 @@ class Source(ConfigObject):
 			# This is to properly handle a lifecycle of the main method
 			try:
 				await self.main()
-			except concurrent.futures.CancelledError:
+			except asyncio.CancelledError:
 				pass
 			except Exception as e:
 				self.Pipeline.set_error(None, None, e)
@@ -69,13 +69,23 @@ class Source(ConfigObject):
 
 		:return:
 		"""
+
 		if self.Task is None:
 			return  # Source is not started
+
 		if not self.Task.done():
 			self.Task.cancel()
-		await self.Task
+
+		try:
+			await self.Task
+		except asyncio.exceptions.CancelledError:
+			L.warning("Task cancelled: {}".format(self))
+		except Exception:
+			L.exception("Task failed when stopping")
+
 		if not self.Task.done():
 			L.error("Source '{}' refused to stop: {}".format(self.Id, self.Task))
+
 		self.Task = None
 
 
@@ -217,7 +227,10 @@ class TriggerSource(Source):
 			await self.Pipeline.ready()
 
 			# Wait for a trigger
-			await self.TriggerEvent.wait()
+			try:
+				await self.TriggerEvent.wait()
+			except asyncio.CancelledError:
+				break
 
 			# Send begin on a cycle event
 			self.Pipeline.PubSub.publish("bspump.pipeline.cycle_begin!", pipeline=self.Pipeline)
@@ -226,7 +239,7 @@ class TriggerSource(Source):
 			try:
 				await self.cycle(*args, **kwags)
 
-			except concurrent.futures.CancelledError:
+			except asyncio.CancelledError:
 				# This happens when Ctrl-C is pressed
 				L.warning("Pipeline '{}' processing was cancelled".format(self.Pipeline.Id))
 
