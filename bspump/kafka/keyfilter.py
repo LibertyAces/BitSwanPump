@@ -23,13 +23,12 @@ class KafkaKeyFilter(bspump.Processor):
 			self.Keys = frozenset(keys)
 
 
-
 	def process(self, context, event):
-		kafka_ctx = context.get("kafka")
-		assert (kafka_ctx is not None)
+		kafka_key = context.get("kafka_key")
+		assert (kafka_key is not None)
 
-		key = kafka_ctx.key
-		if key is not None and key in self.Keys:
+		if kafka_key is not None and kafka_key in self.Keys:
 			return event
+
 		else:
 			return None

@@ -1,7 +1,9 @@
 import asyncio
-import json
 import logging
-import typing
+
+import confluent_kafka
+
+import asab
 
 from ..abc.sink import Sink
 
@@ -51,160 +53,117 @@ class KafkaSink(Sink):
 
 	Every kafka message can be a key:value pair. Key is read from event context - context['kafka_key'].
 	If kafka_key is not provided, key defaults to None.
+
+	Standard Kafka configuration options can be used,
+	as specified in librdkafka library,
+	where the options are simply passed to:
+
+	https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	"""
 
 	ConfigDefaults = {
-		"topic": "",
-		"encoding": "utf-8",
-		"output_queue_max_size": 100,
-
-		"client_id": "",  # defaults set in AIOKafka
-		"metadata_max_age_ms": "",
-		"request_timeout_ms": "",
-		"api_version": "",
-		"acks": "",
-		"key_serializer": "",
-		"value_serializer": "",
-		"max_batch_size": "",
-		"max_request_size": "",
-		"linger_ms": "",
-		"send_backoff_ms": "",
-		"retry_backoff_ms": "",
-		"connections_max_idle_ms": "",
-		"enable_idempotency": "",
-		"transactional_id": "",
-		"transaction_timeout_ms": "",
+		"topic": "unconfigured",
+		"watermark.low": "40000",
+		"watermark.high": "90000",
+		"batch.num.messages": "100000",
+		"linger.ms": "500",  # This settings makes a significant impact on the throughtput
+		"batch.size": "1000000",
+		# "compression.type": "snappy",
 	}
 
 
-	def __init__(self, app, pipeline, connection, key_serializer=None, id=None, config=None):
+	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self.Connection = pipeline.locate_connection(app, connection)
-		self.Topic = self.Config['topic']
-		self._key_serializer = key_serializer
-		self.Encoding = self.Config['encoding']
+		self.ProducerConfig = {}
+		self.Running = False
+		self.PollTask = None
 
-		self._output_queue = asyncio.Queue(loop=app.Loop)
-		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
-		assert (self._output_queue_max_size >= 1)
-		self._conn_future = None
+		connection = pipeline.locate_connection(app, connection)
 
-		producer_param_definition = {
-			"client_id": str,
-			"metadata_max_age_ms": int,
-			"request_timeout_ms": int,
-			"api_version": str,
-			"max_batch_size": int,
-			"max_request_size": int,
-			"linger_ms": int,
-			"send_backoff_ms": int,
-			"retry_backoff_ms": int,
-			"connections_max_idle_ms": int,
-			"enable_idempotence": bool,
-			"transactional_id": str,
-			"transaction_timeout_ms": int,
-		}
-		self._producer_params = {
-			x: producer_param_definition[x](y)
-			for x, y in self.Config.items() if x in producer_param_definition.keys() and y != ""
-		}
+		# Copy connection options
+		for key, value in connection.Config.items():
+			self.ProducerConfig[key.replace("_", ".")] = value
 
-		if self.Config.get("acks") is not None:  # Mixed int with strings, needs special care
-			if self.Config["acks"] in (0, 1, -1, "0", "1", "-1"):
-				self._producer_params["acks"] = int(self.Config["acks"])
-			if self.Config["acks"] == "all":
-				self._producer_params["acks"] = self.Config["acks"]
+		# Copy configuration options, avoid the topic
+		for key, value in self.Config.items():
 
-		# Subscription
-		self._on_health_check('connection.open!')
-		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
-		app.PubSub.subscribe("Application.tick!", self._on_health_check)
+			if key == "topic" or key.startswith("watermark"):
+				continue
+
+			self.ProducerConfig[key.replace("_", ".")] = value
+
+		self.Producer = confluent_kafka.Producer(self.ProducerConfig, logger=L)
+
+		self.Topic = self.Config["topic"]
+		self.LowWatermark = int(self.Config["watermark.low"])
+		self.HighWatermark = int(self.Config["watermark.high"])
+
+		app.PubSub.subscribe_all(self)
+		pipeline.PubSub.subscribe("bspump.pipeline.start!", self._on_start)
+		pipeline.PubSub.subscribe("bspump.pipeline.stop!", self._on_stop)
 
 
-	def _on_health_check(self, message_type):
-		"""
-		Description:
+	@asab.subscribe("Application.tick!")
+	def _on_tick(self, event_name):
 
-		:returns:
-		"""
-		if self._conn_future is not None:
-			# Connection future exists
+		if not self.Pipeline.is_ready():
 
-			if not self._conn_future.done():
-				# Connection future didn't result yet
-				# No sanitization needed
-				return
-
-			try:
-				self._conn_future.result()
-			except Exception:
-				# Connection future threw an error
-				L.exception("Unexpected connection future error")
-
-			# Connection future already resulted (with or without exception)
-			self._conn_future = None
-
-		assert (self._conn_future is None)
-
-		self._conn_future = asyncio.ensure_future(
-			self._connection(),
-			loop=self.Loop
-		)
+			if len(self.Producer) < self.LowWatermark:
+				self.Pipeline.throttle(self, False)
 
 
-	def _on_application_stop(self, message_type, counter):
-		"""
-		Description:
+	def process(self, context, event: bytes):
 
-		:returns:
-		"""
-		self._output_queue.put_nowait((None, None, None))
-
-
-	async def _connection(self):
-		"""
-		Description:
-
-		:returns:
-		"""
-		producer = await self.Connection.create_producer(**self._producer_params)
 		try:
-			await producer.start()
-			while True:
-				topic, message, kafka_key = await self._output_queue.get()
+			self.Producer.produce(
+				context["kafka_topic"] if "kafka_topic" in context else self.Topic,
+				value=event,
+				key=context["kafka_key"] if "kafka_key" in context else None,
+				headers=context["kafka_headers"] if "kafka_headers" in context else None,
+			)
 
-				if topic is None and message is None:
-					break
+		except Exception as e:
+			L.exception("Error occurred when sending data to Kafka: '{}'".format(e))
 
-				if self._output_queue.qsize() == self._output_queue_max_size - 1:
-					self.Pipeline.throttle(self, False)
+		if self.Pipeline.is_ready():
 
-				await producer.send_and_wait(topic, message, key=kafka_key)
-
-		finally:
-			await producer.stop()
-
-
-	def process(self, context, event: typing.Union[dict, str, bytes]):
-		"""
-		Description:
-
-		:returns:
-		"""
-		if type(event) == dict:
-			event = json.dumps(event)
-			event = event.encode(self.Encoding)
-		elif type(event) == str:
-			event = event.encode(self.Encoding)
-		kafka_topic = context.get("kafka_topic", self.Topic)
-		kafka_key = context.get("kafka_key")
+			if len(self.Producer) > self.HighWatermark:
+				self.Pipeline.throttle(self, True)
 
 
-		if self._key_serializer is not None and kafka_key is not None:
-			kafka_key = self._key_serializer(kafka_key)
+	def _on_start(self, event_name, pipeline):
 
-		self._output_queue.put_nowait((kafka_topic, event, kafka_key))
+		if self.Pipeline != pipeline:
+			return
 
-		if self._output_queue.qsize() == self._output_queue_max_size:
-			self.Pipeline.throttle(self, True)
+		if self.Running:
+			# Already started
+			return
+
+		assert(self.PollTask is None)
+		self.Running = True
+		proactor_svc = self.Pipeline.App.get_service('asab.ProactorService')
+		self.PollTask = proactor_svc.execute(self._kafka_poll)
+
+
+	async def _on_stop(self, event_name, pipeline):
+		if self.PollTask is None:
+			return
+
+		# TODO: Wait till the ouput queue is trully empty
+
+		poll_task = self.PollTask
+		self.Running = False
+		self.PollTask = None
+
+		try:
+			await poll_task
+		except asyncio.CancelledError:
+			pass
+
+
+	def _kafka_poll(self):
+
+		while self.Running:
+			self.Producer.poll(500)
