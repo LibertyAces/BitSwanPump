@@ -68,8 +68,7 @@ setup(
 		'asab>=21.11',
 		'aiohttp>=3.6.2',
 		'requests>=2.24.0',
-		'aiokafka>=0.7.0',
-		"dataclasses>=0.5; python_version<'3.7'",  # This is for aiokafka
+		'confluent-kafka>=1.8.2',
 		'aiozk>=0.25.0',
 		'aiosmtplib>=1.1.3',
 		'fastavro>=0.23.5',
