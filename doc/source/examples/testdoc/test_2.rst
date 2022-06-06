@@ -22,6 +22,10 @@ for mor disks, but you have to install it using
 
 check what disks to use and mount them if needed to create data
 
+create /data/hdd folder and mount it on desired disk partition
+mount /var/lib/docker folder on desired disk partition
+add mounted folders to /etc/fstab
+
 rewrite the in the config accordingly
 
 change all disks to hdd/sdd in docker-compose.yaml
@@ -37,6 +41,33 @@ set up: [password]
 
 
 
+to deploy SeaCatAuth you need to generate domain from customer
+
+then generate certifications, private key and CA
+
+add mongoDB to docker compose
+
+add seacatauth to docker compose
+
+ask costumer if they have SMTP server for SeaCat email sender if then haven't generate api key from TeskaLabs Sendgrid
+add provisioning mode to SeacatAuth into docker-compose via this docs https://docs.teskalabs.com/seacat-auth/config/provisioning
+
+
+add BitSwan UI, Seacat WebUI and Seacat Auth WebUI to /data/hdd/nginx/webroot folder (UIs is on the GitLab)
+
+after UI is ready to use create new superuser in Seacat and disable provisioning mode in docker-compose
+
+to run kibana create global role elk:superuser
+
+to run grafana create global role grafana:grafana_admin
+
+to connect dashboards, sidebar and discover you have to create nodes in zookeper-ui
+
+BSQuery
+add service to docker compose
+add node to zookeeper-ui /export
+implement config
+add endpoint to nginx config
 
 ERRORS and how to fix it
 ========================
