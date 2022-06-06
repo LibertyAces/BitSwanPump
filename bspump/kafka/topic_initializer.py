@@ -11,13 +11,6 @@ import bspump
 import bspump.abc.sink
 import bspump.abc.source
 
-# Fastkafka module is required only to support including topics from FastKafkaSource/Sink
-# If it is not available, topics from FastKafkaSource/Sink objects will be ignored
-try:
-	import fastkafka
-except ImportError:
-	fastkafka = None
-
 
 #
 
@@ -57,11 +50,8 @@ _TOPIC_CONFIG_OPTIONS = {
 
 def _is_kafka_component(component):
 	if isinstance(component, bspump.kafka.KafkaSource) \
-		   or isinstance(component, bspump.kafka.KafkaSink):
+		or isinstance(component, bspump.kafka.KafkaSink):
 		return True
-	if fastkafka is not None:
-		return isinstance(component, fastkafka.FastKafkaSource) \
-			   or isinstance(component, fastkafka.FastKafkaSink)
 	return False
 
 
