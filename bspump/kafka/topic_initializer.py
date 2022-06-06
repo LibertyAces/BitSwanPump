@@ -4,7 +4,7 @@ import logging
 import re
 import typing
 
-import kafka.admin
+import confluent_kafka.admin
 
 import asab
 import bspump
@@ -153,7 +153,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 				topic["num_partitions"] = int(self.Config.get("num_partitions_default"))
 			if "replication_factor" not in topic:
 				topic["replication_factor"] = int(self.Config.get("replication_factor_default"))
-			self.RequiredTopics[topic["name"]] = kafka.admin.NewTopic(**topic)
+			self.RequiredTopics[topic["name"]] = confluent_kafka.admin.NewTopic(**topic)
 
 	def include_topics_from_config(self, config_object):
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
@@ -177,7 +177,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 		# Create topic objects
 		for name in topic_names:
-			self.RequiredTopics[name] = kafka.admin.NewTopic(
+			self.RequiredTopics[name] = confluent_kafka.admin.NewTopic(
 				name,
 				num_partitions,
 				replication_factor,
@@ -185,7 +185,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			)
 
 	def fetch_existing_topics(self):
-		admin_client = kafka.admin.KafkaAdminClient(
+		admin_client = confluent_kafka.admin.KafkaAdminClient(
 			bootstrap_servers=self.BootstrapServers,
 			client_id=self.ClientId
 		)
@@ -223,7 +223,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		admin_client = None
 
 		try:
-			admin_client = kafka.admin.KafkaAdminClient(
+			admin_client = confluent_kafka.admin.KafkaAdminClient(
 				bootstrap_servers=self.BootstrapServers,
 				client_id=self.ClientId
 			)
