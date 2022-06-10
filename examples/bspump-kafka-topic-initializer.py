@@ -1,5 +1,6 @@
 import bspump
 from bspump.kafka import KafkaTopicInitializer
+import asab
 
 
 """
@@ -8,6 +9,10 @@ It checks whether those topics exist on configured Kafka server and initializes 
 
 See `examples/data/kafka-topic-config.yml` for an example topic config file.
 """
+
+asab.Config.add_defaults(
+	{"web": {"listen": "0.0.0.0 8080"}}
+)
 
 if __name__ == '__main__':
 	app = bspump.BSPumpApplication()
@@ -31,7 +36,7 @@ if __name__ == '__main__':
 	)
 
 	# Run the topic check step
-	kti.check_and_initialize()
+	kti.initialize_topics()
 
 	# Run your app
 	# app.run()
