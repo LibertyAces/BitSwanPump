@@ -228,7 +228,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			L.log(
 				asab.LOG_NOTICE,
 				"Kafka topics created",
-				struct_data={"topics": [topic.name for topic in missing_topics]}
+				struct_data={"topics": ", ".join(topic.name for topic in missing_topics)}
 			)
 
 		except Exception as e:
