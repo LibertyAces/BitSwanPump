@@ -39,7 +39,7 @@ class BSPumpApplication(asab.Application):
 			pass
 
 		# Register bspump API endpoints, if requested (the web service is present)
-		if asab.Config["web"].get("listen"):
+		if "web" in asab.Config and asab.Config["web"].get("listen"):
 
 			# Initialize API service
 			self.add_module(asab.web.Module)
