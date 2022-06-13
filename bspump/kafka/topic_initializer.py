@@ -97,7 +97,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 
 	def _get_bootstrap_servers(self, app, connection):
 		svc = app.get_service("bspump.PumpService")
-		self.BootstrapServers = re.split(r"[\s,]+", svc.Connections[connection].Config["bootstrap_servers"].strip())
+		self.BootstrapServers = svc.Connections[connection].Config["bootstrap_servers"].strip()
 
 	def include_topics(self, *, topic_config=None, kafka_component=None, pipeline=None, config_file=None):
 		# Include topic from config or dict object
@@ -139,11 +139,17 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			L.warning("Unsupported extension: '{}'".format(ext))
 
 		for topic in data:
+			if "topic" not in topic and "name" in topic:  # BACK-COMPAT
+				L.warning("Topic attribute 'name' is deprecated; use 'topic' instead.")
+				topic["topic"] = topic.pop("name")
+			if "config" not in topic and "topic_configs" in topic:  # BACK-COMPAT
+				L.warning("Topic attribute 'topic_configs' is deprecated; use 'config' instead.")
+				topic["config"] = topic.pop("topic_configs")
 			if "num_partitions" not in topic:
 				topic["num_partitions"] = int(self.Config.get("num_partitions_default"))
 			if "replication_factor" not in topic:
 				topic["replication_factor"] = int(self.Config.get("replication_factor_default"))
-			self.RequiredTopics[topic["name"]] = confluent_kafka.admin.NewTopic(**topic)
+			self.RequiredTopics[topic["topic"]] = confluent_kafka.admin.NewTopic(**topic)
 
 	def include_topics_from_config(self, config_object):
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
@@ -160,7 +166,7 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			replication_factor = int(self.Config.get("replication_factor_default"))
 
 		# Additional configs are optional
-		topic_configs = {}
+		topic_configs = config_object.pop("config", {})
 		for config_option in set(config_object.keys()):
 			if config_option in _TOPIC_CONFIG_OPTIONS:
 				topic_configs[config_option] = config_object.pop(config_option)
@@ -168,19 +174,21 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		# Create topic objects
 		for name in topic_names:
 			self.RequiredTopics[name] = confluent_kafka.admin.NewTopic(
-				name,
-				num_partitions,
-				replication_factor,
-				topic_configs=topic_configs
+				topic=name,
+				num_partitions=num_partitions,
+				replication_factor=replication_factor,
+				config=topic_configs
 			)
 
 	def fetch_existing_topics(self):
-		admin_client = confluent_kafka.admin.KafkaAdminClient(
-			bootstrap_servers=self.BootstrapServers,
-			client_id=self.ClientId
-		)
-		self.ExistingTopics = set(admin_client.list_topics())
-		admin_client.close()
+		admin_client = confluent_kafka.admin.AdminClient({
+			"bootstrap.servers": self.BootstrapServers,
+			"client.id": self.ClientId
+		})
+		result = admin_client.list_topics()
+		if result is None:
+			raise RuntimeError("Empty response from list_topics")
+		self.ExistingTopics = set(result.topics.keys())
 
 	def check_and_initialize(self):
 		L.warning("`check_and_initialize()` is obsoleted, use `initialize_topics()` instead")
@@ -203,24 +211,24 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		missing_topics = [
 			topic
 			for topic in self.RequiredTopics.values()
-			if topic.name not in self.ExistingTopics
+			if topic.topic not in self.ExistingTopics
 		]
 
 		if len(missing_topics) == 0:
 			L.info("No missing Kafka topics to be initialized.")
 			return
 
-		admin_client = None
-
 		try:
-			admin_client = confluent_kafka.admin.KafkaAdminClient(
-				bootstrap_servers=self.BootstrapServers,
-				client_id=self.ClientId
-			)
+			admin_client = confluent_kafka.admin.AdminClient({
+				"bootstrap.servers": self.BootstrapServers,
+				"client.id": self.ClientId
+			})
 
 			# Create topics
 			# TODO: update configs of existing topics using `admin_client.alter_configs()`
-			admin_client.create_topics(missing_topics)
+			tasks = admin_client.create_topics(missing_topics)
+			for topic, task in tasks.items():
+				task.result()
 
 			# Update existing topic cache
 			self.ExistingTopics.update(self.RequiredTopics.keys())
@@ -228,11 +236,8 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			L.log(
 				asab.LOG_NOTICE,
 				"Kafka topics created",
-				struct_data={"topics": ", ".join(topic.name for topic in missing_topics)}
+				struct_data={"topics": ", ".join(topic.topic for topic in missing_topics)}
 			)
 
 		except Exception as e:
 			L.error("Kafka topic initialization failed: {}".format(e))
-		finally:
-			if admin_client is not None:
-				admin_client.close()
