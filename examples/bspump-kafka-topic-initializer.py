@@ -1,5 +1,10 @@
+import asyncio
+import time
+import confluent_kafka.admin
+
 import bspump
-from bspump.kafka import KafkaTopicInitializer
+import bspump.kafka
+import bspump.common
 
 
 """
@@ -9,6 +14,7 @@ It checks whether those topics exist on configured Kafka server and initializes 
 See `examples/data/kafka-topic-config.yml` for an example topic config file.
 """
 
+
 if __name__ == '__main__':
 	app = bspump.BSPumpApplication()
 
@@ -17,21 +23,44 @@ if __name__ == '__main__':
 	# Create a KafkaConnection
 	svc.add_connection(
 		bspump.kafka.KafkaConnection(
-			app,
-			"KafkaConnection",
+			app, "KafkaConnection",
 			config={"bootstrap_servers": "localhost:9092"}
 		)
 	)
 
-	# Pass the KafkaConnection name to KafkaTopicInitializer constructor
-	kti = KafkaTopicInitializer(
-		app,
-		"KafkaConnection",
-		config={"topics_file": "data/kafka-topic-config.yml"}
+	# Build example pipeline
+	pipeline = bspump.Pipeline(app, "SamplePipeline")
+	pipeline.build(
+		bspump.kafka.KafkaSource(app, pipeline, "KafkaConnection", config={
+			"topic": "test_source",
+			"group_id": "test",
+		}),
+		bspump.common.PPrintProcessor(app, pipeline),
+		bspump.kafka.KafkaSink(app, pipeline, "KafkaConnection", config={
+			"topic": "test_sink"
+		}),
 	)
+	svc.add_pipeline(pipeline)
 
-	# Run the topic check step
-	kti.check_and_initialize()
+	# Pass the KafkaConnection name to KafkaTopicInitializer constructor
+	kti = bspump.kafka.KafkaTopicInitializer(app, "KafkaConnection")
+
+	# Add topics required by pipeline components
+	kti.include_topics(pipeline=pipeline)
+
+	# Add topics from YAML file
+	kti.include_topics(config_file="data/kafka-topic-config.yml")
+
+	# Add topics from dict config
+	kti.include_topics(topic_config={
+		"topic": "new_topic",
+		"num_partitions": 1,
+		"replication_factor": 1,
+		"retention.ms": 3600000,
+	})
+
+	# Check and create missing topics
+	kti.initialize_topics()
 
 	# Run your app
 	# app.run()
