@@ -141,7 +141,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 
 		:return: xxxx
-        """
+		"""
 		return self._throttles
 
 
@@ -154,7 +154,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 
 		:return: xxxx
-        """
+		"""
 		if metric != self.MetricsCounter:
 			return
 		if values["event.in"] == 0:
@@ -173,7 +173,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 
 		:return: xxxx
-        """
+		"""
 		return self._error is not None
 
 	def set_error(self, context, event, exc):
@@ -710,7 +710,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			'Throttles': list(self._throttles),
 			'Sources': self.Sources,
 			'Processors': [],
-			'Metrics': self.MetricsService.MemstorTarget,
+			'Metrics': self.MetricsService.Storage.Metrics,
 			'Log': [record.__dict__ for record in self.L.Deque]
 		}
 
