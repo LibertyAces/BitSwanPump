@@ -157,13 +157,12 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		"""
 		for field in self.MetricsCounter.Storage["fieldset"]:
 			values = field["values"]
-			tags = field["tags"]
 			if values["event.in"] == 0:
-				self.MetricsGauge.set("warning.ratio", 0.0, tags)
-				self.MetricsGauge.set("error.ratio", 0.0, tags)
+				self.MetricsGauge.set("warning.ratio", 0.0)
+				self.MetricsGauge.set("error.ratio", 0.0)
 				continue
-			self.MetricsGauge.set("warning.ratio", values["warning"] / values["event.in"], tags)
-			self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"], tags)
+			self.MetricsGauge.set("warning.ratio", values["warning"] / values["event.in"])
+			self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"])
 
 	def is_error(self):
 		"""
