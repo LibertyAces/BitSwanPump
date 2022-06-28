@@ -19,52 +19,6 @@ L = logging.getLogger(__name__)
 #
 
 
-# TODO: Remove functions *_v0 after September 2020
-async def pipelines_v0(request):
-	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
-	return await pipelines(request)
-
-
-async def example_trigger_v0(request):
-	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
-	return await example_trigger(request)
-
-
-async def example_internal_v0(request):
-	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
-	return await example_internal(request)
-
-
-async def lookup_list_v0(request):
-	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
-	return await lookup_list(request)
-
-
-async def lookup_v0(request):
-	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
-	return await lookup(request)
-
-
-async def lookup_meta_v0(request):
-	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
-	return await lookup_meta(request)
-
-
-async def metric_list_v0(request):
-	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
-	return await metric_list(request)
-
-
-async def metric_detail_v0(request):
-	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
-	return await metric_detail(request)
-
-
-async def manifest_v0(request):
-	L.warning("This endpoint has been deprecated. Use /bspump/v1/endpoint instead.")
-	return await manifest(request)
-
-
 async def pipelines(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
@@ -132,24 +86,6 @@ async def lookup(request):
 		content_type="application/octet-stream")
 
 
-async def metric_list(request):
-	app = request.app['app']
-	svc = app.get_service("asab.MetricsService")
-	return asab.web.rest.json_response(request, svc.MemstorTarget)
-
-
-async def metric_detail(request):
-	metric_id = request.match_info.get('metric_id')
-	app = request.app['app']
-	svc = app.get_service("asab.MetricsService")
-
-	metric = svc.Metrics.get(metric_id)
-	if metric is None:
-		raise aiohttp.web.HTTPNotFound()
-
-	return asab.web.rest.json_response(request, metric)
-
-
 async def manifest(request):
 	'''
 	$ curl http://localhost:8080/manifest?pretty=true
@@ -207,9 +143,6 @@ def initialize_web(container):
 	container.WebApp.router.add_get('/bspump/v1/lookup', lookup_list)
 	container.WebApp.router.add_get('/bspump/v1/lookup/{lookup_id}', lookup)
 	container.WebApp.router.add_get('/bspump/v1/lookup/{lookup_id}/meta', lookup_meta)
-
-	container.WebApp.router.add_get('/bspump/v1/metric', metric_list)
-	container.WebApp.router.add_get('/bspump/v1/metric/{metric_id}', metric_detail)
 
 	container.WebApp.router.add_get('/bspump/v1/manifest', manifest)
 

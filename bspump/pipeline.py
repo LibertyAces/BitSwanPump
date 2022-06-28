@@ -94,7 +94,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		self.ProfilerCounter = {}
 
 		app.PubSub.subscribe(
-			"Application.Metrics.Flush!",
+			"Metrics.flush!",
 			self._on_metrics_flush
 		)
 
@@ -141,28 +141,28 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 
 		:return: xxxx
-        """
+		"""
 		return self._throttles
 
 
-	def _on_metrics_flush(self, event_type, metric, values):
+	def _on_metrics_flush(self, event_type):
 		"""
 		Description: Pipeline is ...
 
 
-		Parameters: event_type, metric, values
+		Parameters: event_type
 
 
 		:return: xxxx
-        """
-		if metric != self.MetricsCounter:
-			return
-		if values["event.in"] == 0:
-			self.MetricsGauge.set("warning.ratio", 0.0)
-			self.MetricsGauge.set("error.ratio", 0.0)
-			return
-		self.MetricsGauge.set("warning.ratio", values["warning"] / values["event.in"])
-		self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"])
+		"""
+		for field in self.MetricsCounter.Storage["fieldset"]:
+			values = field["values"]
+			if values["event.in"] == 0:
+				self.MetricsGauge.set("warning.ratio", 0.0)
+				self.MetricsGauge.set("error.ratio", 0.0)
+				continue
+			self.MetricsGauge.set("warning.ratio", values["warning"] / values["event.in"])
+			self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"])
 
 	def is_error(self):
 		"""
@@ -173,7 +173,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 
 		:return: xxxx
-        """
+		"""
 		return self._error is not None
 
 	def set_error(self, context, event, exc):
@@ -710,7 +710,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			'Throttles': list(self._throttles),
 			'Sources': self.Sources,
 			'Processors': [],
-			'Metrics': self.MetricsService.MemstorTarget,
+			'Metrics': self.MetricsService.Storage.Metrics,
 			'Log': [record.__dict__ for record in self.L.Deque]
 		}
 

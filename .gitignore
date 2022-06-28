@@ -114,3 +114,6 @@ doc/_build
 
 asab
 
+# VSCode
+.vscode/
+

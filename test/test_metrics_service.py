@@ -39,6 +39,7 @@ class WarningPipeline(Pipeline):
 
 
 class TestMetricsService(bspump.unittest.ProcessorTestCase):
+    # TODO: "Application.Metrics.Flush!" does not exist in asab anymore
 
     def _metric_flush(self, _, __, counter):
         if counter.get("error"):
