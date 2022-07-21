@@ -31,9 +31,9 @@ class VegetableCounterPipeline(bspump.Pipeline):
 		self.build(
 
 			bspump.random.RandomSource(app, self, choice=[
-				{"eggs": 2, "potatoes": 12, "carrots": 5, "garbage": "to be removed"},
-				{"potatoes": 10, "radishes": 5, "meat": 8},
-				{"radishes": 20, "carrots": 4, "potatoes": 10}
+				{"eggs": 2, "potatoes": 12, "carrots": 5, "garbage": "to be removed", "name": "xpotatoes", "meta": "Say,Good,Bye!"},
+				{"potatoes": 10, "radishes": 5, "meat": 8, "name": "xpotatoes", "meta": "Say,Good,Bye!"},
+				{"radishes": 20, "carrots": 4, "potatoes": 10, "name": "xpotatoes", "meta": "Say,Good,Bye!"}
 			], config={"number": 5}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
 
 			bspump.declarative.DeclarativeProcessor(app, self, declaration),

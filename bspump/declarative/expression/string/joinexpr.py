@@ -1,5 +1,14 @@
+import logging
+
 from ...abc import Expression
 from ..value.valueexpr import VALUE
+from ...declerror import DeclarationError
+
+###
+
+L = logging.getLogger(__name__)
+
+###
 
 
 class JOIN(Expression):
@@ -52,14 +61,22 @@ class JOIN(Expression):
 			self.ItemsNormalized.append(item)
 
 	def __call__(self, context, event, *args, **kwargs):
-		arr = []
-		for item in self.ItemsNormalized:
+		try:
 
-			v = item(context, event, *args, **kwargs)
-			if v is None:
-				v = self.Miss(context, event, *args, **kwargs)
+			arr = []
+			for item in self.ItemsNormalized:
+
+				v = item(context, event, *args, **kwargs)
 				if v is None:
-					return None
-			arr.append(str(v))
+					v = self.Miss(context, event, *args, **kwargs)
+					if v is None:
+						return None
+				arr.append(str(v))
 
-		return self.Char.join(arr)
+			return self.Char.join(arr)
+
+		except Exception as e:
+			L.exception("The following exception ocurred in !JOIN expression [delimiter: {}]".format(
+				self.Char
+			))
+			raise DeclarationError(original_exception=e, location=self.get_location())

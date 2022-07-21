@@ -1,5 +1,6 @@
 from ...abc import Expression
 from ..value.valueexpr import VALUE
+from ...declerror import DeclarationError
 
 import logging
 
@@ -107,59 +108,65 @@ This is how to create the empty dictionary:
 			self.Attributes[attr_name] = value.get_outlet_type()
 
 	def __call__(self, context, event, *args, **kwargs):
-		if self.With is None:
-			with_dict = dict()
-		else:
-			with_dict = self.With(context, event, *args, **kwargs)
-			if with_dict is None:
-				return None
-			# TODO: Must be usable as a dictionary
 
-		if self.Set is not None:
-			for key, value in self.Set.items():
-				v = value(context, event, *args, **kwargs)
-				if v is not None:
-					with_dict[key] = v
+		try:
 
-		if self.Modify is not None:
-			for key, value in self.Modify.items():
-				# Obtain the original value and pass it to the modify expression
-				orig = with_dict.pop(key, None)
-
-				modified_value = value(context, event, orig, *args, **kwargs)
-
-				# Only if modification is successful, store it
-				# Unsetting values should be done via unset
-				if modified_value is not None:
-					with_dict[key] = modified_value
-
-		if self.Add is not None:
-			for key, value in self.Add.items():
-				v = value(context, event, *args, **kwargs)
-				if v is not None:
-					try:
-						with_dict[key] += v
-					except KeyError:
-						continue
-
-		if self.Update is not None:
-			update_dict = self.Update(context, event, with_dict, *args, **kwargs)
-			if update_dict is not None and update_dict is not False:
-				try:
-					with_dict.update(update_dict)
-				except TypeError:
-					pass
-
-		if self.Unset is not None:
-			for key in self.Unset:
-				popped = with_dict.pop(key, None)
-
-		# Check that all mandatory fields are present in the dictionary
-		if self.Mandatory is not None:
-			for mandatory_field in self.Mandatory:
-				if mandatory_field not in with_dict:
-					# TODO: Remove eventually when there are more occurrences among other expressions as well
-					L.warning("Mandatory field '{}' not present in dictionary. Returning None.".format(mandatory_field))
+			if self.With is None:
+				with_dict = dict()
+			else:
+				with_dict = self.With(context, event, *args, **kwargs)
+				if with_dict is None:
 					return None
+				# TODO: Must be usable as a dictionary
 
-		return with_dict
+			if self.Set is not None:
+				for key, value in self.Set.items():
+					v = value(context, event, *args, **kwargs)
+					if v is not None:
+						with_dict[key] = v
+
+			if self.Modify is not None:
+				for key, value in self.Modify.items():
+					# Obtain the original value and pass it to the modify expression
+					orig = with_dict.pop(key, None)
+
+					modified_value = value(context, event, orig, *args, **kwargs)
+
+					# Only if modification is successful, store it
+					# Unsetting values should be done via unset
+					if modified_value is not None:
+						with_dict[key] = modified_value
+
+			if self.Add is not None:
+				for key, value in self.Add.items():
+					v = value(context, event, *args, **kwargs)
+					if v is not None:
+						try:
+							with_dict[key] += v
+						except KeyError:
+							continue
+
+			if self.Update is not None:
+				update_dict = self.Update(context, event, with_dict, *args, **kwargs)
+				if update_dict is not None and update_dict is not False:
+					try:
+						with_dict.update(update_dict)
+					except TypeError:
+						pass
+
+			if self.Unset is not None:
+				for key in self.Unset:
+					popped = with_dict.pop(key, None)
+
+			# Check that all mandatory fields are present in the dictionary
+			if self.Mandatory is not None:
+				for mandatory_field in self.Mandatory:
+					if mandatory_field not in with_dict:
+						# TODO: Remove eventually when there are more occurrences among other expressions as well
+						L.warning("Mandatory field '{}' not present in dictionary. Returning None.".format(mandatory_field))
+						return None
+
+			return with_dict
+
+		except Exception as e:
+			raise DeclarationError(original_exception=e, location=self.get_location())

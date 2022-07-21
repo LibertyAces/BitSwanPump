@@ -12,14 +12,17 @@ set:
       with: !EVENT
       item: carrots
       default: 0
-    - !IF
-      test:
-        !GT
-        - !ITEM
-          with: !EVENT
-          item: radishes
-          default: 0
-        - 2
-      then: !!float 10
-      else: 0
     - 20
+  name:
+    !JOIN
+    items:
+      - !SUBSTRING
+        what: !ITEM EVENT name
+        from: 0
+        to: 7
+      - "-"
+      - !CUT
+        what: !ITEM EVENT meta
+        delimiter: ','
+        field: 2
+    delimiter: ' '

@@ -1,5 +1,14 @@
+import logging
+
 from ...abc import Expression
 from ..value.valueexpr import VALUE
+from ...declerror import DeclarationError
+
+###
+
+L = logging.getLogger(__name__)
+
+###
 
 
 class SUBSTRING(Expression):
@@ -31,7 +40,11 @@ class SUBSTRING(Expression):
 		return str.__name__
 
 	def __call__(self, context, event, *args, **kwargs):
-		_string = self.Value(context, event, *args, **kwargs)
-		_from = self.From(context, event, *args, **kwargs)
-		_to = self.To(context, event, *args, **kwargs)
-		return _string[_from:_to]
+		try:
+			_string = self.Value(context, event, *args, **kwargs)
+			_from = self.From(context, event, *args, **kwargs)
+			_to = self.To(context, event, *args, **kwargs)
+			return _string[_from:_to]
+
+		except Exception as e:
+			raise DeclarationError(original_exception=e, location=self.get_location())

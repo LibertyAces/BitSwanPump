@@ -1,4 +1,13 @@
+import logging
+
 from ...abc import Expression
+from ...declerror import DeclarationError
+
+###
+
+L = logging.getLogger(__name__)
+
+###
 
 
 class CUT(Expression):
@@ -30,6 +39,14 @@ class CUT(Expression):
 		return str.__name__
 
 	def __call__(self, context, event, *args, **kwargs):
-		value = self.Value(context, event, *args, **kwargs)
-		x = value.split(self.Delimiter, self.Field + 1)
-		return x[self.Field]
+
+		try:
+			value = self.Value(context, event, *args, **kwargs)
+			x = value.split(self.Delimiter, self.Field + 1)
+			return x[self.Field]
+
+		except Exception as e:
+			L.exception("The following exception ocurred in !CUT expression [delimiter: {}, field: {}]".format(
+				self.Delimiter, self.Field
+			))
+			raise DeclarationError(original_exception=e, location=self.get_location())
