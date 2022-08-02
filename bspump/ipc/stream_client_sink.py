@@ -60,7 +60,6 @@ class StreamClientSink(Sink):
 	def _on_tick(self, event_name):
 		# Unthrottle the queue if needed
 		if self.OutboundQueue in self.Pipeline.get_throttles() and self.OutboundQueue.qsize() < self.OutboundQueueMaxSize:
-			print("Unthrottling")
 			self.Pipeline.throttle(self.OutboundQueue, False)
 
 		if self.Task is not None and self.Task.done():
@@ -168,5 +167,4 @@ class StreamClientSink(Sink):
 		self.OutboundQueue.put_nowait(event)
 
 		if self.OutboundQueue.qsize() == self.OutboundQueueMaxSize:
-			print("Throttling")
 			self.Pipeline.throttle(self.OutboundQueue, True)
