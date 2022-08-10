@@ -49,13 +49,16 @@ class KafkaSource(Source):
 
 	ConfigDefaults = {
 		"topic": "default",
+		"refresh_topics": 0,
 		"enable.auto.commit": "true",
 		"auto.commit.interval.ms": "1000",
+		"auto.offset.reset": "smallest",
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
+		self.App = app
 		self.Connection = self.Pipeline.locate_connection(app, connection)
 		self.Sleep = 100 / 1000.0
 		self.ConsumerConfig = {}
@@ -67,7 +70,7 @@ class KafkaSource(Source):
 		# Copy configuration options, avoid the topic
 		for key, value in self.Config.items():
 
-			if key == "topic":
+			if key == "topic" or key == "refresh_topics":
 				continue
 
 			self.ConsumerConfig[key.replace("_", ".")] = value
@@ -81,45 +84,62 @@ class KafkaSource(Source):
 			else:
 				self.Subscribe.append(s.rsplit(':', 1))
 
+		self.Running = True
+
+		# For refreshing of topics/subscription
+		self.RefreshTopics = int(self.Config["refresh_topics"])
+		self.LastRefreshTopicsTime = self.App.time()
+
 
 	async def main(self):
 
-		try:
-			c = confluent_kafka.Consumer(self.ConsumerConfig, logger=L)
+		while self.Running:
 
-		except BaseException as e:
-			L.exception("Error when connecting to Kafka")
-			self.Pipeline.set_error(None, None, e)
-			return
+			try:
+				c = confluent_kafka.Consumer(self.ConsumerConfig, logger=L)
 
-		c.subscribe(self.Subscribe)
+			except BaseException as e:
+				L.exception("Error when connecting to Kafka")
+				self.Pipeline.set_error(None, None, e)
+				return
 
-		try:
-			while 1:
-				await self.Pipeline.ready()
+			c.subscribe(self.Subscribe)
 
-				m = c.poll(0)
+			try:
 
-				if m is None:
-					await asyncio.sleep(self.Sleep)
-					continue
+				while 1:
+					await self.Pipeline.ready()
+					current_time = self.App.time()
 
-				if m.error():
-					L.error("The following error occured while polling for messages: '{}'.".format(m.error()))
-					await asyncio.sleep(self.Sleep)
-					continue
+					if self.RefreshTopics > 0 and current_time > self.LastRefreshTopicsTime + self.RefreshTopics:
+						L.info("Topics refreshed in '{}'.".format(self.Id))
+						c.unsubscribe()
+						c.close()
+						self.LastRefreshTopicsTime = current_time
+						break
 
-				await self.process(m.value(), context={
-					"kafka_key": m.key(),
-					"kafka_headers": m.headers(),
-					"_kafka_topic": m.topic(),
-					"_kafka_partition": m.partition(),
-					"_kafka_offset": m.offset(),
-				})
+					m = c.poll(0)
 
-		except asyncio.CancelledError:
-			pass
+					if m is None:
+						await asyncio.sleep(self.Sleep)
+						continue
 
-		except BaseException as e:
-			L.exception("Error when processing Kafka message")
-			self.Pipeline.set_error(None, None, e)
+					if m.error():
+						L.error("The following error occured while polling for messages: '{}'.".format(m.error()))
+						await asyncio.sleep(self.Sleep)
+						continue
+
+					await self.process(m.value(), context={
+						"kafka_key": m.key(),
+						"kafka_headers": m.headers(),
+						"_kafka_topic": m.topic(),
+						"_kafka_partition": m.partition(),
+						"_kafka_offset": m.offset(),
+					})
+
+			except asyncio.CancelledError:
+				self.Running = False
+
+			except BaseException as e:
+				L.exception("Error when processing Kafka message")
+				self.Pipeline.set_error(None, None, e)
