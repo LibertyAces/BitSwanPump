@@ -93,7 +93,12 @@ class KafkaSink(Sink):
 
 			self.ProducerConfig[key.replace("_", ".")] = value
 
-		self.Producer = confluent_kafka.Producer(self.ProducerConfig, logger=L)
+		try:
+			self.Producer = confluent_kafka.Producer(self.ProducerConfig, logger=L)
+
+		except RuntimeError as e:
+			L.exception(e)
+			exit(1)
 
 		self.Topic = self.Config["topic"]
 		self.LowWatermark = int(self.Config["watermark.low"])
