@@ -85,7 +85,7 @@ setup(
 		'motor>=2.1.0',
 		'mongoquery>=1.3.6',
 		'pybind11>=2.6.1',
-		'cysimdjson==21.11b2',
+		'cysimdjson>=21.11',
 		'pywinrm>=0.4.1',
 		'pandas>=0.24.2',
 		'xxhash>=1.4.4',
