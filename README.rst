@@ -5,10 +5,6 @@ BSPump: A real-time stream processor for Python 3.5+
     :target: https://docs.libertyaces.com/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://travis-ci.com/LibertyAces/BitSwanPump.svg?branch=master
-    :alt: Build status
-    :target: https://travis-ci.com/LibertyAces/BitSwanPump
-
 .. image:: https://codecov.io/gh/LibertyAces/BitSwanPump/branch/master/graph/badge.svg?sanitize=true
     :alt: Code coverage
     :target: https://codecov.io/gh/LibertyAces/BitSwanPump
