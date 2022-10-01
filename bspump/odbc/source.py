@@ -37,4 +37,3 @@ class ODBCSource(TriggerSource):
 
 					# Pass event to the pipeline
 					await self.process(event)
-				await cur.execute("COMMIT;")
