@@ -43,15 +43,17 @@ This is how to create the empty dictionary:
 		"Unset": [],  # TODO: This ...
 	}
 
-	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_unset=None, arg_add=None, arg_update=None, arg_mandatory=None):
+	def __init__(self, app, *, arg_with=None, arg_set=None, arg_modify=None, arg_unset=None, arg_add=None, arg_update=None, arg_mandatory=None, arg_flatten=None):
 		super().__init__(app)
 
 		self.With = arg_with
 
 		self.ArgSet = arg_set
+		self.ArgFlatten = arg_flatten
 		self.ArgModify = arg_modify
 		self.ArgAdd = arg_add
 		self.Set = None
+		self.Flatten = None
 		self.Modify = None
 		self.Add = None
 
@@ -64,6 +66,8 @@ This is how to create the empty dictionary:
 
 		if "Set" in key:
 			self.Set[key[3:]] = value
+		if "Flatten" in key:
+			self.Flatten[key[7:]] = value
 		if "Add" in key:
 			self.Add[key[3:]] = value
 		if "Modify" in key:
@@ -76,6 +80,13 @@ This is how to create the empty dictionary:
 			assert(isinstance(self.ArgSet, dict))
 			self.Set = dict()
 			self._set_value_or_expression_to_attribute(self.ArgSet, self.Set, "Set")
+
+		if self.ArgFlatten is None:
+			self.Flatten = None
+		else:
+			assert(isinstance(self.ArgFlatten, dict))
+			self.Flatten = dict()
+			self._set_value_or_expression_to_attribute(self.ArgFlatten, self.Flatten, "Flatten")
 
 		if self.ArgModify is None:
 			self.Modify = None
@@ -125,6 +136,12 @@ This is how to create the empty dictionary:
 					if v is not None:
 						with_dict[key] = v
 
+			if self.Flatten is not None:
+				for key, value in self.Flatten.items():
+					v = value(context, event, *args, **kwargs)
+					if v is not None and isinstance(v, list):
+						for el in v:
+							with_dict[key + '.' + el["Name"]] = el["Value"]
 			if self.Modify is not None:
 				for key, value in self.Modify.items():
 					# Obtain the original value and pass it to the modify expression
