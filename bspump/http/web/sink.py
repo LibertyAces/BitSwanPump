@@ -99,5 +99,5 @@ Note: Source doesn't necessarily needs to originate at WebServiceSink, it could 
 
 
 	async def on_tick(self, event_name):
-		for response in self.Responses:
+		for response in self.Responses.values():
 			await response.flush_events()
