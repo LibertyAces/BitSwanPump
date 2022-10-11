@@ -1,0 +1,6 @@
+---
+!DICT
+set:
+  o365.audit.EndTime: !ITEM CONTEXT JSON.EndTime
+flatten:
+  o365.audit.DeviceProperties: !ITEM CONTEXT JSON.DeviceProperties
