@@ -63,9 +63,16 @@ class KafkaSource(Source):
 		self.Sleep = 100 / 1000.0
 		self.ConsumerConfig = {}
 
+		self.SpecialKeys = frozenset(["oauth_cb"])
+
 		# Copy connection options
 		for key, value in self.Connection.Config.items():
-			self.ConsumerConfig[key.replace("_", ".")] = value
+
+			if key in self.SpecialKeys:
+				self.ConsumerConfig[key] = value
+
+			else:
+				self.ConsumerConfig[key.replace("_", ".")] = value
 
 		# Copy configuration options, avoid the topic
 		for key, value in self.Config.items():
@@ -73,7 +80,11 @@ class KafkaSource(Source):
 			if key == "topic" or key == "refresh_topics":
 				continue
 
-			self.ConsumerConfig[key.replace("_", ".")] = value
+			if key in self.SpecialKeys:
+				self.ConsumerConfig[key] = value
+
+			else:
+				self.ConsumerConfig[key.replace("_", ".")] = value
 
 		# Create subscription list
 		self.Subscribe = []
