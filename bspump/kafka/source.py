@@ -48,11 +48,12 @@ class KafkaSource(Source):
 	"""
 
 	ConfigDefaults = {
-		"topic": "default",
+		"topic": "unconfigured",
 		"refresh_topics": 0,
 		"enable.auto.commit": "true",
 		"auto.commit.interval.ms": "1000",
 		"auto.offset.reset": "smallest",
+		"group.id": "bspump",
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -129,7 +130,7 @@ class KafkaSource(Source):
 						self.LastRefreshTopicsTime = current_time
 						break
 
-					m = c.poll(0)
+					m = c.poll(0.2)
 
 					if m is None:
 						await asyncio.sleep(self.Sleep)
