@@ -191,7 +191,7 @@ class TriggerSource(Source):
 		self.App = app
 		self.Loop = app.Loop
 
-		self.TriggerEvent = asyncio.Event(loop=app.Loop)
+		self.TriggerEvent = asyncio.Event()
 		self.TriggerEvent.clear()
 		self.Triggers = set()
 

@@ -111,7 +111,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		self._throttles = set()
 		self._ancestral_pipelines = set()
 
-		self._ready = asyncio.Event(loop=app.Loop)
+		self._ready = asyncio.Event()
 		self._ready.clear()
 
 		# Chillout is used to break a pipeline processing to smaller tasks that allows other event in event loop to be processed

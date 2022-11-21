@@ -25,10 +25,10 @@ class AMQPSource(Source):
 
 		self._connection = pipeline.locate_connection(app, connection)
 		self._channel = None
-		self._channel_ready = asyncio.Event(loop=app.Loop)
+		self._channel_ready = asyncio.Event()
 		self._channel_ready.clear()
 		self._error_exchange = self.Config['error_exchange']
-		self._queue = asyncio.Queue(loop=app.Loop)
+		self._queue = asyncio.Queue()
 
 		self._connection.PubSub.subscribe("AMQPConnection.open!", self._on_connection_open)
 		self._connection.PubSub.subscribe("AMQPConnection.close!", self._on_connection_close)
