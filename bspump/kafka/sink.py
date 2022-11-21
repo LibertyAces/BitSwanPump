@@ -68,6 +68,7 @@ class KafkaSink(Sink):
 		"batch.num.messages": "100000",
 		"linger.ms": "500",  # This settings makes a significant impact on the throughtput
 		"batch.size": "1000000",
+		"poll.timeout": "0.2",
 		# "compression.type": "snappy",
 	}
 
@@ -75,51 +76,45 @@ class KafkaSink(Sink):
 	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 
-		self.ProducerConfig = {}
-		self.Running = False
-		self.PollTask = None
-
 		connection = pipeline.locate_connection(app, connection)
+
+		producer_config = {}
 
 		# Copy connection options
 		for key, value in connection.Config.items():
-			self.ProducerConfig[key.replace("_", ".")] = value
+			producer_config[key.replace("_", ".")] = value
 
-		# Copy configuration options, avoid the topic
+		# Copy configuration options, avoid the topic, watermark and poll.timeout params
 		for key, value in self.Config.items():
 
-			if key == "topic" or key.startswith("watermark"):
+			if key == "topic" or key.startswith("watermark") or key == 'poll.timeout':
 				continue
 
-			self.ProducerConfig[key.replace("_", ".")] = value
+			producer_config[key.replace("_", ".")] = value
 
-		try:
-			self.Producer = confluent_kafka.Producer(self.ProducerConfig, logger=L)
-
-		except RuntimeError as e:
-			L.exception(e)
-			exit(1)
+		self.Producer = confluent_kafka.Producer(producer_config, logger=L)
 
 		self.Topic = self.Config["topic"]
 		self.LowWatermark = int(self.Config["watermark.low"])
 		self.HighWatermark = int(self.Config["watermark.high"])
+		self.PollTimeout = float(self.Config["poll.timeout"])
+		self.IsThrottling = False
+
+		self.ProactorService = self.Pipeline.App.get_service('asab.ProactorService')
 
 		app.PubSub.subscribe_all(self)
-		pipeline.PubSub.subscribe("bspump.pipeline.start!", self._on_start)
-		pipeline.PubSub.subscribe("bspump.pipeline.stop!", self._on_stop)
 
 
 	@asab.subscribe("Application.tick!")
-	def _on_tick(self, event_name):
+	async def _on_tick(self, event_name):
+		if self.IsThrottling and (len(self.Producer) < self.LowWatermark):
+			self.IsThrottling = False
+			self.Pipeline.throttle(self, False)
 
-		if not self.Pipeline.is_ready():
-
-			if len(self.Producer) < self.LowWatermark:
-				self.Pipeline.throttle(self, False)
+		await self.ProactorService.execute(self.Producer.flush, self.PollTimeout)
 
 
 	def process(self, context, event: bytes):
-
 		try:
 			self.Producer.produce(
 				context["kafka_topic"] if "kafka_topic" in context else self.Topic,
@@ -131,44 +126,6 @@ class KafkaSink(Sink):
 		except Exception as e:
 			L.exception("Error occurred when sending data to Kafka: '{}'".format(e))
 
-		if self.Pipeline.is_ready():
-
-			if len(self.Producer) > self.HighWatermark:
-				self.Pipeline.throttle(self, True)
-
-
-	def _on_start(self, event_name, pipeline):
-
-		if self.Pipeline != pipeline:
-			return
-
-		if self.Running:
-			# Already started
-			return
-
-		assert(self.PollTask is None)
-		self.Running = True
-		proactor_svc = self.Pipeline.App.get_service('asab.ProactorService')
-		self.PollTask = proactor_svc.execute(self._kafka_poll)
-
-
-	async def _on_stop(self, event_name, pipeline):
-		if self.PollTask is None:
-			return
-
-		# TODO: Wait till the ouput queue is trully empty
-
-		poll_task = self.PollTask
-		self.Running = False
-		self.PollTask = None
-
-		try:
-			await poll_task
-		except asyncio.CancelledError:
-			pass
-
-
-	def _kafka_poll(self):
-
-		while self.Running:
-			self.Producer.poll(500)
+		if not self.IsThrottling and (len(self.Producer) > self.HighWatermark):
+			self.IsThrottling = True
+			self.Pipeline.throttle(self, True)
