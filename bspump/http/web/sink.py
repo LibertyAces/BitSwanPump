@@ -70,7 +70,7 @@ Note: Source doesn't necessarily needs to originate at WebServiceSink, it could 
 
 
 	CONTEXT_RESPONSE_ID = "webservicesink.response_id"
-
+	CONTEXT_TYPE = "application/octet-stream"
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id, config)
@@ -94,6 +94,7 @@ Note: Source doesn't necessarily needs to originate at WebServiceSink, it could 
 
 	async def response(self, request):
 		response = WebServiceStreamResponse(self)
+		response.content_type = self.CONTEXT_TYPE
 		await response.prepare(request)
 		return response
 
