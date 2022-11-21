@@ -161,8 +161,7 @@ class PumpBuilder(object):
 	def construct_sources(self, app, svc, pipeline, definition):
 
 		sources = []
-		for i in range(0, len(definition)):
-			source_definition = definition[i]
+		for source_definition in definition:
 			source = self.construct_source(app, svc, pipeline, source_definition)
 			sources.append(source)
 
