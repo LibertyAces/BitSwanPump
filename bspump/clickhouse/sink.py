@@ -21,6 +21,10 @@ class ClickHouseSink(Sink):
 		"database": "",
 		"table": "",
 		"schema": "",
+		"primary_key": "`@timestamp`",
+
+		"engine": "MergeTree",
+		"bulk_size": 100,
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -48,9 +52,11 @@ class ClickHouseSink(Sink):
 		self.Table = self.Config.get("table")
 		self.Schema = self.Config.get("schema")
 
+		engine = self.Config.get("engine")
+		primary_key = self.Config.get("primary_key")
 		self.Client.execute('CREATE DATABASE IF NOT EXISTS {}'.format(self.Database))
-		self.Client.execute("CREATE TABLE IF NOT EXISTS {}.{} ({}) ENGINE = Memory".format(
-			self.Database, self.Table, self.Schema)
+		self.Client.execute("CREATE TABLE IF NOT EXISTS {}.{} ({}) ENGINE = {} ORDER BY ({})".format(
+			self.Database, self.Table, self.Schema, engine, primary_key)
 		)
 
 
