@@ -65,7 +65,7 @@ class SFTPSink(Sink):
 		metrics_service = app.get_service('asab.MetricsService')
 		self.RewriteCounter = metrics_service.create_counter("sink.rewritefile", tags={}, init_values={'times': 0})
 
-		self._output_queue = asyncio.Queue(loop=app.Loop)
+		self._output_queue = asyncio.Queue()
 		self._output_queue_max_size = 1000
 		self._conn_future = None
 
@@ -109,7 +109,7 @@ class SFTPSink(Sink):
 
 	async def _on_exit(self, message_type):
 		if self._conn_future is not None:
-			await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED, loop=self.Loop)
+			await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED)
 
 
 	async def outbound(self):

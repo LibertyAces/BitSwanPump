@@ -56,7 +56,7 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		)
 
 		# Load previously saved anomalies from the external system
-		self.LoadTasks = [asyncio.ensure_future(self.load(), loop=self.App.Loop)]
+		self.LoadTasks = [asyncio.ensure_future(self.load())]
 		self.App.PubSub.subscribe("Application.exit!", self._on_exit)
 
 	def set_pipeline(self, pipeline):
@@ -150,7 +150,7 @@ class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
 		L.info("Open anomalies loaded ...")
 
 	async def _on_exit(self, message_type):
-		await asyncio.wait(self.LoadTasks, loop=self.App.Loop)
+		await asyncio.wait(self.LoadTasks)
 
 	async def flush(self, message_type):
 		L.info("Start flushing of closed anomalies ...")

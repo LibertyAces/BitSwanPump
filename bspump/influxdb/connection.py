@@ -57,7 +57,7 @@ class InfluxDBConnection(Connection):
 			[int(x) for x in re.findall(r"[0-9]+", self.Config['response_codes_to_retry'])]
 		)
 
-		self._output_queue = asyncio.Queue(loop=app.Loop)
+		self._output_queue = asyncio.Queue()
 		self._started = True
 
 		self._output_bucket = ""

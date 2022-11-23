@@ -61,7 +61,7 @@ class DatagramSource(Source):
 
 
 	async def main(self):
-		task = asyncio.ensure_future(self._receive(), loop=self.Loop)
+		task = asyncio.ensure_future(self._receive())
 
 		await self.stopped()
 

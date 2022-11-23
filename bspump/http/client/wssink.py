@@ -27,8 +27,7 @@ class HTTPClientWebSocketSink(Sink):
 		self.Exiting = False
 
 		self.Task = asyncio.ensure_future(
-			self._task(self.Config['url']),
-			loop=app.Loop
+			self._task(self.Config['url'])
 		)
 
 		app.PubSub.subscribe("Application.exit!", self._on_exit)
@@ -51,8 +50,8 @@ class HTTPClientWebSocketSink(Sink):
 						self.Pipeline.throttle(self, False)
 
 						try:
-							writer = asyncio.ensure_future(self._writer(ws), loop=self.Pipeline.Loop)
-							reader = asyncio.ensure_future(self._reader(ws), loop=self.Pipeline.Loop)
+							writer = asyncio.ensure_future(self._writer(ws))
+							reader = asyncio.ensure_future(self._reader(ws))
 							await asyncio.wait([writer, reader], return_when=asyncio.FIRST_COMPLETED)
 
 						finally:

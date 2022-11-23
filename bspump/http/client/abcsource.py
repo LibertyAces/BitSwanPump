@@ -52,7 +52,7 @@ class HTTPABCClientSource(TriggerSource):
 
 
 	async def main(self):
-		async with aiohttp.ClientSession(loop=self.Loop) as session:
+		async with aiohttp.ClientSession() as session:
 			await super().main(session)
 
 

@@ -117,7 +117,7 @@ class Lookup(asab.ConfigObject):
 
 		:return:
 		"""
-		return asyncio.ensure_future(self._do_update(), loop=loop)
+		return asyncio.ensure_future(self._do_update())
 
 	async def _do_update(self):
 		"""

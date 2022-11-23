@@ -20,7 +20,6 @@ class GoogleDriveABCSink(Sink):
 		self._conn_future = None
 		self.Connection = pipeline.locate_connection(app, connection)
 		self._output_queue = asyncio.Queue(
-			loop=app.Loop,
 			maxsize=self.Connection._output_queue_max_size + 1
 		)
 
@@ -52,7 +51,6 @@ class GoogleDriveABCSink(Sink):
 
 		self._conn_future = asyncio.ensure_future(
 			self._connection(),
-			loop=self.Loop
 		)
 
 

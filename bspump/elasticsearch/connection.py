@@ -273,7 +273,7 @@ class ElasticSearchConnection(Connection):
 
 		:return:
 		"""
-		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
+		return aiohttp.ClientSession(auth=self._auth)
 
 	def consume(self, index, data_feeder_generator, bulk_class=ElasticSearchBulk):
 		"""

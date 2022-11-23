@@ -57,7 +57,7 @@ class ODBCConnection(Connection):
 		app.PubSub.subscribe("ODBCConnection.pause!", self._on_pause)
 		app.PubSub.subscribe("ODBCConnection.unpause!", self._on_unpause)
 
-		self._output_queue = asyncio.Queue(loop=app.Loop)
+		self._output_queue = asyncio.Queue()
 		self._bulks = {}  # We have a "bulk" per query
 
 
@@ -115,7 +115,6 @@ class ODBCConnection(Connection):
 
 		self._conn_future = asyncio.ensure_future(
 			self._connection(),
-			loop=self.Loop
 		)
 
 
