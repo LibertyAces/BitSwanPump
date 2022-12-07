@@ -210,7 +210,8 @@ class TimeWindowMatrix(NamedMatrix):
 		if self.Array.shape[0] == 0:
 			return
 
-		column = np.zeros((self.Array.shape[0], 1,) + self.Array.shape[2:], dtype=self.Array.dtype)
+		column = np.empty((self.Array.shape[0], 1,) + self.Array.shape[2:], dtype=self.Array.dtype)
+		column[:] = np.nan
 		array = self.Array
 		array = np.hstack((array, column))
 		array = np.delete(array, 0, axis=1)

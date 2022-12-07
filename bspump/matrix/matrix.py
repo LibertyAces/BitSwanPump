@@ -148,7 +148,7 @@ class Matrix(abc.ABC, asab.ConfigObject):
 		Override this method to gain control on how a new closed rows are added to the matrix
 		'''
 		current_rows = self.Array.shape[0]
-		self.Array.resize((current_rows + rows,) + self.Array.shape[1:], refcheck=False)
+		self.Array = np.pad(self.Array.copy(), ((0, rows), (0, 0)), 'constant', constant_values=np.nan)
 		self.ClosedRows.extend(current_rows, self.Array.shape[0])
 
 

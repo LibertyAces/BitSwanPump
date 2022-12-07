@@ -5,7 +5,7 @@ import os
 class WarmingUpCount(object):
 	def __init__(self, size):
 		self.DType = 'i8'
-		self.WUC = np.zeros(size, dtype=self.DType)
+		self.WUC = np.empty(size, dtype=self.DType)
 
 
 	def decrease(self, indexes):
@@ -49,7 +49,8 @@ class PersistentWarmingUpCount(WarmingUpCount):
 	def extend(self, size, value):
 		start = self.WUC.shape[0]
 		end = size
-		wuc = np.zeros(self.WUC.shape[0], dtype=self.DType)
+		wuc = np.empty(self.WUC.shape[0], dtype=self.DType)
+		wuc[:] = np.nan
 		wuc[:] = self.WUC[:]
 		wuc.resize(size, refcheck=False)
 		self.WUC = np.memmap(self.Path, dtype=self.DType, mode='w+', shape=wuc.shape)
