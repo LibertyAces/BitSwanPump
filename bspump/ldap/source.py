@@ -1,6 +1,8 @@
-import asyncio
 import logging
-from bspump.abc.source import TriggerSource
+import ldap
+import ldap.controls
+
+from ..abc.source import TriggerSource
 
 #
 
@@ -13,21 +15,23 @@ class LDAPSource(TriggerSource):
 	ConfigDefaults = {
 		"filter": "(&(objectClass=inetOrgPerson)(cn=*))",
 		"attributes": "sAMAccountName cn createTimestamp modifyTimestamp UserAccountControl email",
-		"_results_per_page": 1000,
+		"results_per_page": 1000,
 	}
 
 	def __init__(self, app, pipeline, connection, query_parms=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		self.Scope = ldap.SCOPE_SUBTREE
 		self.Connection = pipeline.locate_connection(app, connection)
+		self.ProactorService = app.get_service("asab.ProactorService")
+		self.Scope = ldap.SCOPE_SUBTREE
 		self.Base = self.Config.get("base")
 		self.Filter = self.Config.get("filter")
 		self.Attributes = self.Config.get("attributes").split(" ")
-		self.ResultsPerPage = self.Config.getint("_results_per_page")
+		self.ResultsPerPage = self.Config.getint("results_per_page")
 
 	async def cycle(self):
 		# TODO: Throttling
 		await self.Pipeline.ready()
+		cookie = b""
 		while True:
 			page, cookie = await self.ProactorService.execute(
 				self._search_worker, cookie)

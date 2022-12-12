@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import ldap
 import ldap.resiter
@@ -58,10 +59,10 @@ class LDAPConnection(Connection):
 		self.TLSEnabled = len(self.Config.get("tls_cafile")) > 0
 		self.URI = self.Config.get("uri")
 		self.Host = self.Config.get("host")
-		self.Port = self.Config.get("port")
+		self.Port = self.Config.getint("port")
 		if self.Port == 0:
 			self.Port = 636 if self.TLSEnabled else 389
-		if len(self.LdapUri) == 0:
+		if len(self.URI) == 0:
 			self.URI = "{scheme}://{host}:{port}".format(
 				scheme="ldaps" if self.TLSEnabled else "ldap",
 				host=self.Host,
@@ -70,7 +71,7 @@ class LDAPConnection(Connection):
 
 	@contextlib.contextmanager
 	def ldap_client(self):
-		client = LDAPObject(self.LdapUri)
+		client = LDAPObject(self.URI)
 		client.protocol_version = ldap.VERSION3
 		client.set_option(ldap.OPT_REFERRALS, 0)
 		client.set_option(ldap.OPT_NETWORK_TIMEOUT, int(self.Config.get("network_timeout")))
