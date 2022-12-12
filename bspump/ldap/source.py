@@ -18,7 +18,7 @@ class LDAPSource(TriggerSource):
 		"results_per_page": 1000,
 	}
 
-	def __init__(self, app, pipeline, connection, query_parms=None, id=None, config=None):
+	def __init__(self, app, pipeline, connection, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.ProactorService = app.get_service("asab.ProactorService")
