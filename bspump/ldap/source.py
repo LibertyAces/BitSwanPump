@@ -13,6 +13,7 @@ L = logging.getLogger(__name__)
 class LDAPSource(TriggerSource):
 
 	ConfigDefaults = {
+		"base": "dc=example,dc=org",
 		"filter": "(&(objectClass=inetOrgPerson)(cn=*))",
 		"attributes": "sAMAccountName cn createTimestamp modifyTimestamp UserAccountControl email",
 		"results_per_page": 1000,

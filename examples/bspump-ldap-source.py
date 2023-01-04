@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import logging
-
 import bspump
 import bspump.common
-import bspump.ldap
 import bspump.trigger
+import bspump.ldap
 
 ###
 
@@ -16,23 +15,19 @@ L = logging.getLogger(__name__)
 class NormalizeProcessor(bspump.Processor):
 	def process(self, context, event):
 		if "sAMAccountName" in event:
-			event["username"] = event.pop("sAMAccountName").decode("utf8")
-		if "UserAccountControl" in event:
-			event["suspended"] = int(event.pop("UserAccountControl")) & 2 == 2
+			event["username"] = event.pop("sAMAccountName").pop().decode("utf8")
+		if "userAccountControl" in event:
+			event["suspended"] = int(event.pop("userAccountControl").pop()) & 2 == 2
 		return event
 
 
 class LDAPPipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
-		self.Sink = bspump.common.PPrintSink(app, self)
 		self.build(
-			bspump.ldap.LDAPSource(app, self, "LDAPConnection", config={
-				"filter": "(&(objectClass=inetOrgPerson)(cn=*))",
-				"attributes": "sAMAccountName UserAccountControl email"
-			}).on(bspump.trigger.PubSubTrigger(app, "RunLDAPPipeline!")),
+			bspump.ldap.LDAPSource(app, self, "LDAPConnection").on(bspump.trigger.PubSubTrigger(app, "RunLDAPPipeline!")),
 			NormalizeProcessor(app, self),
-			self.Sink
+			bspump.common.PPrintSink(app, self)
 		)
 
 
@@ -47,12 +42,7 @@ if __name__ == "__main__":
 
 	# Create LDAP connection
 	svc.add_connection(
-		bspump.ldap.LDAPConnection(app, "LDAPConnection", config={
-			"host": "localhost",
-			"username": "cn=admin,dc=example,dc=org",
-			"password": "adminpassword",
-			"base": "dc=example,dc=org",
-		})
+		bspump.ldap.LDAPConnection(app, "LDAPConnection")
 	)
 
 	# Construct and register the pipeline

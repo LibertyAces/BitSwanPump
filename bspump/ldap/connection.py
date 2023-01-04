@@ -38,7 +38,6 @@ class LDAPConnection(Connection):
 		"uri": "",
 		"username": "cn=admin,dc=example,dc=org",
 		"password": "admin",
-		"base": "dc=example,dc=org",
 
 		# Path to CA file in PEM format
 		"tls_cafile": "",
@@ -78,9 +77,11 @@ class LDAPConnection(Connection):
 		if self.TLSEnabled:
 			self._enable_tls(client)
 
-		client.simple_bind_s(self.Config.get("username"), self.Config.get("password"))
 		try:
+			client.simple_bind_s(self.Config.get("username"), self.Config.get("password"))
 			yield client
+		except Exception as e:
+			L.error("Cannot connect to LDAP server: {}".format(e), exc_info=True, struct_data={"ldap_uri": self.URI})
 		finally:
 			client.unbind_s()
 
