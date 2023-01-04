@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import pymongo
 
 from ..abc.source import Source
 
@@ -24,6 +25,7 @@ class MongoDBChangeStreamSource(Source):
 	ConfigDefaults = {
 		'database': '',
 		'collection': '',
+		'full_document': '',
 	}
 
 
@@ -32,6 +34,9 @@ class MongoDBChangeStreamSource(Source):
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.Database = self.Config['database']
 		self.Collection = self.Config['collection']
+		self.FullDocument = self.Config['full_document']
+		if self.FullDocument == '':
+			self.FullDocument = None
 		if self.Collection == '':
 			self.Collection = None
 
@@ -41,9 +46,15 @@ class MongoDBChangeStreamSource(Source):
 		await self.Pipeline.ready()
 		db = self.Connection.Client[self.Database]
 		if self.Collection is None:
-			stream = db.watch()
+			if self.FullDocument is None:
+				stream = db.watch()
+			else:
+				stream = db.watch(full_document=self.FullDocument)
 		else:
-			stream = db[self.Collection].watch()
+			if self.FullDocument is None:
+				stream = db[self.Collection].watch()
+			else:
+				stream = db[self.Collection].watch(full_document=self.FullDocument)
 
 		while True:
 			if not running:
@@ -55,3 +66,6 @@ class MongoDBChangeStreamSource(Source):
 
 			except asyncio.CancelledError:
 				running = False
+			except pymongo.errors.OperationFailure as e:
+				L.warning("Recoverable error encountered while reading changestream: {}.".format(e))
+				continue
