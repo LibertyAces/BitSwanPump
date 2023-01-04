@@ -68,7 +68,7 @@ class LDAPSource(TriggerSource):
 				# LDAP returns all attributes as lists of bytestrings, e.g.:
 				#   {"sAMAccountName": [b"vhavel"], ...}
 				# Unpack and decode them
-				for k, v in attrs.items:
+				for k, v in attrs.items():
 					if isinstance(v, list):
 						if len(v) < 1:
 							continue
