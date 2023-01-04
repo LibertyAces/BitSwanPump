@@ -17,6 +17,7 @@ class LDAPSource(TriggerSource):
 		"filter": "(&(objectClass=inetOrgPerson)(cn=*))",
 		"attributes": "sAMAccountName cn createTimestamp modifyTimestamp UserAccountControl email",
 		"results_per_page": 1000,
+		"attribute_encoding": "utf-8",
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -27,6 +28,7 @@ class LDAPSource(TriggerSource):
 		self.Base = self.Config.get("base")
 		self.Filter = self.Config.get("filter")
 		self.Attributes = self.Config.get("attributes").split(" ")
+		self.AttributeEncoding = self.Config.get("attribute_encoding")
 		self.ResultsPerPage = self.Config.getint("results_per_page")
 
 	async def cycle(self):
@@ -58,12 +60,31 @@ class LDAPSource(TriggerSource):
 			)
 			res_type, res_data, res_msgid, serverctrls = client.result3(msgid)
 			for dn, attrs in res_data:
-				page.append({"dn": dn, **attrs})
+				if dn is None:
+					# Skip system entries
+					continue
+
+				event = {"dn": dn}
+				# LDAP returns all attributes as lists of bytestrings, e.g.:
+				#   {"sAMAccountName": [b"vhavel"], ...}
+				# Unpack and decode them
+				for k, v in attrs.items:
+					if isinstance(v, list):
+						if len(v) < 1:
+							continue
+						elif len(v) == 1:
+							v = v[0].decode(self.AttributeEncoding)
+						else:
+							v = [item.decode(self.AttributeEncoding) for item in v]
+					event[k] = v
+				page.append(event)
 
 			for sc in serverctrls:
 				if sc.controlType == ldap.controls.SimplePagedResultsControl.controlType:
 					cookie = sc.cookie
+					break
 			else:
 				L.error("Server ignores RFC 2696 control: No serverctrls in result")
+				cookie = b""
 
 			return page, cookie

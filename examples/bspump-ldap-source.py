@@ -15,9 +15,9 @@ L = logging.getLogger(__name__)
 class NormalizeProcessor(bspump.Processor):
 	def process(self, context, event):
 		if "sAMAccountName" in event:
-			event["username"] = event.pop("sAMAccountName").pop().decode("utf8")
+			event["username"] = event.pop("sAMAccountName")
 		if "userAccountControl" in event:
-			event["suspended"] = int(event.pop("userAccountControl").pop()) & 2 == 2
+			event["suspended"] = int(event.pop("userAccountControl")) & 2 == 2
 		return event
 
 
