@@ -84,7 +84,7 @@ class LDAPSource(TriggerSource):
 					cookie = sc.cookie
 					break
 			else:
-				L.error("Server ignores RFC 2696 control: No serverctrls in result")
+				L.error("No SimplePagedResultsControl cookie in result serverctrls")
 				cookie = b""
 
 			return page, cookie

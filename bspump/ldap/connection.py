@@ -30,6 +30,8 @@ class LDAPConnection(Connection):
 	uri=ldaps://localhost:636
 	username=cn=admin,dc=example,dc=org
 	password=abc123def456
+	tls_cafile=/conf/cert.ca
+	tls_require_cert=allow
 	"""
 
 	ConfigDefaults = {
