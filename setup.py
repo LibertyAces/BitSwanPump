@@ -91,6 +91,9 @@ setup(
 		'xxhash>=1.4.4',
 		'orjson>=3.4.7',
 	],
+	extras_require={
+		'ldap': 'python-ldap',
+	},
 	scripts=[
 		'utils/bselastic',
 		'utils/bskibana',
