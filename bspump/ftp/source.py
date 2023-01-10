@@ -23,7 +23,7 @@ class FTPSource(TriggerSource):
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop
 		self.Pipeline = pipeline
-		self.Queue = asyncio.Queue(loop=self.Loop)
+		self.Queue = asyncio.Queue()
 		self.Connection = pipeline.locate_connection(app, connection)
 		self.Filename= self.Config.get('filename',None)
 		self.RemotePath = self.Config['remote_path']
@@ -77,7 +77,6 @@ class FTPSource(TriggerSource):
 		else:
 			self.list_future = asyncio.ensure_future(
 				self.list_files(),
-				loop=self.Loop
 			)
 
 		if self._conn_future:
@@ -87,10 +86,5 @@ class FTPSource(TriggerSource):
 			pass
 			self._conn_future = asyncio.ensure_future(
 				self.inbound(),
-				loop=self.Loop
 			)
 			await self._conn_future
-
-
-
-

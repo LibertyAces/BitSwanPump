@@ -67,7 +67,7 @@ class MySQLConnection(Connection):
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 
-		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
+		self.ConnectionEvent = asyncio.Event()
 		self.ConnectionEvent.clear()
 
 		self.PubSub = app.PubSub
@@ -102,7 +102,7 @@ class MySQLConnection(Connection):
 		app.PubSub.subscribe("MySQLConnection.pause!", self._on_pause)
 		app.PubSub.subscribe("MySQLConnection.unpause!", self._on_unpause)
 
-		self._output_queue = asyncio.Queue(loop=app.Loop)
+		self._output_queue = asyncio.Queue()
 		self._bulks = {}  # We have a "bulk" per query
 
 
@@ -160,7 +160,6 @@ class MySQLConnection(Connection):
 
 		self._conn_future = asyncio.ensure_future(
 			self._async_connection(),
-			loop=self.Loop
 		)
 
 		self._sync_connection()

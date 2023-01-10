@@ -111,7 +111,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		self._throttles = set()
 		self._ancestral_pipelines = set()
 
-		self._ready = asyncio.Event(loop=app.Loop)
+		self._ready = asyncio.Event()
 		self._ready.clear()
 
 		# Chillout is used to break a pipeline processing to smaller tasks that allows other event in event loop to be processed
@@ -342,7 +342,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		self._chillout_counter += 1
 		if self._chillout_counter >= self._chillout_trigger:
 			self._chillout_counter = 0
-			await asyncio.sleep(0, loop=self.Loop)
+			await asyncio.sleep(0)
 
 		await self._ready.wait()
 		return True
@@ -468,7 +468,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		:hint: If the number of futures exceeds the configured limit, the :meth:`Pipeline <bspump.Pipeline()>` is throttled.
 		"""
 
-		future = asyncio.ensure_future(coro, loop=self.Loop)
+		future = asyncio.ensure_future(coro)
 		future.add_done_callback(self._future_done)
 		self.AsyncFutures.append(future)
 

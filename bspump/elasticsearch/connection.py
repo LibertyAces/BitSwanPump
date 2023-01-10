@@ -195,7 +195,7 @@ class ElasticSearchConnection(Connection):
 		super().__init__(app, id=id, config=config)
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
-		self._output_queue = asyncio.Queue(loop=app.Loop)
+		self._output_queue = asyncio.Queue()
 
 		username = self.Config.get('username')
 		password = self.Config.get('password')
@@ -273,7 +273,7 @@ class ElasticSearchConnection(Connection):
 
 		:return:
 		"""
-		return aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
+		return aiohttp.ClientSession(auth=self._auth)
 
 	def consume(self, index, data_feeder_generator, bulk_class=ElasticSearchBulk):
 		"""
@@ -424,6 +424,10 @@ class ElasticSearchConnection(Connection):
 			except aiohttp.client_exceptions.ContentTypeError as e:
 				L.error("Failed communication {}".format(e))
 				await asyncio.sleep(20)  # Throttle a lot before next try
+				return
+
+			except GeneratorExit as e:
+				L.info("Generator exited {}".format(e))
 				return
 
 			# Push bulks into the ElasticSearch

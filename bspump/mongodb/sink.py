@@ -65,7 +65,6 @@ class MongoDBSink(Sink):
 
         self._conn_future = asyncio.ensure_future(
             self._insert(),
-            loop=self.Loop
         )
 
     def _on_application_stop(self, message_type, counter):
@@ -76,7 +75,7 @@ class MongoDBSink(Sink):
     async def _on_exit(self, message_type):
         # On application exit, we first await completion of all tasks in the queue.
         if self._conn_future is not None:
-            await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED, loop=self.Loop)
+            await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED)
 
     def process(self, context, event: [dict, list]):
         # This is where we check if the queue is overflowing in which case we apply throttling.

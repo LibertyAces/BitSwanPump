@@ -65,7 +65,7 @@ class InternalSource(Source):
 			if self.BackPressureLimit == maxsize:
 				self.BackPressureLimit -= 1
 			assert(self.BackPressureLimit > 0)
-		self.Queue = asyncio.Queue(maxsize=maxsize, loop=self.Loop)
+		self.Queue = asyncio.Queue(maxsize=maxsize)
 
 
 	def put(self, context, event, copy_context=False, copy_event=False):

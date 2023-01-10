@@ -95,7 +95,6 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		if self.Changestream:
 			self._changestream_future = asyncio.ensure_future(
 				self._changestream(),
-				loop=self.Loop,
 			)
 
 		self.Count = -1
@@ -136,7 +135,6 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 		if self.Changestream:
 			self._changestream_future = asyncio.ensure_future(
 				self._changestream(),
-				loop=self.Loop,
 			)
 
 	async def _on_exit(self, message_type):

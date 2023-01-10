@@ -26,7 +26,7 @@ class SlackConnection(Connection):
 		self.PubSub = app.PubSub
 
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
-		self._output_queue = asyncio.Queue(loop=app.Loop, maxsize=self._output_queue_max_size + 1)
+		self._output_queue = asyncio.Queue(maxsize=self._output_queue_max_size + 1)
 		self.LoaderTask = asyncio.ensure_future(self._loader(), loop=self.Loop)
 
 		self.PubSub.subscribe("Application.exit!", self._on_exit)

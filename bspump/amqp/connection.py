@@ -26,7 +26,7 @@ class AMQPConnection(Connection):
 		super().__init__(app, id=id, config=config)
 
 		self.Connection = None
-		self.ConnectionEvent = asyncio.Event(loop=app.Loop)
+		self.ConnectionEvent = asyncio.Event()
 		self.ConnectionEvent.clear()
 
 		self.PubSub = PubSub(app)
