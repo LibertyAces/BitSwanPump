@@ -14,10 +14,16 @@ L = logging.getLogger(__name__)
 
 class NormalizeProcessor(bspump.Processor):
 	def process(self, context, event):
-		if "sAMAccountName" in event:
-			event["username"] = event.pop("sAMAccountName")
-		if "userAccountControl" in event:
-			event["suspended"] = int(event.pop("userAccountControl")) & 2 == 2
+		event_out = {}
+		for k, v in event.items():
+			if k in ("dn", "sAMAccountName", "email", "givenName", "sn"):
+				event_out[k] = k.decode("ascii")
+			elif k in ("createTimestamp", "modifyTimestamp"):
+				event_out[k] = int(k)
+			elif k == "objectGUID":
+				event_out["id"] = k.hex()
+			elif k == "UserAccountControl":
+				event_out["suspended"] = int(event["userAccountControl"]) & 2 == 2
 		return event
 
 
