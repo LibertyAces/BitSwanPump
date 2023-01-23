@@ -11,11 +11,16 @@ L = logging.getLogger(__name__)
 #
 
 class LDAPSource(TriggerSource):
+	"""
+	Runs an LDAP query and pushes the resulting events down the pipeline.
+
+	All output values are bytestrings!
+	"""
 
 	ConfigDefaults = {
 		"base": "dc=example,dc=org",
 		"filter": "(&(objectClass=inetOrgPerson)(cn=*))",
-		"attributes": "sAMAccountName cn createTimestamp modifyTimestamp UserAccountControl email",
+		"attributes": "dn objectGUID sAMAccountName email givenName sn UserAccountControl",
 		"results_per_page": 1000,
 		"attribute_encoding": "utf-8",
 	}
@@ -64,18 +69,16 @@ class LDAPSource(TriggerSource):
 					# Skip system entries
 					continue
 
-				event = {"dn": dn}
+				event = {}
 				# LDAP returns all attributes as lists of bytestrings, e.g.:
 				#   {"sAMAccountName": [b"vhavel"], ...}
-				# Unpack and decode them
+				# Unpack them
 				for k, v in attrs.items():
 					if isinstance(v, list):
 						if len(v) < 1:
 							continue
 						elif len(v) == 1:
-							v = v[0].decode(self.AttributeEncoding)
-						else:
-							v = [item.decode(self.AttributeEncoding) for item in v]
+							v = v[0]
 					event[k] = v
 				page.append(event)
 
