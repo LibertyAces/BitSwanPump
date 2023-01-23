@@ -22,7 +22,6 @@ class LDAPSource(TriggerSource):
 		"filter": "(&(objectClass=inetOrgPerson)(cn=*))",
 		"attributes": "dn objectGUID sAMAccountName email givenName sn UserAccountControl",
 		"results_per_page": 1000,
-		"attribute_encoding": "utf-8",
 	}
 
 	def __init__(self, app, pipeline, connection, id=None, config=None):
@@ -33,7 +32,6 @@ class LDAPSource(TriggerSource):
 		self.Base = self.Config.get("base")
 		self.Filter = self.Config.get("filter")
 		self.Attributes = self.Config.get("attributes").split(" ")
-		self.AttributeEncoding = self.Config.get("attribute_encoding")
 		self.ResultsPerPage = self.Config.getint("results_per_page")
 
 	async def cycle(self):
