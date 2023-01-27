@@ -79,7 +79,7 @@ class MISPSource(TriggerSource):
 
 			if response.status != 200:
 				data = await response.text()
-				L.error("Failed to fetch Feed {} from {}\n{}".format(response.status, url, data))
+				L.error("Failed to add Feed {} from {}\n{}".format(response.status, url, data))
 
 			return await response.json()
 
@@ -99,6 +99,6 @@ class MISPSource(TriggerSource):
 
 			if response.status != 200:
 				data = await response.text()
-				L.error("Failed to fetch Feed {} from {}\n{}".format(response.status, url, data))
+				L.error("Failed to enable Feed {} from {}\n{}".format(response.status, url, data))
 
 			return await response.json()
