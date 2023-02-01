@@ -8,6 +8,7 @@ import logging
 import time
 
 import asab
+import asab.api
 from .abc.connection import Connection
 from .abc.generator import Generator
 from .abc.sink import Sink
@@ -213,6 +214,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 				L.warning("Error on a pipeline is already set!")
 
 			self._error = (context, event, exc, self.App.time())
+			self.App.ASABApiService.attention_required({"msg": "Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc))})
 			L.exception("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
 
 			self.PubSub.publish("bspump.pipeline.error!", pipeline=self)

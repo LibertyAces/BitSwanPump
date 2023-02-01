@@ -3,6 +3,7 @@ import sys
 
 import asab
 import asab.web
+import asab.api
 
 from .service import BSPumpService
 from .__version__ import __version__, __build__
@@ -29,6 +30,8 @@ class BSPumpApplication(asab.Application):
 		from asab.metrics import Module
 		self.add_module(Module)
 
+		self.ASABApiService = asab.api.ApiService(self)
+
 		self.PumpService = BSPumpService(self)
 		self.WebContainer = None
 
@@ -49,6 +52,9 @@ class BSPumpApplication(asab.Application):
 			from .web import initialize_web
 			self.WebContainer = initialize_web(self.WebService.WebContainer)
 
+		# Initialize zookeeper container
+		if "zookeeper" in asab.Config.sections():
+			self.ASABApiService.initialize_zookeeper()
 
 	def create_argument_parser(self):
 		"""
