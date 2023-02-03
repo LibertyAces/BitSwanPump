@@ -54,6 +54,9 @@ class BSPumpApplication(asab.Application):
 
 		# Initialize zookeeper container
 		if "zookeeper" in asab.Config.sections():
+			from asab.zookeeper import Module
+			self.add_module(Module)
+
 			self.ASABApiService.initialize_zookeeper()
 
 	def create_argument_parser(self):
