@@ -15,6 +15,9 @@ L = logging.getLogger(__name__)
 class FileBatchLookupProvider(LookupBatchProviderABC):
 	"""
 	Loads lookup data from a file on local filesystem.
+
+	|
+
 	"""
 
 	def __init__(self, lookup, url, id=None, config=None):
@@ -23,12 +26,26 @@ class FileBatchLookupProvider(LookupBatchProviderABC):
 		self.ProactorService = self.App.get_service("asab.ProactorService")
 
 	async def load(self):
+		"""
+		Description:
+
+		:returns: result
+
+		|
+
+		"""
 		result = await self.ProactorService.execute(
 			self.load_on_thread,
 		)
 		return result
 
 	def load_on_thread(self):
+		"""
+		Description:
+
+		|
+
+		"""
 		if not os.path.isfile(self.URL):
 			L.warning("Source '{}' is not a file".format(self.URL))
 			return None
@@ -44,6 +61,13 @@ class FileBatchLookupProvider(LookupBatchProviderABC):
 		return None
 
 	async def save(self, data):
+		"""
+
+		**Parameters**
+
+		data :
+
+		"""
 		dirname = os.path.dirname(self.URL)
 		if not os.path.isdir(dirname):
 			os.makedirs(dirname)

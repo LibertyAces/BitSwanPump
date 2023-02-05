@@ -16,7 +16,7 @@ class StreamSinkPipeline(bspump.Pipeline):
 		self.build(
 			bspump.socket.TCPSource(app, self, config={'address': '127.0.0.1:8082'}),
 			bspump.common.PPrintProcessor(app, self),
-			# bspump.ipc.DatagramSink(app, self, config={"address": "/tmp/bspump-ipc-datagram.sock"}),
+			# bspump.ipc_and_socket.DatagramSink(app, self, config={"address": "/tmp/bspump-ipc_and_socket-datagram.sock"}),
 			bspump.ipc.DatagramSink(app, self, config={'address': '127.0.0.1:8083'}),
 		)
 
@@ -26,7 +26,7 @@ class StreamSourcePipeline(bspump.Pipeline):
 	def __init__(self, app, pipeline_id):
 		super().__init__(app, pipeline_id)
 		self.build(
-			# bspump.ipc.DatagramSource(app, self, config={"address": "/tmp/bspump-ipc-datagram.sock"}),
+			# bspump.ipc_and_socket.DatagramSource(app, self, config={"address": "/tmp/bspump-ipc_and_socket-datagram.sock"}),
 			bspump.ipc.DatagramSource(app, self, config={'address': '127.0.0.1:8083'}),
 			bspump.common.PPrintSink(app, self),
 		)

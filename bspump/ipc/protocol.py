@@ -11,18 +11,32 @@ class SourceProtocolABC(object):
 	'''
 
 	def __init__(self, app, pipeline, config):
+		"""
+		Description:
+
+		"""
 		self.Loop = app.Loop
 
 	async def handle(self, source, stream, context):
+		"""
+		Description:
+
+
+		"""
 		raise NotImplementedError()
 
 
 class LineSourceProtocol(SourceProtocolABC):
 	'''
-	Basically readline() for reading lines from a socket.
+	Description: Basically readline() for reading lines from a socket.
 	'''
 
 	def __init__(self, app, pipeline, config):
+		"""
+		Description:
+
+
+		"""
 		super().__init__(app, pipeline, config)
 
 		# TODO: All following values could be read from configuration
@@ -40,6 +54,11 @@ class LineSourceProtocol(SourceProtocolABC):
 
 
 	async def handle(self, source, stream, context):
+		"""
+		Description:
+
+
+		"""
 		pipeline = source.Pipeline
 
 		input_buffer = bytearray(b' ' * 8)

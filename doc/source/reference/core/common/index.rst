@@ -2,7 +2,7 @@ Common
 ======
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     aggregator
     bytes

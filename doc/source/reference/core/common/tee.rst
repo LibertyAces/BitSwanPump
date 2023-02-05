@@ -6,9 +6,12 @@ Tee Source Processor
 --------------------
 
 .. py:currentmodule:: bspump.common
+.. autoclass:: TeeSource
+    :show-inheritance:
 
+.. automethod:: bspump.common.TeeSource.__init__()
 
-Tee Source method
+Tee Source Method
 ~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.TeeSource.bind
@@ -21,11 +24,12 @@ Tee Processor
 
 .. py:currentmodule:: bspump.common
 .. autoclass:: TeeProcessor
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.TeeProcessor.__init__()
 
-Tee Processor method
+
+Tee Processor Method
 ~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.TeeProcessor.bind

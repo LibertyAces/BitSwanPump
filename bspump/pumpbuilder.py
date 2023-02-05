@@ -57,9 +57,17 @@ class PumpBuilder(object):
 		]
 	}
 
+	|
+
 	'''
 
 	def __init__(self, definition):
+		"""
+		Description:
+
+		|
+
+		"""
 		if isinstance(definition, dict):
 			self.Definition = definition
 		else:
@@ -84,6 +92,8 @@ class PumpBuilder(object):
 		pump_builder.construct_pump(app, svc)
 		app.run()
 
+		|
+
 		'''
 		self.construct_connections(app, svc)
 		self.construct_lookups(app, svc)
@@ -91,6 +101,12 @@ class PumpBuilder(object):
 
 
 	def construct_connections(self, app, svc):
+		"""
+		Description:
+
+		|
+
+		"""
 
 		connections = self.Definition.get('connections')
 		if connections is None:
@@ -102,6 +118,12 @@ class PumpBuilder(object):
 
 
 	def construct_connection(self, app, svc, connection):
+		"""
+		Description:
+
+		|
+
+		"""
 
 		module = importlib.import_module(connection["module"])
 		connection_class = getattr(module, connection["class"])
@@ -110,6 +132,12 @@ class PumpBuilder(object):
 
 
 	def construct_lookups(self, app, svc):
+		"""
+		Description:
+
+		|
+
+		"""
 		lookups = self.Definition.get('lookups')
 		if lookups is None:
 			return
@@ -120,6 +148,12 @@ class PumpBuilder(object):
 
 
 	def construct_lookup(self, app, svc, lookup):
+		"""
+		Description:
+
+		|
+
+		"""
 		svc = app.get_service("bspump.PumpService")
 		module = importlib.import_module(lookup["module"])
 		lookup_class = getattr(module, lookup["class"])
@@ -128,6 +162,12 @@ class PumpBuilder(object):
 
 
 	def construct_pipelines(self, app, svc):
+		"""
+		Description:
+
+		|
+
+		"""
 		pipelines = self.Definition.get('pipelines')
 		if pipelines is None:
 			return
@@ -138,6 +178,12 @@ class PumpBuilder(object):
 
 
 	def construct_pipeline(self, app, svc, pipeline_definition):
+		"""
+		Description:
+
+		|
+
+		"""
 		svc = app.get_service("bspump.PumpService")
 		pipeline_id = pipeline_definition["id"]
 		pipeline = Pipeline(app, pipeline_id)
@@ -159,6 +205,12 @@ class PumpBuilder(object):
 
 
 	def construct_sources(self, app, svc, pipeline, definition):
+		"""
+		Description:
+
+		|
+
+		"""
 
 		sources = []
 		for source_definition in definition:
@@ -169,6 +221,12 @@ class PumpBuilder(object):
 
 
 	def construct_source(self, app, svc, pipeline, definition):
+		"""
+		Description:
+
+		|
+
+		"""
 		module = importlib.import_module(definition["module"])
 		processor_class = getattr(module, definition["class"])
 		processor = processor_class.construct(app, pipeline, definition)
@@ -180,6 +238,12 @@ class PumpBuilder(object):
 
 
 	def construct_trigger(self, app, svc, definition):
+		"""
+		Description:
+
+		|
+
+		"""
 		module = importlib.import_module(definition["module"])
 		trigger_class = getattr(module, definition["class"])
 		trigger = trigger_class.construct(app, definition)
@@ -187,6 +251,12 @@ class PumpBuilder(object):
 
 
 	def construct_processors(self, app, svc, pipeline, definition):
+		"""
+		Description:
+
+		|
+
+		"""
 		if definition is None:
 			return []
 
@@ -200,6 +270,12 @@ class PumpBuilder(object):
 
 
 	def construct_processor(self, app, svc, pipeline, definition):
+		"""
+		Description:
+
+		|
+
+		"""
 		module = importlib.import_module(definition["module"])
 		processor_class = getattr(module, definition["class"])
 		processor = processor_class.construct(app, pipeline, definition)

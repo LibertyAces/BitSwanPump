@@ -15,6 +15,10 @@ L = logging.getLogger(__name__)
 
 
 class StreamClientSink(Sink):
+	"""
+	Description:
+
+	"""
 
 	ConfigDefaults = {
 		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
@@ -23,6 +27,10 @@ class StreamClientSink(Sink):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.OutboundQueue = asyncio.Queue()
 
@@ -41,6 +49,10 @@ class StreamClientSink(Sink):
 
 
 	async def _open_connection(self, message, pipeline):
+		"""
+		Description:
+
+		"""
 		# Connection is established
 		if self.Task is not None:
 			await self._close_connection(message, pipeline)
@@ -51,6 +63,10 @@ class StreamClientSink(Sink):
 
 
 	async def _close_connection(self, message, pipeline):
+		"""
+		Description:
+
+		"""
 		self.Pipeline.throttle(self, enable=True)
 		if self.Task is not None:
 			self.Task.cancel()
@@ -58,6 +74,10 @@ class StreamClientSink(Sink):
 
 
 	def _on_tick(self, event_name):
+		"""
+		Description:
+
+		"""
 		# Unthrottle the queue if needed
 		if self.OutboundQueue in self.Pipeline.get_throttles() and self.OutboundQueue.qsize() < self.OutboundQueueMaxSize:
 			self.Pipeline.throttle(self.OutboundQueue, False)
@@ -78,6 +98,10 @@ class StreamClientSink(Sink):
 
 
 	async def _client_connected_task(self):
+		"""
+		Description:
+
+		"""
 		loop = self.Pipeline.Loop
 
 		addr = self.Config['address']
@@ -151,9 +175,10 @@ class StreamClientSink(Sink):
 
 
 	async def _client_inbound_task(self, client_sock):
-		'''
-		This is the monitor of the client connection.
-		'''
+		"""
+		Description:
+
+		"""
 		while True:
 			data = await self.Pipeline.Loop.sock_recv(client_sock, 4096)
 			if len(data) == 0:
@@ -164,6 +189,10 @@ class StreamClientSink(Sink):
 
 
 	def process(self, context, event):
+		"""
+		Description:
+
+		"""
 		self.OutboundQueue.put_nowait(event)
 
 		if self.OutboundQueue.qsize() == self.OutboundQueueMaxSize:

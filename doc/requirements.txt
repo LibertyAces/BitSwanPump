@@ -3,3 +3,4 @@
 bspump
 asab
 orjson
+cysimdjson

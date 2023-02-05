@@ -77,6 +77,23 @@ class KafkaTopicInitializer(asab.ConfigObject):
 	}
 
 	def __init__(self, app, connection, id: typing.Optional[str] = None, config: dict = None):
+		"""
+		Initializes the parameters passed to the class.
+
+		**Parameters**
+
+		app : Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html#>`_.
+
+		connection : Connection
+			Information needed to create a connection.
+
+		id: typing.Optional[str] = None :
+
+		config: dict = None : JSON
+			configuration file containing important information.
+
+		"""
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__(_id, config)
 
@@ -100,6 +117,25 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		self.BootstrapServers = svc.Connections[connection].Config["bootstrap_servers"].strip()
 
 	def include_topics(self, *, topic_config=None, kafka_component=None, pipeline=None, config_file=None):
+		"""
+		Includes topic from config file or dict object. It can also scan Pipeline and get topics from Source or Sink.
+
+		**Parameters**
+
+		* :
+
+		topic_config : , default= None
+			Topic config file.
+
+		kafka_component : , default= None
+
+		pipeline : , default= None
+			Name of the Pipeline.
+
+		config_file : , default= None
+			Configuration file.
+
+		"""
 		# Include topic from config or dict object
 		if topic_config is not None:
 			L.info("Including topics from dictionary")
@@ -127,6 +163,15 @@ class KafkaTopicInitializer(asab.ConfigObject):
 				self.include_topics_from_config(sink.Config)
 
 	def include_topics_from_file(self, topics_file: str):
+		"""
+		Includes topics from a topic file.
+
+		**Parameters**
+
+		topics_file:str : str
+			Name of a topic file we wanted to include.
+
+		"""
 		# Support yaml and json input
 		ext = topics_file.strip().split(".")[-1].lower()
 		if ext == "json":
@@ -152,6 +197,15 @@ class KafkaTopicInitializer(asab.ConfigObject):
 			self.RequiredTopics[topic["topic"]] = confluent_kafka.admin.NewTopic(**topic)
 
 	def include_topics_from_config(self, config_object):
+		"""
+		Includes topics using a config
+
+		**Parameters**
+
+		config_object : JSON
+			config object containing information about what topics we want to include.
+
+		"""
 		# Every kafka topic needs to have: name, num_partitions and replication_factor
 		topic_names = config_object.get("topic").split(",")
 
@@ -191,10 +245,18 @@ class KafkaTopicInitializer(asab.ConfigObject):
 		self.ExistingTopics = set(result.topics.keys())
 
 	def check_and_initialize(self):
+		"""
+		Initializes new topics and logs a warning.
+
+		"""
 		L.warning("`check_and_initialize()` is obsoleted, use `initialize_topics()` instead")
 		self.initialize_topics()
 
 	def initialize_topics(self):
+		"""
+		Initializes topics  ??
+
+		"""
 		if len(self.RequiredTopics) == 0:
 			L.info("No Kafka topics were required.")
 			return

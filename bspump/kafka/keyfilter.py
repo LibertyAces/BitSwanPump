@@ -16,6 +16,26 @@ class KafkaKeyFilter(bspump.Processor):
 	"""
 
 	def __init__(self, app, pipeline, keys, id=None, config=None):
+		"""
+		Initializes variables
+
+		**Parameters**
+
+		app : Application
+			Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html`_.
+
+		pipeline : Pipeline
+			Name of the Pipeline.
+
+		keys : bytes
+			keys used to filter out events from the event stream.
+
+		id : , default = None
+
+		config : JSON, default = None
+			configuration file in JSON
+
+		"""
 		super().__init__(app, pipeline, id, config)
 		if not isinstance(keys, collections.abc.Iterable) or isinstance(keys, bytes):
 			self.Keys = frozenset([keys])

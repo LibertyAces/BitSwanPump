@@ -5,7 +5,7 @@ Technologies Reference Documentation describes the `Technologies` section.
 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: Table of Contents
     :name: reference
 
@@ -13,6 +13,5 @@ Technologies Reference Documentation describes the `Technologies` section.
     elastic/index
     files/index
     influxdb/influxdb.rst
-    ipc
+    ipc_and_socket/ipc.rst
     rabbitmq_amqp
-    sockets

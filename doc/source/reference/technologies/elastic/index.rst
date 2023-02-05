@@ -1,5 +1,7 @@
-ElasticSearch
+Elastic Search
 ==============
+
+Elastic Search is a Analytics and full-text search engine. Commonly used for `Application Performance Management <https://en.wikipedia.org/wiki/Application_performance_management>`_ mainly Analysis of Logs.
 
 Source
 ------
@@ -35,7 +37,15 @@ ElasticSearchSource is using standard Elastic's search API to fetch data.
 	}
 
 
-Source methods
+.. py:currentmodule:: bspump.elasticsearch
+
+.. autoclass:: ElasticSearchSource
+    :show-inheritance:
+
+.. automethod:: bspump.elasticsearch.source.ElasticSearchSource.__init__()
+
+
+Source Methods
 ~~~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.source.ElasticSearchSource.cycle
@@ -70,13 +80,16 @@ ElasticSearch Aggs Source
 		},
 	}
 
+
 .. py:currentmodule:: bspump.elasticsearch
 
 .. autoclass:: ElasticSearchAggsSource
-    :special-members: __init__
     :show-inheritance:
 
-ElasticSearch Aggs Source methods
+.. automethod:: bspump.elasticsearch.source.ElasticSearchAggsSource.__init__()
+
+
+ElasticSearch Aggs Source Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.source.ElasticSearchAggsSource.cycle
@@ -115,11 +128,12 @@ ElasticSearchConnection allows your ES source, sink or lookup to connect to Elas
 .. py:currentmodule:: bspump.elasticsearch
 
 .. autoclass:: ElasticSearchConnection
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.__init__()
 
-ElasticSearch Connection methods
+
+ElasticSearch Connection Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.get_url
@@ -128,17 +142,9 @@ ElasticSearch Connection methods
 
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.consume
 
-.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection._start
-
-.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection._on_exit
-
-.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection._on_tick
-
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.flush
 
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection.enqueue
-
-.. automethod:: bspump.elasticsearch.connection.ElasticSearchConnection._loader
 
 
 Elastic Search Bulk
@@ -147,16 +153,15 @@ Elastic Search Bulk
 .. py:currentmodule:: bspump.elasticsearch.connection
 
 .. autoclass:: ElasticSearchBulk
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.__init__()
 
-Elastic Search Bulk methods
+
+Elastic Search Bulk Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.consume
-
-.. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk._get_data_from_items
 
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.upload
 
@@ -165,32 +170,60 @@ Elastic Search Bulk methods
 .. automethod:: bspump.elasticsearch.connection.ElasticSearchBulk.full_error_callback
 
 
+Lookup
+------
+
+.. py:currentmodule:: bspump.elasticsearch
+
+.. autoclass:: ElasticSearchLookup
+    :show-inheritance:
+
+.. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.__init__()
+
+
 Lookup methods
 ~~~~~~~~~~~~~~
 
-.. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup._find_one
 .. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.get
+
 .. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.build_find_one_query
-.. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup._count
+
 .. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.load
+
 .. automethod:: bspump.elasticsearch.lookup.ElasticSearchLookup.construct
+
+
+Sink
+----
+
+.. py:currentmodule:: bspump.elasticsearch
+
+.. autoclass:: ElasticSearchSink
+    :show-inheritance:
+
+.. automethod:: bspump.elasticsearch.sink.ElasticSearchSink.__init__()
 
 
 Sink methods
 ~~~~~~~~~~~~
 
 .. automethod:: bspump.elasticsearch.sink.ElasticSearchSink.process
-.. automethod:: bspump.elasticsearch.sink.ElasticSearchSink._connection_throttle
 
 
 Data Feeder Methods
 ~~~~~~~~~~~~~~~~~~~
 
-.. py:currentmodule:: bspump
-.. py:class:: ElasticSearchBulk()
+.. automethod:: bspump.elasticsearch.data_feeder.data_feeder_create_or_index
 
-.. py:currentmodule:: bspump.elasticsearch
+.. automethod:: bspump.elasticsearch.data_feeder.data_feeder_create
 
-.. autoclass:: ElasticSearchSource
-    :special-members: __init__
-    :show-inheritance:
+.. automethod:: bspump.elasticsearch.data_feeder.data_feeder_index
+
+.. automethod:: bspump.elasticsearch.data_feeder.data_feeder_update
+
+.. automethod:: bspump.elasticsearch.data_feeder.data_feeder_delete
+
+
+
+
+

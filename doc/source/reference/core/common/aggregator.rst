@@ -7,11 +7,12 @@ Aggregation Strategy
 .. py:currentmodule:: bspump.common.aggregator
 
 .. autoclass:: AggregationStrategy
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.AggregationStrategy.__init__()
 
-Aggregation Strategy methods
+
+Aggregation Strategy Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.AggregationStrategy.append
@@ -27,11 +28,12 @@ List Aggregation Strategy
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: ListAggregationStrategy
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.ListAggregationStrategy.__init__()
 
-List Aggregation Strategy methods
+
+List Aggregation Strategy Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.ListAggregationStrategy.append
@@ -47,11 +49,12 @@ String Aggregation Strategy
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: StringAggregationStrategy
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.StringAggregationStrategy.__init__()
 
-String Aggregation Strategy methods
+
+String Aggregation Strategy Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.StringAggregationStrategy.append
@@ -64,23 +67,16 @@ String Aggregation Strategy methods
 Aggregator
 ----------
 
-ok ok ok
-
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: Aggregator
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.common.Aggregator.__init__()
 
 
 Aggregator
 ~~~~~~~~~~
-
-.. automethod:: bspump.common.Aggregator._check_timeout
-
-.. automethod:: bspump.common.Aggregator._check_periodic_flush
-
-.. automethod:: bspump.common.Aggregator._on_application_stop
 
 .. automethod:: bspump.common.Aggregator.flush
 
