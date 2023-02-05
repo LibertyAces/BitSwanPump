@@ -187,7 +187,7 @@ class ElasticSearchBulk(object):
 
 		:return:
 		"""
-		L.error("Failed to insert items in the elasticsearch: {}".format(response_items[:10]))
+        L.error("Failed to insert items in the elasticsearch: {}".format(response_items[:10]))
 
 
     def full_error_callback(self, bulk_items, return_code):
@@ -279,8 +279,8 @@ class ElasticSearchConnection(Connection):
         """
         super().__init__(app, id=id, config=config)
 
-		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
-		self._output_queue = asyncio.Queue()
+        self._output_queue_max_size = int(self.Config['output_queue_max_size'])
+        self._output_queue = asyncio.Queue()
 
         username = self.Config.get('username')
         password = self.Config.get('password')
@@ -359,7 +359,7 @@ class ElasticSearchConnection(Connection):
 
 		:return:
 		"""
-		return aiohttp.ClientSession(auth=self._auth)
+        return aiohttp.ClientSession(auth=self._auth)
 
     def consume(self, index, data_feeder_generator, bulk_class=ElasticSearchBulk):
         """
@@ -526,15 +526,15 @@ class ElasticSearchConnection(Connection):
                 await asyncio.sleep(20)  # Throttle a lot before next try
                 return
 
-			except GeneratorExit as e:
-				L.info("Generator exited {}".format(e))
-				return
+            except GeneratorExit as e:
+                L.info("Generator exited {}".format(e))
+                return
 
 			# Push bulks into the ElasticSearch
-			while self._started:
-				bulk = await self._output_queue.get()
-				if bulk is None:
-					break
+            while self._started:
+                bulk = await self._output_queue.get()
+                if bulk is None:
+                    break
 
                 if self._output_queue.qsize() == self._output_queue_max_size - 1:
                     self.PubSub.publish("ElasticSearchConnection.unpause!", self)
