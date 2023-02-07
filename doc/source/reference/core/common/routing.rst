@@ -7,8 +7,9 @@ Direct Source
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: DirectSource
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.common.DirectSource.__init__()
 
 
 Direct Source
@@ -25,8 +26,9 @@ Internal Source
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: InternalSource
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.common.InternalSource.__init__()
 
 
 Internal Source methods
@@ -47,14 +49,14 @@ Router Mix In
 .. py:currentmodule:: bspump.common.routing
 
 .. autoclass:: RouterMixIn
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.common.routing.RouterMixIn.__init__()
 
 
 Router Mix In methods
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. automethod:: bspump.common.routing.RouterMixIn._mixin_init
 
 .. automethod:: bspump.common.routing.RouterMixIn.locate
 
@@ -64,10 +66,6 @@ Router Mix In methods
 
 .. automethod:: bspump.common.routing.RouterMixIn.route
 
-.. automethod:: bspump.common.routing.RouterMixIn._on_target_pipeline_ready_change
-
-.. automethod:: bspump.common.routing.RouterMixIn._on_internal_source_backpressure_ready_change
-
 
 Router Sink
 -----------
@@ -75,8 +73,9 @@ Router Sink
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: RouterSink
-    :special-members: __init__
     :show-inheritance:
+
+.. automethod:: bspump.common.routing.RouterSink.__init__()
 
 
 Router Processor
@@ -85,6 +84,6 @@ Router Processor
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: RouterProcessor
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.routing.RouterProcessor.__init__()

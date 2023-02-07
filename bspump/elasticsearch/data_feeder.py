@@ -9,55 +9,110 @@ Data feeders to be used in ElasticSearchSink.
 """
 
 
-def data_feeder_create_or_index(event, _id):
-	if _id is None:
-		yield b'{"create":{}}\n'
-	else:
-		yield orjson.dumps(
-			{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
-		)
+def data_feeder_create_or_index(event):
+    """
+    Creates an index.
 
-	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
+    **Parameters**
 
+    event : Data with time stamp stored in any data type usually is in JSON.
+            You can specify an event that is passed to the method.
 
-def data_feeder_create(event, _id):
-	if _id is None:
-		yield b'{"create":{}}\n'
-	else:
-		yield orjson.dumps(
-			{"create": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
-		)
+    """
+    _id = event.pop("_id", None)
 
-	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
+    if _id is None:
+        yield b'{"create":{}}\n'
+    else:
+        yield orjson.dumps(
+            {"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+        )
 
-
-def data_feeder_index(event, _id):
-	if _id is None:
-		yield b'{"index":{}}\n'
-	else:
-		yield orjson.dumps(
-			{"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
-		)
-
-	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
+    yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_update(event, _id):
-	assert _id is not None, "_id must be present in the event when updating a document in ElasticSearch"
+def data_feeder_create(event):
+    """
+    Creates a data feeder.
 
-	yield orjson.dumps(
-		{"update": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
-	)
+    **Parameters**
 
-	yield orjson.dumps({"doc": event}, option=orjson.OPT_APPEND_NEWLINE)
+    event : Data with time stamp stored in any data type usually is in JSON.
+            You can specify an event that is passed to the method.
+
+    """
+    _id = event.pop("_id", None)
+
+    if _id is None:
+        yield b'{"create":{}}\n'
+    else:
+        yield orjson.dumps(
+            {"create": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+        )
+
+    yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_delete(event, _id):
-	assert _id is not None, "_id must be present in the event when deleting a document from ElasticSearch"
+def data_feeder_index(event):
+    """
+    Description:
 
-	yield orjson.dumps(
-		{"delete": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
-	)
+    **Parameters**
 
-	assert len(event) == 0,\
-		"When deleting items from ElasticSearch, no data should be provide, but '{}' found.".format(event)
+    event : Data with time stamp stored in any data type usually is in JSON.
+            You can specify an event that is passed to the method.
+
+    """
+    _id = event.pop("_id", None)
+
+    if _id is None:
+        yield b'{"index":{}}\n'
+    else:
+        yield orjson.dumps(
+            {"index": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+        )
+
+    yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
+
+
+def data_feeder_update(event):
+    """
+    Updates data feeder.
+
+    **Parameters**
+
+    event : Data with time stamp stored in any data type usually is in JSON.
+            You can specify an event that is passed to the method.
+
+    """
+    _id = event.pop("_id", None)
+
+    assert _id is not None, "_id must be present in the event when updating a document in ElasticSearch"
+
+    yield orjson.dumps(
+        {"update": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+    )
+
+    yield orjson.dumps({"doc": event}, option=orjson.OPT_APPEND_NEWLINE)
+
+
+def data_feeder_delete(event):
+    """
+    Deletes data feeder.
+
+    **Parameters**
+
+    event : Data with time stamp stored in any data type usually is in JSON.
+            You can specify an event that is passed to the method.
+
+    """
+    _id = event.pop("_id", None)
+
+    assert _id is not None, "_id must be present in the event when deleting a document from ElasticSearch"
+
+    yield orjson.dumps(
+        {"delete": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
+    )
+
+    assert len(event) == 0,\
+        "When deleting items from ElasticSearch, no data should be provide, but '{}' found.".format(event)

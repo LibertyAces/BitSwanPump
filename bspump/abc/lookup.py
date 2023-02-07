@@ -19,6 +19,8 @@ class Lookup(asab.ConfigObject):
 	"""
 	Description:
 
+	|
+
 	:return:
 	"""
 
@@ -37,6 +39,10 @@ class Lookup(asab.ConfigObject):
 	}
 
 	def __init__(self, app, id=None, config=None, lazy=False):
+		"""
+		Description:
+
+		"""
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__("lookup:{}".format(_id), config=config)
 		self.Id = _id
@@ -107,7 +113,10 @@ class Lookup(asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		:return: time
+
+		|
+
 		"""
 		return self.App.time()
 
@@ -116,6 +125,9 @@ class Lookup(asab.ConfigObject):
 		Description:
 
 		:return:
+
+		|
+
 		"""
 		return asyncio.ensure_future(self._do_update())
 
@@ -134,7 +146,6 @@ class Lookup(asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
 		"""
 		data = await self.Provider.load()
 		if data is None or data is False:
@@ -147,7 +158,6 @@ class Lookup(asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
 		"""
 		raise NotImplementedError("Lookup '{}' serialize() method not implemented".format(self.Id))
 
@@ -155,7 +165,8 @@ class Lookup(asab.ConfigObject):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		raise NotImplementedError("Lookup '{}' deserialize() method not implemented".format(self.Id))
 
@@ -175,6 +186,14 @@ class Lookup(asab.ConfigObject):
 		return response
 
 	def is_master(self):
+		"""
+		Description:
+
+		:return: ??
+
+		|
+
+		"""
 		return self.MasterURL is None
 
 
@@ -182,7 +201,8 @@ class MappingLookup(Lookup, collections.abc.Mapping):
 	"""
 	Description:
 
-	:return:
+	|
+
 	"""
 	pass
 
@@ -191,7 +211,6 @@ class AsyncLookupMixin(Lookup):
 	"""
 	Description:
 
-	:return:
 	"""
 
 	async def get(self, key):
@@ -202,10 +221,16 @@ class DictionaryLookup(MappingLookup):
 	"""
 	Description:
 
-	:return:
 	"""
 
 	def __init__(self, app, id=None, config=None, lazy=False):
+		"""
+		Description:
+
+		|
+
+		"""
+
 		self.Dictionary = {}
 		super().__init__(app, id, config=config, lazy=lazy)
 
@@ -223,7 +248,9 @@ class DictionaryLookup(MappingLookup):
 		"""
 		Description:
 
-		:return:
+		:return: json data
+
+		|
 		"""
 		return (json.dumps(self.Dictionary)).encode('utf-8')
 
@@ -231,7 +258,8 @@ class DictionaryLookup(MappingLookup):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		try:
 			self.Dictionary.update(json.loads(data.decode('utf-8')))
@@ -244,7 +272,9 @@ class DictionaryLookup(MappingLookup):
 		"""
 		Description:
 
-		:return:
+		:return: rest
+
+		|
 		"""
 		rest = super().rest_get()
 		rest["Dictionary"] = self.Dictionary
@@ -254,7 +284,8 @@ class DictionaryLookup(MappingLookup):
 		"""
 		Description:
 
-		:return:
+		|
+
 		"""
 		if self.is_master() is False:
 			L.warning("'master_url' provided, set() method can not be used")

@@ -12,6 +12,16 @@ L = logging.getLogger(__name__)
 
 ###
 
+class EnrichProcessor(bspump.Processor):
+	def __init__(self, app, pipeline, id=None, config=None):
+		super().__init__(app, pipeline, id=None, config=None)
+
+
+	def process(self, context, event):
+
+		# event["bpi"]["CZK"] = "code"
+		# print("hit")
+		return event
 
 class SamplePipeline(bspump.Pipeline):
 
@@ -19,10 +29,15 @@ class SamplePipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 
 		self.build(
+			#Source that GET requests from the API source.
 			bspump.http.HTTPClientSource(app, self, config={
 				'url': 'https://api.coindesk.com/v1/bpi/currentprice.json'
+				#Trigger that triggers the source every second (based on the method parameter)
 			}).on(bspump.trigger.PeriodicTrigger(app, 1)),
+			#Converts incoming json event to dict data type.
 			bspump.common.StdJsonToDictParser(app, self),
+			#Prints the incoming event
+			EnrichProcessor(app, self),
 			bspump.common.PPrintSink(app, self),
 		)
 

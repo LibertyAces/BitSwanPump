@@ -35,6 +35,10 @@ class TimeWindowAnalyzer(Analyzer):
 		columns=15, analyze_on_clock=False, resolution=60,
 		start_time=None, clock_driven=False, persistent=False, id=None, config=None
 	):
+		"""
+		Description:
+
+		"""
 
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")

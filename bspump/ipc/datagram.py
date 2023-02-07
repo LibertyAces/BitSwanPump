@@ -13,6 +13,10 @@ L = logging.getLogger(__name__)
 #
 
 class DatagramSource(Source):
+	"""
+	Description:
+
+	"""
 
 
 	ConfigDefaults = {
@@ -23,6 +27,11 @@ class DatagramSource(Source):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop
 
@@ -88,6 +97,11 @@ class DatagramSource(Source):
 
 
 class DatagramSink(Sink):
+	"""
+	Description:
+
+
+	"""
 
 
 	ConfigDefaults = {
@@ -98,6 +112,12 @@ class DatagramSink(Sink):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+
+		"""
+
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop
 
@@ -137,4 +157,9 @@ class DatagramSink(Sink):
 
 
 	def process(self, context, event):
+		"""
+		Description:
+
+
+		"""
 		self.Socket.send(event)

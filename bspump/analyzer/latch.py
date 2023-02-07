@@ -37,6 +37,30 @@ class LatchAnalyzer(Analyzer):
 	}
 
 	def __init__(self, app, pipeline, query=True, analyze_on_clock=False, inclusive=False, id=None, config=None):
+		"""
+		Description:
+
+		**Parameters**
+
+		app : Application
+			Name of the Application.
+
+		pipeline : Pipeline
+			Name of the Pipeline.
+
+		query : bool, default = True
+			description
+
+		analyze_on_clock : bool, default = False
+
+		inclusive : bool, default = False
+
+		id : str, default = None
+
+		config : JSON, default = None
+			configuration file with additional information.
+
+		"""
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		max_size = int(self.Config.get('latch_max_size'))
 		if max_size == 0:
@@ -59,6 +83,18 @@ class LatchAnalyzer(Analyzer):
 
 
 	def process(self, context, event):
+		"""
+		Description:
+
+		**Parameters**
+
+		context :
+
+		event : any data type
+			information with timestamp.
+
+		:return: event
+		"""
 		if self.Query is True:
 			self.Latch.append(event)
 

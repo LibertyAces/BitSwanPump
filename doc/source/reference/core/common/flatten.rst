@@ -7,7 +7,13 @@ Flatten Dict Processor
 
 .. py:currentmodule:: bspump.common
 
-.. automethod:: bspump.common.FlattenDictProcessor._construct_key
+.. autoclass:: FlattenDictProcessor
+    :show-inheritance:
+
+..automethod:: bspump.common.FlattenDictProcessor.__init__()
+
+Flatten Dict Processor
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.FlattenDictProcessor.flatten
 

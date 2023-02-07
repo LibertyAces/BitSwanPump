@@ -1,8 +1,13 @@
 Basics
-=======
+======
+
+Basics covers the most fundamental components of a BSPump. We will start with the "backbone" of the BSPump, which is called a "pipeline".
+
 
 Pipeline
 --------
+The pipeline class is responsible for construction of the BSPump pipeline itself. Its methods enable us to maintain
+a working lifecycle of the system.
 
 :meth:`Pipeline <bspump.Pipeline()>` is responsible for **data processing** in BSPump.
 Individual :meth:`Pipeline <bspump.Pipeline()>` objects work **asynchronously** and **independently** of one another (provided dependence is not defined explicitly – for instance on a message source from some other pipeline) and can be triggered in unlimited numbers.
@@ -74,12 +79,18 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 .. py:currentmodule:: bspump
 
 .. autoclass:: Pipeline
+    :show-inheritance:
+
+.. automethod:: bspump.Pipeline.__init__()
     :special-members: __init__
     :show-inheritance:
 
-
 Pipeline construction
 ~~~~~~~~~~~~~~~~~~~~~
+
+The following are the core methods of the pipeline.
+
+.. automethod:: bspump.Pipeline.build
 
 .. automethod:: bspump.Pipeline.set_source
 
@@ -90,6 +101,14 @@ Pipeline construction
 .. automethod:: bspump.Pipeline.insert_before
 
 .. automethod:: bspump.Pipeline.insert_after
+
+.. automethod:: bspump.Pipeline.iter_processors
+
+
+Other Pipeline Methods
+~~~~~~~~~~~~~~~~~~~~~~
+
+The additional methods below bring more features to the pipeline. However, many of them are very important and almost necessary.
 
 .. automethod:: bspump.Pipeline.build
 
@@ -105,66 +124,54 @@ Other pipeline methods
 
 .. automethod:: bspump.Pipeline.get_throttles
 
-.. automethod:: bspump.Pipeline._on_metrics_flush
+.. automethod:: bspump.Pipeline.is_error
 
-.. automethod:: bspump.Pipeline.is_error()
+.. automethod:: bspump.Pipeline.set_error
 
-.. automethod:: bspump.Pipeline.set_error()
+.. automethod:: bspump.Pipeline.handle_error
 
-.. automethod:: bspump.Pipeline.handle_error()
+.. automethod:: bspump.Pipeline.link
 
-.. automethod:: bspump.Pipeline.link()
+.. automethod:: bspump.Pipeline.unlink
 
-.. automethod:: bspump.Pipeline.unlink()
+.. automethod:: bspump.Pipeline.throttle
 
-.. automethod:: bspump.Pipeline.throttle()
+.. automethod:: bspump.Pipeline.ready
 
-.. automethod:: bspump.Pipeline._evaluate_ready()
+.. automethod:: bspump.Pipeline.is_ready
 
-.. automethod:: bspump.Pipeline.ready()
+.. automethod:: bspump.Pipeline.inject
 
-.. automethod:: bspump.Pipeline.is_ready()
+.. automethod:: bspump.Pipeline.process
 
-.. automethod:: bspump.Pipeline._do_process()
+.. automethod:: bspump.Pipeline.create_eps_counter
 
-.. automethod:: bspump.Pipeline.inject()
+.. automethod:: bspump.Pipeline.ensure_future
 
-.. automethod:: bspump.Pipeline.process()
+.. automethod:: bspump.Pipeline.locate_source
 
-.. automethod:: bspump.Pipeline.create_eps_counter()
+.. automethod:: bspump.Pipeline.locate_connection
 
-.. automethod:: bspump.Pipeline.ensure_future()
+.. automethod:: bspump.Pipeline.locate_processor
 
-.. automethod:: bspump.Pipeline.locate_source()
+.. automethod:: bspump.Pipeline.start
 
-.. automethod:: bspump.Pipeline.locate_connection()
-
-.. automethod:: bspump.Pipeline.locate_processor()
-
-.. automethod:: bspump.Pipeline.start()
-
-.. automethod:: bspump.Pipeline.stop()
-
-.. automethod:: bspump.Pipeline.rest_get()
-
-
-PipelineLogger
-~~~~~~~~~~~~~~
-
-.. py:currentmodule:: bspump.pipeline
-
-.. autoclass:: PipelineLogger
-    :special-members: __init__
-    :show-inheritance:
-
-
-.. automethod:: bspump.pipeline.PipelineLogger.handle()
-
-.. automethod:: bspump.pipeline.PipelineLogger._format_time()
+.. automethod:: bspump.Pipeline.stop
 
 
 Source
 ------
+
+.. py:currentmodule:: bspump.abc.source
+
+.. autoclass:: Source
+    :show-inheritance:
+
+.. automethod:: bspump.abc.source.Source.__init__()
+
+
+Source Construction
+===================
 
 Source is an **object** designed to obtain data from a predefined input.
 The BSPump contains a lot of universally usable, specific source objects, which are capable of loading data from known data interfaces.
@@ -199,10 +206,6 @@ Source construction
 .. automethod:: bspump.abc.source.Source.stopped
 
 .. automethod:: bspump.abc.source.Source.locate_address
-
-.. automethod:: bspump.abc.source.Source.rest_get
-
-.. automethod:: bspump.abc.source.Source.__repr__
 
 .. automethod:: bspump.abc.source.Source.construct
 
@@ -250,8 +253,7 @@ Trigger source methods
 
 
 Processor
----------
-
+=========
 The main component of the BSPump architecture is a so called processor.
 This object modifies, transforms and enriches events.
 Moreover, it is capable of calculating metrics and creating aggregations, detecting anomalies or react to known as well as unknown system behavior patterns.
@@ -293,7 +295,6 @@ Subsequently, the event is dispatched/written into the system by the BSPump.
 .. autoclass:: Sink
     :special-members: __init__
     :show-inheritance:
-
 
 Connection
 ----------

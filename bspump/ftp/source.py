@@ -13,6 +13,12 @@ L = logging.getLogger(__name__)
 
 
 class FTPSource(TriggerSource):
+	"""
+	Description:
+
+	|
+
+	"""
 
 	ConfigDefaults = {
 		'remote_path': '/',
@@ -20,6 +26,24 @@ class FTPSource(TriggerSource):
 	}
 
 	def __init__(self, app, pipeline, connection,id=None, config=None):
+		"""
+		Description:
+
+		**Parameters**
+
+		app : Application
+			Name of the Application
+
+		pipeline :
+
+		connection :
+
+		id : ID, default = None
+
+		config : JSON, default = None
+
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop
 		self.Pipeline = pipeline
@@ -31,6 +55,12 @@ class FTPSource(TriggerSource):
 		self.list_future = None
 
 	async def list_files(self):
+		"""
+		Description:
+
+		|
+
+		"""
 
 		if self.Queue.qsize() == 0:
 			self.list_future = None
@@ -56,6 +86,12 @@ class FTPSource(TriggerSource):
 					L.warning("Queue has reached it's limit")
 
 	async def inbound(self):
+		"""
+		Description:
+
+		|
+
+		"""
 		while True:
 			try:
 				path = await self.Queue.get()
@@ -71,6 +107,12 @@ class FTPSource(TriggerSource):
 				L.exception(exception)
 
 	async def cycle(self):
+		"""
+		Description:
+
+		|
+
+		"""
 		if self.list_future:
 			pass
 

@@ -13,6 +13,14 @@ class GeoAnalyzer(Analyzer):
 
 		`GeoAnalyzer` operates over the `GeoMatrix` object.
 		`matrix_id` is an id of `GeoMatrix` object defined alternatively.
+
+		**Config Defaults**
+
+		max_lat : 71.26
+		min_lat : 23.33
+		min_lon : -10.10
+		max_lon : 40.6
+
 	'''
 
 	ConfigDefaults = {
@@ -23,6 +31,35 @@ class GeoAnalyzer(Analyzer):
 	}
 
 	def __init__(self, app, pipeline, matrix_id=None, dtype="float_", analyze_on_clock=False, bbox=None, resolution=5, persistent=False, id=None, config=None):
+		"""
+		Description:
+
+		**Parameters**
+
+		app : Application
+			Name of the Application.
+
+		pipeline : Pipeline
+			Name of the Pipeline.
+
+		matrix_id : str, default = None
+
+		dtype : ??, default = "float_"
+
+		analyze_on_clock : bool, default = False
+
+		bbox : ??, default = None
+
+		resolution : int, default = 5
+
+		persistent : bool, default = False
+
+		id : str, default = None
+
+		config = JSON, default = None
+			configuration file with additional information
+
+		"""
 		super().__init__(app, pipeline, analyze_on_clock=analyze_on_clock, id=id, config=config)
 		svc = app.get_service("bspump.PumpService")
 		if matrix_id is None:

@@ -1,5 +1,5 @@
 Top Level Objects
-===================
+=================
 
 .. toctree::
     :maxdepth: 1

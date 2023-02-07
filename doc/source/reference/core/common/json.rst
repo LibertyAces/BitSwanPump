@@ -7,11 +7,12 @@ CySimd Json Parser
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: CySimdJsonParser
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.CySimdJsonParser.__init__()
 
-CySimd Json Parser method
+
+CySimd Json Parser Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.CySimdJsonParser.process
@@ -26,7 +27,7 @@ Std Dict To Json Parser
     :show-inheritance:
 
 
-Std Dict To Json Parser method
+Std Dict To Json Parser Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.StdDictToJsonParser.process
@@ -41,7 +42,7 @@ Std Json To Dict Parser
     :show-inheritance:
 
 
-Std Json To Dict Parser method
+Std Json To Dict Parser Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.StdJsonToDictParser.process
@@ -53,11 +54,12 @@ Dict To JsonBytes Parser
 .. py:currentmodule:: bspump.common
 
 .. autoclass:: DictToJsonBytesParser
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.DictToJsonBytesParser.__init__()
 
-Dict To Json Bytes Parser method
+
+Dict To Json Bytes Parser Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.DictToJsonBytesParser.process

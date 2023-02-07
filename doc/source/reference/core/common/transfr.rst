@@ -6,15 +6,14 @@ Mapping Transformator
 
 .. py:currentmodule:: bspump.common
 .. autoclass:: MappingTransformator
-    :special-members: __init__
     :show-inheritance:
 
+.. automethod:: bspump.common.MappingTransformator.__init__()
 
-Mapping Transformator methods
+
+Mapping Transformator Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: bspump.common.MappingTransformator.build
-
-.. automethod:: bspump.common.MappingTransformator._map
 
 .. automethod:: bspump.common.MappingTransformator.process

@@ -12,6 +12,10 @@ L = logging.getLogger(__file__)
 
 
 class FileABCSource(TriggerSource):
+	"""
+	Description:
+
+	"""
 
 
 	ConfigDefaults = {
@@ -29,6 +33,24 @@ class FileABCSource(TriggerSource):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
+
+		**Parameters**
+
+		app : Application
+			Name of the Application.
+
+		pipeline : Pipeline
+			Name of the Pipeline.
+
+		id : ID, default = None
+			ID
+
+		config : JSON, default = None
+			Configuration file with additional information.
+
+		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.path = self.Config['path']
 		self.mode = self.Config['mode']
@@ -74,6 +96,10 @@ class FileABCSource(TriggerSource):
 		self.EventIdleTime = float(self.Config["event_idle_time"])
 
 	async def cycle(self):
+		"""
+		Cycles through a file.
+
+		"""
 		filename = None
 
 		start_time = time.time()
@@ -185,21 +211,29 @@ class FileABCSource(TriggerSource):
 			return
 
 	async def simulate_event(self):
-		'''
+		"""
 		The simulate_event method should be called in read method after a file line has been processed.
 
 		It ensures that all other asynchronous events receive enough time to perform their tasks.
 		Otherwise, the application loop is blocked by a file reader and no other activity makes a progress.
-		'''
 
+		"""
 		self.LinesCounter += 1
 		if self.LinesCounter >= self.LinesPerEvent:
 			await asyncio.sleep(self.EventIdleTime)
 			self.LinesCounter = 0
 
 	async def read(self, filename, f):
-		'''
-		Override this method to implement your File Source.
+		"""
+		Description: Override this method to implement your File Source.
 		`f` is an opened file object.
-		'''
+
+		**Parameters**
+
+		filename : file
+			Name of the file.
+
+		f :
+
+		"""
 		raise NotImplementedError()

@@ -5,6 +5,9 @@ class Anomaly(dict):
 	:return:
 
 	Implement: TYPE, on_tick
+
+	|
+
 	"""
 
 	TYPE = None
@@ -13,7 +16,10 @@ class Anomaly(dict):
 		"""
 		Description:
 
-		:return:
+		:return: sets status to closed
+
+		|
+
 		"""
 		return self.get("status") == "closed"
 
@@ -21,7 +27,6 @@ class Anomaly(dict):
 		"""
 		Description:
 
-		:return:
 		"""
 		self["ts_end"] = current_time
 		self["D"] = self["ts_end"] - self["@timestamp"]
@@ -30,8 +35,6 @@ class Anomaly(dict):
 	async def on_tick(self, current_time):
 		"""
 		Description:
-
-		:return:
 
 		:hint: Implement to perform operations on the anomaly, f. e. close.
 		"""
