@@ -10,11 +10,11 @@ L = logging.getLogger(__name__)
 
 
 class KafkaConnection(Connection):
-    """
-    KafkaConnection serves to connect BSPump application with an instance of Apache Kafka messaging system.
-    It can later be used by processors to consume or provide user-defined messages.
+	"""
+	KafkaConnection serves to connect BSPump application with an instance of Apache Kafka messaging system.
+	It can later be used by processors to consume or provide user-defined messages.
 
-.. code:: python
+	.. code:: python
 
 	config = {"bootstrap_servers": "localhost:9092"}
 	app = bspump.BSPumpApplication()

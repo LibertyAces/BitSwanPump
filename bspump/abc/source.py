@@ -8,8 +8,8 @@ L = logging.getLogger(__name__)
 
 
 class Source(asab.ConfigObject):
-	"""
-	Description:
+    """
+    Description:
 
     """
     def __init__(self, app, pipeline, id=None, config=None):
@@ -79,16 +79,16 @@ class Source(asab.ConfigObject):
             """
             Description:
 
-			:return:
-			"""
-			# This is to properly handle a lifecycle of the main method
-			try:
-				await self.main()
-			except asyncio.CancelledError:
-				pass
-			except Exception as e:
-				self.Pipeline.set_error(None, None, e)
-				L.exception("Exception in the source '{}'".format(self.Id))
+            :return:
+            """
+            # This is to properly handle a lifecycle of the main method
+            try:
+                await self.main()
+            except asyncio.CancelledError:
+                pass
+            except Exception as e:
+                self.Pipeline.set_error(None, None, e)
+                L.exception("Exception in the source '{}'".format(self.Id))
 
         self.Task = loop.create_task(_main())
 
@@ -100,23 +100,23 @@ class Source(asab.ConfigObject):
 		:return:
 		"""
 
-		if self.Task is None:
-			return  # Source is not started
+        if self.Task is None:
+            return  # Source is not started
 
-		if not self.Task.done():
-			self.Task.cancel()
+        if not self.Task.done():
+            self.Task.cancel()
 
-		try:
-			await self.Task
-		except asyncio.exceptions.CancelledError:
-			L.warning("Task cancelled: {}".format(self))
-		except Exception:
-			L.exception("Task failed when stopping")
+        try:
+            await self.Task
+        except asyncio.exceptions.CancelledError:
+            L.warning("Task cancelled: {}".format(self))
+        except Exception:
+            L.exception("Task failed when stopping")
 
-		if not self.Task.done():
-			L.error("Source '{}' refused to stop: {}".format(self.Id, self.Task))
+        if not self.Task.done():
+            L.error("Source '{}' refused to stop: {}".format(self.Id, self.Task))
 
-		self.Task = None
+        self.Task = None
 
 
     def restart(self, loop):
@@ -240,9 +240,9 @@ class TriggerSource(Source):
         self.App = app
         self.Loop = app.Loop
 
-		self.TriggerEvent = asyncio.Event()
-		self.TriggerEvent.clear()
-		self.Triggers = set()
+        self.TriggerEvent = asyncio.Event()
+        self.TriggerEvent.clear()
+        self.Triggers = set()
 
 
     def time(self):
@@ -291,11 +291,11 @@ class TriggerSource(Source):
             # Wait for pipeline is ready
             await self.Pipeline.ready()
 
-			# Wait for a trigger
-			try:
-				await self.TriggerEvent.wait()
-			except asyncio.CancelledError:
-				break
+            # Wait for a trigger
+            try:
+                await self.TriggerEvent.wait()
+            except asyncio.CancelledError:
+                break
 
             # Send begin on a cycle event
             self.Pipeline.PubSub.publish("bspump.pipeline.cycle_begin!", pipeline=self.Pipeline)
@@ -304,9 +304,9 @@ class TriggerSource(Source):
             try:
                 await self.cycle(*args, **kwags)
 
-			except asyncio.CancelledError:
-				# This happens when Ctrl-C is pressed
-				L.warning("Pipeline '{}' processing was cancelled".format(self.Pipeline.Id))
+            except asyncio.CancelledError:
+                # This happens when Ctrl-C is pressed
+                L.warning("Pipeline '{}' processing was cancelled".format(self.Pipeline.Id))
 
                 # Send end of a cycle event
                 self.Pipeline.PubSub.publish("bspump.pipeline.cycle_canceled!", pipeline=self.Pipeline)

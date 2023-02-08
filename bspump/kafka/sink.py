@@ -15,41 +15,41 @@ L = logging.getLogger(__name__)
 
 
 class KafkaSink(Sink):
-    """
-    Description: KafkaSink is a sink processor that forwards the event to a Apache Kafka specified by a KafkaConnection object.
+	"""
+	Description: KafkaSink is a sink processor that forwards the event to a Apache Kafka specified by a KafkaConnection object.
 
-    KafkaSink expects bytes as an input. If the input is string or dictionary, it is automatically transformed to bytes
-    using encoding charset specified in the configuration.
+	KafkaSink expects bytes as an input. If the input is string or dictionary, it is automatically transformed to bytes
+	using encoding charset specified in the configuration.
 
-.. code:: python
+	.. code:: python
 
-    class KafkaPipeline(bspump.Pipeline):
+	class KafkaPipeline(bspump.Pipeline):
 
-            def __init__(self, app, pipeline_id):
-                    super().__init__(app, pipeline_id)
-                    self.build(
-                            bspump.kafka.KafkaSource(app, self, "KafkaConnection", config={'topic': 'messages'}),
-                            bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
-            )
+			def __init__(self, app, pipeline_id):
+					super().__init__(app, pipeline_id)
+					self.build(
+							bspump.kafka.KafkaSource(app, self, "KafkaConnection", config={'topic': 'messages'}),
+							bspump.kafka.KafkaSink(app, self, "KafkaConnection", config={'topic': 'messages2'}),
+			)
 
-    There are two ways to use KafkaSink:
-    - Specify a single topic in KafkaSink config - topic, to be used for all the events in pipeline.
-    - Specify topic separetly for each event in event context - context['kafka_topic'].
-            Topic from configuration is than used as a default topic.
-            To provide business logic for event distribution, you can create topic selector processor.
-    Processor example:
+	There are two ways to use KafkaSink:
+	- Specify a single topic in KafkaSink config - topic, to be used for all the events in pipeline.
+	- Specify topic separetly for each event in event context - context['kafka_topic'].
+			Topic from configuration is than used as a default topic.
+			To provide business logic for event distribution, you can create topic selector processor.
+	Processor example:
 
-.. code:: python
+	.. code:: python
 
-    class KafkaTopicSelector(bspump.Processor):
+	class KafkaTopicSelector(bspump.Processor):
 
-            def process(self, context, event):
-                    if event.get("weight") > 10:
-                            context["kafka_topic"] = "heavy"
-                    else:
-                            context["kafka_topic"] = "light"
+			def process(self, context, event):
+					if event.get("weight") > 10:
+							context["kafka_topic"] = "heavy"
+					else:
+							context["kafka_topic"] = "light"
 
-                    return event
+					return event
 
 	Every kafka message can be a key:value pair. Key is read from event context - context['kafka_key'].
 	If kafka_key is not provided, key defaults to None.

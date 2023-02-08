@@ -313,9 +313,9 @@ class BSPumpService(asab.Service):
             if not lookup.Lazy:
                 lookup_update_tasks.append(lookup.ensure_future_update(app.Loop))
 
-		# Await all lookups
-		if len(lookup_update_tasks) > 0:
-			done, pending = await asyncio.wait(lookup_update_tasks)
+        # Await all lookups
+        if len(lookup_update_tasks) > 0:
+            done, pending = await asyncio.wait(lookup_update_tasks)
 
         # Start all pipelines
         for pipeline in self.Pipelines.values():
@@ -331,8 +331,8 @@ class BSPumpService(asab.Service):
         app : Application
                 Name of the `Application <https://asab.readthedocs.io/en/latest/asab/application.html>`_
 
-		:return:
-		"""
-		# Stop all started pipelines
-		if len(self.Pipelines) > 0:
-			await asyncio.gather(*[pipeline.stop() for pipeline in self.Pipelines.values()])
+        :return:
+        """
+        # Stop all started pipelines
+        if len(self.Pipelines) > 0:
+            await asyncio.gather(*[pipeline.stop() for pipeline in self.Pipelines.values()])

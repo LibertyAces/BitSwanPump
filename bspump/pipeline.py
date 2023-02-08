@@ -121,7 +121,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
         )
         self.ProfilerCounter = {}
 
-		app.PubSub.subscribe(
+        app.PubSub.subscribe(
 			"Metrics.flush!",
 			self._on_metrics_flush
 		)
@@ -139,8 +139,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
         self._throttles = set()
         self._ancestral_pipelines = set()
 
-		self._ready = asyncio.Event()
-		self._ready.clear()
+        self._ready = asyncio.Event()
+        self._ready.clear()
 
         # Chillout is used to break a pipeline processing to smaller tasks that allows other event in event loop to be processed
         self._chillout_trigger = 10000
@@ -171,27 +171,27 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		:return: xxxx
 		"""
-		return self._throttles
+        return self._throttles
 
 
-	def _on_metrics_flush(self, event_type):
-		"""
-		Description: Pipeline is ...
+    def _on_metrics_flush(self, event_type):
+        """
+        Description: Pipeline is ...
 
 
-		Parameters: event_type
+        Parameters: event_type
 
 
-		:return: xxxx
-		"""
-		for field in self.MetricsCounter.Storage["fieldset"]:
-			values = field["values"]
-			if values["event.in"] == 0:
-				self.MetricsGauge.set("warning.ratio", 0.0)
-				self.MetricsGauge.set("error.ratio", 0.0)
-				continue
-			self.MetricsGauge.set("warning.ratio", values["warning"] / values["event.in"])
-			self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"])
+        :return: xxxx
+        """
+        for field in self.MetricsCounter.Storage["fieldset"]:
+            values = field["values"]
+            if values["event.in"] == 0:
+                self.MetricsGauge.set("warning.ratio", 0.0)
+                self.MetricsGauge.set("error.ratio", 0.0)
+                continue
+            self.MetricsGauge.set("warning.ratio", values["warning"] / values["event.in"])
+            self.MetricsGauge.set("error.ratio", values["error"] / values["event.in"])
 
     def is_error(self):
         """
@@ -204,7 +204,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		:return: xxxx
 		"""
-		return self._error is not None
+        return self._error is not None
 
     def set_error(self, context, event, exc):
         """
@@ -250,9 +250,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
             if (self._error is not None):
                 L.warning("Error on a pipeline is already set!")
 
-			self._error = (context, event, exc, self.App.time())
-			self.App.ASABApiService.attention_required({"msg": "Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc))})
-			L.exception("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
+            self._error = (context, event, exc, self.App.time())
+            self.App.ASABApiService.attention_required({"msg": "Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc))})
+            L.exception("Pipeline '{}' stopped due to a processing error: {} ({})".format(self.Id, exc, type(exc)))
 
             self.PubSub.publish("bspump.pipeline.error!", pipeline=self)
             self._evaluate_ready()
@@ -392,10 +392,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
         """
 
-		self._chillout_counter += 1
-		if self._chillout_counter >= self._chillout_trigger:
-			self._chillout_counter = 0
-			await asyncio.sleep(0)
+        self._chillout_counter += 1
+        if self._chillout_counter >= self._chillout_trigger:
+            self._chillout_counter = 0
+            await asyncio.sleep(0)
 
         await self._ready.wait()
         return True
@@ -547,9 +547,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
         """
 
-		future = asyncio.ensure_future(coro)
-		future.add_done_callback(self._future_done)
-		self.AsyncFutures.append(future)
+        future = asyncio.ensure_future(coro)
+        future.add_done_callback(self._future_done)
+        self.AsyncFutures.append(future)
 
         # Throttle when the number of futures exceeds the max count
         if len(self.AsyncFutures) == self.AsyncConcurencyLimit:
@@ -816,13 +816,13 @@ class Pipeline(abc.ABC, asab.ConfigObject):
         """
         self.PubSub.publish("bspump.pipeline.stop!", pipeline=self)
 
-		# Stop all futures
-		while len(self.AsyncFutures) > 0:
-			# The futures are removed in _future_done
-			await asyncio.wait(
-				self.AsyncFutures,
-				return_when=concurrent.futures.ALL_COMPLETED
-			)
+        # Stop all futures
+        while len(self.AsyncFutures) > 0:
+            # The futures are removed in _future_done
+            await asyncio.wait(
+                self.AsyncFutures,
+                return_when=concurrent.futures.ALL_COMPLETED
+            )
 
         # Stop all started sources
         for source in self.Sources:
@@ -836,15 +836,15 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		:return:
 		"""
-		rest = {
-			'Id': self.Id,
-			'Ready': self.is_ready(),
-			'Throttles': list(self._throttles),
-			'Sources': self.Sources,
-			'Processors': [],
-			'Metrics': self.MetricsService.Storage.Metrics,
-			'Log': [record.__dict__ for record in self.L.Deque]
-		}
+        rest = {
+            'Id': self.Id,
+            'Ready': self.is_ready(),
+            'Throttles': list(self._throttles),
+            'Sources': self.Sources,
+            'Processors': [],
+            'Metrics': self.MetricsService.Storage.Metrics,
+            'Log': [record.__dict__ for record in self.L.Deque]
+        }
 
         for processors in self.Processors:
             rest['Processors'].append(processors)
