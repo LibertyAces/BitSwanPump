@@ -122,9 +122,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
         self.ProfilerCounter = {}
 
         app.PubSub.subscribe(
-			"Metrics.flush!",
-			self._on_metrics_flush
-		)
+            "Metrics.flush!",
+            self._on_metrics_flush
+        )
 
         # Pipeline logger
         self.L = PipelineLogger(
@@ -166,11 +166,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
         :return: self._throttles
                 Return list of throttles.
 
-		Parameters: ---
+        Parameters: ---
 
 
-		:return: xxxx
-		"""
+        :return: xxxx
+        """
         return self._throttles
 
 
@@ -199,11 +199,11 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
         :return: self._error is not None.
 
-		Parameters: ---
+        Parameters: ---
 
 
-		:return: xxxx
-		"""
+        :return: xxxx
+        """
         return self._error is not None
 
     def set_error(self, context, event, exc):
@@ -834,8 +834,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
         """
         Returns information about the status of the :meth:`Pipeline <bspump.Pipeline()>`:
 
-		:return:
-		"""
+        :return:
+        """
         rest = {
             'Id': self.Id,
             'Ready': self.is_ready(),

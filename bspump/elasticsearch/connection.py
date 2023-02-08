@@ -185,8 +185,8 @@ class ElasticSearchBulk(object):
 
         :param response_items: list with dict items: {"index": {"_id": ..., "error": ...}}
 
-		:return:
-		"""
+        :return:
+        """
         L.error("Failed to insert items in the elasticsearch: {}".format(response_items[:10]))
 
 
@@ -357,8 +357,8 @@ class ElasticSearchConnection(Connection):
 
         :return: aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
 
-		:return:
-		"""
+        :return:
+        """
         return aiohttp.ClientSession(auth=self._auth)
 
     def consume(self, index, data_feeder_generator, bulk_class=ElasticSearchBulk):
@@ -530,7 +530,7 @@ class ElasticSearchConnection(Connection):
                 L.info("Generator exited {}".format(e))
                 return
 
-			# Push bulks into the ElasticSearch
+            # Push bulks into the ElasticSearch
             while self._started:
                 bulk = await self._output_queue.get()
                 if bulk is None:

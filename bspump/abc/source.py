@@ -97,8 +97,8 @@ class Source(asab.ConfigObject):
         """
         Stops the Source using self.Task. If the processes are not done it cancels them or raises an error.
 
-		:return:
-		"""
+        :return:
+        """
 
         if self.Task is None:
             return  # Source is not started
