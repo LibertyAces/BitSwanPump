@@ -13,102 +13,102 @@ L = logging.getLogger(__name__)
 
 
 class Analyzer(Processor):
-    """
-    Description:
+	"""
+	Description:
 
-    """
+	"""
 
-    ConfigDefaults = {
-        "analyze_period": 60,  # every 60 seconds
-    }
+	ConfigDefaults = {
+		"analyze_period": 60,  # every 60 seconds
+	}
 
-    def __init__(self, app, pipeline, analyze_on_clock=False, id=None, config=None):
-        super().__init__(app, pipeline, id=id, config=config)
-        self.AnalyzePeriod = float(self.Config['analyze_period'])
-        self.AnalyzeOnClock = analyze_on_clock
+	def __init__(self, app, pipeline, analyze_on_clock=False, id=None, config=None):
+		super().__init__(app, pipeline, id=id, config=config)
+		self.AnalyzePeriod = float(self.Config['analyze_period'])
+		self.AnalyzeOnClock = analyze_on_clock
 
-        if analyze_on_clock:
-            self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True)
-            app.PubSub.subscribe("Application.run!", self.start_timer)
-        else:
-            self.Timer = None
+		if analyze_on_clock:
+			self.Timer = asab.Timer(app, self.on_clock_tick, autorestart=True)
+			app.PubSub.subscribe("Application.run!", self.start_timer)
+		else:
+			self.Timer = None
 
-    # Implementation interface
+	# Implementation interface
 
-    def start_timer(self, event_type):
-        """
-        Description:
+	def start_timer(self, event_type):
+		"""
+		Description:
 
-        """
-        self.Timer.start(self.AnalyzePeriod)
+		"""
+		self.Timer.start(self.AnalyzePeriod)
 
-    def analyze(self):
-        """
-        Description:
+	def analyze(self):
+		"""
+		Description:
 
-        """
-        pass
-
-
-    def evaluate(self, context, event):
-        """
-        The function which records the information from the event into the analyzed object.
-                Specific for each analyzer.
-
-        **Parameters**
-
-        context :
-
-        event : any data type
-                information with timestamp.
-        """
-        pass
+		"""
+		pass
 
 
-    def predicate(self, context, event):
-        """
-        This function is meant to check, if the event is worth to process.
-        If it is, should return True.
-        specific for each analyzer, but default one always returns True.
+	def evaluate(self, context, event):
+		"""
+		The function which records the information from the event into the analyzed object.
+				Specific for each analyzer.
 
-        **Parameters**
+		**Parameters**
 
-        context :
+		context :
 
-        event : any data type
-                information with timestamp.
-
-        :return: True
-        """
-        return True
+		event : any data type
+				information with timestamp.
+		"""
+		pass
 
 
-    def process(self, context, event):
-        """
-        The event passes through `process(context, event)` unchanged.
-                Meanwhile it is evaluated.
+	def predicate(self, context, event):
+		"""
+		This function is meant to check, if the event is worth to process.
+		If it is, should return True.
+		specific for each analyzer, but default one always returns True.
 
-        **Parameters**
+		**Parameters**
 
-        context :
+		context :
 
-        event : any data type
-                information with timestamp.
+		event : any data type
+				information with timestamp.
 
-        :return: event
-        """
-        if self.predicate(context, event):
-            self.evaluate(context, event)
-
-        return event
+		:return: True
+		"""
+		return True
 
 
-    async def on_clock_tick(self):
-        """
-        Run analyzis every tick.
+	def process(self, context, event):
+		"""
+		The event passes through `process(context, event)` unchanged.
+				Meanwhile it is evaluated.
 
-        """
-        t0 = time.perf_counter()
-        self.analyze()
-        self.Pipeline.ProfilerCounter['analyzer_' + self.Id].add('duration', time.perf_counter() - t0)
-        self.Pipeline.ProfilerCounter['analyzer_' + self.Id].add('run', 1)
+		**Parameters**
+
+		context :
+
+		event : any data type
+				information with timestamp.
+
+		:return: event
+		"""
+		if self.predicate(context, event):
+			self.evaluate(context, event)
+
+		return event
+
+
+	async def on_clock_tick(self):
+		"""
+		Run analyzis every tick.
+
+		"""
+		t0 = time.perf_counter()
+		self.analyze()
+		self.Pipeline.ProfilerCounter['analyzer_' + self.Id].add('duration', time.perf_counter() - t0)
+		self.Pipeline.ProfilerCounter['analyzer_' + self.Id].add('run', 1)
