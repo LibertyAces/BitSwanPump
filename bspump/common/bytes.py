@@ -2,73 +2,73 @@ from ..abc.processor import Processor
 
 
 class StringToBytesParser(Processor):
-    """
-    Description:
+	"""
+	Description:
 
-    |
-    ** Default Config **
+	|
+	** Default Config **
 
-    encoding : utf-8
+	encoding : utf-8
 
-    """
+	"""
 
-    ConfigDefaults = {
-        'encoding': 'utf-8',
-    }
+	ConfigDefaults = {
+		'encoding': 'utf-8',
+	}
 
-    def __init__(self, app, pipeline, id=None, config=None):
-        """
-        Description:
+	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
 
-        |
+		|
 
-        """
-        super().__init__(app, pipeline, id, config)
-        self.Encoding = self.Config['encoding']
+		"""
+		super().__init__(app, pipeline, id, config)
+		self.Encoding = self.Config['encoding']
 
-    def process(self, context, event):
-        """
-        Description:
+	def process(self, context, event):
+		"""
+		Description:
 
-        :return: event.decode(self.Encoding)
+		:return: event.decode(self.Encoding)
 
-        |
+		|
 
-        """
-        assert isinstance(event, str)
-        return event.encode(self.Encoding)
+		"""
+		assert isinstance(event, str)
+		return event.encode(self.Encoding)
 
 
 class BytesToStringParser(Processor):
-    """
-    Description:
+	"""
+	Description:
 
-    |
+	|
 
-    """
+	"""
 
-    ConfigDefaults = {
-        'encoding': 'utf-8',
-    }
+	ConfigDefaults = {
+		'encoding': 'utf-8',
+	}
 
-    def __init__(self, app, pipeline, id=None, config=None):
-        """
-        Description:
+	def __init__(self, app, pipeline, id=None, config=None):
+		"""
+		Description:
 
-        |
+		|
 
-        """
-        super().__init__(app, pipeline, id, config)
-        self.Encoding = self.Config['encoding']
+		"""
+		super().__init__(app, pipeline, id, config)
+		self.Encoding = self.Config['encoding']
 
-    def process(self, context, event):
-        """
-        Description:
+	def process(self, context, event):
+		"""
+		Description:
 
-        :return: event.decode(self.Encoding)
+		:return: event.decode(self.Encoding)
 
-        |
+		|
 
-        """
-        assert isinstance(event, bytes)
-        return event.decode(self.Encoding)
+		"""
+		assert isinstance(event, bytes)
+		return event.decode(self.Encoding)
