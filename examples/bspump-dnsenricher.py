@@ -32,7 +32,7 @@ class DNSEnricher(bspump.Generator):
 
 		if "ip" not in event:
 			self.Pipeline.inject(context, event, depth)
-			return event
+			return
 
 		res, cached = await self.Resolver.query(event["ip"])
 		hostname = res.an[0].data.data
