@@ -9,7 +9,7 @@ Data feeders to be used in ElasticSearchSink.
 """
 
 
-def data_feeder_create_or_index(event):
+def data_feeder_create_or_index(event, _id):
 	"""
 	Creates an index.
 
@@ -19,8 +19,6 @@ def data_feeder_create_or_index(event):
 			You can specify an event that is passed to the method.
 
 	"""
-	_id = event.pop("_id", None)
-
 	if _id is None:
 		yield b'{"create":{}}\n'
 	else:
@@ -31,7 +29,7 @@ def data_feeder_create_or_index(event):
 	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_create(event):
+def data_feeder_create(event, _id):
 	"""
 	Creates a data feeder.
 
@@ -41,8 +39,6 @@ def data_feeder_create(event):
 			You can specify an event that is passed to the method.
 
 	"""
-	_id = event.pop("_id", None)
-
 	if _id is None:
 		yield b'{"create":{}}\n'
 	else:
@@ -53,7 +49,7 @@ def data_feeder_create(event):
 	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_index(event):
+def data_feeder_index(event, _id):
 	"""
 	Description:
 
@@ -63,7 +59,6 @@ def data_feeder_index(event):
 			You can specify an event that is passed to the method.
 
 	"""
-	_id = event.pop("_id", None)
 
 	if _id is None:
 		yield b'{"index":{}}\n'
@@ -75,7 +70,7 @@ def data_feeder_index(event):
 	yield orjson.dumps(event, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_update(event):
+def data_feeder_update(event, _id):
 	"""
 	Updates data feeder.
 
@@ -85,7 +80,6 @@ def data_feeder_update(event):
 			You can specify an event that is passed to the method.
 
 	"""
-	_id = event.pop("_id", None)
 
 	assert _id is not None, "_id must be present in the event when updating a document in ElasticSearch"
 
@@ -96,7 +90,7 @@ def data_feeder_update(event):
 	yield orjson.dumps({"doc": event}, option=orjson.OPT_APPEND_NEWLINE)
 
 
-def data_feeder_delete(event):
+def data_feeder_delete(event, _id):
 	"""
 	Deletes data feeder.
 
@@ -106,8 +100,6 @@ def data_feeder_delete(event):
 			You can specify an event that is passed to the method.
 
 	"""
-	_id = event.pop("_id", None)
-
 	assert _id is not None, "_id must be present in the event when deleting a document from ElasticSearch"
 
 	yield orjson.dumps(
