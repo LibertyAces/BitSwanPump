@@ -12,12 +12,16 @@ class DeclarativeProcessor(Processor):
 		declaration = definition.get("declaration")
 		return cls(app, pipeline, declaration=declaration, id=_id, config=config)
 
-	def __init__(self, app, pipeline, declaration, libraries=None, id=None, config=None):
+	def __init__(self, app, pipeline, declaration, library=None, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		builder = ExpressionBuilder(app, libraries)
-		optimizer = ExpressionOptimizer(app)
-		expressions = builder.parse(declaration)
-		self.Expressions = optimizer.optimize_many(expressions)
+		self.Declaration = declaration
+		self.Builder = ExpressionBuilder(app, library)
+		self.ExpressionOptimizer = ExpressionOptimizer(app)
+		self.Expressions = None
+
+	async def initialize(self):
+		expressions = await self.Builder.parse(self.Declaration)
+		self.Expressions = self.ExpressionOptimizer.optimize_many(expressions)
 
 	def process(self, context, event):
 		for expression in self.Expressions:

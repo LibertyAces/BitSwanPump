@@ -7,10 +7,6 @@ from .optimizer import ExpressionOptimizer
 from .declerror import DeclarationError
 from .segmentbuilder import SegmentBuilder
 
-from .libraries import DeclarationLibrary
-from .libraries import FileDeclarationLibrary
-from .libraries import ZooKeeperDeclarationLibrary
-
 from .abc import Expression
 from .abc import SequenceExpression
 
@@ -26,10 +22,6 @@ __all__ = [
 	"SegmentBuilder",
 
 	"ExpressionOptimizer",
-
-	"DeclarationLibrary",
-	"FileDeclarationLibrary",
-	"ZooKeeperDeclarationLibrary",
 
 	"Expression",
 	"SequenceExpression",
