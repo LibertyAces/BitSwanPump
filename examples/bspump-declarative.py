@@ -28,6 +28,8 @@ class VegetableCounterPipeline(bspump.Pipeline):
 		file = open("./data/declarative-input.yml")
 		declaration = file.read()
 
+		self.DeclarativeProcessor = bspump.declarative.DeclarativeProcessor(app, self, declaration)
+
 		self.build(
 
 			bspump.random.RandomSource(app, self, choice=[
@@ -35,19 +37,21 @@ class VegetableCounterPipeline(bspump.Pipeline):
 				{"potatoes": 10, "radishes": 5, "meat": 8, "name": "xpotatoes", "meta": "Say,Good,Bye!"},
 				{"radishes": 20, "carrots": 4, "potatoes": 10, "name": "xpotatoes", "meta": "Say,Good,Bye!"}
 			], config={"number": 5}).on(bspump.trigger.OpportunisticTrigger(app, chilldown_period=10)),
-
-			bspump.declarative.DeclarativeProcessor(app, self, declaration),
-
+			self.DeclarativeProcessor,
 			bspump.common.PPrintSink(app, self)
 		)
 
 
 class VegetableCounterApplication(bspump.BSPumpApplication):
 
-	def __init__(self):
-		super().__init__()
+	async def initialize(self):
 		svc = self.get_service("bspump.PumpService")
-		svc.add_pipeline(VegetableCounterPipeline(self))
+
+		pipeline = VegetableCounterPipeline(self)
+		await pipeline.DeclarativeProcessor.initialize()
+		svc.add_pipeline(pipeline)
+
+		pipeline.start()
 
 
 if __name__ == '__main__':

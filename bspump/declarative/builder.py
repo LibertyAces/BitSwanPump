@@ -1,9 +1,9 @@
 import logging
 import inspect
+import asyncio
 
 import yaml
 
-from .libraries import FileDeclarationLibrary
 from .declerror import DeclarationError
 from .abc import Expression
 
@@ -25,17 +25,20 @@ class ExpressionBuilder(object):
 	Builds an expression from configuration.
 	"""
 
-	def __init__(self, app, libraries=None):
+	def __init__(self, app, library=None, include_paths=None):
 		self.App = app
 		self.ExpressionClasses = {}
 		self.Identifier = None
 
 		self.Config = {}
+		self.Library = library
 
-		if libraries is None:
-			self.Libraries = [FileDeclarationLibrary()]
+		if include_paths is None:
+			self.IncludePaths = ["/include"]
+
 		else:
-			self.Libraries = libraries
+			self.IncludePaths = include_paths
+			assert isinstance(include_paths, list)
 
 		# Register the common expression module
 		from . import expression
@@ -55,17 +58,22 @@ class ExpressionBuilder(object):
 	def update_config(self, config):
 		self.Config.update(config)
 
-	def read(self, identifier):
+	async def read(self, identifier):
+
+		if self.Library is None:
+			raise RuntimeError("Cannot read '{}' in builder, ASAB library is not provided".format(identifier))
+
 		# Read declaration from available declarations libraries
-		for declaration_library in self.Libraries:
-			declaration = declaration_library.read(identifier)
+		for include_path in self.IncludePaths:
+			declaration = await self.Library.read("{}/{}.yaml".format(include_path, identifier))
+
 			if declaration is not None:
-				return declaration
+				return declaration.read().decode("utf-8")
 
 		raise RuntimeError("Cannot find '{}' YAML declaration in libraries".format(identifier))
 
 
-	def parse(self, declaration, source_name=None):
+	async def parse(self, declaration, source_name=None):
 		"""
 		Returns a list of expressions from the loaded declaration.
 		:param declaration:
@@ -74,11 +82,12 @@ class ExpressionBuilder(object):
 		"""
 
 		self.Identifier = None
+
 		if isinstance(declaration, str) and declaration.startswith('---'):
 			pass
+
 		else:
-			self.Identifier = declaration
-			declaration = self.read(self.Identifier)
+			declaration = await self.read(declaration)
 
 		loader = yaml.Loader(declaration)
 		if source_name is not None:
@@ -117,9 +126,14 @@ class ExpressionBuilder(object):
 			# Build syntax trees for each expression
 			while loader.check_data():
 				expression = loader.get_data()
+				expression = await self._load_includes(expression)
 
 				# Run initialize for the expression and any instance inside
 				for parent, key, obj in self._walk(expression):
+
+					if isinstance(obj, str) and obj.startswith("<INCLUDE>"):
+						obj = (await self.parse(obj[9:], "<INCLUDE>"))[0]
+						setattr(parent, key, obj)
 
 					if not isinstance(obj, Expression):
 						continue
@@ -146,13 +160,13 @@ class ExpressionBuilder(object):
 		return expressions
 
 
-	def parse_ext(self, declaration, source_name=None):
+	async def parse_ext(self, declaration, source_name=None):
 		'''
 		Wrap top-level declaration into a function, value etc.
 		This is likely intermediate (not a final) implementation.
 		'''
 		result = []
-		for expr in self.parse(declaration, source_name=source_name):
+		for expr in await self.parse(declaration, source_name=source_name):
 
 			if isinstance(expr, (VALUE, FUNCTION)):
 				result.append(expr)
@@ -192,6 +206,7 @@ class ExpressionBuilder(object):
 		elif isinstance(expression, dict):
 
 			for _key, _expression in expression.items():
+
 				for parent, key, obj in self._walk(_expression):
 					yield (parent, key, obj)
 
@@ -208,13 +223,40 @@ class ExpressionBuilder(object):
 			raise NotImplementedError("Walk not implemented for '{}'.".format(expression))
 
 
+	async def _load_includes(self, expression):
+
+		if isinstance(expression, Expression):
+			return expression
+
+		if isinstance(expression, str):
+
+			if expression.startswith("<INCLUDE>"):
+				expression = (await self.parse(expression[9:], "<INCLUDE>"))[0]
+
+			return expression
+
+		if isinstance(expression, dict):
+
+			for _key, _value in expression.items():
+				expression[_key] = await self._load_includes(_value)
+
+			return expression
+
+		if isinstance(expression, (list, set)):
+
+			for _n, _value in enumerate(expression):
+				expression[_n] = await self._load_includes(_value)
+
+			return expression
+
+		return expression
+
+
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):
-		"""Include file referenced at node."""
+		"""Include will be done later using await."""
 
 		identifier = loader.construct_scalar(node)
-		declaration = self.read(identifier)
-		# Include can be only one expression
-		return self.parse(declaration, "<INCLUDE>")[0]
+		return "<INCLUDE>{}".format(identifier)
 
 
 	def _construct_config(self, loader: yaml.Loader, node: yaml.Node):
@@ -227,6 +269,7 @@ class ExpressionBuilder(object):
 		xclass = self.ExpressionClasses[node.tag[1:]]
 
 		location = node.start_mark
+
 		if self.Identifier is not None:
 			# https://github.com/yaml/pyyaml/blob/4c2e993321ad29a02a61c4818f3cef9229219003/lib3/yaml/reader.py
 			location = location.replace("<unicode string>", str(self.Identifier))
