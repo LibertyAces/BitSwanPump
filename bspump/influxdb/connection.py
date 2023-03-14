@@ -16,8 +16,9 @@ L = logging.getLogger(__name__)
 class InfluxDBConnection(Connection):
 	"""
 	Description: InfluxDBConnection serves to connect BSPump application with an InfluxDB database.
-	The InfluxDB server is accessed via URL, and the database is specified
-	using the `db` parameter in the configuration.
+	The InfluxDB server is accessed via URL, and the database is specified using the `db` parameter
+	in the configuration. Current version of InfluxDB defaultly works with timestamp in epoch nanoseconds.
+	If you want to use different epoch format, you must specify it using precision in configuration
 
 .. code:: python
 
@@ -31,7 +32,9 @@ class InfluxDBConnection(Connection):
 
 	url : http://localhost:8086/
 
-	db : mydb
+	db : name of db
+
+	precision : ns (epoch timestamp precision. Default is ns, but can have us,ms,s)
 
 	output_queue_max_size : 10
 
@@ -48,6 +51,7 @@ class InfluxDBConnection(Connection):
 	ConfigDefaults = {
 		"url": 'http://localhost:8086/',
 		'db': 'mydb',
+		'precision': 'ns',
 		'output_queue_max_size': 10,
 		'output_bucket_max_size': 1000 * 1000,
 		'timeout': 30,
@@ -76,7 +80,7 @@ class InfluxDBConnection(Connection):
 		if self.url[-1] != '/':
 			self.url += '/'
 
-		self._url_write = self.url + 'write?db=' + self.Config["db"]
+		self._url_write = self.url + 'write?db=' + self.Config["db"] + '&precision=' + self.Config["precision"]
 
 		self._output_bucket_max_size = int(self.Config["output_bucket_max_size"])
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
