@@ -51,6 +51,7 @@ class BSPumpApplication(asab.Application):
 
 			from .web import initialize_web
 			self.WebContainer = initialize_web(self.WebService.WebContainer)
+			self.ASABApiService.initialize_web()
 
 		# Initialize zookeeper container
 		if "zookeeper" in asab.Config.sections():
