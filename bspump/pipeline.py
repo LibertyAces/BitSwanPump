@@ -112,7 +112,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			}
 		)
 		self.MetricsDutyCycle = self.MetricsService.create_duty_cycle(
-			self.Loop,
 			"bspump.pipeline.dutycycle",
 			tags={'pipeline': self.Id},
 			init_values={
