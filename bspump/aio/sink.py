@@ -65,6 +65,7 @@ class AsyncSink(Sink):
 		if self.Task is not None:
 			t = self.Task
 			self.Task = None
+			t.cancel()
 			await t
 
 
