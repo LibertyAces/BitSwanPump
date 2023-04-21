@@ -65,6 +65,7 @@ setup(
 		'Source': 'https://github.com/LibertyAces/BitSwanPump'
 	},
 	install_requires=[
+		'pyasn1==0.4.8',  # version 0.5.0 is not compatible with pysnmp
 		'asab>=20.7.28',
 		'aiohttp>=3.6.2',
 		'requests>=2.24.0',
