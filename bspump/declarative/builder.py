@@ -1,6 +1,5 @@
 import logging
 import inspect
-import asyncio
 
 import yaml
 
@@ -18,6 +17,13 @@ from .expression.statement.selfexpr import SELF
 L = logging.getLogger(__name__)
 
 ###
+
+
+class IncludeNeeded(Exception):
+
+	def __init__(self, identifier):
+		super().__init__()
+		self.Identifier = identifier
 
 
 class ExpressionBuilder(object):
@@ -39,6 +45,9 @@ class ExpressionBuilder(object):
 		else:
 			self.IncludePaths = include_paths
 			assert isinstance(include_paths, list)
+
+		# Cache for loaded includes during the parsing
+		self.LoadedIncludes = {}
 
 		# Register the common expression module
 		from . import expression
@@ -80,7 +89,6 @@ class ExpressionBuilder(object):
 		:param source_name:
 		:return:
 		"""
-
 		self.Identifier = None
 
 		if isinstance(declaration, str) and declaration.startswith('---'):
@@ -121,43 +129,47 @@ class ExpressionBuilder(object):
 
 		loader.add_constructor("tag:yaml.org,2002:str", self._construct_scalar)
 
-		expressions = []
-		try:
-			# Build syntax trees for each expression
-			while loader.check_data():
-				expression = loader.get_data()
-				expression = await self._load_includes(expression)
+		while True:
 
-				# Run initialize for the expression and any instance inside
-				for parent, key, obj in self._walk(expression):
+			try:
+				expressions = []
 
-					if isinstance(obj, str) and obj.startswith("<INCLUDE>"):
-						obj = (await self.parse(obj[9:], "<INCLUDE>"))[0]
-						setattr(parent, key, obj)
+				# Build syntax trees for each expression
+				while loader.check_data():
+					expression = loader.get_data()
 
-					if not isinstance(obj, Expression):
-						continue
+					# Run initialize for the expression and any instance inside
+					for parent, key, obj in self._walk(expression):
 
-					if source_name != "<INCLUDE>":
+						if not isinstance(obj, Expression):
+							continue
 
-						if isinstance(obj, SELF):
-							# Implement a self-reference or Y-Combinator
-							obj.initialize(expression)
-						else:
-							obj.initialize()
+						if source_name != "<INCLUDE>":
 
-				expressions.append(expression)
+							if isinstance(obj, SELF):
+								# Implement a self-reference or Y-Combinator
+								obj.initialize(expression)
+							else:
+								obj.initialize()
 
-		except yaml.scanner.ScannerError as e:
-			raise DeclarationError("Syntax error in declaration: {}".format(e))
+					expressions.append(expression)
 
-		except yaml.constructor.ConstructorError as e:
-			raise DeclarationError("Unknown declarative expression: {}".format(e))
+			except yaml.scanner.ScannerError as e:
+				raise DeclarationError("Syntax error in declaration: {}".format(e))
 
-		finally:
-			loader.dispose()
+			except yaml.constructor.ConstructorError as e:
+				raise DeclarationError("Unknown declarative expression: {}".format(e))
 
-		return expressions
+			except IncludeNeeded as e:
+				# If include is needed, load its declaration to the loaded include cache
+				include_declaration = await self.read(e.Identifier)
+				# Include can be only one expression
+				self.LoadedIncludes[e.Identifier] = (await self.parse(include_declaration, "<INCLUDE>"))[0]
+				continue
+
+			finally:
+				loader.dispose()
+				return expressions
 
 
 	async def parse_ext(self, declaration, source_name=None):
@@ -223,40 +235,16 @@ class ExpressionBuilder(object):
 			raise NotImplementedError("Walk not implemented for '{}'.".format(expression))
 
 
-	async def _load_includes(self, expression):
-
-		if isinstance(expression, Expression):
-			return expression
-
-		if isinstance(expression, str):
-
-			if expression.startswith("<INCLUDE>"):
-				expression = (await self.parse(expression[9:], "<INCLUDE>"))[0]
-
-			return expression
-
-		if isinstance(expression, dict):
-
-			for _key, _value in expression.items():
-				expression[_key] = await self._load_includes(_value)
-
-			return expression
-
-		if isinstance(expression, (list, set)):
-
-			for _n, _value in enumerate(expression):
-				expression[_n] = await self._load_includes(_value)
-
-			return expression
-
-		return expression
-
-
 	def _construct_include(self, loader: yaml.Loader, node: yaml.Node):
-		"""Include will be done later using await."""
+		"""Include file referenced at node."""
 
 		identifier = loader.construct_scalar(node)
-		return "<INCLUDE>{}".format(identifier)
+
+		try:
+			return self.LoadedIncludes[identifier]
+
+		except KeyError:
+			raise IncludeNeeded(identifier)
 
 
 	def _construct_config(self, loader: yaml.Loader, node: yaml.Node):
@@ -293,6 +281,9 @@ class ExpressionBuilder(object):
 			obj.set_location(location)
 			obj.Node = node
 			return obj
+
+		except IncludeNeeded as e:
+			raise e
 
 		except TypeError as e:
 			raise DeclarationError("Type error {}\n{}\n".format(e, node.start_mark))
