@@ -95,41 +95,42 @@ class ExpressionBuilder(object):
 			pass
 
 		else:
+			self.Identifier = declaration
 			declaration = await self.read(declaration)
 
-		loader = yaml.Loader(declaration)
-		if source_name is not None:
-			loader.name = source_name
-
-		# Register the constructor for each registered expression class
-		for name in self.ExpressionClasses:
-			loader.add_constructor("!{}".format(name), self._constructor)
-
-		loader.add_constructor("!INCLUDE", self._construct_include)
-		loader.add_constructor("!CONFIG", self._construct_config)
-
-		loader.add_constructor("tag:yaml.org,2002:ui256", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:ui128", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:ui64", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:ui32", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:ui16", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:ui8", self._construct_scalar)
-
-		loader.add_constructor("tag:yaml.org,2002:si256", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:si128", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:si64", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:si32", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:si16", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:si8", self._construct_scalar)
-
-		loader.add_constructor("tag:yaml.org,2002:fp128", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:fp64", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:fp32", self._construct_scalar)
-		loader.add_constructor("tag:yaml.org,2002:fp16", self._construct_scalar)
-
-		loader.add_constructor("tag:yaml.org,2002:str", self._construct_scalar)
-
 		while True:
+
+			loader = yaml.Loader(declaration)
+			if source_name is not None:
+				loader.name = source_name
+
+			# Register the constructor for each registered expression class
+			for name in self.ExpressionClasses:
+				loader.add_constructor("!{}".format(name), self._constructor)
+
+			loader.add_constructor("!INCLUDE", self._construct_include)
+			loader.add_constructor("!CONFIG", self._construct_config)
+
+			loader.add_constructor("tag:yaml.org,2002:ui256", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:ui128", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:ui64", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:ui32", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:ui16", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:ui8", self._construct_scalar)
+
+			loader.add_constructor("tag:yaml.org,2002:si256", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:si128", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:si64", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:si32", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:si16", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:si8", self._construct_scalar)
+
+			loader.add_constructor("tag:yaml.org,2002:fp128", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:fp64", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:fp32", self._construct_scalar)
+			loader.add_constructor("tag:yaml.org,2002:fp16", self._construct_scalar)
+
+			loader.add_constructor("tag:yaml.org,2002:str", self._construct_scalar)
 
 			try:
 				expressions = []
@@ -163,13 +164,16 @@ class ExpressionBuilder(object):
 			except IncludeNeeded as e:
 				# If include is needed, load its declaration to the loaded include cache
 				include_declaration = await self.read(e.Identifier)
+				parsed_declaration = await self.parse(include_declaration, "<INCLUDE>")
+
 				# Include can be only one expression
-				self.LoadedIncludes[e.Identifier] = (await self.parse(include_declaration, "<INCLUDE>"))[0]
+				self.LoadedIncludes[e.Identifier] = parsed_declaration[0]
 				continue
 
 			finally:
 				loader.dispose()
-				return expressions
+
+			return expressions
 
 
 	async def parse_ext(self, declaration, source_name=None):
