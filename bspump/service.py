@@ -39,15 +39,33 @@ class BSPumpService(asab.Service):
 
 	def locate(self, address):
 		"""
-		locates pipeline, source or processor based on the adressed parameter
+		Locates a pipeline, source or processor based on the addressed parameter.
 
 		**Parameters**
 
 		address : str, ID
 				Address of an pipeline component.
+				1. To locate a Pipeline, use the pipeline ID.
+				2. To locate a Processor or a Sink, use the pipeline ID and the component ID separated by a dot, like 'pipelineId.componentId'.
+				3. To locate a Source, add '*' before ID of the source, like 'pipeline.*SourceId'.
 
-		|
+		**Returns**
 
+		Pipeline, Source or Processor object if it is found in the components list, otherwise None.
+
+		**Usage**
+
+		>>> pipeline = service.locate("SuperCoolPipeline")
+		>>> pipeline.Id
+		SuperCoolPipeline
+
+		>>> processor = service.locate("SuperCoolPipeline.PPrintProcessor")
+		>>> processor.Id
+		PPrintProcessor
+
+		>>> source = service.locate("SuperCoolPipeline.*MySource")
+		>>> source.Id
+		MySource
 		"""
 		if '.' in address:
 			p, t = address.split('.', 1)
