@@ -31,18 +31,18 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 	.. code:: python
 
-	   class MyPipeline(bspump.Pipeline):
+	class MyPipeline(bspump.Pipeline):
 
-			  def __init__(self, app, pipeline_id):
-					 super().__init__(app, pipeline_id)
-					 self.build(
+			def __init__(self, app, pipeline_id):
+					super().__init__(app, pipeline_id)
+					self.build(
 							[
-							   MySource(app, self),
-							   MyProcessor(app, self),
-							   MyProcessor2(app, self),
+							MySource(app, self),
+							MyProcessor(app, self),
+							MyProcessor2(app, self),
 							]
-							bspump.common.NullSink(app, self),
-					 )
+						bspump.common.NullSink(app, self),
+					)
 
 	"""
 
@@ -601,7 +601,9 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		:hint: The Generator can be added by using this method. It requires a depth parameter.
 
 		"""
-		# TODO: Check if possible: self.Processors[*][-1] is Sink, no processors after Sink, ...
+		for depth in self.Processors:
+			if len(depth) != 0 and isinstance(depth[-1], Sink):
+				L.exception("Cannot add {} after {}.".format(processor, depth[-1]))
 		# TODO: Check if fitting
 		self.Processors[-1].append(processor)
 
@@ -620,7 +622,7 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		processor_id : str
 				ID of a :meth:`processor <bspump.Processor()>`.
 
-		:return: Error when :meth:`processor <bspump.Processor()>` is not found.
+		:raises: Error when :meth:`processor <bspump.Processor()>` is not found.
 
 		"""
 		for depth in self.Processors:
