@@ -8,6 +8,7 @@ import aiohttp.web
 
 import asab
 import asab.web.rest
+from asab.web.auth import noauth
 
 from ..__version__ import __build__ as bspump_build
 from ..__version__ import __version__ as bspump_version
@@ -19,18 +20,21 @@ L = logging.getLogger(__name__)
 #
 
 
+@noauth
 async def pipelines(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
 	return asab.web.rest.json_response(request, svc.Pipelines)
 
 
+@noauth
 async def example_trigger(request):
 	app = request.app['app']
 	app.PubSub.publish("mymessage!")
 	return asab.web.rest.json_response(request, {'ok': 1})
 
 
+@noauth
 async def example_internal(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
@@ -39,12 +43,14 @@ async def example_internal(request):
 	return asab.web.rest.json_response(request, {'ok': 1})
 
 
+@noauth
 async def lookup_list(request):
 	app = request.app['app']
 	svc = app.get_service("bspump.PumpService")
 	return asab.web.rest.json_response(request, [lookup.rest_get() for lookup in svc.Lookups.values()])
 
 
+@noauth
 async def lookup_meta(request):
 	lookup_id = request.match_info.get('lookup_id')
 	app = request.app['app']
@@ -56,6 +62,7 @@ async def lookup_meta(request):
 	return asab.web.rest.json_response(request, lookup.rest_get())
 
 
+@noauth
 async def lookup(request):
 	lookup_id = request.match_info.get('lookup_id')
 	app = request.app['app']
@@ -86,6 +93,7 @@ async def lookup(request):
 		content_type="application/octet-stream")
 
 
+@noauth
 async def manifest(request):
 	'''
 	$ curl http://localhost:8080/manifest?pretty=true
