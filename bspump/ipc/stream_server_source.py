@@ -183,8 +183,8 @@ class StreamServerSource(Source):
 		# This allows to send a reply to a client
 		context['stream'] = stream
 
-		inbound = self.Protocol.handle(self, stream, context)
-		outbound = stream.outbound()
+		inbound = self.Pipeline.App.Loop.create_task(self.Protocol.handle(self, stream, context))
+		outbound = self.Pipeline.App.Loop.create_task(stream.outbound())
 		done, active = await asyncio.wait(
 			{inbound, outbound},
 			return_when=asyncio.FIRST_COMPLETED
