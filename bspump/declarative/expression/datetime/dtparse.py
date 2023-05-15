@@ -39,7 +39,7 @@ class DATETIME_PARSE(Expression):
 		self.SetCurrentYear = 'Y' in arg_flags
 
 		if arg_timezone is None:
-			timezone_from_config = asab.Config["declarations"]["local_timezone"]
+			timezone_from_config = asab.Config["declarations"]["timezone"]
 
 			if len(timezone_from_config) == 0:
 				self.Timezone = None

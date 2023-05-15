@@ -35,7 +35,7 @@ class DATETIME_GET(Expression):
 			raise ValueError("Invalid 'what' provided: '{}'".format(arg_what))
 
 		if arg_timezone is None:
-			timezone_from_config = asab.Config["declarations"]["local_timezone"]
+			timezone_from_config = asab.Config["declarations"]["timezone"]
 
 			if len(timezone_from_config) == 0:
 				self.Timezone = None
