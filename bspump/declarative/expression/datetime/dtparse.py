@@ -1,6 +1,8 @@
 import datetime
 import pytz
 
+import asab
+
 from ...abc import Expression
 from ..value.valueexpr import VALUE
 
@@ -37,7 +39,14 @@ class DATETIME_PARSE(Expression):
 		self.SetCurrentYear = 'Y' in arg_flags
 
 		if arg_timezone is None:
-			self.Timezone = None
+			timezone_from_config = asab.Config["declarations"]["local_timezone"]
+
+			if len(timezone_from_config) == 0:
+				self.Timezone = None
+
+			else:
+				self.Timezone = pytz.timezone(timezone_from_config)
+
 		else:
 			self.Timezone = pytz.timezone(arg_timezone)
 

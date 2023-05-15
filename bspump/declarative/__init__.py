@@ -1,3 +1,5 @@
+import asab
+
 from .processor import DeclarativeProcessor
 from .generator import DeclarativeGenerator
 from .timewindowanalyzer import DeclarativeTimeWindowAnalyzer
@@ -11,6 +13,14 @@ from .abc import Expression
 from .abc import SequenceExpression
 
 from .dot import declaration_to_dot, declaration_to_dot_stream
+
+
+asab.Config.add_defaults({
+	"declarations": {
+		"timezone": ""  # Default timezone to be used by DATETIME expression, such as Europe/Prague
+	}
+})
+
 
 __all__ = [
 	"DeclarativeProcessor",
