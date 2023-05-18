@@ -17,3 +17,9 @@ class PeriodicTrigger(Trigger):
 
 	async def on_timer(self):
 		self.fire()
+
+	@classmethod
+	def construct(cls, app, definition: dict):
+		id = definition.get('id')
+		interval = definition.get('args', {}).get('interval', 1.0)
+		return cls(app, id=id, interval=interval)

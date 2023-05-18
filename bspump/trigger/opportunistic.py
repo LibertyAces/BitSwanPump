@@ -38,6 +38,7 @@ class OpportunisticTrigger(Trigger):
 
 	@classmethod
 	def construct(cls, app, definition: dict):
-		newid = definition.get('id')
-		# TODO: fix
-		return cls(app, newid)
+		id = definition.get('id')
+		run_immediately = definition.get('args', {}).get('run_immediately', True)
+		chilldown_period = definition.get('args', {}).get('chilldown_period', 5)
+		return cls(app, id=id, run_immediately=run_immediately, chilldown_period=chilldown_period)
