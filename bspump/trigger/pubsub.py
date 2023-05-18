@@ -17,3 +17,10 @@ class PubSubTrigger(Trigger):
 
 	async def on_message(self, message_type):
 		self.fire()
+
+
+	@classmethod
+	def construct(cls, app, definition: dict):
+		id = definition.get('id')
+		message_types = definition.get('args', {}).get('message_types')
+		return cls(app, id=id, message_types=message_types)
