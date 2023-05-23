@@ -84,9 +84,9 @@ class DatagramSource(Source):
 		while True:
 			try:
 				await self.Pipeline.ready()
-				event = await self.Loop.sock_recv(self.Socket, self.MaxPacketSize)
+				event, peer = await self.Loop.sock_recvfrom(self.Socket, self.MaxPacketSize)
 				await self.Pipeline.ready()
-				await self.process(event)
+				await self.process(event, context={'datagram': peer})
 
 			except asyncio.CancelledError:
 				break
