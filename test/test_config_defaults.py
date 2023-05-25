@@ -12,12 +12,12 @@ class TestConfigDefaults(unittest.TestCase):
 		# For BSPump modules
 		for _, module in inspect.getmembers(sys.modules['bspump'], inspect.ismodule):
 			for _, klass in inspect.getmembers(module, inspect.isclass):
-				if issubclass(klass, asab.ConfigObject):
+				if issubclass(klass, asab.Configurable):
 					to_inspect.append(klass)
 
 		# For BSPump classes
 		for _, klass in inspect.getmembers(sys.modules['bspump'], inspect.isclass):
-			if issubclass(klass, asab.ConfigObject):
+			if issubclass(klass, asab.Configurable):
 				to_inspect.append(klass)
 
 		# Make unique

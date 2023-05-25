@@ -1,7 +1,7 @@
 import asab
 
 
-class ProcessorBase(asab.ConfigObject):
+class ProcessorBase(asab.Configurable):
 	"""
 	Description:
 

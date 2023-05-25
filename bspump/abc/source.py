@@ -7,7 +7,7 @@ import asab
 L = logging.getLogger(__name__)
 
 
-class Source(asab.ConfigObject):
+class Source(asab.Configurable):
 	"""
 	Description:
 

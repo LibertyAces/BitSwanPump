@@ -23,7 +23,7 @@ L = logging.getLogger(__name__)
 #
 
 
-class Pipeline(abc.ABC, asab.ConfigObject):
+class Pipeline(abc.ABC, asab.Configurable):
 	"""
 	Description: Pipeline is ...
 

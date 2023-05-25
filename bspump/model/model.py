@@ -10,7 +10,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class Model(asab.ConfigObject):
+class Model(asab.Configurable):
 	'''
 		Generic `Model` object. Loads trained model and parameters.
 

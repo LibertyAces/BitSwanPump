@@ -3,7 +3,7 @@ import abc
 import asab
 
 
-class LookupProviderABC(abc.ABC, asab.ConfigObject):
+class LookupProviderABC(abc.ABC, asab.Configurable):
 	"""
 	Description:
 

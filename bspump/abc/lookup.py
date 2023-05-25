@@ -15,7 +15,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class Lookup(asab.ConfigObject):
+class Lookup(asab.Configurable):
 	"""
 	Description:
 

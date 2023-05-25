@@ -55,7 +55,7 @@ def _is_kafka_component(component):
 	return False
 
 
-class KafkaTopicInitializer(asab.ConfigObject):
+class KafkaTopicInitializer(asab.Configurable):
 	"""
 	KafkaTopicInitializer reads topic configs from file or from Kafka sink/source configs,
 	checks if they exists and creates them if they don't.

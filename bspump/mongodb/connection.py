@@ -76,7 +76,7 @@ host=mongodb://host1,host2/?replicaSet=my-replicaset-name
 		self.Database = self.Config['database']
 
 
-# TODO: Generalize this function to ConfigObject
+# TODO: Generalize this function to Configurable
 def _get_int_or_none(config_obj, key):
 	v = config_obj.get(key)
 	if isinstance(v, str) and len(v) == 0:
@@ -88,7 +88,7 @@ def _get_int_or_none(config_obj, key):
 		return None
 
 
-# TODO: Generalize this function to ConfigObject
+# TODO: Generalize this function to Configurable
 def _get_str_or_none(config_obj, key):
 	v = config_obj.get(key)
 	if len(v) == 0:

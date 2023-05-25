@@ -15,7 +15,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class AnomalyStorage(asab.ConfigObject, collections.OrderedDict):
+class AnomalyStorage(asab.Configurable, collections.OrderedDict):
 	"""
 	AnomalyStorage serves to store anomaly objects (see AnomalyManager for details),
 	separated to "open" (anomalies that are not closed by status attribute in a symptom) and "closed".

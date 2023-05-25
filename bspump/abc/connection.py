@@ -1,8 +1,8 @@
 import abc
-from asab import ConfigObject
+from asab import Configurable
 
 
-class Connection(abc.ABC, ConfigObject):
+class Connection(abc.ABC, Configurable):
 	"""
 	Connection class is responsible for creating a connection between items or services within the infrastructure of BSPump.
 	Their main use is to create connection with the main components of BSPump: source, :meth:`processor <bspump.Processor()>` and sink.

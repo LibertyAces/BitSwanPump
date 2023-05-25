@@ -13,7 +13,7 @@ L = logging.getLogger(__name__)
 ###
 
 
-class Matrix(abc.ABC, asab.ConfigObject):
+class Matrix(abc.ABC, asab.Configurable):
 	'''
 		Generic `Matrix` object.
 
