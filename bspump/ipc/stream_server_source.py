@@ -7,6 +7,7 @@ from ..abc.source import Source
 
 from .stream import Stream, TLSStream
 from .protocol import LineSourceProtocol
+from .utils import parse_address
 
 #
 
@@ -16,10 +17,6 @@ L = logging.getLogger(__name__)
 
 
 class StreamServerSource(Source):
-	"""
-	Description:
-
-	"""
 
 	ConfigDefaults = {
 		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
@@ -32,10 +29,6 @@ class StreamServerSource(Source):
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None, protocol_class=LineSourceProtocol):
-		"""
-		Description:
-
-		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Address = self.Config['address']
@@ -56,21 +49,23 @@ class StreamServerSource(Source):
 
 
 	def start(self, loop):
-		"""
-		Description:
-
-		"""
 		if self.Task is not None:
 			return
 
 		# Create all required sockets, bind them to specific ports and start listening
 		for addrline in self.Address.split('\n'):
 			addrline = addrline.strip()
+			addr_family, addr = parse_address(self.Address)
+			
+			if addr_family == socket.AF_UNIX:
+				self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+				self.Socket.setblocking(False)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+				self.Socket.bind(self.Address)
 
-			if addrline.count(":") == 1:
-				host, port = self.Address.rsplit(":", maxsplit=1)
-
-				addrinfo = socket.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
+			else:  # Internet address family
+				addrinfo = socket.getaddrinfo(addr[0], addr[1], family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
 
 				for family, socktype, proto, canonname, sockaddr in addrinfo:
 					s = socket.socket(family, socktype, proto)
@@ -90,23 +85,10 @@ class StreamServerSource(Source):
 					self.AcceptingSockets.append(s)
 
 
-			else:
-				self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-				self.Socket.setblocking(False)
-				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-				self.Socket.bind(self.Address)
-
-				L.error("Invalid address specification: '{}'".format(addrline))
-
 		super().start(loop)
 
 
 	async def stop(self):
-		"""
-		Description:
-
-		"""
 		# Close client connections
 		for t in self.ConnectedClients:
 			t.cancel()
@@ -117,10 +99,6 @@ class StreamServerSource(Source):
 
 
 	async def main(self):
-		"""
-		Description:
-
-		"""
 		if len(self.AcceptingSockets) == 0:
 			L.error("No listening socket configured")
 			return
@@ -135,10 +113,6 @@ class StreamServerSource(Source):
 
 
 	async def _handle_accept(self, sock):
-		"""
-		Description:
-
-		"""
 		loop = self.Pipeline.App.Loop
 		server_addr = sock.getsockname()
 		while True:
@@ -150,10 +124,6 @@ class StreamServerSource(Source):
 
 
 	async def _client_connected_task(self, client_sock, client_addr, server_addr):
-		"""
-		Description:
-
-		"""
 		client_sock.setblocking(False)
 
 		if client_sock.family is socket.AF_INET:

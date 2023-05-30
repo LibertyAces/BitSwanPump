@@ -6,6 +6,7 @@ import re
 from ..abc.sink import Sink
 
 from .stream import Stream, TLSStream
+from .utils import parse_address
 
 #
 
@@ -15,10 +16,6 @@ L = logging.getLogger(__name__)
 
 
 class StreamClientSink(Sink):
-	"""
-	Description:
-
-	"""
 
 	ConfigDefaults = {
 		'address': '127.0.0.1 8888',  # IPv4, IPv6 or unix socket path
@@ -27,10 +24,6 @@ class StreamClientSink(Sink):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.OutboundQueue = asyncio.Queue()
 
@@ -49,10 +42,6 @@ class StreamClientSink(Sink):
 
 
 	async def _open_connection(self, message, pipeline):
-		"""
-		Description:
-
-		"""
 		# Connection is established
 		if self.Task is not None:
 			await self._close_connection(message, pipeline)
@@ -63,10 +52,6 @@ class StreamClientSink(Sink):
 
 
 	async def _close_connection(self, message, pipeline):
-		"""
-		Description:
-
-		"""
 		self.Pipeline.throttle(self, enable=True)
 		if self.Task is not None:
 			self.Task.cancel()
@@ -74,10 +59,6 @@ class StreamClientSink(Sink):
 
 
 	def _on_tick(self, event_name):
-		"""
-		Description:
-
-		"""
 		# Unthrottle the queue if needed
 		if self.OutboundQueue in self.Pipeline.get_throttles() and self.OutboundQueue.qsize() < self.OutboundQueueMaxSize:
 			self.Pipeline.throttle(self.OutboundQueue, False)
@@ -98,27 +79,18 @@ class StreamClientSink(Sink):
 
 
 	async def _client_connected_task(self):
-		"""
-		Description:
-
-		"""
 		loop = self.Pipeline.Loop
 
-		addr = self.Config['address']
+		address = self.Config['address']
+		addr_family, addr = parse_address(address)
 
-		if ' ' in addr:
-			addr = re.split(r"\s+", addr)
-		else:
-			# This line allows the (obsolete) format of IPv4 with ':'
-			# such as "0.0.0.0:8001"
-			addr = re.split(r"[:\s]", addr, 1)
+		if addr_family == socket.AF_UNIX:
+			# TODO: This, it is a simple connect() to AF_UNIX socket
+			raise NotImplementedError()
 
-		host = addr.pop(0).strip()
-		port = addr.pop(0).strip()
-		port = int(port)
+		addrinfo = await loop.getaddrinfo(addr[0], addr[1], family=socket.AF_UNSPEC, type=socket.SOCK_STREAM)
 
-		addrinfo = await loop.getaddrinfo(host, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM)
-
+		# Connect to the first usable addrinfo
 		client_sock = None
 		connection_exception = ''
 		for family, socktype, proto, canonname, sockaddr in addrinfo:
@@ -126,6 +98,7 @@ class StreamClientSink(Sink):
 			client_sock.setblocking(False)
 			try:
 				await loop.sock_connect(client_sock, sockaddr)
+				break
 			except Exception as e:
 				connection_exception = e
 				client_sock = None
@@ -175,10 +148,6 @@ class StreamClientSink(Sink):
 
 
 	async def _client_inbound_task(self, client_sock):
-		"""
-		Description:
-
-		"""
 		while True:
 			data = await self.Pipeline.Loop.sock_recv(client_sock, 4096)
 			if len(data) == 0:
@@ -189,10 +158,6 @@ class StreamClientSink(Sink):
 
 
 	def process(self, context, event):
-		"""
-		Description:
-
-		"""
 		self.OutboundQueue.put_nowait(event)
 
 		if self.OutboundQueue.qsize() == self.OutboundQueueMaxSize:
