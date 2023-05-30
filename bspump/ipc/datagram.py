@@ -81,6 +81,11 @@ class DatagramSource(Source):
 
 
 	async def _main_legacy(self):
+		'''
+		This method provides backward compatibility with Python 3.10 and lower.
+
+		This version doesn't send `datagram` in the context.
+		'''
 		loop = self.Pipeline.App.Loop
 		while True:
 			try:
