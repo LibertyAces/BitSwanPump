@@ -147,6 +147,8 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 
 		self._context = {}
 
+		self._is_processing = False  # used for announce when processing begins
+
 	def time(self):
 		"""
 		Returns correct time.
@@ -429,6 +431,10 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 			finally:
 				self.ProfilerCounter[processor.Id].add('duration', time.perf_counter() - t0)
 				self.ProfilerCounter[processor.Id].add('run', 1)
+
+				if not self._is_processing:
+					self.App.PubSub.publish("{}.processing!".format(self.__class__.__name__))
+					self._is_processing = True
 
 			if event is None:  # Event has been consumed on the way
 				if len(self.Processors) == (depth + 1):
