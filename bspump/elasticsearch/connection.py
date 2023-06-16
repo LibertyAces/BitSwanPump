@@ -20,7 +20,7 @@ class ElasticSearchBulk(object):
 
 	"""
 
-	def __init__(self, connection, index, max_size):
+	def __init__(self, connection, index, max_size, api_key=None):
 		"""
 		Initializes the variables
 
@@ -43,6 +43,7 @@ class ElasticSearchBulk(object):
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
+		self.ApiKey = api_key
 
 	def consume(self, data_feeder_generator):
 		"""
@@ -98,13 +99,15 @@ class ElasticSearchBulk(object):
 
 		url = url + '{}/_bulk?filter_path={}'.format(self.Index, self.FilterPath)
 
+		headers = {'Content-Type': 'application/json'}
+		if self.ApiKey != "":
+			headers['Authorization'] = 'ApiKey: {}'.format(self.ApiKey)
+
 		try:
 			resp = await session.post(
 				url,
 				data=self._get_data_from_items(),
-				headers={
-					'Content-Type': 'application/json'
-				},
+				headers=headers,
 				timeout=timeout,
 			)
 		except OSError as e:
@@ -147,16 +150,16 @@ class ElasticSearchBulk(object):
 
 				if counter < self.FailLogMaxSize:
 					L.error("Failed to insert document into ElasticSearch: '{}'".format(
-							str(response_item)
-							))
+						str(response_item)
+					))
 
 				counter += 1
 
 			# Show remaining log messages
 			if counter > self.FailLogMaxSize:
 				L.error("Failed to insert document into ElasticSearch: '{}' more insertions of documents failed".format(
-						counter - self.FailLogMaxSize
-						))
+					counter - self.FailLogMaxSize
+				))
 
 			# Insert metrics
 			self.InsertMetric.add("fail", counter)
@@ -167,9 +170,9 @@ class ElasticSearchBulk(object):
 			# The major ElasticSearch error occurred while inserting documents, response was not 200
 			self.InsertMetric.add("fail", items_count)
 			L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
-					resp.status,
-					resp_body
-					))
+				resp.status,
+				resp_body
+			))
 			return self.full_error_callback(self.Items, resp.status)
 
 		return True

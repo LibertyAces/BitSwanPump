@@ -49,6 +49,11 @@ class ElasticSearchSource(TriggerSource):
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Paging = paging
 
+		api_key = self.Config['api_key']
+		self.Headers = {'Content-Type': 'application/json'}
+		if api_key != '':
+			self.Headers['Authorization'] = 'ApiKey {}'.format(api_key)
+
 		if request_body is not None:
 			self.RequestBody = request_body
 		else:
@@ -79,9 +84,9 @@ class ElasticSearchSource(TriggerSource):
 			url = self.Connection.get_url() + path
 			async with self.Connection.get_session() as session:
 				async with session.post(
-						url,
-						json=request_body,
-						headers={'Content-Type': 'application/json'}
+					url=url,
+					json=request_body,
+					headers=self.Headers
 				) as response:
 
 					if response.status != 200:
@@ -171,9 +176,9 @@ class ElasticSearchAggsSource(TriggerSource):
 		url = self.Connection.get_url() + path
 		async with self.Connection.get_session() as session:
 			async with session.post(
-					url,
-					json=request_body,
-					headers={'Content-Type': 'application/json'}
+				url=url,
+				json=request_body,
+				headers=self.Headers
 			) as response:
 
 				if response.status != 200:

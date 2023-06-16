@@ -89,6 +89,12 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Key = self.Config['key']
 
+		# Create headers for requests
+		api_key = self.Config['api_key']
+		self.Headers = {'Content-Type': 'application/json'}
+		if api_key != "":
+			self.Headers["Authorization"] = "ApiKey {}".format(api_key)
+
 		self.Count = -1
 		if cache is None:
 			self.Cache = CacheDict()
@@ -110,9 +116,9 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 		async with self.Connection.get_session() as session:
 			async with session.post(
-					url,
-					json=request,
-					headers={'Content-Type': 'application/json'}
+				url=url,
+				json=request,
+				headers=self.Headers
 			) as response:
 
 				if response.status != 200:
@@ -196,9 +202,9 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 		async with self.Connection.get_session() as session:
 			async with session.post(
-					url,
-					json=request,
-					headers={'Content-Type': 'application/json'}
+				url=url,
+				json=request,
+				headers=self.Headers
 			) as response:
 
 				if response.status != 200:
