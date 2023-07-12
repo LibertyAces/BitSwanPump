@@ -165,7 +165,7 @@ class ITEM_optimized_CONTEXT_VALUE(ITEM):
 		return None
 
 	def __call__(self, context, event, *args, **kwargs):
-		return context.get(self.Key, self.Default)
+		return context.get(self.Key, self.DefaultValue)
 
 
 class ITEM_optimized_CONTEXT_VALUE_NESTED(ITEM):
