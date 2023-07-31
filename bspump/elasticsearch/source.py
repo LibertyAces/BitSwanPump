@@ -1,4 +1,7 @@
 import logging
+import ssl
+
+from asab.tls import SSLContextBuilder
 
 from ..abc.source import TriggerSource
 
@@ -11,6 +14,8 @@ class ElasticSearchSource(TriggerSource):
 
 	"""
 	ConfigDefaults = {
+		'api_key': '',
+		'cafile': '',
 		'index': 'index-*',
 		'scroll_timeout': '1m',
 
@@ -49,10 +54,17 @@ class ElasticSearchSource(TriggerSource):
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Paging = paging
 
-		api_key = self.Config['api_key']
+		# Get api_key
+		self.ApiKey = self.Config['api_key']
+
+		# Create auth headers for requests
 		self.Headers = {'Content-Type': 'application/json'}
-		if api_key != '':
-			self.Headers['Authorization'] = 'ApiKey {}'.format(api_key)
+		if self.ApiKey != '':
+			self.Headers['Authorization'] = 'ApiKey {}'.format(self.ApiKey)
+
+		# Prepare data to build SSL
+		cafile = self.Config['cafile']
+		self.SSLContextBuilder = SSLContextBuilder(cafile)
 
 		if request_body is not None:
 			self.RequestBody = request_body
@@ -82,11 +94,20 @@ class ElasticSearchSource(TriggerSource):
 				request_body = {"scroll": self.ScrollTimeout, "scroll_id": scroll_id}
 
 			url = self.Connection.get_url() + path
+
+			if url.startswith('https://'):
+				ssl_context = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+			else:
+				ssl_context = None
+
+			print(ssl_context)
+
 			async with self.Connection.get_session() as session:
 				async with session.post(
 					url=url,
 					json=request_body,
-					headers=self.Headers
+					headers=self.Headers,
+					ssl=ssl_context,
 				) as response:
 
 					if response.status != 200:
@@ -164,6 +185,18 @@ class ElasticSearchAggsSource(TriggerSource):
 				}
 			}
 
+		# Get api_key
+		self.ApiKey = self.Config['api_key']
+
+		# Create auth headers for requests
+		self.Headers = {'Content-Type': 'application/json'}
+		if self.ApiKey != '':
+			self.Headers['Authorization'] = 'ApiKey {}'.format(self.ApiKey)
+
+		# Prepare data to build SSL
+		cafile = self.Config['cafile']
+		self.SSLContextBuilder = SSLContextBuilder(cafile)
+
 	async def cycle(self):
 		"""
 		Sets request body and path to create query call.
@@ -173,12 +206,20 @@ class ElasticSearchAggsSource(TriggerSource):
 		"""
 		request_body = self.RequestBody
 		path = '{}/_search?'.format(self.Index)
+
 		url = self.Connection.get_url() + path
+
+		if url.startswith('https://'):
+			ssl_context = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		else:
+			ssl_context = None
+
 		async with self.Connection.get_session() as session:
 			async with session.post(
 				url=url,
 				json=request_body,
-				headers=self.Headers
+				headers=self.Headers,
+				ssl=ssl_context,
 			) as response:
 
 				if response.status != 200:

@@ -4,9 +4,10 @@ import random
 import re
 
 import aiohttp
+import ssl
 
 from ..abc.connection import Connection
-
+from asab.tls import SSLContextBuilder
 #
 
 L = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ class ElasticSearchBulk(object):
 
 	"""
 
-	def __init__(self, connection, index, max_size, api_key=None):
+	def __init__(self, connection, index, max_size, api_key=None, cafile=None):
 		"""
 		Initializes the variables
 
@@ -43,8 +44,18 @@ class ElasticSearchBulk(object):
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
+		
+		# Get api_key
 		self.ApiKey = api_key
 
+		# Create auth headers for requests
+		self.Headers = {'Content-Type': 'application/json'}
+		if self.ApiKey != '':
+			self.Headers['Authorization'] = 'ApiKey {}'.format(self.ApiKey)
+
+		# Prepare data to build SSL
+		self.SSLContextBuilder = SSLContextBuilder(cafile)
+		
 	def consume(self, data_feeder_generator):
 		"""
 		Appends all items in data_feeder_generator to Items list. Consumer also resets Aging and Capacity.
@@ -99,15 +110,17 @@ class ElasticSearchBulk(object):
 
 		url = url + '{}/_bulk?filter_path={}'.format(self.Index, self.FilterPath)
 
-		headers = {'Content-Type': 'application/json'}
-		if self.ApiKey != "":
-			headers['Authorization'] = 'ApiKey: {}'.format(self.ApiKey)
+		if url.startswith('https://'):
+			ssl_context = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		else:
+			ssl_context = None
 
 		try:
 			resp = await session.post(
-				url,
+				url=url,
 				data=self._get_data_from_items(),
-				headers=headers,
+				headers=self.Headers,
+				ssl=ssl_context,
 				timeout=timeout,
 			)
 		except OSError as e:
@@ -229,6 +242,12 @@ class ElasticSearchConnection(Connection):
 	password : 'string', default = ' '
 			Used when authentication is required
 
+	api_key : 'string', default = ' '
+			Used when authentication is required (instead of username and password)
+
+	cafile : 'string', default = ' '
+			Used for authentication when ssl layer is required
+
 	loader_per_url : int, default = 4
 			Number of parallel loaders per URL.
 
@@ -256,6 +275,8 @@ class ElasticSearchConnection(Connection):
 		# Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
 		'username': '',
 		'password': '',
+		'api_key': '',
+		'cafile': '',
 		'loader_per_url': 4,  # Number of parallel loaders per URL
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 12 * 1024 * 1024,
@@ -292,6 +313,18 @@ class ElasticSearchConnection(Connection):
 			self._auth = None
 		else:
 			self._auth = aiohttp.BasicAuth(login=username, password=password)
+
+		# Get api_key
+		self.ApiKey = self.Config.get('api_key')
+
+		# Create auth headers for requests
+		self.Headers = {'Content-Type': 'application/json'}
+		if self.ApiKey != '':
+			self.Headers['Authorization'] = 'ApiKey {}'.format(self.ApiKey)
+
+		# Prepare data to build SSL
+		cafile = self.Config.get('cafile')
+		self.SSLContextBuilder = SSLContextBuilder(cafile)
 
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
@@ -505,9 +538,18 @@ class ElasticSearchConnection(Connection):
 		"""
 		async with self.get_session() as session:
 
+			if url.startswith('https://'):
+				ssl_context = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+			else:
+				ssl_context = None
+
 			# Preflight check
 			try:
-				async with session.get(url + "_cluster/health") as resp:
+				async with session.get(
+					url + "_cluster/health", 
+					headers=self.Headers, 
+					ssl=ssl_context,
+				) as resp:
 					await resp.json()
 					if resp.status != 200:
 						L.error("Cluster is not ready", struct_data={'status': resp.status})

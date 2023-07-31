@@ -1,7 +1,9 @@
 import json
 import logging
-
 import requests
+import ssl
+
+from asab.tls import SSLContextBuilder
 
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
@@ -54,6 +56,8 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 
 	ConfigDefaults = {
+		'api_key': '',
+		'cafile': '',
 		'index': '',  # Specify an index
 		'key': '',  # Specify field name to match
 		'scroll_timeout': '1m',
@@ -89,11 +93,17 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Key = self.Config['key']
 
-		# Create headers for requests
-		api_key = self.Config['api_key']
+		# Get api_key
+		self.ApiKey = self.Config['api_key']
+
+		# Create auth headers for requests
 		self.Headers = {'Content-Type': 'application/json'}
-		if api_key != "":
-			self.Headers["Authorization"] = "ApiKey {}".format(api_key)
+		if self.ApiKey != '':
+			self.Headers['Authorization'] = 'ApiKey {}'.format(self.ApiKey)
+
+		# Prepare data to build SSL
+		cafile = self.Config['cafile']
+		self.SSLContextBuilder = SSLContextBuilder(cafile)
 
 		self.Count = -1
 		if cache is None:
@@ -114,11 +124,17 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		}
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 
+		if url.startswith('https://'):
+			ssl_context = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		else:
+			ssl_context = None
+
 		async with self.Connection.get_session() as session:
 			async with session.post(
 				url=url,
 				json=request,
-				headers=self.Headers
+				headers=self.Headers,
+				ssl=ssl_context,
 			) as response:
 
 				if response.status != 200:
@@ -200,11 +216,17 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 
+		if url.startswith('https://'):
+			ssl_context = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		else:
+			ssl_context = None
+
 		async with self.Connection.get_session() as session:
 			async with session.post(
 				url=url,
 				json=request,
-				headers=self.Headers
+				headers=self.Headers,
+				ssl=ssl_context
 			) as response:
 
 				if response.status != 200:
