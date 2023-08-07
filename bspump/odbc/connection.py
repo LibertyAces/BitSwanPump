@@ -25,6 +25,8 @@ class ODBCConnection(Connection):
 		'reconnect_delay': 5.0,
 		'output_queue_max_size': 10,
 		'max_bulk_size': 2,
+		'connection_minsize': 10,
+		'connection_maxsize': 10,
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -45,6 +47,9 @@ class ODBCConnection(Connection):
 		self._reconnect_delay = self.Config['reconnect_delay']
 		self._output_queue_max_size = self.Config['output_queue_max_size']
 		self._max_bulk_size = int(self.Config['max_bulk_size'])
+
+		self._connection_minsize = int(self.Config["connection_minsize"])
+		self._connection_maxsize = int(self.Config["connection_maxsize"])
 
 		self._conn_future = None
 		self._connection_request = False
@@ -140,6 +145,8 @@ class ODBCConnection(Connection):
 			async with aioodbc.create_pool(
 				connect_timeout=self._connect_timeout,
 				loop=self.Loop,
+				minsize=self._connection_minsize,
+				maxsize=self._connection_maxsize,
 				**kwargs
 			) as pool:
 
