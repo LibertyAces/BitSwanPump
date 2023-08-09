@@ -31,7 +31,7 @@ class ElasticSearchBulk(object):
 		'cafile': '',
 	}
 
-	def __init__(self, connection, index, max_size, api_key=None, cafile=None):
+	def __init__(self, connection, index, max_size):
 		"""
 		Initializes the variables
 
