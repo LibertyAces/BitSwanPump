@@ -1,9 +1,10 @@
 import json
 import logging
 import requests
+import aiohttp
 import ssl
 
-from asab.tls import SSLContextBuilder
+import asab
 
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
@@ -56,6 +57,9 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 
 	ConfigDefaults = {
+		'url': '',
+		'username': '',
+		'password': '',
 		'api_key': '',
 		'cafile': '',
 		'index': '',  # Specify an index
@@ -93,17 +97,38 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Key = self.Config['key']
 
+		# Get username / password
+		username = self.Config.get('username')
+		password = self.Config.get('password')
+
 		# Get api_key
-		self.ApiKey = self.Config['api_key']
+		api_key = self.Config.get('api_key')
 
-		# Create auth headers for requests
-		self.Headers = {'Content-Type': 'application/json'}
-		if self.ApiKey != '':
-			self.Headers['Authorization'] = 'ApiKey {}'.format(self.ApiKey)
+		# Check configurations
+		if username != '' and api_key != '':
+			raise ValueError("Both username and API key can't be specified. Please choose one option.")
 
-		# Prepare data to build SSL
-		cafile = self.Config['cafile']
-		self.SSLContextBuilder = SSLContextBuilder(cafile)
+		# Build headers
+		if username != '':
+			self._auth = aiohttp.BasicAuth(username, password)
+			L.log(asab.LOG_NOTICE, 'Building basic authorization with username/password')
+			self.Headers = {
+				'Content-Type': 'application/json',
+			}
+		elif api_key != '':
+			self._auth = None
+			self.Headers = {
+				'Content-Type': 'application/json',
+				"Authorization": 'ApiKey {}'.format(api_key)
+			}
+			L.log(asab.LOG_NOTICE, 'Building headers with api_key')
+		else:
+			self.Headers = None
+
+		# Build SSL context
+		cafile = self.Config.get('cafile')
+		if cafile != '':
+			self.SSLContext = ssl.create_default_context(cafile=cafile)
 
 		self.Count = -1
 		if cache is None:
@@ -125,7 +150,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 
 		if url.startswith('https://'):
-			ssl_context = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+			ssl_context = self.SSLContext
 		else:
 			ssl_context = None
 
@@ -217,7 +242,7 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 
 		if url.startswith('https://'):
-			ssl_context = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+			ssl_context = self.SSLContext
 		else:
 			ssl_context = None
 
