@@ -9,6 +9,7 @@ import asab
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
+from .auth_builder import AuthBuilder
 
 
 L = logging.getLogger(__name__)
@@ -97,38 +98,16 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Key = self.Config['key']
 
-		# Get username / password
+		# Get credentials
 		username = self.Config.get('username')
 		password = self.Config.get('password')
-
-		# Get api_key
 		api_key = self.Config.get('api_key')
-
-		# Check configurations
-		if username != '' and api_key != '':
-			raise ValueError("Both username and API key can't be specified. Please choose one option.")
-
-		# Build headers
-		if username != '':
-			self._auth = aiohttp.BasicAuth(username, password)
-			L.log(asab.LOG_NOTICE, 'Building basic authorization with username/password')
-			self.Headers = {
-				'Content-Type': 'application/json',
-			}
-		elif api_key != '':
-			self._auth = None
-			self.Headers = {
-				'Content-Type': 'application/json',
-				"Authorization": 'ApiKey {}'.format(api_key)
-			}
-			L.log(asab.LOG_NOTICE, 'Building headers with api_key')
-		else:
-			self.Headers = None
-
-		# Build SSL context
 		cafile = self.Config.get('cafile')
-		if cafile != '':
-			self.SSLContext = ssl.create_default_context(cafile=cafile)
+
+		# Build headers and SSL context
+		self.AuthBuiler = AuthBuilder(username, password, api_key, cafile)
+		self.Headers, self._auth = self.AuthBuiler.build_headers()
+		self.SSLContext = self.AuthBuiler.build_ssl_context()
 
 		self.Count = -1
 		if cache is None:
