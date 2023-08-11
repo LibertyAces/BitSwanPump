@@ -119,10 +119,7 @@ class ElasticSearchBulk(object):
 
 		url = url + '{}/_bulk?filter_path={}'.format(self.Index, self.FilterPath)
 
-		if url.startswith('https://'):
-			ssl_context = self.SSLContext
-		else:
-			ssl_context = None
+		ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
 
 		try:
 			resp = await session.post(
@@ -538,10 +535,7 @@ class ElasticSearchConnection(Connection):
 		"""
 		async with self.get_session() as session:
 
-			if url.startswith('https://'):
-				ssl_context = self.SSLContext
-			else:
-				ssl_context = None
+			ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
 
 			# Preflight check
 			try:

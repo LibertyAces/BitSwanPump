@@ -54,3 +54,12 @@ class AuthBuilder:
 			return None
 		
 		return self.SSLContext
+
+
+	def apply_ssl_context(self, url):
+		if url.startswith('https://'):
+			ssl_context = self.SSLContext
+		else:
+			ssl_context = None
+
+		return ssl_context

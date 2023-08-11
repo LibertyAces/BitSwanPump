@@ -96,10 +96,7 @@ class ElasticSearchSource(TriggerSource):
 
 			url = self.Connection.get_url() + path
 
-			if url.startswith('https://'):
-				ssl_context = self.SSLContext
-			else:
-				ssl_context = None
+			ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
 
 			async with self.Connection.get_session() as session:
 				async with session.post(
@@ -212,10 +209,7 @@ class ElasticSearchAggsSource(TriggerSource):
 
 		url = self.Connection.get_url() + path
 
-		if url.startswith('https://'):
-			ssl_context = self.SSLContext
-		else:
-			ssl_context = None
+		ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
 
 		async with self.Connection.get_session() as session:
 			async with session.post(
