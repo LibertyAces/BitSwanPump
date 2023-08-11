@@ -1,10 +1,6 @@
 import json
 import logging
 import requests
-import aiohttp
-import ssl
-
-import asab
 
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin

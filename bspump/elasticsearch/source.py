@@ -1,5 +1,4 @@
 import logging
-import aiohttp
 
 from ..abc.source import TriggerSource
 from .auth_builder import AuthBuilder
