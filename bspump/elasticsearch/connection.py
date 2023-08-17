@@ -3,11 +3,11 @@ import logging
 import random
 import re
 import ssl
-
 import aiohttp
 
+import asab
+
 from ..abc.connection import Connection
-from .auth_builder import AuthBuilder
 from asab.tls import SSLContextBuilder
 
 #
@@ -51,16 +51,15 @@ class ElasticSearchBulk(object):
 		username = self.Config.get('username')
 		password = self.Config.get('password')
 		api_key = self.Config.get('api_key')
-		cafile = self.Config.get('cafile')
 
-		# Build headers and SSL context
-		self.AuthBuiler = AuthBuilder(username, password, api_key, cafile)
-		self.Headers, self._auth = self.AuthBuiler.build_headers()
+		# Build headers
+		self.Headers, self._auth = build_headers(username, password, api_key)
 
+		# Build ssl context
 		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
 		self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
 
-		
+
 	def consume(self, data_feeder_generator):
 		"""
 		Appends all items in data_feeder_generator to Items list. Consumer also resets Aging and Capacity.
@@ -308,15 +307,14 @@ class ElasticSearchConnection(Connection):
 		username = self.Config.get('username')
 		password = self.Config.get('password')
 		api_key = self.Config.get('api_key')
-		cafile = self.Config.get('cafile')
 
-		# Build headers and SSL context
-		self.AuthBuiler = AuthBuilder(username, password, api_key, cafile)
-		self.Headers, self._auth = self.AuthBuiler.build_headers()
+		# Build headers
+		self.Headers, self._auth = build_headers(username, password, api_key)
 
+		# Build ssl context
 		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
 		self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
-		
+
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
 		# for url in self.Config['url'].split(';'):
@@ -580,3 +578,30 @@ class ElasticSearchConnection(Connection):
 
 				# Make sure the memory is emptied
 				bulk.Items = []
+
+
+def build_headers(username, password, api_key):
+
+	# Check configurations
+	if username != '' and username is not None and api_key != '' and api_key is not None:
+		raise ValueError("Both username and API key can't be specified. Please choose one option.")
+
+	# Build headers
+	if username != '':
+		auth = aiohttp.BasicAuth(username, password)
+		L.log(asab.LOG_NOTICE, 'Building basic authorization with username/password')
+		Headers = {
+			'Content-Type': 'application/json',
+		}
+	elif api_key != '':
+		auth = None
+		Headers = {
+			'Content-Type': 'application/json',
+			"Authorization": 'ApiKey {}'.format(api_key)
+		}
+		L.log(asab.LOG_NOTICE, 'Building headers with api_key')
+	else:
+		auth = None
+		Headers = None
+
+	return Headers, auth
