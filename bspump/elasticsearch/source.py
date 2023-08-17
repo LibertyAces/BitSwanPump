@@ -1,7 +1,6 @@
 import logging
 
 from ..abc.source import TriggerSource
-from .auth_builder import AuthBuilder
 
 L = logging.getLogger(__name__)
 
@@ -12,11 +11,6 @@ class ElasticSearchSource(TriggerSource):
 
 	"""
 	ConfigDefaults = {
-		'url': '',
-		'username': '',
-		'password': '',
-		'api_key': '',
-		'cafile': '',
 		'index': 'index-*',
 		'scroll_timeout': '1m',
 
@@ -55,17 +49,6 @@ class ElasticSearchSource(TriggerSource):
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Paging = paging
 
-		# Get credentials
-		username = self.Config.get('username')
-		password = self.Config.get('password')
-		api_key = self.Config.get('api_key')
-		cafile = self.Config.get('cafile')
-
-		# Build headers and SSL context
-		self.AuthBuiler = AuthBuilder(username, password, api_key, cafile)
-		self.Headers, self._auth = self.AuthBuiler.build_headers()
-		self.SSLContext = self.AuthBuiler.build_ssl_context()
-
 		if request_body is not None:
 			self.RequestBody = request_body
 		else:
@@ -95,14 +78,12 @@ class ElasticSearchSource(TriggerSource):
 
 			url = self.Connection.get_url() + path
 
-			ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
-
 			async with self.Connection.get_session() as session:
 				async with session.post(
 					url=url,
 					json=request_body,
-					headers=self.Headers,
-					ssl=ssl_context,
+					headers=self.Connection.Headers,
+					ssl=self.Connection.SSLContext,
 				) as response:
 
 					if response.status != 200:
@@ -134,11 +115,6 @@ class ElasticSearchAggsSource(TriggerSource):
 
 	"""
 	ConfigDefaults = {
-		'url': '',
-		'username': '',
-		'password': '',
-		'api_key': '',
-		'cafile': '',
 		'index': 'index-*',
 	}
 
@@ -185,17 +161,6 @@ class ElasticSearchAggsSource(TriggerSource):
 				}
 			}
 
-		# Get credentials
-		username = self.Config.get('username')
-		password = self.Config.get('password')
-		api_key = self.Config.get('api_key')
-		cafile = self.Config.get('cafile')
-
-		# Build headers and SSL context
-		self.AuthBuiler = AuthBuilder(username, password, api_key, cafile)
-		self.Headers, self._auth = self.AuthBuiler.build_headers()
-		self.SSLContext = self.AuthBuiler.build_ssl_context()
-
 	async def cycle(self):
 		"""
 		Sets request body and path to create query call.
@@ -208,14 +173,12 @@ class ElasticSearchAggsSource(TriggerSource):
 
 		url = self.Connection.get_url() + path
 
-		ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
-
 		async with self.Connection.get_session() as session:
 			async with session.post(
 				url=url,
 				json=request_body,
-				headers=self.Headers,
-				ssl=ssl_context,
+				headers=self.Connection.Headers,
+				ssl=self.Connection.SSLContext,
 			) as response:
 
 				if response.status != 200:

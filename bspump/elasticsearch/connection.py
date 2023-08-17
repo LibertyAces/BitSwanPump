@@ -2,11 +2,13 @@ import asyncio
 import logging
 import random
 import re
+import ssl
 
 import aiohttp
 
 from ..abc.connection import Connection
 from .auth_builder import AuthBuilder
+from asab.tls import SSLContextBuilder
 
 #
 
@@ -20,14 +22,6 @@ class ElasticSearchBulk(object):
 	Description:
 
 	"""
-
-	ConfigDefaults = {
-		'url': '',
-		'username': '',
-		'password': '',
-		'api_key': '',
-		'cafile': '',
-	}
 
 	def __init__(self, connection, index, max_size):
 		"""
@@ -62,7 +56,9 @@ class ElasticSearchBulk(object):
 		# Build headers and SSL context
 		self.AuthBuiler = AuthBuilder(username, password, api_key, cafile)
 		self.Headers, self._auth = self.AuthBuiler.build_headers()
-		self.SSLContext = self.AuthBuiler.build_ssl_context()
+
+		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
+		self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
 
 		
 	def consume(self, data_feeder_generator):
@@ -119,14 +115,12 @@ class ElasticSearchBulk(object):
 
 		url = url + '{}/_bulk?filter_path={}'.format(self.Index, self.FilterPath)
 
-		ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
-
 		try:
 			resp = await session.post(
 				url=url,
 				data=self._get_data_from_items(),
-				headers=self.Headers,
-				ssl=ssl_context,
+				headers=self.Headers, 
+				ssl=self.SSLContext,
 				timeout=timeout,
 			)
 		except OSError as e:
@@ -281,8 +275,6 @@ class ElasticSearchConnection(Connection):
 		# Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
 		'username': '',
 		'password': '',
-		'api_key': '',
-		'cafile': '',
 		'loader_per_url': 4,  # Number of parallel loaders per URL
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 12 * 1024 * 1024,
@@ -321,8 +313,10 @@ class ElasticSearchConnection(Connection):
 		# Build headers and SSL context
 		self.AuthBuiler = AuthBuilder(username, password, api_key, cafile)
 		self.Headers, self._auth = self.AuthBuiler.build_headers()
-		self.SSLContext = self.AuthBuiler.build_ssl_context()
 
+		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
+		self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
 		# for url in self.Config['url'].split(';'):
@@ -535,14 +529,12 @@ class ElasticSearchConnection(Connection):
 		"""
 		async with self.get_session() as session:
 
-			ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
-
 			# Preflight check
 			try:
 				async with session.get(
 					url + "_cluster/health", 
 					headers=self.Headers, 
-					ssl=ssl_context,
+					ssl=self.SSLContext,
 				) as resp:
 					await resp.json()
 					if resp.status != 200:

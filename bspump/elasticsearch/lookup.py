@@ -5,7 +5,6 @@ import requests
 from ..abc.lookup import MappingLookup
 from ..abc.lookup import AsyncLookupMixin
 from ..cache import CacheDict
-from .auth_builder import AuthBuilder
 
 
 L = logging.getLogger(__name__)
@@ -54,11 +53,6 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 
 	ConfigDefaults = {
-		'url': '',
-		'username': '',
-		'password': '',
-		'api_key': '',
-		'cafile': '',
 		'index': '',  # Specify an index
 		'key': '',  # Specify field name to match
 		'scroll_timeout': '1m',
@@ -94,17 +88,6 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Key = self.Config['key']
 
-		# Get credentials
-		username = self.Config.get('username')
-		password = self.Config.get('password')
-		api_key = self.Config.get('api_key')
-		cafile = self.Config.get('cafile')
-
-		# Build headers and SSL context
-		self.AuthBuiler = AuthBuilder(username, password, api_key, cafile)
-		self.Headers, self._auth = self.AuthBuiler.build_headers()
-		self.SSLContext = self.AuthBuiler.build_ssl_context()
-
 		self.Count = -1
 		if cache is None:
 			self.Cache = CacheDict()
@@ -124,14 +107,12 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 		}
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 
-		ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
-
 		async with self.Connection.get_session() as session:
 			async with session.post(
 				url=url,
 				json=request,
-				headers=self.Headers,
-				ssl=ssl_context,
+				headers=self.Connection.Headers,
+				ssl=self.Connection.SSLContext,
 			) as response:
 
 				if response.status != 200:
@@ -213,14 +194,12 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 		url = self.Connection.get_url() + '{}/{}'.format(self.Index, prefix)
 
-		ssl_context = self.AuthBuiler.apply_ssl_context(url=url)
-
 		async with self.Connection.get_session() as session:
 			async with session.post(
 				url=url,
 				json=request,
-				headers=self.Headers,
-				ssl=ssl_context
+				headers=self.Connection.Headers,
+				ssl=self.Connection.SSLContext,
 			) as response:
 
 				if response.status != 200:
