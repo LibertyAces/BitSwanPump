@@ -51,13 +51,17 @@ class ElasticSearchBulk(object):
 		username = self.Config.get('username')
 		password = self.Config.get('password')
 		api_key = self.Config.get('api_key')
+		url = self.Config.get('url')
 
 		# Build headers
 		self.Headers, self._auth = build_headers(username, password, api_key)
 
 		# Build ssl context
 		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
-		self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		if url.startswith('https://'):
+			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		else:
+			self.SSLContext = None
 
 
 	def consume(self, data_feeder_generator):
@@ -307,13 +311,17 @@ class ElasticSearchConnection(Connection):
 		username = self.Config.get('username')
 		password = self.Config.get('password')
 		api_key = self.Config.get('api_key')
+		url = self.Config.get('url')
 
 		# Build headers
 		self.Headers, self._auth = build_headers(username, password, api_key)
 
 		# Build ssl context
 		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
-		self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		if url.startswith('https://'):
+			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		else:
+			self.SSLContext = None
 
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
