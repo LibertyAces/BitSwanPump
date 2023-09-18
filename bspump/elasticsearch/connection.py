@@ -2,10 +2,13 @@ import asyncio
 import logging
 import random
 import re
-
+import ssl
 import aiohttp
 
+import asab
+
 from ..abc.connection import Connection
+from asab.tls import SSLContextBuilder
 
 #
 
@@ -43,6 +46,23 @@ class ElasticSearchBulk(object):
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
+		
+		# Get credentials
+		username = self.Config.get('username')
+		password = self.Config.get('password')
+		api_key = self.Config.get('api_key')
+		url = self.Config.get('url')
+
+		# Build headers
+		self.Headers, self._auth = build_headers(username, password, api_key)
+
+		# Build ssl context
+		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
+		if url.startswith('https://'):
+			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		else:
+			self.SSLContext = None
+
 
 	def consume(self, data_feeder_generator):
 		"""
@@ -100,11 +120,10 @@ class ElasticSearchBulk(object):
 
 		try:
 			resp = await session.post(
-				url,
+				url=url,
 				data=self._get_data_from_items(),
-				headers={
-					'Content-Type': 'application/json'
-				},
+				headers=self.Headers, 
+				ssl=self.SSLContext,
 				timeout=timeout,
 			)
 		except OSError as e:
@@ -147,16 +166,16 @@ class ElasticSearchBulk(object):
 
 				if counter < self.FailLogMaxSize:
 					L.error("Failed to insert document into ElasticSearch: '{}'".format(
-							str(response_item)
-							))
+						str(response_item)
+					))
 
 				counter += 1
 
 			# Show remaining log messages
 			if counter > self.FailLogMaxSize:
 				L.error("Failed to insert document into ElasticSearch: '{}' more insertions of documents failed".format(
-						counter - self.FailLogMaxSize
-						))
+					counter - self.FailLogMaxSize
+				))
 
 			# Insert metrics
 			self.InsertMetric.add("fail", counter)
@@ -167,9 +186,9 @@ class ElasticSearchBulk(object):
 			# The major ElasticSearch error occurred while inserting documents, response was not 200
 			self.InsertMetric.add("fail", items_count)
 			L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
-					resp.status,
-					resp_body
-					))
+				resp.status,
+				resp_body
+			))
 			return self.full_error_callback(self.Items, resp.status)
 
 		return True
@@ -225,6 +244,12 @@ class ElasticSearchConnection(Connection):
 
 	password : 'string', default = ' '
 			Used when authentication is required
+
+	api_key : 'string', default = ' '
+			Used when authentication is required (instead of username and password)
+
+	cafile : 'string', default = ' '
+			Used for authentication when ssl layer is required
 
 	loader_per_url : int, default = 4
 			Number of parallel loaders per URL.
@@ -282,13 +307,21 @@ class ElasticSearchConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue()
 
+		# Get credentials
 		username = self.Config.get('username')
 		password = self.Config.get('password')
+		api_key = self.Config.get('api_key')
+		url = self.Config.get('url')
 
-		if username == '':
-			self._auth = None
+		# Build headers
+		self.Headers, self._auth = build_headers(username, password, api_key)
+
+		# Build ssl context
+		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
+		if url.startswith('https://'):
+			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
 		else:
-			self._auth = aiohttp.BasicAuth(login=username, password=password)
+			self.SSLContext = None
 
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
@@ -504,7 +537,11 @@ class ElasticSearchConnection(Connection):
 
 			# Preflight check
 			try:
-				async with session.get(url + "_cluster/health") as resp:
+				async with session.get(
+					url + "_cluster/health", 
+					headers=self.Headers, 
+					ssl=self.SSLContext,
+				) as resp:
 					await resp.json()
 					if resp.status != 200:
 						L.error("Cluster is not ready", struct_data={'status': resp.status})
@@ -549,3 +586,30 @@ class ElasticSearchConnection(Connection):
 
 				# Make sure the memory is emptied
 				bulk.Items = []
+
+
+def build_headers(username, password, api_key):
+
+	# Check configurations
+	if username != '' and username is not None and api_key != '' and api_key is not None:
+		raise ValueError("Both username and API key can't be specified. Please choose one option.")
+
+	# Build headers
+	if username != '':
+		auth = aiohttp.BasicAuth(username, password)
+		L.log(asab.LOG_NOTICE, 'Building basic authorization with username/password')
+		Headers = {
+			'Content-Type': 'application/json',
+		}
+	elif api_key != '':
+		auth = None
+		Headers = {
+			'Content-Type': 'application/json',
+			"Authorization": 'ApiKey {}'.format(api_key)
+		}
+		L.log(asab.LOG_NOTICE, 'Building headers with api_key')
+	else:
+		auth = None
+		Headers = None
+
+	return Headers, auth

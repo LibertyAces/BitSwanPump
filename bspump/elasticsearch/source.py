@@ -77,11 +77,13 @@ class ElasticSearchSource(TriggerSource):
 				request_body = {"scroll": self.ScrollTimeout, "scroll_id": scroll_id}
 
 			url = self.Connection.get_url() + path
+
 			async with self.Connection.get_session() as session:
 				async with session.post(
-						url,
-						json=request_body,
-						headers={'Content-Type': 'application/json'}
+					url=url,
+					json=request_body,
+					headers=self.Connection.Headers,
+					ssl=self.Connection.SSLContext,
 				) as response:
 
 					if response.status != 200:
@@ -168,12 +170,15 @@ class ElasticSearchAggsSource(TriggerSource):
 		"""
 		request_body = self.RequestBody
 		path = '{}/_search?'.format(self.Index)
+
 		url = self.Connection.get_url() + path
+
 		async with self.Connection.get_session() as session:
 			async with session.post(
-					url,
-					json=request_body,
-					headers={'Content-Type': 'application/json'}
+				url=url,
+				json=request_body,
+				headers=self.Connection.Headers,
+				ssl=self.Connection.SSLContext,
 			) as response:
 
 				if response.status != 200:

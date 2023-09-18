@@ -1,6 +1,5 @@
 import json
 import logging
-
 import requests
 
 from ..abc.lookup import MappingLookup
@@ -110,9 +109,10 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 		async with self.Connection.get_session() as session:
 			async with session.post(
-					url,
-					json=request,
-					headers={'Content-Type': 'application/json'}
+				url=url,
+				json=request,
+				headers=self.Connection.Headers,
+				ssl=self.Connection.SSLContext,
 			) as response:
 
 				if response.status != 200:
@@ -196,9 +196,10 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 
 		async with self.Connection.get_session() as session:
 			async with session.post(
-					url,
-					json=request,
-					headers={'Content-Type': 'application/json'}
+				url=url,
+				json=request,
+				headers=self.Connection.Headers,
+				ssl=self.Connection.SSLContext,
 			) as response:
 
 				if response.status != 200:
