@@ -8,6 +8,10 @@ import asab.api
 from .service import BSPumpService
 from .__version__ import __version__, __build__
 
+import logging
+
+L = logging.getLogger(__name__)
+
 
 class BSPumpApplication(asab.Application):
 
@@ -87,7 +91,16 @@ build: {} [{}]
 
 
 	async def main(self):
-		print("{} pipeline(s) ready.".format(len(self.PumpService.Pipelines)))
+		if len(self.PumpService.Pipelines) == 1:
+			L.log(asab.LOG_NOTICE, "1 pipeline is ready.")
+		elif len(self.PumpService.Pipelines) > 1:
+			L.log(
+				asab.LOG_NOTICE,
+				"{} pipelines are ready.".format(len(self.PumpService.Pipelines))
+			)
+		else:
+			L.log(asab.LOG_NOTICE, "No pipeline is ready yet.")
+
 
 
 	def _on_signal_usr1(self):
