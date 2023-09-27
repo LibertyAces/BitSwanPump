@@ -26,13 +26,13 @@ Principles
 * Everything is a stream
 * Schema-less
 * Kappa architecture
-* Real-Time
+* Real-time
 * High performance
 * Simple to use and well documented, so anyone can write their own stream processor
 * Asynchronous via Python 3.5+ ``async``/``await`` and ``asyncio``
 * `Event driven Architecture <https://en.wikipedia.org/wiki/Event-driven_architecture>`_ / `Reactor pattern <https://en.wikipedia.org/wiki/Reactor_pattern>`_
 * Single-threaded core but compatible with threads
-* Compatible with `pypy <http://pypy.org>`_, Just-In-Time compiler capable of boosting Python code performace more then 5x times
+* Compatible with `pypy <http://pypy.org>`_, Just-In-Time compiler capable of boosting Python code performace by more than 5x
 * Good citizen of the Python ecosystem 
 * Modularized
 
@@ -91,7 +91,7 @@ Following the `PyPI packaging <https://packaging.python.org/tutorials/packaging-
 Blank application setup
 -----------------------
 
-You can clone blank application from it's `own repository <https://github.com/LibertyAces/BitSwanTelco-BlankApp>`_.
+You can clone the blank application from its `own repository <https://github.com/LibertyAces/BitSwanTelco-BlankApp>`_.
 
 
 Available technologies
@@ -198,5 +198,5 @@ You can replace ``test`` with a location of your unit test module.
 Licence
 -------
 
-BSPump is an open-source software, available under BSD 3-Clause License.
+BSPump is open source software, available under the BSD 3-Clause License.
 
