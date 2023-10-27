@@ -68,7 +68,7 @@ class KafkaSink(Sink):
 		"batch.num.messages": "100000",
 		"linger.ms": "500",  # This settings makes a significant impact on the throughtput
 		"batch.size": "1000000",
-		"poll.timeout": "0.2",
+		"poll.timeout": "0.1",
 		# "compression.type": "snappy",
 	}
 
@@ -97,16 +97,30 @@ class KafkaSink(Sink):
 		self.Topic = self.Config["topic"]
 		self.LowWatermark = int(self.Config["watermark.low"])
 		self.HighWatermark = int(self.Config["watermark.high"])
-		self.PollTimeout = float(self.Config["poll.timeout"])
+
 		self.IsThrottling = False
 
 		self.ProactorService = self.Pipeline.App.get_service('asab.ProactorService')
 
 		app.PubSub.subscribe_all(self)
 
+		# Handling poll
+		# It is necessary to run the poll on thread to avoid on tick delay
+		# when the hosting machine is overloaded
+		self.PollTimeout = float(self.Config["poll.timeout"])
+		self.PollTask = None
+		self.PollRunning = False
+		pipeline.PubSub.subscribe("bspump.pipeline.start!", self._on_start)
+		pipeline.PubSub.subscribe("bspump.pipeline.stop!", self._on_stop)
+
 
 	@asab.subscribe("Application.tick!")
 	async def _on_tick(self, event_name):
+		"""
+		Consider removing this method.
+		But using flush once per some time may help with the performance.
+		"""
+
 		if self.IsThrottling and (len(self.Producer) < self.LowWatermark):
 			self.IsThrottling = False
 			self.Pipeline.throttle(self, False)
@@ -129,3 +143,45 @@ class KafkaSink(Sink):
 		if not self.IsThrottling and (len(self.Producer) > self.HighWatermark):
 			self.IsThrottling = True
 			self.Pipeline.throttle(self, True)
+
+
+	def _on_start(self, event_name, pipeline):
+
+		if self.Pipeline != pipeline:
+			return
+
+		if self.PollRunning:
+			# Polling already started
+			return
+
+		assert(self.PollTask is None)
+		self.PollRunning = True
+
+		proactor_svc = self.Pipeline.App.get_service('asab.ProactorService')
+		self.PollTask = proactor_svc.execute(self._kafka_poll)
+
+
+	async def _on_stop(self, event_name, pipeline):
+		if self.PollTask is None:
+			return
+
+		poll_task = self.PollTask
+		self.PollRunning = False
+		self.PollTask = None
+
+		try:
+			await poll_task
+
+		except asyncio.CancelledError:
+			pass
+
+
+	def _kafka_poll(self):
+
+		while self.PollRunning:
+
+			if self.IsThrottling and (len(self.Producer) < self.LowWatermark):
+				self.IsThrottling = False
+				self.Pipeline.throttle(self, False)
+
+			self.Producer.poll(self.PollTimeout)
