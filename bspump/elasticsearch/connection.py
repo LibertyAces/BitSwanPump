@@ -46,12 +46,12 @@ class ElasticSearchBulk(object):
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
-		
+
 		# Get credentials
-		username = self.Config.get('username')
-		password = self.Config.get('password')
-		api_key = self.Config.get('api_key')
-		url = self.Config.get('url')
+		username = connection.Config.get('username')
+		password = connection.Config.get('password')
+		api_key = connection.Config.get('api_key')
+		url = connection.Config.get('url')
 
 		# Build headers
 		self.Headers, self._auth = build_headers(username, password, api_key)
