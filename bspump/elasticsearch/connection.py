@@ -597,7 +597,7 @@ def build_headers(username, password, api_key):
 	# Build headers
 	if username != '':
 		auth = aiohttp.BasicAuth(username, password)
-		L.log(asab.LOG_NOTICE, 'Building basic authorization with username/password')
+		# L.log(asab.LOG_NOTICE, 'Building basic authorization with username/password')
 		Headers = {
 			'Content-Type': 'application/json',
 		}
@@ -607,7 +607,7 @@ def build_headers(username, password, api_key):
 			'Content-Type': 'application/json',
 			"Authorization": 'ApiKey {}'.format(api_key)
 		}
-		L.log(asab.LOG_NOTICE, 'Building headers with api_key')
+		# L.log(asab.LOG_NOTICE, 'Building headers with api_key')
 	else:
 		auth = None
 		Headers = None
