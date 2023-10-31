@@ -47,11 +47,8 @@ class ElasticSearchBulk(object):
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
 
-		# Get credentials
-		username = connection.Config.get('username')
-		password = connection.Config.get('password')
-		api_key = connection.Config.get('api_key')
-		url = connection.Config.get('url')
+		# Get credentials for authorization
+		username, password, api_key, url = get_credentials_from_config(self.Config)
 
 		# Build headers
 		self.Headers, self._auth = build_headers(username, password, api_key)
@@ -122,7 +119,7 @@ class ElasticSearchBulk(object):
 			resp = await session.post(
 				url=url,
 				data=self._get_data_from_items(),
-				headers=self.Headers, 
+				headers=self.Headers,
 				ssl=self.SSLContext,
 				timeout=timeout,
 			)
@@ -307,11 +304,8 @@ class ElasticSearchConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue()
 
-		# Get credentials
-		username = self.Config.get('username')
-		password = self.Config.get('password')
-		api_key = self.Config.get('api_key')
-		url = self.Config.get('url')
+		# Get credentials for authorization
+		username, password, api_key, url = get_credentials_from_config(self.Config)
 
 		# Build headers
 		self.Headers, self._auth = build_headers(username, password, api_key)
@@ -326,7 +320,7 @@ class ElasticSearchConnection(Connection):
 		# Contains URLs of each node in the cluster
 		self.node_urls = []
 		# for url in self.Config['url'].split(';'):
-		for url in re.split(r"\s+", self.Config['url']):
+		for url in re.split(r"\s+", url):
 			url = url.strip()
 			if len(url) == 0:
 				continue
@@ -538,8 +532,8 @@ class ElasticSearchConnection(Connection):
 			# Preflight check
 			try:
 				async with session.get(
-					url + "_cluster/health", 
-					headers=self.Headers, 
+					url + "_cluster/health",
+					headers=self.Headers,
 					ssl=self.SSLContext,
 				) as resp:
 					await resp.json()
@@ -597,7 +591,6 @@ def build_headers(username, password, api_key):
 	# Build headers
 	if username != '':
 		auth = aiohttp.BasicAuth(username, password)
-		# L.log(asab.LOG_NOTICE, 'Building basic authorization with username/password')
 		Headers = {
 			'Content-Type': 'application/json',
 		}
@@ -607,9 +600,31 @@ def build_headers(username, password, api_key):
 			'Content-Type': 'application/json',
 			"Authorization": 'ApiKey {}'.format(api_key)
 		}
-		# L.log(asab.LOG_NOTICE, 'Building headers with api_key')
 	else:
 		auth = None
 		Headers = None
 
 	return Headers, auth
+
+def get_credentials_from_config(configuration):
+	"""
+	Parses configurations to return credentials
+	"""
+
+	# new configuration
+	username = configuration.get('username')
+	password = configuration.get('password')
+	api_key = configuration.get('api_key')
+	url = configuration.get('url')
+
+	# backward compatibility with the format http://<username>:<password>@path
+	auth_credentials = configuration.get('elasticsearch_url')
+	if auth_credentials is not None:
+		asab.LogObsolete.warning("The configuration of ESConnection is outdated, please update the [connection:] section.")
+		pattern = re.compile(r"(https?://)((.*):(.*)@)?([^#]*)$")
+		path_split = pattern.findall(auth_credentials)[0]
+		L.debug(path_split)
+		url_scheme, user_info, username, password, url_path = path_split
+		url = url_scheme + url_path
+
+	return username, password, api_key, url
