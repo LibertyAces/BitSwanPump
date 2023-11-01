@@ -310,6 +310,9 @@ class ElasticSearchConnection(Connection):
 		# Build headers
 		self.Headers, self._auth = build_headers(username, password, api_key)
 
+		if len(self.node_urls) == 0:
+			raise RuntimeError("Incorrect configuration; no url specified for elasticsearch cluster.")
+
 		# Build ssl context
 		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
 		if self.node_urls[0].startswith('https://'):
