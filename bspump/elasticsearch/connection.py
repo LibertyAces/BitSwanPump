@@ -610,7 +610,7 @@ def get_credentials_from_config(configuration):
 		node_urls = split_multiple_nodes_url(config_url)
 	else:
 		# outdated configuration format http://<username>:<password>@path
-		asab.LogObsolete.warning("The configuration is outdated, please update [connection:ESConnection] section.")
+		asab.LogObsolete.warning("The configuration format http://<username>:<password>@path is outdated, please update [connection:ESConnection] section.")
 		split_url = split_multiple_nodes_url(config_url)
 		pattern = re.compile(r"(https?://)((.*):(.*)@)?([^#]*)$")
 		node_urls = []
