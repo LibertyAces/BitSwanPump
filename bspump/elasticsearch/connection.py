@@ -47,15 +47,15 @@ class ElasticSearchBulk(object):
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
 
-		# Get credentials for authorization
-		username, password, api_key, url = get_credentials_from_config(self.Config)
+		# Get credentials for authorization and nodes' urls
+		username, password, api_key, node_urls = get_credentials_from_config(connection.Config)
 
 		# Build headers
 		self.Headers, self._auth = build_headers(username, password, api_key)
 
 		# Build ssl context
 		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
-		if url.startswith('https://'):
+		if node_urls[0].startswith('https://'):
 			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
 		else:
 			self.SSLContext = None
@@ -304,29 +304,18 @@ class ElasticSearchConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue()
 
-		# Get credentials for authorization
-		username, password, api_key, url = get_credentials_from_config(self.Config)
+		# Get credentials for authorization and nodes' urls
+		username, password, api_key, self.node_urls = get_credentials_from_config(self.Config)
 
 		# Build headers
 		self.Headers, self._auth = build_headers(username, password, api_key)
 
 		# Build ssl context
 		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
-		if url.startswith('https://'):
+		if self.node_urls[0].startswith('https://'):
 			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
 		else:
 			self.SSLContext = None
-
-		# Contains URLs of each node in the cluster
-		self.node_urls = []
-		# for url in self.Config['url'].split(';'):
-		for url in re.split(r"\s+", url):
-			url = url.strip()
-			if len(url) == 0:
-				continue
-			if url[-1] != '/':
-				url += '/'
-			self.node_urls.append(url)
 
 		self._loader_per_url = int(self.Config['loader_per_url'])
 
@@ -606,25 +595,47 @@ def build_headers(username, password, api_key):
 
 	return Headers, auth
 
+
 def get_credentials_from_config(configuration):
 	"""
-	Parses configurations to return credentials
+	Parses configurations to return credentials and urls of ES nodes
 	"""
-
-	# new configuration
 	username = configuration.get('username')
 	password = configuration.get('password')
 	api_key = configuration.get('api_key')
-	url = configuration.get('url')
+	config_url = configuration.get('url')
 
-	# backward compatibility with the format http://<username>:<password>@path
-	auth_credentials = configuration.get('elasticsearch_url')
-	if auth_credentials is not None:
-		asab.LogObsolete.warning("The configuration of ESConnection is outdated, please update the [connection:] section.")
+	if "@" not in config_url:
+		# new configuration format
+		node_urls = split_multiple_nodes_url(config_url)
+	else:
+		# outdated configuration format http://<username>:<password>@path
+		asab.LogObsolete.warning("The configuration is outdated, please update [connection:ESConnection] section.")
+		split_url = split_multiple_nodes_url(config_url)
 		pattern = re.compile(r"(https?://)((.*):(.*)@)?([^#]*)$")
-		path_split = pattern.findall(auth_credentials)[0]
-		L.debug(path_split)
-		url_scheme, user_info, username, password, url_path = path_split
-		url = url_scheme + url_path
+		node_urls = []
+		for url in split_url:
+			path_split = pattern.findall(url)[0]
+			L.debug(path_split)
+			url_scheme, user_info, username, password, url_path = path_split  # <username>:<password> for all nodes are the same
+			url = url_scheme + url_path
+			node_urls.append(url)
 
-	return username, password, api_key, url
+	return username, password, api_key, node_urls
+
+
+def split_multiple_nodes_url(url):
+	"""
+	Processes configuration for multiple nodes in the cluster
+	"""
+	node_urls = []
+	# for url in self.Config['url'].split(';'):
+	for url in re.split(r"\s+", url):
+		url = url.strip()
+		if len(url) == 0:
+			continue
+		if url[-1] != '/':
+			url += '/'
+		node_urls.append(url)
+
+	return node_urls
