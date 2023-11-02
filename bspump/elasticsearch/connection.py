@@ -47,22 +47,6 @@ class ElasticSearchBulk(object):
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
 
-		# Get credentials
-		username = connection.Config.get('username')
-		password = connection.Config.get('password')
-		api_key = connection.Config.get('api_key')
-		url = connection.Config.get('url')
-
-		# Build headers
-		self.Headers, self._auth = build_headers(username, password, api_key)
-
-		# Build ssl context
-		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
-		if url.startswith('https://'):
-			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
-		else:
-			self.SSLContext = None
-
 
 	def consume(self, data_feeder_generator):
 		"""
@@ -83,6 +67,7 @@ class ElasticSearchBulk(object):
 		self.Aging = 0
 		return self.Capacity <= 0
 
+
 	async def _get_data_from_items(self):
 		"""
 		Description:
@@ -92,7 +77,8 @@ class ElasticSearchBulk(object):
 		for item in self.Items:
 			yield item
 
-	async def upload(self, url, session, timeout):
+
+	async def upload(self, url, session, ssl_context, timeout):
 		"""
 		Uploads data to Elastic Search.
 
@@ -120,10 +106,9 @@ class ElasticSearchBulk(object):
 
 		try:
 			resp = await session.post(
-				url=url,
+				url,
 				data=self._get_data_from_items(),
-				headers=self.Headers, 
-				ssl=self.SSLContext,
+				ssl=ssl_context,
 				timeout=timeout,
 			)
 		except OSError as e:
@@ -314,7 +299,7 @@ class ElasticSearchConnection(Connection):
 		url = self.Config.get('url')
 
 		# Build headers
-		self.Headers, self._auth = build_headers(username, password, api_key)
+		self.Headers = build_headers(username, password, api_key)
 
 		# Build ssl context
 		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
@@ -384,15 +369,15 @@ class ElasticSearchConnection(Connection):
 		"""
 		return random.choice(self.node_urls)
 
+
 	def get_session(self):
 		"""
-		Returns current Client Session Authentication and Loop
-
-		:return: aiohttp.ClientSession(auth=self._auth, loop=self.Loop)
+		Returns the aiohttp Client Session 
 
 		:return:
 		"""
-		return aiohttp.ClientSession(auth=self._auth)
+		return aiohttp.ClientSession(headers=self.Headers)
+
 
 	def consume(self, index, data_feeder_generator, bulk_class=ElasticSearchBulk):
 		"""
@@ -538,8 +523,7 @@ class ElasticSearchConnection(Connection):
 			# Preflight check
 			try:
 				async with session.get(
-					url + "_cluster/health", 
-					headers=self.Headers, 
+					url + "_cluster/health",
 					ssl=self.SSLContext,
 				) as resp:
 					await resp.json()
@@ -576,7 +560,7 @@ class ElasticSearchConnection(Connection):
 				if self._output_queue.qsize() == self._output_queue_max_size - 1:
 					self.PubSub.publish("ElasticSearchConnection.unpause!", self)
 
-				sucess = await bulk.upload(url, session, self._timeout)
+				sucess = await bulk.upload(url, session, self.SSLContext, self._timeout)
 				if not sucess:
 					# Requeue the bulk for another delivery attempt to ES
 					self.enqueue(bulk)
@@ -594,22 +578,16 @@ def build_headers(username, password, api_key):
 	if username != '' and username is not None and api_key != '' and api_key is not None:
 		raise ValueError("Both username and API key can't be specified. Please choose one option.")
 
-	# Build headers
-	if username != '':
-		auth = aiohttp.BasicAuth(username, password)
-		# L.log(asab.LOG_NOTICE, 'Building basic authorization with username/password')
-		Headers = {
-			'Content-Type': 'application/json',
-		}
-	elif api_key != '':
-		auth = None
-		Headers = {
-			'Content-Type': 'application/json',
-			"Authorization": 'ApiKey {}'.format(api_key)
-		}
-		# L.log(asab.LOG_NOTICE, 'Building headers with api_key')
-	else:
-		auth = None
-		Headers = None
+	headers = {
+		'Content-Type': 'application/json',
+	}
 
-	return Headers, auth
+	# Build headers
+	if username != '' and username is not None:
+		auth = aiohttp.BasicAuth(username, password)
+		headers['Authorization'] = auth.encode()
+		
+	elif api_key != '' and api_key is not None:
+		headers['Authorization'] = 'ApiKey {}'.format(api_key)
+
+	return headers

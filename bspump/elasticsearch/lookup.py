@@ -111,7 +111,6 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 			async with session.post(
 				url=url,
 				json=request,
-				headers=self.Connection.Headers,
 				ssl=self.Connection.SSLContext,
 			) as response:
 
@@ -198,7 +197,6 @@ class ElasticSearchLookup(MappingLookup, AsyncLookupMixin):
 			async with session.post(
 				url=url,
 				json=request,
-				headers=self.Connection.Headers,
 				ssl=self.Connection.SSLContext,
 			) as response:
 
