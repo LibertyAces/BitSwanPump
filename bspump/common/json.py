@@ -13,12 +13,6 @@ class CySimdJsonParser(Processor):
 	'''
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description: .
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id, config)
 		self._parser = cysimdjson.JSONParser()
 

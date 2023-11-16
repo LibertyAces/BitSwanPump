@@ -41,13 +41,6 @@ class AggregationStrategy(ABC):
 
 class ListAggregationStrategy(AggregationStrategy):
 
-	"""
-	Description: ... test
-
-	|
-
-	"""
-
 	def __init__(self) -> None:
 		super().__init__()
 		self.AggregatedEvent = []
