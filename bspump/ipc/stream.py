@@ -53,11 +53,6 @@ class TLSStream(object):
 	'''
 
 	def __init__(self, loop, sslcontext, socket, server_side: bool):
-		"""
-		Description:
-
-
-		"""
 		self.Loop = loop
 		self.Socket = socket
 
@@ -109,11 +104,6 @@ class TLSStream(object):
 
 
 	async def recv_into(self, buf):
-		"""
-		Description:
-
-
-		"""
 		while True:
 
 			try:
@@ -142,11 +132,6 @@ class TLSStream(object):
 
 
 	def send(self, data):
-		"""
-		Description:
-
-
-		"""
 		self.OutboundQueue.put_nowait(data)
 
 
@@ -167,10 +152,5 @@ class TLSStream(object):
 
 
 	async def close(self):
-		"""
-		Description:
-
-
-		"""
 		self.OutboundQueue.put_nowait(None)
 		self.Socket.close()

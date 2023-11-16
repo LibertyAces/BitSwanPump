@@ -10,12 +10,6 @@ L = logging.getLogger(__file__)
 
 
 class FileLineSource(FileABCSource):
-	"""
-	Description:
-
-	|
-
-	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""

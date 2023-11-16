@@ -16,13 +16,6 @@ L = logging.getLogger(__name__)
 
 
 class Lookup(asab.ConfigObject):
-	"""
-	Description:
-
-	|
-
-	:return:
-	"""
 
 	ConfigDefaults = {
 		"source_url": "",  # Specifies complete url to source file
@@ -39,10 +32,6 @@ class Lookup(asab.ConfigObject):
 	}
 
 	def __init__(self, app, id=None, config=None, lazy=False):
-		"""
-		Description:
-
-		"""
 		_id = id if id is not None else self.__class__.__name__
 		super().__init__("lookup:{}".format(_id), config=config)
 		self.Id = _id
@@ -85,11 +74,6 @@ class Lookup(asab.ConfigObject):
 		raise NotImplementedError("Lookup '{}' __contains__() method not implemented".format(self.Id))
 
 	def _create_provider(self, path: str):
-		"""
-		Description:
-
-		:return:
-		"""
 		if path.startswith("zk:"):
 			from bspump.zookeeper import ZooKeeperBatchLookupProvider
 			self.Provider = ZooKeeperBatchLookupProvider(self, path)
@@ -121,32 +105,15 @@ class Lookup(asab.ConfigObject):
 		return self.App.time()
 
 	def ensure_future_update(self, loop):
-		"""
-		Description:
-
-		:return:
-
-		|
-
-		"""
 		return asyncio.ensure_future(self._do_update())
 
 	async def _do_update(self):
-		"""
-		Description:
-
-		:return:
-		"""
 		updated = await self.load()
 		if updated:
 			L.warning(f"{self.Id} bspump.Lookup.changed!")
 			self.PubSub.publish("bspump.Lookup.changed!")
 
 	async def load(self) -> bool:
-		"""
-		Description:
-
-		"""
 		data = await self.Provider.load()
 		if data is None or data is False:
 			L.warning("No data loaded from {}.".format(self.Provider.Id))
@@ -155,27 +122,12 @@ class Lookup(asab.ConfigObject):
 		return True
 
 	def serialize(self):
-		"""
-		Description:
-
-		"""
 		raise NotImplementedError("Lookup '{}' serialize() method not implemented".format(self.Id))
 
 	def deserialize(self, data):
-		"""
-		Description:
-
-		|
-
-		"""
 		raise NotImplementedError("Lookup '{}' deserialize() method not implemented".format(self.Id))
 
 	def rest_get(self):
-		"""
-		Description:
-
-		:return:
-		"""
 		response = {
 			"Id": self.Id
 		}
@@ -198,38 +150,18 @@ class Lookup(asab.ConfigObject):
 
 
 class MappingLookup(Lookup, collections.abc.Mapping):
-	"""
-	Description:
-
-	|
-
-	"""
 	pass
 
 
 class AsyncLookupMixin(Lookup):
-	"""
-	Description:
-
-	"""
 
 	async def get(self, key):
 		raise NotImplementedError()
 
 
 class DictionaryLookup(MappingLookup):
-	"""
-	Description:
-
-	"""
 
 	def __init__(self, app, id=None, config=None, lazy=False):
-		"""
-		Description:
-
-		|
-
-		"""
 
 		self.Dictionary = {}
 		super().__init__(app, id, config=config, lazy=lazy)
@@ -255,12 +187,6 @@ class DictionaryLookup(MappingLookup):
 		return (json.dumps(self.Dictionary)).encode('utf-8')
 
 	def deserialize(self, data):
-		"""
-		Description:
-
-		|
-
-		"""
 		try:
 			self.Dictionary.update(json.loads(data.decode('utf-8')))
 		except Exception as e:
@@ -281,12 +207,6 @@ class DictionaryLookup(MappingLookup):
 		return rest
 
 	def set(self, dictionary: dict):
-		"""
-		Description:
-
-		|
-
-		"""
 		if self.is_master() is False:
 			L.warning("'master_url' provided, set() method can not be used")
 

@@ -24,10 +24,6 @@ class Anomaly(dict):
 		return self.get("status") == "closed"
 
 	def close(self, current_time):
-		"""
-		Description:
-
-		"""
 		self["ts_end"] = current_time
 		self["D"] = self["ts_end"] - self["@timestamp"]
 		self["status"] = "closed"

@@ -36,12 +36,6 @@ class AggregationStrategy(ABC):
 
 	@abstractmethod
 	def is_empty(self) -> bool:
-		"""
-		Description:
-
-		|
-
-		"""
 		raise NotImplementedError()
 
 
@@ -55,12 +49,6 @@ class ListAggregationStrategy(AggregationStrategy):
 	"""
 
 	def __init__(self) -> None:
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__()
 		self.AggregatedEvent = []
 
@@ -103,20 +91,8 @@ class ListAggregationStrategy(AggregationStrategy):
 
 
 class ListEventAggregationStrategy(AggregationStrategy):
-	"""
-	Description:
-
-	|
-
-	"""
 
 	def __init__(self) -> None:
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__()
 		self.AggregatedEvent = []
 
@@ -159,19 +135,8 @@ class ListEventAggregationStrategy(AggregationStrategy):
 
 
 class StringAggregationStrategy(AggregationStrategy):
-	"""
-	Description:
-
-	|
-
-	"""
 
 	def __init__(self, delimiter='\n') -> None:
-		"""
-		Description:
-
-
-		"""
 		super().__init__()
 		self.Delimiter = delimiter
 		self.AggregatedEvent = ""
@@ -216,12 +181,6 @@ class StringAggregationStrategy(AggregationStrategy):
 
 
 class Aggregator(Generator):
-	"""
-	Description:
-
-	|
-
-	"""
 	ConfigDefaults = {
 		'completion_size': 10,
 		'completion_timeout': 0,  # 0 means no timeout,
@@ -231,12 +190,6 @@ class Aggregator(Generator):
 	def __init__(self, app, pipeline,
 				 aggregation_strategy: AggregationStrategy = ListAggregationStrategy(),
 				 id=None, config=None):
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id, config)
 		self.CompletionSize = int(self.Config['completion_size'])
 		self.CompletionTimeout = int(self.Config['completion_timeout'])

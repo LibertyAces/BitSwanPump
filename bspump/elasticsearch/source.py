@@ -6,10 +6,6 @@ L = logging.getLogger(__name__)
 
 
 class ElasticSearchSource(TriggerSource):
-	"""
-	Description:
-
-	"""
 	ConfigDefaults = {
 		'index': 'index-*',
 		'scroll_timeout': '1m',
@@ -110,10 +106,6 @@ class ElasticSearchSource(TriggerSource):
 
 
 class ElasticSearchAggsSource(TriggerSource):
-	"""
-	Description:
-
-	"""
 	ConfigDefaults = {
 		'index': 'index-*',
 	}

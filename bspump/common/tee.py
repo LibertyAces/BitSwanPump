@@ -38,12 +38,6 @@ class SampleTeePipeline(bspump.Pipeline):
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Targets = []
@@ -51,27 +45,11 @@ class SampleTeePipeline(bspump.Pipeline):
 
 
 	def bind(self, target):
-		"""
-		Description:
-
-		:return:
-
-		|
-
-		"""
 		self.Targets.append(target)
 		return self
 
 
 	async def main(self):
-		"""
-		Description:
-
-		:return:
-
-		|
-
-		"""
 
 		unbind_processor = []
 		for target in self.Targets:
@@ -109,12 +87,6 @@ class TeeProcessor(RouterProcessor):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Targets = []
 

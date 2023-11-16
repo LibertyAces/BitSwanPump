@@ -13,10 +13,6 @@ L = logging.getLogger(__name__)
 
 
 class Analyzer(Processor):
-	"""
-	Description:
-
-	"""
 
 	ConfigDefaults = {
 		"analyze_period": 60,  # every 60 seconds
@@ -36,17 +32,9 @@ class Analyzer(Processor):
 	# Implementation interface
 
 	def start_timer(self, event_type):
-		"""
-		Description:
-
-		"""
 		self.Timer.start(self.AnalyzePeriod)
 
 	def analyze(self):
-		"""
-		Description:
-
-		"""
 		pass
 
 

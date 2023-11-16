@@ -35,12 +35,6 @@ class CySimdJsonParser(Processor):
 
 
 class StdDictToJsonParser(Processor):
-	"""
-	Description:
-
-	|
-
-	"""
 
 	def process(self, context, event):
 		"""
@@ -56,12 +50,6 @@ class StdDictToJsonParser(Processor):
 
 class StdJsonToDictParser(Processor):
 
-	"""
-	Description:
-
-	|
-
-	"""
 
 	def process(self, context, event):
 		"""

@@ -4,12 +4,6 @@ from ..abc.processor import Processor
 
 
 class HexlifyProcessor(Processor):
-	"""
-	Description:
-
-	|
-
-	"""
 
 	def process(self, context, event):
 		"""

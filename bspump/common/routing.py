@@ -18,12 +18,6 @@ class DirectSource(Source):
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id=id, config=config)
 
 	def put(self, context, event, copy_context=False, copy_event=False):
@@ -50,22 +44,10 @@ class DirectSource(Source):
 		self.Pipeline.inject(context=child_context, event=event, depth=0)
 
 	async def main(self):
-		"""
-		Description:
-
-		|
-
-		"""
 		pass
 
 
 class InternalSource(Source):
-	"""
-	Description:
-
-	|
-
-	"""
 
 
 	ConfigDefaults = {
@@ -75,12 +57,6 @@ class InternalSource(Source):
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Loop = app.Loop
 
@@ -156,12 +132,6 @@ class InternalSource(Source):
 
 
 	async def main(self):
-		"""
-		Description:
-
-		|
-
-		"""
 		try:
 
 			while True:
@@ -210,12 +180,6 @@ class RouterMixIn(object):
 
 
 	def _mixin_init(self, app):
-		"""
-		Description:
-
-		|
-
-		"""
 		self.ServiceBSPump = app.get_service("bspump.PumpService")
 		self.SourcesCache = {}
 
@@ -312,12 +276,6 @@ class RouterMixIn(object):
 
 
 	def _on_target_pipeline_ready_change(self, event_name, pipeline):
-		"""
-		Description:
-
-		|
-
-		"""
 		if event_name == "bspump.pipeline.ready!":
 			self.Pipeline.throttle(pipeline, enable=False)
 		elif event_name == "bspump.pipeline.not_ready!":
@@ -327,12 +285,6 @@ class RouterMixIn(object):
 
 
 	def _on_internal_source_backpressure_ready_change(self, event_name, source):
-		"""
-		Description:
-
-		|
-
-		"""
 		if event_name == "bspump.InternalSource.backpressure_off!":
 			self.Pipeline.throttle(source, enable=False)
 		elif event_name == "bspump.InternalSource.backpressure_on!":
@@ -365,11 +317,5 @@ class RouterProcessor(Processor, RouterMixIn):
 	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id, config)
 		self._mixin_init(app)

@@ -52,10 +52,6 @@ class FileCSVSink(Sink):
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Dialect = csv.get_dialect(self.Config['dialect'])
 		self._csv_writer = None

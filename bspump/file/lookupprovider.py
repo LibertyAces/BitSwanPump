@@ -40,12 +40,6 @@ class FileBatchLookupProvider(LookupBatchProviderABC):
 		return result
 
 	def load_on_thread(self):
-		"""
-		Description:
-
-		|
-
-		"""
 		if not os.path.isfile(self.URL):
 			L.warning("Source '{}' is not a file".format(self.URL))
 			return None

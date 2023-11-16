@@ -2,12 +2,6 @@ import asab
 
 
 class ProcessorBase(asab.ConfigObject):
-	"""
-	Description:
-
-	|
-
-	"""
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
@@ -109,11 +103,6 @@ class ProcessorBase(asab.ConfigObject):
 
 
 	def rest_get(self):
-		"""
-		Description:
-
-		:return:
-		"""
 		return {
 			"Id": self.Id,
 			"Class": self.__class__.__name__,

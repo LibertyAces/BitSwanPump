@@ -65,11 +65,6 @@ class BSPumpApplication(asab.Application):
 			self.ASABApiService.initialize_zookeeper()
 
 	def create_argument_parser(self):
-		"""
-		Description:
-
-		:return:
-		"""
 		prog = sys.argv[0]
 		if prog[-11:] == '__main__.py':
 			prog = sys.executable + " -m bspump"

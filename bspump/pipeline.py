@@ -361,11 +361,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		self._evaluate_ready()
 
 	def _evaluate_ready(self):
-		"""
-		Description:
-
-		:return:
-		"""
 		orig_ready = self.is_ready()
 
 		# Do we observed an error?
@@ -409,11 +404,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		return self._ready.is_set()
 
 	def _do_process(self, event, depth, context):
-		"""
-		Description:
-
-		:return:
-		"""
 		for processor in self.Processors[depth]:
 
 			t0 = time.perf_counter()
@@ -683,11 +673,6 @@ class Pipeline(abc.ABC, asab.ConfigObject):
 		return False
 
 	def _post_add_processor(self, processor):
-		"""
-		Description:
-
-		:return:
-		"""
 		self.ProfilerCounter[processor.Id] = self.MetricsService.create_counter(
 			'bspump.pipeline.profiler',
 			tags={
@@ -908,11 +893,6 @@ class PipelineLogger(logging.Logger):
 		self.Deque.append(record)
 
 	def _format_time(self, record):
-		"""
-		Description:
-
-		:return:
-		"""
 		try:
 			ct = datetime.datetime.fromtimestamp(record.created)
 			return ct.isoformat()

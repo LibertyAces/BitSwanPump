@@ -2,12 +2,6 @@ from .processor import ProcessorBase
 
 
 class Generator(ProcessorBase):
-	"""
-	Description:
-
-	|
-
-	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""

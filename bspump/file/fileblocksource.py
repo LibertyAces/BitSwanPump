@@ -8,10 +8,6 @@ L = logging.getLogger(__file__)
 
 
 class FileBlockSource(FileABCSource):
-	"""
-	Description:
-
-	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""

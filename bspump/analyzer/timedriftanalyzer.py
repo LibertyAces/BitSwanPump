@@ -125,10 +125,6 @@ class TimeDriftAnalyzer(Analyzer):
 
 
 	def evaluate(self, context, event):
-		"""
-		Description:
-
-		"""
 		timestamp = event[self.TimestampAttr]
 		diff = self.get_diff(timestamp)
 
@@ -144,10 +140,6 @@ class TimeDriftAnalyzer(Analyzer):
 
 
 	def analyze(self):
-		"""
-		Description:
-
-		"""
 		# in seconds
 		if len(self.History) > 0:
 			avg = np.mean(self.History)

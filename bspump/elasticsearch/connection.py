@@ -18,10 +18,6 @@ L = logging.getLogger(__name__)
 
 
 class ElasticSearchBulk(object):
-	"""
-	Description:
-
-	"""
 
 	def __init__(self, connection, index, max_size):
 		"""
@@ -69,11 +65,6 @@ class ElasticSearchBulk(object):
 
 
 	async def _get_data_from_items(self):
-		"""
-		Description:
-
-		:return:
-		"""
 		for item in self.Items:
 			yield item
 
@@ -407,20 +398,10 @@ class ElasticSearchConnection(Connection):
 			self.enqueue(bulk)
 
 	def _start(self, event_name):
-		"""
-		Description:
-
-		:return:
-		"""
 		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
 
 	async def _on_exit(self, event_name):
-		"""
-		Description:
-
-		:return:
-		"""
 		# Wait till the queue is empty
 		self.flush(forced=True)
 		while self._output_queue.qsize() > 0:
@@ -441,11 +422,6 @@ class ElasticSearchConnection(Connection):
 
 
 	def _on_tick(self, event_name):
-		"""
-		Description:
-
-		:return:
-		"""
 		self.QueueMetric.set("size", int(self._output_queue.qsize()))
 
 		for i in range(len(self._futures)):
@@ -513,11 +489,6 @@ class ElasticSearchConnection(Connection):
 			self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
 	async def _loader(self, url):
-		"""
-		Description:
-
-		:return:
-		"""
 		async with self.get_session() as session:
 
 			# Preflight check

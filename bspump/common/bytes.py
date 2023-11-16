@@ -17,12 +17,6 @@ class StringToBytesParser(Processor):
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id, config)
 		self.Encoding = self.Config['encoding']
 
@@ -40,24 +34,12 @@ class StringToBytesParser(Processor):
 
 
 class BytesToStringParser(Processor):
-	"""
-	Description:
-
-	|
-
-	"""
 
 	ConfigDefaults = {
 		'encoding': 'utf-8',
 	}
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id, config)
 		self.Encoding = self.Config['encoding']
 
