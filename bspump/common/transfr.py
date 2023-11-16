@@ -17,14 +17,6 @@ class MappingTransformator(Processor):
 
 
 	def _map(self, item):
-		"""
-		Description:
-
-		:return: ??
-
-		|
-
-		"""
 		key, value = item
 		t = self.Mapping.get(key)
 		if t is not None:

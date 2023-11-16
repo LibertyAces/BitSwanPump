@@ -106,14 +106,6 @@ class TeeProcessor(RouterProcessor):
 
 
 	def unbind(self, target: str):
-		"""
-		Description:
-
-		:return: ?
-
-		|
-
-		"""
 		self.Targets.remove(target)
 		self.unlocate(target)
 		return self

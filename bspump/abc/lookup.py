@@ -138,14 +138,6 @@ class Lookup(asab.ConfigObject):
 		return response
 
 	def is_master(self):
-		"""
-		Description:
-
-		:return: ??
-
-		|
-
-		"""
 		return self.MasterURL is None
 
 

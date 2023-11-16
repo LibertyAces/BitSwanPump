@@ -225,14 +225,6 @@ class Aggregator(Generator):
 		self.flush()
 
 	def flush(self):
-		"""
-		Description:
-
-		:return: ??
-
-		|
-
-		"""
 		if self.AggregationStrategy.is_empty():
 			return
 
