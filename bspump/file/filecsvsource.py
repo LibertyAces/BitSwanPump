@@ -9,10 +9,6 @@ L = logging.getLogger(__file__)
 
 
 class FileCSVSource(FileABCSource):
-	"""
-	Description:
-
-	"""
 
 
 	ConfigDefaults = {

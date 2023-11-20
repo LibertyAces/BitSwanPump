@@ -12,10 +12,6 @@ L = logging.getLogger(__file__)
 
 
 class FileABCSource(TriggerSource):
-	"""
-	Description:
-
-	"""
 
 
 	ConfigDefaults = {

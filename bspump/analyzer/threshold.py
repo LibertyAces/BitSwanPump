@@ -140,10 +140,6 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def analyze(self):
-		"""
-		Description:
-
-		"""
 		# Checking an empty array
 		if self.TimeWindow.Array.shape[0] == 0:
 			return
@@ -197,9 +193,5 @@ class ThresholdAnalyzer(TimeWindowAnalyzer):
 
 
 	def alarm(self, *args):
-		"""
-		Description:
-		
-		"""
 
 		pass

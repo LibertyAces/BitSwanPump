@@ -4,45 +4,19 @@ from ..abc.processor import Processor
 
 
 class MappingTransformator(Processor):
-	"""
-	Description:
-
-	|
-
-	"""
 
 
 	def __init__(self, app, pipeline, id=None, config=None):
-		"""
-		Description:
-
-		|
-
-		"""
 		super().__init__(app, pipeline, id=id, config=config)
 		self.Mapping = self.build(app)
 		self.Default = None
 
 
 	def build(self, app):
-		"""
-		Description:
-
-		|
-
-		"""
 		raise NotImplementedError()
 
 
 	def _map(self, item):
-		"""
-		Description:
-
-		:return: ??
-
-		|
-
-		"""
 		key, value = item
 		t = self.Mapping.get(key)
 		if t is not None:

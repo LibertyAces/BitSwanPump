@@ -44,9 +44,5 @@ class AnalyzingSource(TriggerSource):
 
 
 	async def cycle(self):
-		"""
-		Description:
-
-		"""
 		event = await self.AnalyzeMatrix.analyze()
 		await self.process(event)

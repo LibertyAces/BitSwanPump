@@ -11,11 +11,6 @@ L = logging.getLogger(__name__)
 
 
 class AMQPSource(Source):
-	"""
-	Description:
-
-
-	"""
 
 
 	ConfigDefaults = {
@@ -40,11 +35,6 @@ class AMQPSource(Source):
 
 
 	async def main(self):
-		"""
-		Description:
-
-
-		"""
 
 		if self._connection.ConnectionEvent.is_set() and self._channel is None:
 			self._on_connection_open(".local!")
@@ -76,11 +66,6 @@ class AMQPSource(Source):
 			self._channel_ready.clear()
 
 	async def process_message(self, method, properties, body):
-		"""
-		Description:
-
-
-		"""
 		context = {
 			'amqp:method': method,
 			'amqp:properties': properties
@@ -116,11 +101,6 @@ class AMQPSource(Source):
 
 	@classmethod
 	def construct(cls, app, pipeline, definition: dict):
-		"""
-		Description:
-
-
-		"""
 		newid = definition.get('id')
 		config = definition.get('config')
 		connection = definition['args']['connection']
@@ -128,16 +108,6 @@ class AMQPSource(Source):
 
 
 class AMQPFullMessageSource(AMQPSource):
-	"""
-	Description:
-
-
-	"""
 
 	def process_message(self, method, properties, body):
-		"""
-		Description:
-
-
-		"""
 		self.process((method, properties, body))

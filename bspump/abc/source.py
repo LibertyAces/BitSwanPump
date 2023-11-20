@@ -8,10 +8,6 @@ L = logging.getLogger(__name__)
 
 
 class Source(asab.ConfigObject):
-	"""
-	Description:
-
-	"""
 	def __init__(self, app, pipeline, id=None, config=None):
 		"""
 		Set the initial ID, :meth:`Pipeline <bspump.Pipeline()>` and Task.
@@ -76,11 +72,6 @@ class Source(asab.ConfigObject):
 			return
 
 		async def _main():
-			"""
-			Description:
-
-			:return:
-			"""
 			# This is to properly handle a lifecycle of the main method
 			try:
 				await self.main()
@@ -226,13 +217,6 @@ class Source(asab.ConfigObject):
 
 class TriggerSource(Source):
 
-	"""
-	Description:
-
-	|
-
-	:return:
-	"""
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -340,11 +324,6 @@ class TriggerSource(Source):
 
 
 	def rest_get(self):
-		"""
-		Description:
-
-		:return:
-		"""
 		result = super().rest_get()
 		result.update({
 			"triggered": self.TriggerEvent.is_set()

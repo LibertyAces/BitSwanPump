@@ -12,12 +12,6 @@ L = logging.getLogger(__name__)
 
 
 class FTPConnection(Connection):
-	"""
-	Description:
-
-	|
-
-	"""
 
 	ConfigDefaults = {
 		'hostname': 'localhost',
