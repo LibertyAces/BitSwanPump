@@ -284,40 +284,36 @@ class ElasticSearchConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue()
 
-		username = ''
-		password = ''
-		api_key = ''
-
-		# old configuration format, section [connection:XXXXX]
-		config_section_name = 'connection:{}'.format(id)
-		if asab.Config.has_section(config_section_name):
-			url = asab.Config.getmultiline(config_section_name, 'url', fallback='')
-			if len(url == 0):
-				url = asab.Config.get('elasticsearch', 'url', fallback='')
-			self.NodeUrls = get_url_list(url)
-
-			# Authorization: username or API-key
-			username = self.Config.get('username')
-			if len(username) == 0:
-				username = asab.Config.get('elasticsearch', 'username', fallback='')
-
-			password = self.Config.get('password')
-			if len(password) == 0:
-				password = asab.Config.get('elasticsearch', 'password', fallback='')
-
-			api_key = self.Config.get('api_key')
-			if len(api_key) == 0:
-				api_key = asab.Config.get('elasticsearch', 'api_key', fallback='')
+		url = asab.Config.getmultiline(config_section_name, 'url', fallback='')
+		if len(url == 0):
+			url = asab.Config.get('elasticsearch', 'url', fallback='')
+		self.NodeUrls = get_url_list(url)
 
 		if len(self.NodeUrls) == 0:
 			raise RuntimeError("No ElasticSearch URLs has been provided.")
+
+		# Authorization: username or API-key
+		username = self.Config.get('username')
+		if len(username) == 0:
+			username = asab.Config.get('elasticsearch', 'username', fallback='')
+
+		password = self.Config.get('password')
+		if len(password) == 0:
+			password = asab.Config.get('elasticsearch', 'password', fallback='')
+
+		api_key = self.Config.get('api_key')
+		if len(api_key) == 0:
+			api_key = asab.Config.get('elasticsearch', 'api_key', fallback='')
 
 		# Build headers
 		self.Headers = build_headers(username, password, api_key)
 
 		# Build ssl context
-		self.SSLContextBuilder = SSLContextBuilder(config_section_name)
 		if self.NodeUrls[0].startswith('https://'):
+			if asab.Config.has_section('connection:{}'.format(id)):
+				self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
+			else:
+				self.SSLContextBuilder = SSLContextBuilder('elasticsearch')
 			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
 
 		self._loader_per_url = int(self.Config['loader_per_url'])
