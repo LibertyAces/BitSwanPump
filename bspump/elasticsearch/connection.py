@@ -284,13 +284,13 @@ class ElasticSearchConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue()
 
-		url = asab.Config.getmultiline(config_section_name, 'url', fallback='')
-		if len(url == 0):
-			url = asab.Config.get('elasticsearch', 'url', fallback='')
+		url = asab.Config.getmultiline('connection:{}'.format(id), 'url', fallback='')
+		if len(url) == 0:
+			url = asab.Config.getmultiline('elasticsearch', 'url', fallback='')
 		self.NodeUrls = get_url_list(url)
 
 		if len(self.NodeUrls) == 0:
-			raise RuntimeError("No ElasticSearch URLs has been provided.")
+			raise RuntimeError("No ElasticSearch URL has been provided.")
 
 		# Authorization: username or API-key
 		username = self.Config.get('username')
@@ -313,8 +313,10 @@ class ElasticSearchConnection(Connection):
 			if asab.Config.has_section('connection:{}'.format(id)):
 				self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
 			else:
-				self.SSLContextBuilder = SSLContextBuilder('elasticsearch')
+				self.SSLContextBuilder = SSLContextBuilder(config_section_name='elasticsearch')
 			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
+		else:
+			self.SSLContext = None
 
 		self._loader_per_url = int(self.Config['loader_per_url'])
 
