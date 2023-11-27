@@ -254,6 +254,7 @@ class ElasticSearchConnection(Connection):
 		# Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
 		'username': '',
 		'password': '',
+		'api_key': '',
 		'loader_per_url': 4,  # Number of parallel loaders per URL
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 12 * 1024 * 1024,
@@ -283,45 +284,41 @@ class ElasticSearchConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue()
 
+		username = ''
+		password = ''
+		api_key = ''
+
 		# old configuration format, section [connection:XXXXX]
 		config_section_name = 'connection:{}'.format(id)
 		if asab.Config.has_section(config_section_name):
 			url = asab.Config.getmultiline(config_section_name, 'url', fallback='')
-			if len(url) > 0:
-				asab.LogObsolete.warning(
-					"Do not configure elasticsearch connection in [{}]. Please use [elasticsearch] section with url, username and password parameters.".format(config_section_name)
-				)
-				self.node_urls = get_url_list(url)
-
-				# Authorization: username or API-key
-				username = self.Config.get('username')
-				password = self.Config.get('password')
-				api_key = self.Config.get('api_key')
-		else:
-			L.critical("Missing configuration section [{}].".format(config_section_name))
-			raise SystemExit("Exit due to a critical configuration error.")
-
-		# new configuration format, section [elasticsearch]
-		if asab.Config.has_section('elasticsearch'):
-			config_section_name = 'elasticsearch'
-			url = asab.Config.getmultiline(config_section_name, 'url', fallback='')
-			self.node_urls = get_url_list(url)
+			if len(url == 0):
+				url = asab.Config.get('elasticsearch', 'url', fallback='')
+			self.NodeUrls = get_url_list(url)
 
 			# Authorization: username or API-key
-			username = asab.Config.get(config_section_name, 'username', fallback='')
-			password = asab.Config.get(config_section_name, 'password', fallback='')
-			api_key = asab.Config.get(config_section_name, 'api_key', fallback='')
+			username = self.Config.get('username')
+			if len(username) == 0:
+				username = asab.Config.get('elasticsearch', 'username', fallback='')
 
+			password = self.Config.get('password')
+			if len(password) == 0:
+				password = asab.Config.get('elasticsearch', 'password', fallback='')
+
+			api_key = self.Config.get('api_key')
+			if len(api_key) == 0:
+				api_key = asab.Config.get('elasticsearch', 'api_key', fallback='')
+
+		if len(self.NodeUrls) == 0:
+			raise RuntimeError("No ElasticSearch URLs has been provided.")
 
 		# Build headers
 		self.Headers = build_headers(username, password, api_key)
 
 		# Build ssl context
 		self.SSLContextBuilder = SSLContextBuilder(config_section_name)
-		if len(self.node_urls) > 0 and self.node_urls[0].startswith('https://'):
+		if self.NodeUrls[0].startswith('https://'):
 			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
-		else:
-			self.SSLContext = None
 
 		self._loader_per_url = int(self.Config['loader_per_url'])
 
@@ -338,7 +335,7 @@ class ElasticSearchConnection(Connection):
 		self.PubSub.subscribe("Application.exit!", self._on_exit)
 
 		self._futures = []
-		for url in self.node_urls:
+		for url in self.NodeUrls:
 			for i in range(self._loader_per_url):
 				self._futures.append((url, None))
 
@@ -371,7 +368,7 @@ class ElasticSearchConnection(Connection):
 		:return: list of URLS of nodes connected to the cluster
 
 		"""
-		return random.choice(self.node_urls)
+		return random.choice(self.NodeUrls)
 
 
 	def get_session(self):
