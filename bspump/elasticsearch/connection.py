@@ -285,28 +285,33 @@ class ElasticSearchConnection(Connection):
 
 		# old configuration format, section [connection:XXXXX]
 		config_section_name = 'connection:{}'.format(id)
-		url = asab.Config.getmultiline(config_section_name, 'url', fallback='')
-		if len(url) > 0:
-			asab.LogObsolete.warning(
-				"Do not configure elasticsearch connection in [{}]. Please use [elasticsearch] section with url, username and password parameters.".format(config_section_name)
-			)
-			self.node_urls = get_url_list(url)
+		if asab.Config.has_section(config_section_name):
+			url = asab.Config.getmultiline(config_section_name, 'url', fallback='')
+			if len(url) > 0:
+				asab.LogObsolete.warning(
+					"Do not configure elasticsearch connection in [{}]. Please use [elasticsearch] section with url, username and password parameters.".format(config_section_name)
+				)
+				self.node_urls = get_url_list(url)
 
-			# Authorization: username or API-key
-			username = self.Config.get('username')
-			password = self.Config.get('password')
-			api_key = self.Config.get('api_key')
+				# Authorization: username or API-key
+				username = self.Config.get('username')
+				password = self.Config.get('password')
+				api_key = self.Config.get('api_key')
+		else:
+			L.critical("Missing configuration section [{}].".format(config_section_name))
+			raise SystemExit("Exit due to a critical configuration error.")
 
 		# new configuration format, section [elasticsearch]
 		if asab.Config.has_section('elasticsearch'):
 			config_section_name = 'elasticsearch'
-			url = asab.Config.getmultiline(config_section_name, 'url')
+			url = asab.Config.getmultiline(config_section_name, 'url', fallback='')
 			self.node_urls = get_url_list(url)
 
 			# Authorization: username or API-key
 			username = asab.Config.get(config_section_name, 'username', fallback='')
 			password = asab.Config.get(config_section_name, 'password', fallback='')
 			api_key = asab.Config.get(config_section_name, 'api_key', fallback='')
+
 
 		# Build headers
 		self.Headers = build_headers(username, password, api_key)
