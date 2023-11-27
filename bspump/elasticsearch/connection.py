@@ -1,9 +1,9 @@
 import asyncio
 import logging
 import random
-import re
 import ssl
 import aiohttp
+import urllib.parse
 
 import asab
 
@@ -250,7 +250,7 @@ class ElasticSearchConnection(Connection):
 	"""
 
 	ConfigDefaults = {
-		'url': 'http://localhost:9200/',
+		'url': '',
 		# Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
 		'username': '',
 		'password': '',
@@ -283,32 +283,40 @@ class ElasticSearchConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue()
 
-		# Get credentials
-		username = self.Config.get('username')
-		password = self.Config.get('password')
-		api_key = self.Config.get('api_key')
-		url = self.Config.get('url')
+		# old configuration format, section [connection:XXXXX]
+		config_section_name = 'connection:{}'.format(id)
+		url = asab.Config.getmultiline(config_section_name, 'url', fallback='')
+		if len(url) > 0:
+			asab.LogObsolete.warning(
+				"Do not configure elasticsearch connection in [{}]. Please use [elasticsearch] section with url, username and password parameters.".format(config_section_name)
+			)
+			self.node_urls = get_url_list(url)
+
+			# Authorization: username or API-key
+			username = self.Config.get('username')
+			password = self.Config.get('password')
+			api_key = self.Config.get('api_key')
+
+		# new configuration format, section [elasticsearch]
+		if asab.Config.has_section('elasticsearch'):
+			config_section_name = 'elasticsearch'
+			url = asab.Config.getmultiline(config_section_name, 'url')
+			self.node_urls = get_url_list(url)
+
+			# Authorization: username or API-key
+			username = asab.Config.get(config_section_name, 'username', fallback='')
+			password = asab.Config.get(config_section_name, 'password', fallback='')
+			api_key = asab.Config.get(config_section_name, 'api_key', fallback='')
 
 		# Build headers
 		self.Headers = build_headers(username, password, api_key)
 
 		# Build ssl context
-		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
-		if url.startswith('https://'):
+		self.SSLContextBuilder = SSLContextBuilder(config_section_name)
+		if len(self.node_urls) > 0 and self.node_urls[0].startswith('https://'):
 			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
 		else:
 			self.SSLContext = None
-
-		# Contains URLs of each node in the cluster
-		self.node_urls = []
-		# for url in self.Config['url'].split(';'):
-		for url in re.split(r"\s+", self.Config['url']):
-			url = url.strip()
-			if len(url) == 0:
-				continue
-			if url[-1] != '/':
-				url += '/'
-			self.node_urls.append(url)
 
 		self._loader_per_url = int(self.Config['loader_per_url'])
 
@@ -363,7 +371,7 @@ class ElasticSearchConnection(Connection):
 
 	def get_session(self):
 		"""
-		Returns the aiohttp Client Session 
+		Returns the aiohttp Client Session
 
 		:return:
 		"""
@@ -543,6 +551,28 @@ class ElasticSearchConnection(Connection):
 				bulk.Items = []
 
 
+def get_url_list(urls):
+	server_urls = []
+	for url in urls:
+		scheme, netloc, path = parse_url(url)
+
+		server_urls += [
+			urllib.parse.urlunparse((scheme, netloc, path, None, None, None))
+			for netloc in netloc.split(';')
+		]
+
+	return server_urls
+
+
+def parse_url(url):
+	parsed_url = urllib.parse.urlparse(url)
+	url_path = parsed_url.path
+	if not url_path.endswith("/"):
+		url_path += "/"
+
+	return parsed_url.scheme, parsed_url.netloc, url_path
+
+
 def build_headers(username, password, api_key):
 
 	# Check configurations
@@ -557,7 +587,7 @@ def build_headers(username, password, api_key):
 	if username != '' and username is not None:
 		auth = aiohttp.BasicAuth(username, password)
 		headers['Authorization'] = auth.encode()
-		
+
 	elif api_key != '' and api_key is not None:
 		headers['Authorization'] = 'ApiKey {}'.format(api_key)
 
