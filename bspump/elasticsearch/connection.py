@@ -310,14 +310,15 @@ class ElasticSearchConnection(Connection):
 
 		# Build ssl context
 		if self.NodeUrls[0].startswith('https://'):
-			if asab.Config.has_section('connection:{}'.format(id)):
-				self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
+			if asab.Config.has_option('connection:{}'.format(id), 'cafile'):
+				self.SSLContextBuilder = SSLContextBuilder(config_section_name='connection:{}'.format(id))
 			else:
 				self.SSLContextBuilder = SSLContextBuilder(config_section_name='elasticsearch')
 			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
 		else:
 			self.SSLContext = None
 
+		# These parameters can be specified only in [connection:XXXXX] config section
 		self._loader_per_url = int(self.Config['loader_per_url'])
 
 		self._bulk_out_max_size = int(self.Config['bulk_out_max_size'])
