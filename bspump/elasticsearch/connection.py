@@ -310,7 +310,8 @@ class ElasticSearchConnection(Connection):
 
 		# Build ssl context
 		if self.NodeUrls[0].startswith('https://'):
-			if asab.Config.has_option('connection:{}'.format(id), 'cafile'):
+			if section_has_ssl_option('connection:{}'.format(id)):
+				# use the old section if it has data for SSL or default to the [elasticsearch] section
 				self.SSLContextBuilder = SSLContextBuilder(config_section_name='connection:{}'.format(id))
 			else:
 				self.SSLContextBuilder = SSLContextBuilder(config_section_name='elasticsearch')
@@ -572,6 +573,16 @@ def parse_url(url):
 		url_path += "/"
 
 	return parsed_url.scheme, parsed_url.netloc, url_path
+
+
+def section_has_ssl_option(config_section_name):
+	"""
+	Checks if cert, key, cafile, capath, cadata etc. appears in section's items
+	"""
+	for item in asab.Config.options(config_section_name):
+		if item in SSLContextBuilder.ConfigDefaults:
+			return True
+	return False
 
 
 def build_headers(username, password, api_key):
