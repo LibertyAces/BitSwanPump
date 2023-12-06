@@ -12,6 +12,8 @@ def parse_address(address):
 	Examples:
 	* "0.0.0.0 8080"
 	* "0.0.0.0:8080"
+	* "*:8080"
+	* "8080"
 	* "/tmp/unix.sock"
 
 	:return: The function `parse_address` returns a tuple containing the address family (either
@@ -26,8 +28,15 @@ def parse_address(address):
 
 	portrm = re.search(r"^(.*)[\s:](\d+)$", address)
 	if portrm is None:
-		# It is a UNIX address
-		return (socket.AF_UNIX, address)
+		portrm = re.search(r"^(\d+)$", address)
+		if portrm is None:
+			# It is a UNIX address
+			return (socket.AF_UNIX, address)
+		else:
+			# An user issued just a port
+			return (socket.AF_INET, (None, int(portrm.group(1))))
 
-	# TODO: Consider supporting '*' as the 'addr'
-	return (socket.AF_INET, (portrm.group(1), int(portrm.group(2))))
+	if portrm.group(1) != '*':
+		return (socket.AF_INET, (None, int(portrm.group(2))))
+	else:
+		return (socket.AF_INET, (portrm.group(1), int(portrm.group(2))))
