@@ -486,6 +486,7 @@ class ElasticSearchConnection(Connection):
 
 		# Signalize need for throttling
 		if self._output_queue.qsize() == self._output_queue_max_size:
+			# This PubSub message is meant primarily for Elasticsearch Sinks that are attached to this connection
 			self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
 	async def _loader(self, url):
@@ -529,6 +530,7 @@ class ElasticSearchConnection(Connection):
 					break
 
 				if self._output_queue.qsize() == self._output_queue_max_size - 1:
+					# This PubSub message is meant primarily for Elasticsearch Sinks that are attached to this connection
 					self.PubSub.publish("ElasticSearchConnection.unpause!", self)
 
 				sucess = await bulk.upload(url, session, self.SSLContext, self._timeout)
