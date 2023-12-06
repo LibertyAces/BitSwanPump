@@ -62,7 +62,6 @@ class StreamServerSource(Source):
 			addr_family, addr = parse_address(self.Address)
 			
 			if addr_family == socket.AF_UNIX:
-				print("UNIX")
 				s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 				s.setblocking(False)
 				s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
