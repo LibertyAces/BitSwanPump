@@ -310,7 +310,7 @@ class ElasticSearchConnection(Connection):
 
 		# Build ssl context
 		if self.NodeUrls[0].startswith('https://'):
-			if section_has_ssl_option('connection:{}'.format(id)):
+			if asab.Config.has_section('connection:{}'.format(id)) and section_has_ssl_option('connection:{}'.format(id)):
 				# use the old section if it has data for SSL or default to the [elasticsearch] section
 				self.SSLContextBuilder = SSLContextBuilder(config_section_name='connection:{}'.format(id))
 			else:
