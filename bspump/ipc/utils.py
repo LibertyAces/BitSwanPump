@@ -36,7 +36,7 @@ def parse_address(address):
 			# An user issued just a port
 			return (socket.AF_INET, (None, int(portrm.group(1))))
 
-	if portrm.group(1) != '*':
+	if portrm.group(1) == '*':
 		return (socket.AF_INET, (None, int(portrm.group(2))))
 	else:
 		return (socket.AF_INET, (portrm.group(1), int(portrm.group(2))))
