@@ -3,6 +3,8 @@ import socket
 import asyncio
 import logging
 
+import asab
+
 from ..abc.source import Source
 
 from .stream import Stream, TLSStream
@@ -32,6 +34,8 @@ class StreamServerSource(Source):
 		super().__init__(app, pipeline, id=id, config=config)
 
 		self.Address = self.Config['address']
+		if isinstance(self.Address, int):
+			self.Address = str(self.Address)
 
 		if 'cert' in self.Config or 'key' in self.Config:
 			import asab.net
@@ -58,21 +62,31 @@ class StreamServerSource(Source):
 			addr_family, addr = parse_address(self.Address)
 			
 			if addr_family == socket.AF_UNIX:
-				self.Socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-				self.Socket.setblocking(False)
-				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-				self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-				self.Socket.bind(self.Address)
+				s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+				s.setblocking(False)
+				s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+				s.bind(self.Address)
+				self.AcceptingSockets.append(s)
 
 			else:  # Internet address family
-				addrinfo = socket.getaddrinfo(addr[0], addr[1], family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
+				try:
+					addrinfo = socket.getaddrinfo(addr[0], addr[1], family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
+				except Exception as e:
+					L.error("Failed to open socket: {}".format(e), struct_data={'host': addr[0], 'port': addr[1]})
+					continue
 
 				for family, socktype, proto, canonname, sockaddr in addrinfo:
 					s = socket.socket(family, socktype, proto)
+
+					s.setblocking(False)
+					s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+					s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+
 					try:
 						s.bind(sockaddr)
 					except OSError as e:
-						L.warning("Failed to start listening at '{}': {}".format(addrline, e))
+						L.warning("Failed to start listening: {}".format(e), struct_data={'host': sockaddr[0], 'port': sockaddr[1]})
 						continue
 
 					backlog = self.Config['backlog']
@@ -80,9 +94,9 @@ class StreamServerSource(Source):
 						s.listen()
 					else:
 						s.listen(int(backlog))
-
-					s.setblocking(False)
+					
 					self.AcceptingSockets.append(s)
+					L.log(asab.LOG_NOTICE, "Listening on TCP", struct_data={'host': sockaddr[0], 'port': sockaddr[1]})
 
 
 		super().start(loop)
@@ -136,6 +150,8 @@ class StreamServerSource(Source):
 			me = server_addr
 			peer = client_addr
 
+		L.log(asab.LOG_NOTICE, "Connected.", struct_data={'peer': peer})
+
 		context = {
 			'stream_type': client_sock.family.name,
 			'stream_dir': 'in',
@@ -170,9 +186,11 @@ class StreamServerSource(Source):
 			try:
 				await t
 			except asyncio.CancelledError:
-				pass
+				pass				
 			except Exception:
 				L.exception("Error when handling client socket")
+
+		L.log(asab.LOG_NOTICE, "Disconnected.", struct_data={'peer': peer})
 
 		# Close the stream
 		await stream.close()

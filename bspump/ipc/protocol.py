@@ -48,8 +48,22 @@ class LineSourceProtocol(SourceProtocolABC):
 		last_eol_pos = 0
 
 		while True:
-			recv_bytes = await stream.recv_into(input_buffer_mv[input_buffer_pos:])
+			try:
+				recv_bytes = await stream.recv_into(input_buffer_mv[input_buffer_pos:])
+			except asyncio.ConnectionResetError as e:
+				L.warning("Connection reset: {}".format(e), struct_data={'peer': context.get('context', '?')})
+				recv_bytes = 0
+
 			if recv_bytes <= 0:
+
+				# Flush the buffer
+				if input_buffer_pos > 0:
+					line = self.LineDecoder(
+						line_bytes=input_buffer[:input_buffer_pos]
+					)
+					await pipeline.ready()
+					await source.process(line, context=context.copy())
+
 				# Client closed the connection
 				if recv_bytes < 0:
 					raise RuntimeError("Client sock_recv_into returned {}".format(recv_bytes))
