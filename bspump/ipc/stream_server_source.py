@@ -38,8 +38,8 @@ class StreamServerSource(Source):
 			self.Address = str(self.Address)
 
 		if 'cert' in self.Config or 'key' in self.Config:
-			import asab.net
-			sslbuilder = asab.net.SSLContextBuilder('[none]', config=self.Config)
+			import asab.tls
+			sslbuilder = asab.tls.SSLContextBuilder('[none]', config=self.Config)
 			self.SSL = sslbuilder.build(protocol=ssl.PROTOCOL_SSLv23)
 		else:
 			self.SSL = None
@@ -60,7 +60,7 @@ class StreamServerSource(Source):
 		for addrline in self.Address.split('\n'):
 			addrline = addrline.strip()
 			addr_family, addr = parse_address(self.Address)
-			
+
 			if addr_family == socket.AF_UNIX:
 				s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 				s.setblocking(False)
@@ -94,7 +94,7 @@ class StreamServerSource(Source):
 						s.listen()
 					else:
 						s.listen(int(backlog))
-					
+
 					self.AcceptingSockets.append(s)
 					L.log(asab.LOG_NOTICE, "Listening on TCP", struct_data={'host': sockaddr[0], 'port': sockaddr[1]})
 
@@ -158,6 +158,7 @@ class StreamServerSource(Source):
 			'stream_peer': peer,
 			'stream_me': me,
 		}
+
 		if self.SSL is not None:
 			stream = TLSStream(self.Pipeline.App.Loop, self.SSL, client_sock, server_side=True)
 			ok = await stream.handshake()
