@@ -1,9 +1,9 @@
 import asyncio
 import logging
 import random
-import re
 import ssl
 import aiohttp
+import urllib.parse
 
 import asab
 
@@ -250,10 +250,11 @@ class ElasticSearchConnection(Connection):
 	"""
 
 	ConfigDefaults = {
-		'url': 'http://localhost:9200/',
+		'url': '',
 		# Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
 		'username': '',
 		'password': '',
+		'api_key': '',
 		'loader_per_url': 4,  # Number of parallel loaders per URL
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 12 * 1024 * 1024,
@@ -283,33 +284,42 @@ class ElasticSearchConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue()
 
-		# Get credentials
+		url = asab.Config.getmultiline('connection:{}'.format(id), 'url', fallback='')
+		if len(url) == 0:
+			url = asab.Config.getmultiline('elasticsearch', 'url', fallback='')
+		self.NodeUrls = get_url_list(url)
+
+		if len(self.NodeUrls) == 0:
+			raise RuntimeError("No ElasticSearch URL has been provided.")
+
+		# Authorization: username or API-key
 		username = self.Config.get('username')
+		if len(username) == 0:
+			username = asab.Config.get('elasticsearch', 'username', fallback='')
+
 		password = self.Config.get('password')
+		if len(password) == 0:
+			password = asab.Config.get('elasticsearch', 'password', fallback='')
+
 		api_key = self.Config.get('api_key')
-		url = self.Config.get('url')
+		if len(api_key) == 0:
+			api_key = asab.Config.get('elasticsearch', 'api_key', fallback='')
 
 		# Build headers
 		self.Headers = build_headers(username, password, api_key)
 
 		# Build ssl context
-		self.SSLContextBuilder = SSLContextBuilder('connection:{}'.format(id))
-		if url.startswith('https://'):
+		if self.NodeUrls[0].startswith('https://'):
+			if asab.Config.has_section('connection:{}'.format(id)) and section_has_ssl_option('connection:{}'.format(id)):
+				# use the old section if it has data for SSL or default to the [elasticsearch] section
+				self.SSLContextBuilder = SSLContextBuilder(config_section_name='connection:{}'.format(id))
+			else:
+				self.SSLContextBuilder = SSLContextBuilder(config_section_name='elasticsearch')
 			self.SSLContext = self.SSLContextBuilder.build(ssl.PROTOCOL_TLS_CLIENT)
 		else:
 			self.SSLContext = None
 
-		# Contains URLs of each node in the cluster
-		self.node_urls = []
-		# for url in self.Config['url'].split(';'):
-		for url in re.split(r"\s+", self.Config['url']):
-			url = url.strip()
-			if len(url) == 0:
-				continue
-			if url[-1] != '/':
-				url += '/'
-			self.node_urls.append(url)
-
+		# These parameters can be specified only in [connection:XXXXX] config section
 		self._loader_per_url = int(self.Config['loader_per_url'])
 
 		self._bulk_out_max_size = int(self.Config['bulk_out_max_size'])
@@ -325,7 +335,7 @@ class ElasticSearchConnection(Connection):
 		self.PubSub.subscribe("Application.exit!", self._on_exit)
 
 		self._futures = []
-		for url in self.node_urls:
+		for url in self.NodeUrls:
 			for i in range(self._loader_per_url):
 				self._futures.append((url, None))
 
@@ -358,12 +368,12 @@ class ElasticSearchConnection(Connection):
 		:return: list of URLS of nodes connected to the cluster
 
 		"""
-		return random.choice(self.node_urls)
+		return random.choice(self.NodeUrls)
 
 
 	def get_session(self):
 		"""
-		Returns the aiohttp Client Session 
+		Returns the aiohttp Client Session
 
 		:return:
 		"""
@@ -545,6 +555,38 @@ class ElasticSearchConnection(Connection):
 				bulk.Items = []
 
 
+def get_url_list(urls):
+	server_urls = []
+	for url in urls:
+		scheme, netloc, path = parse_url(url)
+
+		server_urls += [
+			urllib.parse.urlunparse((scheme, netloc, path, None, None, None))
+			for netloc in netloc.split(';')
+		]
+
+	return server_urls
+
+
+def parse_url(url):
+	parsed_url = urllib.parse.urlparse(url)
+	url_path = parsed_url.path
+	if not url_path.endswith("/"):
+		url_path += "/"
+
+	return parsed_url.scheme, parsed_url.netloc, url_path
+
+
+def section_has_ssl_option(config_section_name):
+	"""
+	Checks if cert, key, cafile, capath, cadata etc. appears in section's items
+	"""
+	for item in asab.Config.options(config_section_name):
+		if item in SSLContextBuilder.ConfigDefaults:
+			return True
+	return False
+
+
 def build_headers(username, password, api_key):
 
 	# Check configurations
@@ -559,7 +601,7 @@ def build_headers(username, password, api_key):
 	if username != '' and username is not None:
 		auth = aiohttp.BasicAuth(username, password)
 		headers['Authorization'] = auth.encode()
-		
+
 	elif api_key != '' and api_key is not None:
 		headers['Authorization'] = 'ApiKey {}'.format(api_key)
 
