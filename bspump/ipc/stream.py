@@ -23,8 +23,12 @@ class Stream(object):
 		else:
 			self.OutboundQueue = outbound_queue
 
+
 	async def recv_into(self, buf):
 		return await self.Loop.sock_recv_into(self.Socket, buf)
+
+	async def recv(self, nbytes):
+		return await self.Loop.sock_recv(self.Socket, nbytes)
 
 
 	def send(self, data):

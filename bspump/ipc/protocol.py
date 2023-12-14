@@ -12,9 +12,31 @@ class SourceProtocolABC(object):
 
 	def __init__(self, app, pipeline, config):
 		self.Loop = app.Loop
+		self.Pipeline = pipeline
 
 	async def handle(self, source, stream, context):
+		'''
+		`source` is an Source object, call `process()` method with the output of the protocol
+		`stream` is an incoming Stream
+		`context` is a dictionary with context info.
+
+
+		Example of the naive protocol output:
+
+		```
+			buffer = bytearray(b' ' * 1024 * 8)
+			await stream.recv_into(buffer)
+			await source.process(buffer, context=context.copy())
+		```
+
+		'''
 		raise NotImplementedError()
+
+
+	async def process(self, source, event, context):
+		await self.Pipeline.ready()
+		await source.process(event, context=context.copy())
+
 
 
 class LineSourceProtocol(SourceProtocolABC):
@@ -27,7 +49,7 @@ class LineSourceProtocol(SourceProtocolABC):
 
 		# TODO: All following values could be read from configuration
 		self.EOL = b'\n'
-		self.SaneBufferSize = 64 * 1024  # The maximum buffer size considered as sane
+		self.ChunkSize = 1024
 
 		# Line decoder
 		decode_codec = config['decode']
@@ -40,66 +62,35 @@ class LineSourceProtocol(SourceProtocolABC):
 
 
 	async def handle(self, source, stream, context):
-		pipeline = source.Pipeline
 
-		input_buffer = bytearray(b' ' * 8)
-		input_buffer_mv = memoryview(input_buffer)
-		input_buffer_pos = 0
-		last_eol_pos = 0
+		# Create an empty bytearray to store the received data
+		buffer = bytearray()
 
 		while True:
-			try:
-				recv_bytes = await stream.recv_into(input_buffer_mv[input_buffer_pos:])
-			except asyncio.ConnectionResetError as e:
-				L.warning("Connection reset: {}".format(e), struct_data={'peer': context.get('context', '?')})
-				recv_bytes = 0
+			# Read data from the stream
+			chunk = await stream.recv(self.ChunkSize)
+			if not chunk:
+				# If no more data, break the loop
+				break
 
-			if recv_bytes <= 0:
+			buffer.extend(chunk)
 
-				# Flush the buffer
-				if input_buffer_pos > 0:
-					line = self.LineDecoder(
-						line_bytes=input_buffer[:input_buffer_pos]
-					)
-					await pipeline.ready()
-					await source.process(line, context=context.copy())
-
-				# Client closed the connection
-				if recv_bytes < 0:
-					raise RuntimeError("Client sock_recv_into returned {}".format(recv_bytes))
-				return
-
-			input_buffer_pos += recv_bytes
-			if len(input_buffer) == input_buffer_pos:
-				if len(input_buffer) > self.SaneBufferSize:
-					raise RuntimeError("Insane buffer size requested")
-				# Grow the input_buffer if the size touches the top
-				new_input_buffer = bytearray(b' ' * (len(input_buffer) * 2))
-				input_buffer_mv = memoryview(new_input_buffer)
-				input_buffer_mv[:len(input_buffer)] = input_buffer  # Copy the content of the old buffer
-				input_buffer = new_input_buffer
-
-			while last_eol_pos < input_buffer_pos:
-				# Seek for end of line symbol in the buffer
-				eol_pos = input_buffer[:input_buffer_pos].find(self.EOL, last_eol_pos)
-				if eol_pos == -1:
+			# Check if there are any newline characters in the buffer
+			while True:
+				# Split the buffer at the first newline character
+				try:
+					line, buffer = buffer.split(self.EOL, 1)
+				except ValueError:
 					break
 
-				line = self.LineDecoder(
-					line_bytes=input_buffer[last_eol_pos:eol_pos]
-				)
-				last_eol_pos = eol_pos + 1
+				line = self.LineDecoder(line)
+				await self.process(source, line, context)
+		
+		# Process any remaining data in the buffer if it's not empty
+		if buffer:
+			line = self.LineDecoder(buffer)
+			await self.process(source, line, context)
 
-				await pipeline.ready()
-				await source.process(line, context=context.copy())
-
-			# TODO: HIGH PRIORITY This definitively doesn't cover all possible cases
-
-			# If the '\n' is at the end of the buffer, reset the buffer position
-			if last_eol_pos == input_buffer_pos:
-				input_buffer_pos = 0
-				last_eol_pos = 0
-				continue
 
 	def _line_codec_decoder(self, line_bytes):
 		line, _ = self.Codec.decode(
