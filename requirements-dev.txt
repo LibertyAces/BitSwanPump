@@ -2,7 +2,7 @@ coverage==4.5.3
 aioresponses==0.6.0
 aioodbc==0.3.3
 aiopg>=0.16.0,<1.0  # TODO PLUM-550
-asyncssh==2.14.1
+asyncssh==2.14.2
 pyyaml==5.4
 mongoquery==1.3.6
 pytz
