@@ -1,5 +1,7 @@
 import logging
 
+import asab
+
 from ..abc.connection import Connection
 
 #
@@ -35,3 +37,10 @@ class KafkaConnection(Connection):
 
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
+
+		# same parameters from [kafka] section take precedence
+		if "kafka" in asab.Config:
+			self.Config.update(asab.Config["kafka"])
+
+		if self.Config.get("bootstrap_servers") is None:
+			raise RuntimeError("No Kafka URL has been provided.")
