@@ -43,4 +43,4 @@ class KafkaConnection(Connection):
 				self.Config.update(asab.Config["kafka"])
 
 		if self.Config.get("bootstrap_servers") is None:
-			raise RuntimeError("No Kafka URL has been provided.")
+			raise RuntimeError("Missing 'bootstrap_servers' in Kafka connection configuration.")
