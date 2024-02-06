@@ -1,5 +1,7 @@
 import logging
 
+import asab
+
 from ..abc.connection import Connection
 
 #
@@ -35,3 +37,10 @@ class KafkaConnection(Connection):
 
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
+
+		if self.Config.get("bootstrap_servers") is None:
+			if "kafka" in asab.Config:
+				self.Config.update(asab.Config["kafka"])
+
+		if self.Config.get("bootstrap_servers") is None:
+			raise RuntimeError("Missing 'bootstrap_servers' in Kafka connection configuration.")
