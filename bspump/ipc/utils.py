@@ -11,7 +11,9 @@ def parse_address(address):
 
 	Examples:
 	* "0.0.0.0 8080"
-	* "0.0.0.0:8080"
+	* "0.0.0.0:8080" (this format is nice to YAML)
+	* ":: 8080"
+	* ":::8080"  (this format is nice to YAML)
 	* "*:8080"
 	* "8080"
 	* "/tmp/unix.sock"
