@@ -106,6 +106,8 @@ class KafkaSource(Source):
 			else:
 				self.ConsumerConfig[key.replace("_", ".")] = value
 
+		assert "bootstrap.servers" in self.ConsumerConfig, "Bootstrap Servers must be set in [kafka] section in the configuration."
+
 		# Create subscription list
 		self.Subscribe = []
 

@@ -92,6 +92,8 @@ class KafkaSink(Sink):
 
 			producer_config[key.replace("_", ".")] = value
 
+		assert "bootstrap.servers" in producer_config, "Bootstrap Servers must be set in [kafka] section in the configuration."
+
 		self.Producer = confluent_kafka.Producer(producer_config, logger=L)
 
 		self.Topic = self.Config["topic"]
