@@ -109,7 +109,6 @@ class StreamServerSource(Source):
 						s.listen(int(backlog))
 
 					self.AcceptingSockets.append(s)
-
 					L.log(asab.LOG_NOTICE, "Listening on TCP", struct_data={'host': sockaddr[0], 'port': sockaddr[1], 'family': inet_family_names.get(family, "???")})
 
 
