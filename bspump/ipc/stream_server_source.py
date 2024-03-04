@@ -96,7 +96,8 @@ class StreamServerSource(Source):
 						s.listen(int(backlog))
 
 					self.AcceptingSockets.append(s)
-					L.log(asab.LOG_NOTICE, "Listening on TCP", struct_data={'host': sockaddr[0], 'port': sockaddr[1]})
+
+					L.log(asab.LOG_NOTICE, "Listening on TCP", struct_data={'host': sockaddr[0], 'port': sockaddr[1], 'family': _inet_family.get(family, "???")})
 
 
 		super().start(loop)
@@ -214,3 +215,9 @@ class StreamServerSource(Source):
 					pass
 				except Exception:
 					L.exception("Exception when handling client socket")
+
+
+_inet_family = {
+	socket.AF_INET: "IPv4",
+	socket.AF_INET6: "IPv6",
+}
