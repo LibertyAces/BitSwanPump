@@ -42,3 +42,9 @@ def parse_address(address):
 		return (socket.AF_INET, (None, int(portrm.group(2))))
 	else:
 		return (socket.AF_INET, (portrm.group(1), int(portrm.group(2))))
+
+
+inet_family_names = {
+	socket.AF_INET: "IPv4",
+	socket.AF_INET6: "IPv6",
+}

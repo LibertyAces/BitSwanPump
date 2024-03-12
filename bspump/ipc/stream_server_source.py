@@ -1,3 +1,5 @@
+import os
+import stat
 import ssl
 import socket
 import asyncio
@@ -9,7 +11,7 @@ from ..abc.source import Source
 
 from .stream import Stream, TLSStream
 from .protocol import LineSourceProtocol
-from .utils import parse_address
+from .utils import parse_address, inet_family_names
 
 #
 
@@ -62,12 +64,23 @@ class StreamServerSource(Source):
 			addr_family, addr = parse_address(self.Address)
 
 			if addr_family == socket.AF_UNIX:
-				s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+
+				if os.path.exists(addrline):
+					usstat = os.stat(addrline)
+					if stat.S_ISSOCK(usstat.st_mode):
+						os.unlink(addrline)
+					else:
+						L.warn("Cannot listen on UNIX socket, path is already occupied", struct_data={'path': addrline})
+						continue
+
+				s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 				s.setblocking(False)
 				s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-				s.bind(self.Address)
+				s.bind(addrline)
+
 				self.AcceptingSockets.append(s)
+				L.log(asab.LOG_NOTICE, "Listening on UNIX socket (STREAM)", struct_data={'path': addrline})
 
 			else:  # Internet address family
 				try:
@@ -96,7 +109,7 @@ class StreamServerSource(Source):
 						s.listen(int(backlog))
 
 					self.AcceptingSockets.append(s)
-					L.log(asab.LOG_NOTICE, "Listening on TCP", struct_data={'host': sockaddr[0], 'port': sockaddr[1]})
+					L.log(asab.LOG_NOTICE, "Listening on TCP", struct_data={'host': sockaddr[0], 'port': sockaddr[1], 'family': inet_family_names.get(family, "???")})
 
 
 		super().start(loop)
@@ -107,6 +120,14 @@ class StreamServerSource(Source):
 		for t in self.ConnectedClients:
 			t.cancel()
 		self.ConnectedClients = set()
+
+		for s in self.AcceptingSockets:
+			if s.family == socket.AF_UNIX:
+				# We should remove the UNIX socket when the the collector is not running
+				try:
+					os.unlink(s.getsockname())
+				except Exception:
+					L.exception("Error when removing socket file")
 
 		# The main() will be canceled in the parent class
 		await super().stop()
