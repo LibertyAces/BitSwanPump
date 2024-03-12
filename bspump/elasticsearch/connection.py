@@ -60,7 +60,6 @@ class ElasticSearchBulk(object):
 			self.Items.append(item)
 			self.Capacity -= len(item)
 
-		self.Aging = 0
 		return self.Capacity <= 0
 
 
@@ -261,6 +260,7 @@ class ElasticSearchConnection(Connection):
 		'timeout': 300,
 		'fail_log_max_size': 20,
 		'precise_error_handling': False,
+		'max_bulk_age': 2,  # (per flush, tick/second)
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -304,6 +304,9 @@ class ElasticSearchConnection(Connection):
 		api_key = self.Config.get('api_key')
 		if len(api_key) == 0:
 			api_key = asab.Config.get('elasticsearch', 'api_key', fallback='')
+
+		# Maximum age of bulks (per flush, tick/second)
+		self.MaxBulkAge = self.Config.getint('max_bulk_age')
 
 		# Build headers
 		self.Headers = build_headers(username, password, api_key)
@@ -476,7 +479,7 @@ class ElasticSearchConnection(Connection):
 
 			bulk.Aging += 1
 
-			if (bulk.Aging >= 2) or forced:
+			if (bulk.Aging >= self.MaxBulkAge) or forced:
 				aged.append(index)
 
 		for index in aged:
