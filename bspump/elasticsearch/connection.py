@@ -42,6 +42,7 @@ class ElasticSearchBulk(object):
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
+		self.CreatedAt = connection.App.time()
 
 
 	def consume(self, data_feeder_generator):
@@ -60,6 +61,10 @@ class ElasticSearchBulk(object):
 			self.Items.append(item)
 			self.Capacity -= len(item)
 
+		# Reset the aging so the bulk can be filled up to its capacity
+		self.Aging = 0
+
+		# Was the capacity of the bulk exceeded?
 		return self.Capacity <= 0
 
 
@@ -168,6 +173,7 @@ class ElasticSearchBulk(object):
 
 		return True
 
+
 	def partial_error_callback(self, response_items):
 		"""
 		Description: When an upload to ElasticSearch fails for error items (document could not be inserted),
@@ -260,7 +266,8 @@ class ElasticSearchConnection(Connection):
 		'timeout': 300,
 		'fail_log_max_size': 20,
 		'precise_error_handling': False,
-		'max_bulk_age': 2,  # (per flush, tick/second)
+		'bulk_lifespan': 30,  # Lifespan is the maximum time for bulk existence, per tick/second
+		'max_bulk_age': 2,  # Age is when no event comes to the bulk, per tick/second
 	}
 
 	def __init__(self, app, id=None, config=None):
@@ -305,7 +312,10 @@ class ElasticSearchConnection(Connection):
 		if len(api_key) == 0:
 			api_key = asab.Config.get('elasticsearch', 'api_key', fallback='')
 
-		# Maximum age of bulks (per flush, tick/second)
+		# The lifespan of bulks (per second)
+		self.BulkLifespan = self.Config.getint('bulk_lifespan')
+
+		# Maximum age of bulks (per second)
 		self.MaxBulkAge = self.Config.getint('max_bulk_age')
 
 		# Build headers
@@ -410,9 +420,11 @@ class ElasticSearchConnection(Connection):
 			del self._bulks[index]
 			self.enqueue(bulk)
 
+
 	def _start(self, event_name):
 		self.PubSub.subscribe("Application.tick!", self._on_tick)
 		self._on_tick("simulated!")
+
 
 	async def _on_exit(self, event_name):
 		# Wait till the queue is empty
@@ -461,6 +473,7 @@ class ElasticSearchConnection(Connection):
 
 		self.flush()
 
+
 	def flush(self, forced=False):
 		"""
 		It goes through the list of bulks and calls enqueue for each of them.
@@ -471,6 +484,7 @@ class ElasticSearchConnection(Connection):
 
 		"""
 		aged = []
+		current_time = self.App.time()
 
 		for index, bulk in self._bulks.items():
 
@@ -481,10 +495,17 @@ class ElasticSearchConnection(Connection):
 
 			if (bulk.Aging >= self.MaxBulkAge) or forced:
 				aged.append(index)
+				continue
+
+			# The maximum lifespan of the bulk was exceeded
+			if (current_time - bulk.CreatedAt) >= self.BulkLifespan:
+				aged.append(index)
+				continue
 
 		for index in aged:
 			bulk = self._bulks.pop(index)
 			self.enqueue(bulk)
+
 
 	def enqueue(self, bulk):
 		"""
@@ -501,6 +522,7 @@ class ElasticSearchConnection(Connection):
 		if self._output_queue.qsize() == self._output_queue_max_size:
 			# This PubSub message is meant primarily for Elasticsearch Sinks that are attached to this connection
 			self.PubSub.publish("ElasticSearchConnection.pause!", self)
+
 
 	async def _loader(self, url):
 		async with self.get_session() as session:
