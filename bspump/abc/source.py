@@ -29,6 +29,7 @@ class Source(asab.ConfigObject):
 		"""
 		super().__init__("pipeline:{}:{}".format(pipeline.Id, id if id is not None else self.__class__.__name__), config=config)
 
+		self.App = app
 		self.Id = id if id is not None else self.__class__.__name__
 		self.Pipeline = pipeline
 
