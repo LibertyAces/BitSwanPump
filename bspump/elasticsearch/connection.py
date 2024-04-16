@@ -519,7 +519,7 @@ class ElasticSearchConnection(Connection):
 		self._output_queue.put_nowait(bulk)
 
 		# Signalize need for throttling
-		if self._output_queue.qsize() == self._output_queue_max_size:
+		if self._output_queue.qsize() >= self._output_queue_max_size:  # Hotfix: There should be just ==, but _loader tasks are asychronous, investigate
 			# This PubSub message is meant primarily for Elasticsearch Sinks that are attached to this connection
 			self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
