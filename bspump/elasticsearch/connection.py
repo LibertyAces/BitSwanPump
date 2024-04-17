@@ -112,7 +112,7 @@ class ElasticSearchBulk(object):
 			# Likely no communication took place with ElasticSearch
 			L.warn(
 				"Encountered OS Error",
-				struct_data={"cause": e},
+				struct_data={"reason": e},
 			)
 
 			return False
@@ -125,7 +125,7 @@ class ElasticSearchBulk(object):
 			# Let's assume that the bulk did not reach ElasticSearch
 			L.warn(
 				"Unknown exception",
-				struct_data={"cause": e},
+				struct_data={"reason": e},
 			)
 			return False
 
@@ -157,7 +157,7 @@ class ElasticSearchBulk(object):
 						"Failed to insert document into ElasticSearch",
 						struct_data={
 							"status": resp.status,
-							"cause": self.ESResponseCodes.get(resp.status, resp.status),
+							"reason": self.ESResponseCodes.get(resp.status, resp.status),
 						},
 					)
 
@@ -185,7 +185,7 @@ class ElasticSearchBulk(object):
 				"Failed to insert document into ElasticSearch",
 				struct_data={
 					"status": resp.status,
-					"cause": self.ESResponseCodes.get(resp.status, resp.status),
+					"reason": self.ESResponseCodes.get(resp.status, resp.status),
 				},
 			)
 
