@@ -110,7 +110,7 @@ class ElasticSearchBulk(object):
 		except OSError as e:
 			# This means that there was a hard error such as network or DNS failure
 			# Likely no communication took place with ElasticSearch
-			L.warn(
+			L.warning(
 				"Encountered OS Error",
 				struct_data={"reason": e},
 			)
@@ -123,7 +123,7 @@ class ElasticSearchBulk(object):
 		except Exception as e:
 			# We received something else than JSON, that's bad
 			# Let's assume that the bulk did not reach ElasticSearch
-			L.warn(
+			L.warning(
 				"Unknown exception",
 				struct_data={"reason": e},
 			)
@@ -469,7 +469,7 @@ class ElasticSearchConnection(Connection):
 			self.flush(forced=True)
 			await asyncio.sleep(1)
 			if self._output_queue.qsize() > 0:
-				L.warn(
+				L.warning(
 					"Still have items in bulk output queue",
 					struct_data={
 						"output_queue_size": self._output_queue.qsize(),
