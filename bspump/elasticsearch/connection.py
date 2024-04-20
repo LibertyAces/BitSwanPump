@@ -43,6 +43,7 @@ class ElasticSearchBulk(object):
 		self.FailLogMaxSize = connection.FailLogMaxSize
 		self.FilterPath = connection.FilterPath
 		self.CreatedAt = connection.App.time()
+		self.ESResponseCodes = connection.ESResponseCodes
 
 
 	def consume(self, data_feeder_generator):
@@ -109,7 +110,11 @@ class ElasticSearchBulk(object):
 		except OSError as e:
 			# This means that there was a hard error such as network or DNS failure
 			# Likely no communication took place with ElasticSearch
-			L.warn("{}".format(e))
+			L.warning(
+				"Encountered OS Error",
+				struct_data={"reason": e},
+			)
+
 			return False
 
 		# Obtain the response from ElasticSearch, which should always be a json
@@ -118,7 +123,10 @@ class ElasticSearchBulk(object):
 		except Exception as e:
 			# We received something else than JSON, that's bad
 			# Let's assume that the bulk did not reach ElasticSearch
-			L.warn("{}".format(e))
+			L.warning(
+				"Unknown exception",
+				struct_data={"reason": e},
+			)
 			return False
 
 		if resp.status == 200:
@@ -145,17 +153,25 @@ class ElasticSearchBulk(object):
 					continue
 
 				if counter < self.FailLogMaxSize:
-					L.error("Failed to insert document into ElasticSearch: '{}'".format(
-						str(response_item)
-					))
+					L.error(
+						"Failed to insert document into ElasticSearch",
+						struct_data={
+							"status": resp.status,
+							"reason": self.ESResponseCodes.get(resp.status, resp.status),
+						},
+					)
+
 
 				counter += 1
 
 			# Show remaining log messages
 			if counter > self.FailLogMaxSize:
-				L.error("Failed to insert document into ElasticSearch: '{}' more insertions of documents failed".format(
-					counter - self.FailLogMaxSize
-				))
+				L.error(
+					"Failed to insert document into ElasticSearch. Failed insertions",
+					struct_data={
+						"count": counter - self.FailLogMaxSize,
+					}
+				)
 
 			# Insert metrics
 			self.InsertMetric.add("fail", counter)
@@ -165,10 +181,14 @@ class ElasticSearchBulk(object):
 
 			# The major ElasticSearch error occurred while inserting documents, response was not 200
 			self.InsertMetric.add("fail", items_count)
-			L.error("Failed to insert document into ElasticSearch status:{} body:{}".format(
-				resp.status,
-				resp_body
-			))
+			L.error(
+				"Failed to insert document into ElasticSearch",
+				struct_data={
+					"status": resp.status,
+					"reason": self.ESResponseCodes.get(resp.status, resp.status),
+				},
+			)
+
 			return self.full_error_callback(self.Items, resp.status)
 
 		return True
@@ -187,7 +207,12 @@ class ElasticSearchBulk(object):
 
 		:return:
 		"""
-		L.error("Failed to insert items in the elasticsearch: {}".format(response_items[:10]))
+		L.error(
+			"Failed to insert items in the elasticsearch",
+			struct_data={
+				"items": response_items[:10],
+			}
+		)
 
 
 	def full_error_callback(self, bulk_items, return_code):
@@ -376,6 +401,17 @@ class ElasticSearchConnection(Connection):
 			}
 		)
 
+		# ES common response codes
+		self.ESResponseCodes = {
+			200: "A resource was modified successfully",
+			201: "A resource was created",
+			400: "Request could not be processed/Attempted operation on closed index",
+			401: "Unauthorized",
+			403: "Index is read only, operation forbidden",
+			404: "Resource could not be found",
+			429: "Elasticsearch is overloaded",
+		}
+
 	def get_url(self):
 		"""
 		:return: list of URLS of nodes connected to the cluster
@@ -433,7 +469,12 @@ class ElasticSearchConnection(Connection):
 			self.flush(forced=True)
 			await asyncio.sleep(1)
 			if self._output_queue.qsize() > 0:
-				L.warn("Still have {} bulk in output queue".format(self._output_queue.qsize()))
+				L.warning(
+					"Still have items in bulk output queue",
+					struct_data={
+						"output_queue_size": self._output_queue.qsize(),
+					}
+				)
 
 		self._started = False
 
@@ -459,8 +500,11 @@ class ElasticSearchConnection(Connection):
 					future.result()
 					if self._started:
 						L.error("ElasticSearch issue detected, will retry shortly")
-				except Exception:
-					L.exception("ElasticSearch issue detected, will retry shortly")
+				except Exception as e:
+					L.exception(
+						"ElasticSearch issue detected, will retry shortly",
+						struct_data={"reason": e},
+						)
 
 				self._futures[i] = (url, None)
 
@@ -535,27 +579,45 @@ class ElasticSearchConnection(Connection):
 				) as resp:
 					await resp.json()
 					if resp.status != 200:
-						L.error("Cluster is not ready", struct_data={'status': resp.status})
+						L.error(
+							"Cluster is not ready",
+							struct_data={
+								"status": resp.status,
+								"reason": self.ESResponseCodes.get(resp.status, resp.status),
+							},
+						)
 						await asyncio.sleep(5)  # Throttle a bit before next try
 						return
 
 			except aiohttp.client_exceptions.ServerDisconnectedError:
-				L.error("Cluster is not ready, server disconnected or not ready")
+				L.error(
+					"Cluster is not ready.",
+				 	struct_data={"reason": "Server disconnected or not ready"}
+					)
 				await asyncio.sleep(5)  # Throttle a bit before next try
 				return
 
 			except OSError as e:
-				L.error("{}, cluster is not ready".format(e))
+				L.error(
+					"Cluster is not ready",
+					struct_data={"reason": e}
+					)
 				await asyncio.sleep(5)  # Throttle a bit before next try
 				return
 
 			except aiohttp.client_exceptions.ContentTypeError as e:
-				L.error("Failed communication {}".format(e))
+				L.error(
+					"Failed communication.",
+					struct_data={"reason": e}
+					)
 				await asyncio.sleep(20)  # Throttle a lot before next try
 				return
 
 			except GeneratorExit as e:
-				L.info("Generator exited {}".format(e))
+				L.info(
+					"Generator exited",
+					struct_data={"reason": e}
+					)
 				return
 
 			# Push bulks into the ElasticSearch
