@@ -40,7 +40,11 @@ class Stream(object):
 		Handle outbound direction
 		'''
 		while True:
-			data = await self.OutboundQueue.get()
+			try:
+				data = await self.OutboundQueue.get()
+			except RuntimeError:
+				# Event loop has been closed during .get() call likely b/c of the application exit
+				break
 			if data is None:
 				break
 			await self.Loop.sock_sendall(self.Socket, data)
@@ -144,7 +148,11 @@ class TLSStream(object):
 		Handle outbound direction
 		'''
 		while True:
-			data = await self.OutboundQueue.get()
+			try:
+				data = await self.OutboundQueue.get()
+			except RuntimeError:
+				# Event loop has been closed during .get() call likely b/c of the application exit
+				break
 			if data is None:
 				break
 
