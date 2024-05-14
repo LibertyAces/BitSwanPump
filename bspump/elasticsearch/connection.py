@@ -154,7 +154,7 @@ class ElasticSearchBulk(object):
 
 				if counter < self.FailLogMaxSize:
 					L.error(
-						"Failed to insert document into ElasticSearch",
+						"Failed to insert document into ElasticSearch: '{}'".format(response_item),
 						struct_data={
 							"status": resp.status,
 							"reason": self.ESResponseCodes.get(resp.status, resp.status),
