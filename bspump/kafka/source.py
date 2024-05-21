@@ -160,7 +160,11 @@ class KafkaSource(Source):
 					if m.error():
 						L.error("The following error occured while polling for messages: '{}'.".format(m.error()))
 						await asyncio.sleep(self.Sleep)
-						continue
+
+						# Break the polling cycle and recreate the Kafka consumer again
+						c.unsubscribe()
+						c.close()
+						break
 
 					await self.process(m.value(), context={
 						"kafka_key": m.key(),
