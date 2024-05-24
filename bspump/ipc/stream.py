@@ -48,7 +48,7 @@ class Stream(object):
 
 			except RuntimeError as e:
 				# Event loop has been closed during .get() call likely b/c of the application exit
-				L.log(asab.LOG_NOTICE, "Outbound queue for Stream has been closed: '{}'.".format(e))
+				L.warning("Outbound queue for Stream has been closed: '{}'.".format(e))
 				break
 
 			if data is None:
@@ -161,7 +161,7 @@ class TLSStream(object):
 
 			except RuntimeError as e:
 				# Event loop has been closed during .get() call likely b/c of the application exit
-				L.log(asab.LOG_NOTICE, "Outbound queue for Stream has been closed: '{}'.".format(e))
+				L.warning("Outbound queue for Stream has been closed: '{}'.".format(e))
 				break
 
 			if data is None:
