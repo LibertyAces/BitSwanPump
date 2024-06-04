@@ -3,6 +3,8 @@ import asyncio
 import logging
 import socket
 
+import os
+
 import asab
 
 from ..abc.source import Source
