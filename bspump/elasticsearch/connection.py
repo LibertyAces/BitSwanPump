@@ -41,6 +41,7 @@ class ElasticSearchBulk(object):
 		self.Items = []
 		self.InsertMetric = connection.InsertMetric
 		self.FailLogMaxSize = connection.FailLogMaxSize
+		self.LogFailedDocuments = connection.LogFailedDocuments
 		self.FilterPath = connection.FilterPath
 		self.CreatedAt = connection.App.time()
 		self.ESResponseCodes = connection.ESResponseCodes
@@ -152,7 +153,7 @@ class ElasticSearchBulk(object):
 				if "error" not in response_item.get("index", ""):
 					continue
 
-				if counter < self.FailLogMaxSize:
+				if self.LogFailedDocuments and counter < self.FailLogMaxSize:
 					L.error(
 						"Failed to insert document into ElasticSearch: '{}'".format(response_item),
 						struct_data={
@@ -165,7 +166,7 @@ class ElasticSearchBulk(object):
 				counter += 1
 
 			# Show remaining log messages
-			if counter > self.FailLogMaxSize:
+			if self.LogFailedDocuments and counter > self.FailLogMaxSize:
 				L.error(
 					"Failed to insert document into ElasticSearch. Failed insertions",
 					struct_data={
@@ -291,6 +292,7 @@ class ElasticSearchConnection(Connection):
 		'timeout': 300,
 		'fail_log_max_size': 20,
 		'precise_error_handling': False,
+		'log_failed_documents': True,
 		'bulk_lifespan': 30,  # Lifespan is the maximum time for bulk existence, per tick/second
 		'max_bulk_age': 2,  # Age is when no event comes to the bulk, per tick/second
 	}
@@ -384,6 +386,12 @@ class ElasticSearchConnection(Connection):
 			self.FilterPath = "errors,took,items.*.error,items.*._id"
 		else:
 			self.FilterPath = "errors,took,items.*.error"
+
+		if self.Config.getboolean("log_failed_documents"):
+			self.LogFailedDocuments = True
+
+		else:
+			self.LogFailedDocuments = False
 
 		# Create metrics counters
 		metrics_service = app.get_service('asab.MetricsService')
