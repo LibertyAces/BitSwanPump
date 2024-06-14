@@ -383,9 +383,9 @@ class ElasticSearchConnection(Connection):
 
 		# Precise error handling
 		if self.Config.getboolean("precise_error_handling"):
-			self.FilterPath = "errors,took,items.*.error,items.*._id"
+			self.FilterPath = "errors,took,items.*.error,items.*._id,items.*._index"
 		else:
-			self.FilterPath = "errors,took,items.*.error"
+			self.FilterPath = "errors,took,items.*.error,items.*._index"
 
 		if self.Config.getboolean("log_failed_documents"):
 			self.LogFailedDocuments = True
