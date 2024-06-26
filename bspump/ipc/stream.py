@@ -2,6 +2,8 @@ import asyncio
 import logging
 import ssl
 
+import asab
+
 #
 
 L = logging.getLogger(__name__)
@@ -40,9 +42,18 @@ class Stream(object):
 		Handle outbound direction
 		'''
 		while True:
-			data = await self.OutboundQueue.get()
+
+			try:
+				data = await self.OutboundQueue.get()
+
+			except RuntimeError as e:
+				# Event loop has been closed during .get() call likely b/c of the application exit
+				L.warning("Outbound queue for Stream has been closed: '{}'.".format(e))
+				break
+
 			if data is None:
 				break
+
 			await self.Loop.sock_sendall(self.Socket, data)
 
 
@@ -144,7 +155,15 @@ class TLSStream(object):
 		Handle outbound direction
 		'''
 		while True:
-			data = await self.OutboundQueue.get()
+
+			try:
+				data = await self.OutboundQueue.get()
+
+			except RuntimeError as e:
+				# Event loop has been closed during .get() call likely b/c of the application exit
+				L.warning("Outbound queue for Stream has been closed: '{}'.".format(e))
+				break
+
 			if data is None:
 				break
 
