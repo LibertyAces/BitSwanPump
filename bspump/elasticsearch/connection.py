@@ -378,12 +378,12 @@ class ElasticSearchConnection(Connection):
 		for url_position, url in enumerate(self.NodeUrls):
 
 			# TODO
-			# The first url in the list is the preffered one,
+			# The first url in the list is the preferred one,
 			# the other urls are backups
-			is_preffered = (url_position == 0)
+			is_preferred = (url_position == 0)
 
 			for i in range(self._loader_per_url):
-				self._futures.append((url, None, is_preffered))
+				self._futures.append((url, None, is_preferred))
 
 		self.LoaderLockEvent = asyncio.Event()
 		self.LoaderLockEvent.set()  # Set the event by default
@@ -510,7 +510,7 @@ class ElasticSearchConnection(Connection):
 		for i in range(len(self._futures)):
 
 			# 1) Check for exited futures
-			url, future, is_preffered = self._futures[i]
+			url, future, is_preferred = self._futures[i]
 			if future is not None and future.done():
 
 				# Ups, _loader() task crashed during runtime, we need to restart it
@@ -524,14 +524,14 @@ class ElasticSearchConnection(Connection):
 						struct_data={"reason": e},
 					)
 
-				self._futures[i] = (url, None, is_preffered)
+				self._futures[i] = (url, None, is_preferred)
 
 			# 2) Start _loader() futures that are exitted
 			if self._started:
-				url, future, is_preffered = self._futures[i]
+				url, future, is_preferred = self._futures[i]
 				if future is None:
-					future = asyncio.ensure_future(self._loader(url, is_preffered))
-					self._futures[i] = (url, future, is_preffered)
+					future = asyncio.ensure_future(self._loader(url, is_preferred))
+					self._futures[i] = (url, future, is_preferred)
 
 		self.flush()
 
@@ -586,7 +586,7 @@ class ElasticSearchConnection(Connection):
 			self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
 
-	async def _loader(self, url, is_preffered):
+	async def _loader(self, url, is_preferred):
 
 		async with self.get_session() as session:
 
@@ -639,9 +639,9 @@ class ElasticSearchConnection(Connection):
 				)
 				return
 
-			if not is_preffered:
-				# If the loader is not preffered, it should wait
-				# until the preffered loaders encountered errors
+			if not is_preferred:
+				# If the loader is not preferred, it should wait
+				# until the preferred loaders encountered errors
 				await self.LoaderLockEvent.wait()
 
 			# Push bulks into the ElasticSearch
@@ -662,7 +662,7 @@ class ElasticSearchConnection(Connection):
 					self.enqueue(bulk)
 
 					# Unthrottle the loader lock to allow others loaders to process the event
-					if is_preffered:
+					if is_preferred:
 						self.LoaderLockEvent.clear()
 
 					await asyncio.sleep(5)  # Throttle a bit before next try
@@ -670,8 +670,8 @@ class ElasticSearchConnection(Connection):
 
 				else:
 
-					# Set the loader lock if the preffered loader was successful
-					if is_preffered and not self.LoaderLockEvent.is_set():
+					# Set the loader lock if the preferred loader was successful
+					if is_preferred and not self.LoaderLockEvent.is_set():
 						self.LoaderLockEvent.set()
 
 				# Make sure the memory is emptied
