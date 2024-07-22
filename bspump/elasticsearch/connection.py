@@ -377,7 +377,7 @@ class ElasticSearchConnection(Connection):
 		self._futures = []
 		for url_position, url in enumerate(self.NodeUrls):
 
-			# TODO
+			# TODO: Is this correct?
 			# The first url in the list is the preferred one,
 			# the other urls are backups
 			is_preferred = (url_position == 0)
@@ -385,8 +385,9 @@ class ElasticSearchConnection(Connection):
 			for i in range(self._loader_per_url):
 				self._futures.append((url, None, is_preferred))
 
-		self.LoaderLockEvent = asyncio.Event()
-		self.LoaderLockEvent.set()  # Set the event by default
+		# The preferred loaders are the ones that
+		# connect to the first configured node URL
+		self.RunOnlyPreferredLoaders = True
 
 		self.FailLogMaxSize = int(self.Config['fail_log_max_size'])
 
@@ -529,7 +530,13 @@ class ElasticSearchConnection(Connection):
 			# 2) Start _loader() futures that are exitted
 			if self._started:
 				url, future, is_preferred = self._futures[i]
+
 				if future is None:
+
+					# Run only the preferred loaders?
+					if not is_preferred and self.RunOnlyPreferredLoaders:
+						continue
+
 					future = asyncio.ensure_future(self._loader(url, is_preferred))
 					self._futures[i] = (url, future, is_preferred)
 
@@ -639,11 +646,6 @@ class ElasticSearchConnection(Connection):
 				)
 				return
 
-			if not is_preferred:
-				# If the loader is not preferred, it should wait
-				# until the preferred loaders encountered errors
-				await self.LoaderLockEvent.wait()
-
 			# Push bulks into the ElasticSearch
 			while self._started:
 				bulk = await self._output_queue.get()
@@ -661,18 +663,22 @@ class ElasticSearchConnection(Connection):
 					# Requeue the bulk for another delivery attempt to ES
 					self.enqueue(bulk)
 
-					# Unthrottle the loader lock to allow others loaders to process the event
+					# Allow others loaders to process the event
 					if is_preferred:
-						self.LoaderLockEvent.clear()
+						self.RunOnlyPreferredLoaders = False
 
 					await asyncio.sleep(5)  # Throttle a bit before next try
 					break  # Exit the loader (new will be started automatically)
 
 				else:
 
-					# Set the loader lock if the preferred loader was successful
-					if is_preferred and not self.LoaderLockEvent.is_set():
-						self.LoaderLockEvent.set()
+					# Send bulks only to the preferred nodes again
+					if is_preferred and not self.RunOnlyPreferredLoaders:
+						self.RunOnlyPreferredLoaders = True
+
+					# Exit the loader if it is not preferred
+					if not is_preferred and self.RunOnlyPreferredLoaders:
+						return
 
 				# Make sure the memory is emptied
 				bulk.Items = []
