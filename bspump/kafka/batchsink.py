@@ -61,10 +61,10 @@ class KafkaBatchSink(KafkaSink):
 		event: typing.Union[dict, str, bytes] : type?
 
 		"""
-		if type(event) == dict:
+		if isinstance(event, dict):
 			event = json.dumps(event)
 			event = event.encode(self.Encoding)
-		elif type(event) == str:
+		elif isinstance(event, str):
 			event = event.encode(self.Encoding)
 		kafka_topic = context.get("kafka_topic", self.Topic)
 		kafka_key = context.get("kafka_key")

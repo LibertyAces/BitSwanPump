@@ -139,9 +139,9 @@ class SFTPSink(Sink):
 
 	def process(self, context, event: typing.Union[dict, str, bytes]):
 		# Checks bytes in the event
-		if type(event) == str:
+		if isinstance(event, str):
 			event = event.encode('utf-8')
-		elif type(event) == bytes:
+		elif isinstance(event, bytes):
 			event = event
 
 		if self.FileName is None or self.FileName == '':

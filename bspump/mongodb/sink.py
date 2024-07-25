@@ -109,10 +109,10 @@ class MongoDBSink(Sink):
 			# If this is not the case we continue determining the type of the item and proceed accordingly,
 			# including raising a type error, if the type is unexpected.
 
-			if type(event) == dict:
+			if isinstance(event, dict):
 				await collection.insert_one(event)
 				self._output_queue.task_done()
-			elif type(event) == list and len(event) > 0:
+			elif isinstance(event, list) and len(event) > 0:
 				await collection.insert_many(event)
 				self._output_queue.task_done()
 			else:
