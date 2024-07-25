@@ -31,7 +31,7 @@ class AvroSource(FileABCSource):
 			else:
 				L.warning("Schema file is used.")
 
-			avro_reader = fastavro.reader(f,self.Schema)
+			avro_reader = fastavro.reader(f, self.Schema)
 			for record in avro_reader:
 				await self.process(record, {
 					"filename": filename

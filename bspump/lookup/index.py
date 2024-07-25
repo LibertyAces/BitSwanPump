@@ -197,7 +197,7 @@ class TreeRangeIndex(Index):
 		# else:
 		# 	# full update
 
-		assert(len(unique_start) == len(unique_end))  # ranges overlapping
+		assert len(unique_start) == len(unique_end)  # ranges overlapping
 		self.Ranges = sorted(list(ranges))
 
 		self.MinValue = None

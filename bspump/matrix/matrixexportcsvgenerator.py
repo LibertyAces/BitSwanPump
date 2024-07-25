@@ -37,7 +37,7 @@ class TimeWindowMatrixExportCSVGenerator(Generator):
 class SessionMatrixExportCSVGenerator(Generator):
 
 	def process(self, context, event):
-		assert(isinstance(event, SessionMatrix))
+		assert isinstance(event, SessionMatrix)
 
 		def generate(session_matrix):
 			for i in range(0, session_matrix.Array.shape[0]):

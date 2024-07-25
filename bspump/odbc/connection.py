@@ -116,7 +116,7 @@ class ODBCConnection(Connection):
 			# Connection future already resulted (with or without exception)
 			self._conn_future = None
 
-		assert(self._conn_future is None)
+		assert self._conn_future is None
 
 		self._conn_future = asyncio.ensure_future(
 			self._connection(),
@@ -160,7 +160,7 @@ class ODBCConnection(Connection):
 
 
 	def acquire(self):
-		assert(self._conn_pool is not None)
+		assert self._conn_pool is not None
 		return self._conn_pool.acquire()
 
 

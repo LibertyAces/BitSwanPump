@@ -36,7 +36,7 @@ class Generator(ProcessorBase):
 
 
 		"""
-		assert(self.PipelineDepth is None)
+		assert self.PipelineDepth is None
 		self.PipelineDepth = depth
 
 	def process(self, context, event):

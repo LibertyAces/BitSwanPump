@@ -20,7 +20,7 @@ class AvroSerializer(Generator):
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
-		self.App =app
+		self.App = app
 		self.Schema = loader.load_avro_schema(self.Config)
 		self.MaxBlockSize = self.Config['max_block_size']
 		self.Records = []
@@ -36,7 +36,7 @@ class AvroSerializer(Generator):
 	async def generate(self, context, event, depth):
 		self.Context = context
 		self.Depth = depth
-		self.Event= event
+		self.Event = event
 		await self.do_generate()
 
 	async def do_generate(self):
@@ -56,4 +56,3 @@ class AvroSerializer(Generator):
 
 		fastavro.writer(fo, self.Schema, records)
 		self.Pipeline.inject(self.Context, fo.getbuffer(), self.Depth)
-

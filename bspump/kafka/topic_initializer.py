@@ -1,7 +1,6 @@
 import json
 import yaml
 import logging
-import re
 import typing
 
 import confluent_kafka.admin
