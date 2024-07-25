@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import socket
-import re
 
 from ..abc.sink import Sink
 

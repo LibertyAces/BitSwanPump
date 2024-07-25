@@ -2,7 +2,6 @@ import asyncio
 import logging
 import ssl
 
-import asab
 
 #
 

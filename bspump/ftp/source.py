@@ -19,7 +19,7 @@ class FTPSource(TriggerSource):
 		'mode': 'r',  # r = read, p = pop
 	}
 
-	def __init__(self, app, pipeline, connection,id=None, config=None):
+	def __init__(self, app, pipeline, connection, id=None, config=None):
 		"""
 		Description:
 
@@ -43,7 +43,7 @@ class FTPSource(TriggerSource):
 		self.Pipeline = pipeline
 		self.Queue = asyncio.Queue()
 		self.Connection = pipeline.locate_connection(app, connection)
-		self.Filename= self.Config.get('filename',None)
+		self.Filename = self.Config.get('filename', None)
 		self.RemotePath = self.Config['remote_path']
 		self._conn_future = None
 		self.list_future = None
@@ -53,14 +53,13 @@ class FTPSource(TriggerSource):
 		if self.Queue.qsize() == 0:
 			self.list_future = None
 
-		#conenct to the client
+		# Connect to the client
 		self.client = await self.Connection.connect()
 
-		#if the filename is specified then add only filename to queue else add the
-		#full path into queue.
-
+		# If the filename is specified then add only filename to queue else add the
+		# full path into queue.
 		if self.Filename is not None:
-			tmp = self.RemotePath + '/'+ self.Filename
+			tmp = self.RemotePath + '/' + self.Filename
 			self.Queue.put_nowait(tmp)
 		else:
 			# if there are directories then don't add them to queue.
@@ -85,7 +84,7 @@ class FTPSource(TriggerSource):
 					await self.client.quit()
 					self._conn_future = None
 					break
-			except (ConnectionResetError,StatusCodeError) as exception:
+			except (ConnectionResetError, StatusCodeError) as exception:
 				L.exception(exception)
 
 	async def cycle(self):
