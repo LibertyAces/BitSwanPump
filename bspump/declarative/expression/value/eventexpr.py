@@ -17,7 +17,7 @@ Usage:
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
-		assert(value == "")
+		assert value == ""
 
 	def __call__(self, context, event, *args, **kwargs):
 		return event
@@ -44,7 +44,7 @@ Usage:
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
-		assert(value == "")
+		assert value == ""
 
 	def __call__(self, context, event, *args, **kwargs):
 		return kwargs
@@ -79,7 +79,7 @@ class ARGS(Expression):
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
-		assert(value == '')
+		assert value == ''
 
 	def __call__(self, context, event, *args, **kwargs):
 		return args
@@ -92,7 +92,7 @@ class ARG(Expression):
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
-		assert(value == '')
+		assert value == ''
 		self.ArgNumber = 0
 
 	def __call__(self, context, event, *args, **kwargs):

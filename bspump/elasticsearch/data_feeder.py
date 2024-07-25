@@ -106,5 +106,5 @@ def data_feeder_delete(event, _id):
 		{"delete": {"_id": _id}}, option=orjson.OPT_APPEND_NEWLINE
 	)
 
-	assert len(event) == 0,\
+	assert len(event) == 0, \
 		"When deleting items from ElasticSearch, no data should be provide, but '{}' found.".format(event)

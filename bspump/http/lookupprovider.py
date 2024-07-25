@@ -64,7 +64,7 @@ class HTTPBatchLookupProvider(LookupBatchProviderABC):
 				return self.load_from_cache()
 
 			if response.status == 304:
-				L.info("Lookup '{}' is up to date.".format(self.Id, self.URL))
+				L.info("Lookup '{}' is up to date with the provider {}.".format(self.Id, self.URL))
 				return False
 
 			if response.status == 404:

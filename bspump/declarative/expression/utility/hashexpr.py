@@ -26,8 +26,8 @@ class HASH(Expression):
 		else:
 			self.Type = VALUE(app, value=arg_type)
 		arg_type = self.Type(None, None)
-		assert(isinstance(arg_type, str))
-		assert(arg_type in ('xxhash64'))
+		assert isinstance(arg_type, str)
+		assert arg_type in ('xxhash64')
 
 		if isinstance(arg_what, Expression):
 			self.What = arg_what
