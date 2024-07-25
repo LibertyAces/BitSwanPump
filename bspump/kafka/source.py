@@ -123,6 +123,9 @@ class KafkaSource(Source):
 		self.RefreshTopics = int(self.Config["refresh_topics"])
 		self.LastRefreshTopicsTime = self.App.time()
 
+		# To run the poll on a separate thread
+		self.ProactorService = app.get_service("asab.ProactorService")
+
 
 	async def main(self):
 
@@ -152,7 +155,7 @@ class KafkaSource(Source):
 						self.LastRefreshTopicsTime = current_time
 						break
 
-					m = c.poll(0.5)  # Increased poll interval
+					m = await self.ProactorService.execute(c.poll, 0.5)  # Increased poll interval
 
 					if m is None:
 						await asyncio.sleep(self.Sleep)
