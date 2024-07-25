@@ -128,7 +128,7 @@ class KafkaSource(Source):
 		# Simple asserts can be removed after Python optimization,
 		# so we use `if statement` here instead
 		if "bootstrap.servers" not in self.ConsumerConfig:
-			raise RuntimeError("Bootstrap Servers must be set in [kafka] section in the configuration.")
+			raise RuntimeError("Missing configuration option: [kafka] bootstrap_servers.")
 
 		# Create subscription list
 		self.Subscribe = []
