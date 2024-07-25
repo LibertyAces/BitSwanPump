@@ -97,7 +97,7 @@ class KafkaSource(Source):
 		# Copy configuration options, avoid the topic
 		for key, value in self.Config.items():
 
-			if key == "topic" or key == "refresh_topics":
+			if key in ["topic", "refresh_topics"]:
 				continue
 
 			if key in self.SpecialKeys:
@@ -140,7 +140,8 @@ class KafkaSource(Source):
 
 			try:
 
-				while 1:
+				while self.Running:
+
 					await self.Pipeline.ready()
 					current_time = self.App.time()
 
@@ -151,17 +152,15 @@ class KafkaSource(Source):
 						self.LastRefreshTopicsTime = current_time
 						break
 
-					m = c.poll(0.2)
+					m = c.poll(0.5)  # Increased poll interval
 
 					if m is None:
 						await asyncio.sleep(self.Sleep)
 						continue
 
 					if m.error():
-						L.error("The following error occured while polling for messages: '{}'.".format(m.error()))
+						L.error("The following error occurred while polling for messages: '{}'.".format(m.error()))
 						await asyncio.sleep(self.Sleep)
-
-						# Break the polling cycle and recreate the Kafka consumer again
 						c.unsubscribe()
 						c.close()
 						break
@@ -180,3 +179,7 @@ class KafkaSource(Source):
 			except BaseException as e:
 				L.exception("Error when processing Kafka message")
 				self.Pipeline.set_error(None, None, e)
+
+			finally:
+				c.close()
+				await asyncio.sleep(self.Sleep)  # Prevent tight loop on errors
