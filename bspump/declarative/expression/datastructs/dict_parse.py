@@ -59,7 +59,7 @@ class DICT_PARSE(Expression):
 		self.Set = None
 
 		if arg_unset is not None:
-			assert(isinstance(arg_unset, list))
+			assert isinstance(arg_unset, list)
 		self.Unset = arg_unset
 
 		self.Update = arg_update
@@ -74,7 +74,7 @@ class DICT_PARSE(Expression):
 		if self.ArgSet is None:
 			self.Set = None
 		else:
-			assert(isinstance(self.ArgSet, dict))
+			assert isinstance(self.ArgSet, dict)
 			self.Set = dict()
 			self._set_value_or_expression_to_attribute(self.ArgSet, self.Set, "Set")
 

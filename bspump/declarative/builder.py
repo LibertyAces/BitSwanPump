@@ -257,7 +257,7 @@ class ExpressionBuilder(object):
 
 
 	def _constructor(self, loader, node):
-		assert(node.tag[0] == '!')
+		assert node.tag[0] == '!'
 		xclass = self.ExpressionClasses[node.tag[1:]]
 
 		location = node.start_mark

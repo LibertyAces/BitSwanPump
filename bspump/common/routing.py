@@ -70,7 +70,7 @@ class InternalSource(Source):
 			self.BackPressureLimit = maxsize * float(self.Config.get('backpressure'))
 			if self.BackPressureLimit == maxsize:
 				self.BackPressureLimit -= 1
-			assert(self.BackPressureLimit > 0)
+			assert self.BackPressureLimit > 0
 		self.Queue = asyncio.Queue(maxsize=maxsize)
 
 
