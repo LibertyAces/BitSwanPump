@@ -177,7 +177,12 @@ class KafkaSource(Source):
 						self.LastRefreshTopicsTime = current_time
 						break
 
-					m = await self.ProactorService.execute(c.poll, 0.5)  # Increased poll interval
+					# Running Kafka's poll method on a separate thread in an asynchronous application enhances responsiveness
+					# by freeing the main thread for other tasks. It ensures non-blocking processing, improving throughput and
+					# scalability, as message fetching and processing are decoupled.
+					# This approach also optimizes resource utilization by leveraging multiple CPU cores and enhances error
+					# handling, making the application more resilient and maintainable.
+					m = await self.ProactorService.execute(c.poll, 0.5)
 
 					if m is None:
 						await asyncio.sleep(self.Sleep)
