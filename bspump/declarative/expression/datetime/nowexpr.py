@@ -25,7 +25,7 @@ class NOW(Expression):
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
-		assert(value == "")
+		assert value == ""
 
 
 	def __call__(self, context, event, *args, **kwargs):

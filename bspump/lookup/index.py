@@ -112,7 +112,7 @@ class TreeRangeIndex(Index):
 		unique_end = np.unique(matrix.Array[column_end][open_rows])
 		ranges |= set(unique_end)
 
-		assert(len(unique_start) == len(unique_end))  # ranges overlapping
+		assert len(unique_start) == len(unique_end)  # ranges overlapping
 
 		self.Ranges = sorted(list(ranges))
 

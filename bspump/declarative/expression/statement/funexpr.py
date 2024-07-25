@@ -20,7 +20,7 @@ class FUNCTION(Expression):
 			self.Apply = VALUE(app, value=arg_apply)
 
 		if arg_name is not None:
-			assert(isinstance(arg_name, str))
+			assert isinstance(arg_name, str)
 			self.Name = arg_name
 		else:
 			self.Name = None  # Anonymous function
