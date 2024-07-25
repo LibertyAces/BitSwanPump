@@ -3,8 +3,6 @@ import logging
 
 import confluent_kafka
 
-import asab
-
 from ..abc.sink import Sink
 
 #
@@ -62,14 +60,16 @@ class KafkaSink(Sink):
 	"""
 
 	ConfigDefaults = {
-		"topic": "unconfigured",
-		"watermark.low": "40000",
-		"watermark.high": "90000",
+		"topic": "",
 		"batch.num.messages": "100000",
 		"linger.ms": "500",  # This settings makes a significant impact on the throughtput
 		"batch.size": "1000000",
 		"poll.timeout": "0.1",
 		# "compression.type": "snappy",
+
+		# Custom options
+		"watermark.low": "40000",
+		"watermark.high": "90000",
 	}
 
 
@@ -92,11 +92,15 @@ class KafkaSink(Sink):
 
 			producer_config[key.replace("_", ".")] = value
 
-		assert "bootstrap.servers" in producer_config, "Bootstrap Servers must be set in [kafka] section in the configuration."
+		if "bootstrap.servers" not in producer_config:
+			raise RuntimeError("Missing 'bootstrap.servers' option in KafkaSink configuration.")
 
 		self.Producer = confluent_kafka.Producer(producer_config, logger=L)
 
 		self.Topic = self.Config["topic"]
+		if self.Topic == "":
+			raise RuntimeError("Missing 'topic' option in KafkaSink configuration.")
+
 		self.LowWatermark = int(self.Config["watermark.low"])
 		self.HighWatermark = int(self.Config["watermark.high"])
 
@@ -114,20 +118,7 @@ class KafkaSink(Sink):
 		self.PollRunning = False
 		pipeline.PubSub.subscribe("bspump.pipeline.start!", self._on_start)
 		pipeline.PubSub.subscribe("bspump.pipeline.stop!", self._on_stop)
-
-
-	@asab.subscribe("Application.tick!")
-	async def _on_tick(self, event_name):
-		"""
-		Consider removing this method.
-		But using flush once per some time may help with the performance.
-		"""
-
-		if self.IsThrottling and (len(self.Producer) < self.LowWatermark):
-			self.IsThrottling = False
-			self.Pipeline.throttle(self, False)
-
-		await self.ProactorService.execute(self.Producer.flush, self.PollTimeout)
+		pipeline.PubSub.subscribe("Application.tick!", self._on_tick)
 
 
 	def process(self, context, event: bytes):
@@ -142,9 +133,16 @@ class KafkaSink(Sink):
 		except Exception as e:
 			L.exception("Error occurred when sending data to Kafka: '{}'".format(e))
 
+		# Check for throttle and unthrottle
 		if not self.IsThrottling and (len(self.Producer) > self.HighWatermark):
+			# Throttle the pipeline
 			self.IsThrottling = True
 			self.Pipeline.throttle(self, True)
+
+		elif self.IsThrottling and (len(self.Producer) < self.LowWatermark):
+			# Unthrottle the pipeline
+			self.IsThrottling = False
+			self.Pipeline.throttle(self, False)
 
 
 	def _on_start(self, event_name, pipeline):
@@ -159,8 +157,7 @@ class KafkaSink(Sink):
 		assert self.PollTask is None
 		self.PollRunning = True
 
-		proactor_svc = self.Pipeline.App.get_service('asab.ProactorService')
-		self.PollTask = proactor_svc.execute(self._kafka_poll)
+		self.PollTask = self.ProactorService.execute(self._kafka_poll)
 
 
 	async def _on_stop(self, event_name, pipeline):
@@ -173,17 +170,24 @@ class KafkaSink(Sink):
 
 		try:
 			await poll_task
-
 		except asyncio.CancelledError:
 			pass
 
+		await self._kafka_flush()
+
+
+	async def _on_tick(self, event_name):
+		"""
+		Fallback mechanism for unthrottling the pipeline.
+		"""
+		if self.IsThrottling and (len(self.Producer) < self.LowWatermark):
+			# Unthrottle the pipeline
+			self.IsThrottling = False
+			self.Pipeline.throttle(self, False)
 
 	def _kafka_poll(self):
-
 		while self.PollRunning:
-
-			if self.IsThrottling and (len(self.Producer) < self.LowWatermark):
-				self.IsThrottling = False
-				self.Pipeline.throttle(self, False)
-
 			self.Producer.poll(self.PollTimeout)
+
+	async def _kafka_flush(self):
+		await self.ProactorService.execute(self.Producer.flush, self.PollTimeout)
