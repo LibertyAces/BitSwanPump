@@ -99,7 +99,7 @@ class KafkaSource(Source):
 		# It is frequent enough to ensure that the consumer remains active, heartbeats are sent regularly,
 		# and messages are fetched in a timely manner. At the same time, it avoids the excessive overhead associated with
 		# very frequent polling.
-		self.PollInterval = self.Config.pop("poll_interval", 0.5)
+		self.PollInterval = float(self.Config.pop("poll_interval", 0.5))
 
 		self.ConsumerConfig = {}
 		self.SpecialKeys = frozenset(["oauth_cb"])
@@ -182,7 +182,7 @@ class KafkaSource(Source):
 					# scalability, as message fetching and processing are decoupled.
 					# This approach also optimizes resource utilization by leveraging multiple CPU cores and enhances error
 					# handling, making the application more resilient and maintainable.
-					m = await self.ProactorService.execute(c.poll, 0.5)
+					m = await self.ProactorService.execute(c.poll, self.PollInterval)
 
 					if m is None:
 						await asyncio.sleep(self.Sleep)
