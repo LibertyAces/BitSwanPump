@@ -80,6 +80,8 @@ class KafkaSource(Source):
 
 		self.App = app
 		self.Connection = self.Pipeline.locate_connection(app, connection)
+		# Sleep time after no event was received from Kafka or after an error
+		# The following value should be the same in every deployment/environment
 		self.Sleep = 100 / 1000.0
 		self.ConsumerConfig = {}
 
@@ -106,7 +108,10 @@ class KafkaSource(Source):
 			else:
 				self.ConsumerConfig[key.replace("_", ".")] = value
 
-		assert "bootstrap.servers" in self.ConsumerConfig, "Bootstrap Servers must be set in [kafka] section in the configuration."
+		# Simple asserts can be removed after Python optimization,
+		# so we use `if statement` here instead
+		if "bootstrap.servers" not in self.ConsumerConfig:
+			raise RuntimeError("Bootstrap Servers must be set in [kafka] section in the configuration.")
 
 		# Create subscription list
 		self.Subscribe = []
