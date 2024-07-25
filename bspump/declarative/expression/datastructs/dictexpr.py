@@ -173,7 +173,7 @@ This is how to create the empty dictionary:
 
 			if self.Unset is not None:
 				for key in self.Unset:
-					popped = with_dict.pop(key, None)
+					_ = with_dict.pop(key, None)
 
 			# Check that all mandatory fields are present in the dictionary
 			if self.Mandatory is not None:
