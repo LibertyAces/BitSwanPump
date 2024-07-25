@@ -208,7 +208,7 @@ class StreamServerSource(Source):
 			try:
 				await t
 			except asyncio.CancelledError:
-				pass				
+				pass
 			except Exception:
 				L.exception("Error when handling client socket")
 

@@ -13,12 +13,11 @@ L = logging.getLogger(__name__)
 
 ###
 
-class AvroDeserializer(Generator):
 
+class AvroDeserializer(Generator):
 	ConfigDefaults = {
 		'schema_file': '',
 	}
-
 
 	def __init__(self, app, pipeline, id=None, config=None):
 		super().__init__(app, pipeline, id=id, config=config)
@@ -35,4 +34,3 @@ class AvroDeserializer(Generator):
 
 		for record in fastavro.reader(fi, self.Schema):
 			self.Pipeline.inject(context, record, depth)
-

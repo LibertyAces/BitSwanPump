@@ -14,7 +14,7 @@ class VALUE(Expression):
 
 	def __init__(self, app, *, value, outlet_type=None):
 		super().__init__(app)
-		assert(not isinstance(value, Expression))
+		assert not isinstance(value, Expression)
 		self.Value = value
 
 		if outlet_type is None:

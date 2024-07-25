@@ -68,7 +68,7 @@ class NamedMatrix(Matrix):
 
 
 	def add_row(self, row_name: str):
-		assert(row_name is not None)
+		assert row_name is not None
 
 		row_index = super().add_row()
 		self.Index.add_row(row_name, row_index)
@@ -139,7 +139,7 @@ class PersistentNamedMatrix(PersistentMatrix):
 
 
 	def add_row(self, row_name: str):
-		assert(row_name is not None)
+		assert row_name is not None
 
 		row_index = super().add_row()
 		self.Index.add_row(row_name, row_index)

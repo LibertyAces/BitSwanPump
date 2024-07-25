@@ -14,7 +14,7 @@ class LIST(Expression):
 		self.With = arg_with
 
 		if arg_append is not None:
-			assert(isinstance(arg_append, list))
+			assert isinstance(arg_append, list)
 		self.Append = arg_append
 
 

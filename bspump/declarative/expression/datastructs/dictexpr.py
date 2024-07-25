@@ -77,28 +77,28 @@ This is how to create the empty dictionary:
 		if self.ArgSet is None:
 			self.Set = None
 		else:
-			assert(isinstance(self.ArgSet, dict))
+			assert isinstance(self.ArgSet, dict)
 			self.Set = dict()
 			self._set_value_or_expression_to_attribute(self.ArgSet, self.Set, "Set")
 
 		if self.ArgFlatten is None:
 			self.Flatten = None
 		else:
-			assert(isinstance(self.ArgFlatten, dict))
+			assert isinstance(self.ArgFlatten, dict)
 			self.Flatten = dict()
 			self._set_value_or_expression_to_attribute(self.ArgFlatten, self.Flatten, "Flatten")
 
 		if self.ArgModify is None:
 			self.Modify = None
 		else:
-			assert(isinstance(self.ArgModify, dict))
+			assert isinstance(self.ArgModify, dict)
 			self.Modify = dict()
 			self._set_value_or_expression_to_attribute(self.ArgModify, self.Modify, "Modify")
 
 		if self.ArgAdd is None:
 			self.Add = None
 		else:
-			assert(isinstance(self.ArgAdd, dict))
+			assert isinstance(self.ArgAdd, dict)
 			self.Add = dict()
 			self._set_value_or_expression_to_attribute(self.ArgAdd, self.Add, "Add")
 
@@ -173,7 +173,7 @@ This is how to create the empty dictionary:
 
 			if self.Unset is not None:
 				for key in self.Unset:
-					popped = with_dict.pop(key, None)
+					_ = with_dict.pop(key, None)
 
 			# Check that all mandatory fields are present in the dictionary
 			if self.Mandatory is not None:

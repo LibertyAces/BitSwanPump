@@ -130,7 +130,7 @@ The MongoDBLookup can be then located and used inside a custom enricher:
 			# Future already resulted (with or without exception)
 			self._changestream_future = None
 
-		assert(self._changestream_future is None)
+		assert self._changestream_future is None
 
 		if self.Changestream:
 			self._changestream_future = asyncio.ensure_future(

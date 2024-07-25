@@ -17,7 +17,7 @@ Usage:
 
 	def __init__(self, app, *, value):
 		super().__init__(app)
-		assert(value == "")
+		assert value == ""
 
 	def __call__(self, context, event, *args, **kwargs):
 		return context
@@ -46,7 +46,7 @@ class CONTEXT_SET(Expression):
 		if self.ArgSet is None:
 			self.Set = None
 		else:
-			assert(isinstance(self.ArgSet, dict))
+			assert isinstance(self.ArgSet, dict)
 			self.Set = dict()
 			self._set_value_or_expression_to_attribute(self.ArgSet, self.Set, "Set")
 

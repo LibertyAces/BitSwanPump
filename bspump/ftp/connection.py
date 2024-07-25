@@ -49,10 +49,6 @@ class FTPConnection(Connection):
 
 		"""
 		client = aioftp.Client()
-		await client.connect(self.Hostname,21)
+		await client.connect(self.Hostname, 21)
 		await client.login(self.Username, self.Password)
 		return client
-
-
-
-

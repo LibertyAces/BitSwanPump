@@ -180,9 +180,14 @@ class Aggregator(Generator):
 		'completion_interval': 0  # 0 means no completion interval
 	}
 
-	def __init__(self, app, pipeline,
-				 aggregation_strategy: AggregationStrategy = ListAggregationStrategy(),
-				 id=None, config=None):
+	def __init__(
+		self,
+		app,
+		pipeline,
+		aggregation_strategy: AggregationStrategy = ListAggregationStrategy(),
+		id=None,
+		config=None
+	):
 		super().__init__(app, pipeline, id, config)
 		self.CompletionSize = int(self.Config['completion_size'])
 		self.CompletionTimeout = int(self.Config['completion_timeout'])

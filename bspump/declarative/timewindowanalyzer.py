@@ -33,14 +33,14 @@ class DeclarativeTimeWindowAnalyzer(TimeWindowAnalyzer):
 		self.ColumnItem = columns.pop('item', 'timestamp')
 
 		self.Evaluates = decl.pop('evaluate')
-		assert(isinstance(self.Evaluates, dict))
+		assert isinstance(self.Evaluates, dict)
 
 		self.Dimension = define.pop('dimension')
-		assert(isinstance(self.Dimension, list) or isinstance(self.Dimension, str))
+		assert isinstance(self.Dimension, list) or isinstance(self.Dimension, str)
 
 		self.Trigger = decl.pop('trigger', None)
 		if self.Trigger is not None:
-			assert(isinstance(self.Trigger, list))
+			assert isinstance(self.Trigger, list)
 
 		# TODO: matrix_id
 		# TODO: analyze_on_clock

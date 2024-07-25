@@ -156,7 +156,7 @@ class MySQLConnection(Connection):
 			# Connection future already resulted (with or without exception)
 			self._conn_future = None
 
-		assert(self._conn_future is None)
+		assert self._conn_future is None
 
 		self._conn_future = asyncio.ensure_future(
 			self._async_connection(),
@@ -255,7 +255,7 @@ class MySQLConnection(Connection):
 
 		:return: Asynchronous Context Manager
 		"""
-		assert(self._conn_pool is not None)
+		assert self._conn_pool is not None
 		return self._conn_pool.acquire()
 
 
@@ -272,7 +272,7 @@ class MySQLConnection(Connection):
 
 		:return: Context Manager
 		"""
-		assert(self._conn_sync is not None)
+		assert self._conn_sync is not None
 		return pymysql.cursors.DictCursor(self._conn_sync)
 
 

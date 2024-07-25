@@ -85,7 +85,7 @@ class LineSourceProtocol(SourceProtocolABC):
 
 				line = self.LineDecoder(line)
 				await self.process(source, line, context)
-		
+
 		# Process any remaining data in the buffer if it's not empty
 		if buffer:
 			line = self.LineDecoder(buffer)

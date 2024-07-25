@@ -1,11 +1,11 @@
 import asyncio
 import logging
 import socket
-import re
 
 from ..abc.sink import Sink
 
-from .stream import Stream, TLSStream
+from .stream import Stream
+# from .stream import TLSStream  TODO: Add support for TLS stream
 from .utils import parse_address
 
 #

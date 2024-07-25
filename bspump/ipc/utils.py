@@ -1,11 +1,12 @@
 import re
 import socket
 
+
 def parse_address(address):
 	"""
 	The function `parse_address` takes an address string and returns a tuple containing the appropriate
 	socket family and address.
-	
+
 	:param address: The `address` parameter is a string representing either a UNIX socket address or an
 	IP address with a port number
 

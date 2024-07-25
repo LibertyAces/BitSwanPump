@@ -123,7 +123,7 @@ class SequenceExpression(Expression):
 		'''
 		key in the Sequence expression is the integer, which is a position in self.Items list
 		'''
-		yield(parent, key, self)
+		yield (parent, key, self)
 
 		for key, i in enumerate(self.Items):
 			if isinstance(i, Expression):

@@ -57,7 +57,7 @@ class WHEN(Expression):
 
 			# `test/then` branch
 			if 'test' in i and 'then' in i:
-				assert(len(i) == 2)
+				assert len(i) == 2
 
 				vtest = i['test']
 				if not isinstance(vtest, Expression):
@@ -82,7 +82,7 @@ class WHEN(Expression):
 
 			# `else` branch
 			elif 'else' in i:
-				assert(len(i) == 1)
+				assert len(i) == 1
 				# TODO: Fix double-initialization when doing INCLUDE
 				# assert('Else' not in self.Attributes)
 

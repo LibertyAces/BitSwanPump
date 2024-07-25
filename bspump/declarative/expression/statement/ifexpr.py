@@ -40,7 +40,7 @@ class IF(Expression):
 
 	def initialize(self):
 		# Then and else expression must return the same type
-		assert(self.Then.get_outlet_type() == self.Else.get_outlet_type())
+		assert self.Then.get_outlet_type() == self.Else.get_outlet_type()
 		self.Attributes["Then"] = self.Then.get_outlet_type()
 		self.Attributes["Else"] = self.Else.get_outlet_type()
 

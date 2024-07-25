@@ -512,7 +512,7 @@ class ElasticSearchConnection(Connection):
 					L.exception(
 						"ElasticSearch issue detected, will retry shortly",
 						struct_data={"reason": e},
-						)
+					)
 
 				self._futures[i] = (url, None)
 
@@ -600,8 +600,8 @@ class ElasticSearchConnection(Connection):
 			except aiohttp.client_exceptions.ServerDisconnectedError:
 				L.error(
 					"Cluster is not ready.",
-				 	struct_data={"reason": "Server disconnected or not ready"}
-					)
+					struct_data={"reason": "Server disconnected or not ready"}
+				)
 				await asyncio.sleep(5)  # Throttle a bit before next try
 				return
 
@@ -609,7 +609,7 @@ class ElasticSearchConnection(Connection):
 				L.error(
 					"Cluster is not ready",
 					struct_data={"reason": e}
-					)
+				)
 				await asyncio.sleep(5)  # Throttle a bit before next try
 				return
 
@@ -617,7 +617,7 @@ class ElasticSearchConnection(Connection):
 				L.error(
 					"Failed communication.",
 					struct_data={"reason": e}
-					)
+				)
 				await asyncio.sleep(20)  # Throttle a lot before next try
 				return
 
@@ -625,7 +625,7 @@ class ElasticSearchConnection(Connection):
 				L.info(
 					"Generator exited",
 					struct_data={"reason": e}
-					)
+				)
 				return
 
 			# Push bulks into the ElasticSearch

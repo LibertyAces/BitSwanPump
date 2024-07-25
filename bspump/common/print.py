@@ -71,9 +71,9 @@ class PrintContextProcessor(Processor):
 		Description:
 
 		|
-		
+
 		:return: event
-		
+
 		"""
 
 		print(context, file=self.Stream)

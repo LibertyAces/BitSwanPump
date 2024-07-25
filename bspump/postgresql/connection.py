@@ -129,7 +129,7 @@ class PostgreSQLConnection(Connection):
 			# Connection future already resulted (with or without exception)
 			self._conn_future = None
 
-		assert(self._conn_future is None)
+		assert self._conn_future is None
 
 		self._conn_future = asyncio.ensure_future(
 			self._async_connection(),
@@ -202,7 +202,7 @@ class PostgreSQLConnection(Connection):
 
 		:return: Asynchronous Context Manager
 		"""
-		assert(self._conn_pool is not None)
+		assert self._conn_pool is not None
 		return self._conn_pool.acquire()
 
 	def _sync_connection(self):
@@ -238,7 +238,7 @@ class PostgreSQLConnection(Connection):
 		Acquire synchronous psycopg2 cursor
 		Currently only used for iterating over a PostgreSQLLookup
 		"""
-		assert(self._conn_sync is not None)
+		assert self._conn_sync is not None
 		return self._conn_sync.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 

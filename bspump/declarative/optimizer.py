@@ -43,7 +43,7 @@ class ExpressionOptimizer(object):
 				if opt_obj is None:
 					continue
 
-				assert(obj is not opt_obj)
+				assert obj is not opt_obj
 
 				if parent is None:
 					expression = opt_obj

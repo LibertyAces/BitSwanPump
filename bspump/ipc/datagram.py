@@ -4,6 +4,7 @@ import logging
 import socket
 
 import os
+import stat
 
 import asab
 

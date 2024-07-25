@@ -156,7 +156,7 @@ class KafkaSink(Sink):
 			# Polling already started
 			return
 
-		assert(self.PollTask is None)
+		assert self.PollTask is None
 		self.PollRunning = True
 
 		proactor_svc = self.Pipeline.App.get_service('asab.ProactorService')

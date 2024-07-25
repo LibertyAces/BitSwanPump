@@ -10,6 +10,7 @@ L = logging.getLogger(__name__)
 
 #
 
+
 class LDAPSource(TriggerSource):
 	"""
 	Runs an LDAP query and pushes the resulting events down the pipeline.

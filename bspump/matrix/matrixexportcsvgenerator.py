@@ -12,7 +12,7 @@ L = logging.getLogger(__name__)
 class TimeWindowMatrixExportCSVGenerator(Generator):
 
 	def process(self, context, event):
-		assert(isinstance(event, TimeWindowMatrix))
+		assert isinstance(event, TimeWindowMatrix)
 
 		def generate(time_window_matrix):
 			for i in range(time_window_matrix.Array.shape[0]):
@@ -37,7 +37,7 @@ class TimeWindowMatrixExportCSVGenerator(Generator):
 class SessionMatrixExportCSVGenerator(Generator):
 
 	def process(self, context, event):
-		assert(isinstance(event, SessionMatrix))
+		assert isinstance(event, SessionMatrix)
 
 		def generate(session_matrix):
 			for i in range(0, session_matrix.Array.shape[0]):

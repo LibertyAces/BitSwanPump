@@ -22,7 +22,7 @@ class IP_FORMAT(Expression):
 		super().__init__(app)
 		self.Value = arg_what
 
-		assert(arg_format in frozenset('ipv4', 'ipv6', 'auto'))
+		assert arg_format in frozenset('ipv4', 'ipv6', 'auto')
 		self.Format = arg_format
 
 
