@@ -53,6 +53,10 @@ class KafkaSource(Source):
 		# In Kafka, the poll interval refers to the frequency at which a consumer polls the Kafka broker for new messages.
 		# This interval is crucial because it impacts how the consumer interacts with Kafka in terms of fetching messages,
 		# managing offsets, and maintaining group membership.
+		# For a consumer subscribed to 15+ topics, a good starting point for the poll interval would be between 0.5 to 1 second.
+		# This range provides a balance between responsiveness and resource utilization.
+		# If the total number of partitions is very high and/or if the message production rate is significant, you might need to lean towards the lower end of the recommended range (e.g., 0.5 seconds)
+		# or even slightly below, but not too much to avoid excessive overhead.
 		"poll_interval": 0.5,
 		"enable.auto.commit": "true",
 		"auto.commit.interval.ms": "1000",
