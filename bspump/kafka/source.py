@@ -50,6 +50,10 @@ class KafkaSource(Source):
 	ConfigDefaults = {
 		"topic": "unconfigured",
 		"refresh_topics": 0,
+		# In Kafka, the poll interval refers to the frequency at which a consumer polls the Kafka broker for new messages.
+		# This interval is crucial because it impacts how the consumer interacts with Kafka in terms of fetching messages,
+		# managing offsets, and maintaining group membership.
+		"poll_interval": 0.5,
 		"enable.auto.commit": "true",
 		"auto.commit.interval.ms": "1000",
 		"auto.offset.reset": "smallest",
@@ -83,8 +87,17 @@ class KafkaSource(Source):
 		# Sleep time after no event was received from Kafka or after an error
 		# The following value should be the same in every deployment/environment
 		self.Sleep = 100 / 1000.0
-		self.ConsumerConfig = {}
+		# Polling too frequently (e.g., every 0.1 seconds) can introduce significant overhead.
+		# Each poll involves network calls and resource utilization on both the consumer and broker side.
+		# This can lead to higher CPU and network usage without substantial benefits if the message production
+		# rate is not high enough to justify such frequent polls.
+		# A 0.5-second poll interval strikes a better balance between responsiveness and resource utilization.
+		# It is frequent enough to ensure that the consumer remains active, heartbeats are sent regularly,
+		# and messages are fetched in a timely manner. At the same time, it avoids the excessive overhead associated with
+		# very frequent polling.
+		self.PollInterval = self.Config.pop("poll_interval", 0.5)
 
+		self.ConsumerConfig = {}
 		self.SpecialKeys = frozenset(["oauth_cb"])
 
 		# Copy connection options
@@ -167,7 +180,10 @@ class KafkaSource(Source):
 						continue
 
 					if m.error():
-						L.error("The following error occurred while polling for messages: '{}'.".format(m.error()))
+						L.error(
+							"The following error occurred while polling for messages: '{}'.".format(m.error()),
+							struct_data={"kafka_topic": m.topic(), "kafka_partition": m.partition()},
+						)
 						await asyncio.sleep(self.Sleep)
 						c.unsubscribe()
 						c.close()
