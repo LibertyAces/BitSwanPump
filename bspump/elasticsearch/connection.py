@@ -375,9 +375,19 @@ class ElasticSearchConnection(Connection):
 		self.PubSub.subscribe("Application.exit!", self._on_exit)
 
 		self._futures = []
-		for url in self.NodeUrls:
+		for url_position, url in enumerate(self.NodeUrls):
+
+			# TODO: Is this correct?
+			# The first url in the list is the preferred one,
+			# the other urls are backups
+			is_preferred = (url_position == 0)
+
 			for i in range(self._loader_per_url):
-				self._futures.append((url, None))
+				self._futures.append((url, None, is_preferred))
+
+		# The preferred loaders are the ones that
+		# connect to the first configured node URL
+		self.RunOnlyPreferredLoaders = True
 
 		self.FailLogMaxSize = int(self.Config['fail_log_max_size'])
 
@@ -501,8 +511,9 @@ class ElasticSearchConnection(Connection):
 		for i in range(len(self._futures)):
 
 			# 1) Check for exited futures
-			url, future = self._futures[i]
+			url, future, is_preferred = self._futures[i]
 			if future is not None and future.done():
+
 				# Ups, _loader() task crashed during runtime, we need to restart it
 				try:
 					future.result()
@@ -514,14 +525,20 @@ class ElasticSearchConnection(Connection):
 						struct_data={"reason": e},
 					)
 
-				self._futures[i] = (url, None)
+				self._futures[i] = (url, None, is_preferred)
 
-			# 2) Start _loader() futures that are exitted
+			# 2) Start _loader() futures that are exited
 			if self._started:
-				url, future = self._futures[i]
+				url, future, is_preferred = self._futures[i]
+
 				if future is None:
-					future = asyncio.ensure_future(self._loader(url))
-					self._futures[i] = (url, future)
+
+					# Run only the preferred loaders?
+					if not is_preferred and self.RunOnlyPreferredLoaders:
+						continue
+
+					future = asyncio.ensure_future(self._loader(url, is_preferred))
+					self._futures[i] = (url, future, is_preferred)
 
 		self.flush()
 
@@ -576,7 +593,8 @@ class ElasticSearchConnection(Connection):
 			self.PubSub.publish("ElasticSearchConnection.pause!", self)
 
 
-	async def _loader(self, url):
+	async def _loader(self, url, is_preferred):
+
 		async with self.get_session() as session:
 
 			# Preflight check
@@ -631,6 +649,7 @@ class ElasticSearchConnection(Connection):
 			# Push bulks into the ElasticSearch
 			while self._started:
 				bulk = await self._output_queue.get()
+
 				if bulk is None:
 					break
 
@@ -639,12 +658,27 @@ class ElasticSearchConnection(Connection):
 					self.PubSub.publish("ElasticSearchConnection.unpause!", self)
 
 				sucess = await bulk.upload(url, session, self.SSLContext, self._timeout)
+
 				if not sucess:
 					# Requeue the bulk for another delivery attempt to ES
 					self.enqueue(bulk)
+
+					# Allow others loaders to process the event
+					if is_preferred:
+						self.RunOnlyPreferredLoaders = False
+
 					await asyncio.sleep(5)  # Throttle a bit before next try
 					break  # Exit the loader (new will be started automatically)
 
+				else:
+
+					# Send bulks only to the preferred nodes again
+					if is_preferred and not self.RunOnlyPreferredLoaders:
+						self.RunOnlyPreferredLoaders = True
+
+					# Exit the loader if it is not preferred
+					if not is_preferred and self.RunOnlyPreferredLoaders:
+						return
 
 				# Make sure the memory is emptied
 				bulk.Items = []
