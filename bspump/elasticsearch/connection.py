@@ -527,7 +527,7 @@ class ElasticSearchConnection(Connection):
 
 				self._futures[i] = (url, None, is_preferred)
 
-			# 2) Start _loader() futures that are exitted
+			# 2) Start _loader() futures that are exited
 			if self._started:
 				url, future, is_preferred = self._futures[i]
 
