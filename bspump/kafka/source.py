@@ -58,7 +58,7 @@ class KafkaSource(Source):
 		# If the total number of partitions is very high and/or if the message production rate is significant, you might need to lean towards the lower end of the recommended range (e.g., 0.5 seconds)
 		# or even slightly below, but not too much to avoid excessive overhead.
 		"poll_interval": 0.5,
-		"buffer_size": 1000,
+		"buffer_size": 5000,
 		"buffer_timeout": 1.0,
 
 		"enable.auto.commit": "true",
@@ -207,6 +207,9 @@ class KafkaSource(Source):
 		This method flushes the buffer to the pipeline.
 		It should be thread safe.
 		"""
+
+		if self.BufferLock.locked():
+			return
 
 		async with self.BufferLock:
 
