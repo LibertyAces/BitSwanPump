@@ -61,6 +61,9 @@ class KafkaSource(Source):
 		"buffer_size": 1000,
 		"buffer_timeout": 1.0,
 
+		# Storage of the offset is done manually after the buffer of messages is processed
+		"enable.auto.offset.store": "false",
+
 		"enable.auto.commit": "true",
 		"auto.commit.interval.ms": "1000",
 		"auto.offset.reset": "smallest",
@@ -173,7 +176,6 @@ class KafkaSource(Source):
 		This approach also optimizes resource utilization by leveraging multiple CPU cores and enhances error
 		handling, making the application more resilient and maintainable.
 		"""
-
 		while self.Running:
 			current_time = self.App.time()
 
@@ -197,14 +199,20 @@ class KafkaSource(Source):
 
 			self.Buffer.append(m)
 
-			if len(self.Buffer) >= self.BufferSize or (self.App.time() - self.LastFlushTime) > self.BufferTimeout:
-				future = asyncio.run_coroutine_threadsafe(self.flush_buffer(), self.Loop)
-				# Wait for the result:
-				future.result()
+			if len(self.Buffer) >= self.BufferSize or (current_time - self.LastFlushTime) > self.BufferTimeout:
+
+				try:
+					future = asyncio.run_coroutine_threadsafe(self.flush_buffer(consumer), self.Loop)
+					# Wait for the result:
+					future.result()
+
+				except Exception as e:
+					L.exception("The following error occurred while processing batch of Kafka messages: '{}'.".format(e))
+
 				self.LastFlushTime = self.App.time()
 
 
-	async def flush_buffer(self):
+	async def flush_buffer(self, consumer):
 		"""
 		This method flushes the buffer to the pipeline.
 		It should be thread safe.
@@ -227,6 +235,10 @@ class KafkaSource(Source):
 						"_kafka_partition": m.partition(),
 						"_kafka_offset": m.offset(),
 					})
+					# Store the offset associated with msg to a local cache.
+					# Stored offsets are committed to Kafka by a background thread every 'auto.commit.interval.ms'.
+					# Explicitly storing offsets after processing gives at-least once semantics.
+					consumer.store_offsets(m)
 
 
 	async def main(self):
@@ -255,8 +267,11 @@ class KafkaSource(Source):
 				self.Pipeline.set_error(None, None, e)
 
 			finally:
-				c.close()
-				await asyncio.sleep(self.Sleep)  # Prevent tight loop on errors
 
-		# Flush remaining messages in buffer before exiting
-		await self.flush_buffer()
+				# Flush remaining messages in buffer before exiting
+				await self.flush_buffer(c)
+
+				# Close the consumer
+				c.close()
+
+				await asyncio.sleep(self.Sleep)  # Prevent tight loop on errors
