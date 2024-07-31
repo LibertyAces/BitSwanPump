@@ -58,7 +58,7 @@ class KafkaSource(Source):
 		# If the total number of partitions is very high and/or if the message production rate is significant, you might need to lean towards the lower end of the recommended range (e.g., 0.5 seconds)
 		# or even slightly below, but not too much to avoid excessive overhead.
 		"poll_interval": 0.5,
-		"buffer_size": 5000,
+		"buffer_size": 1000,
 		"buffer_timeout": 1.0,
 
 		"enable.auto.commit": "true",
@@ -198,7 +198,9 @@ class KafkaSource(Source):
 			self.Buffer.append(m)
 
 			if len(self.Buffer) >= self.BufferSize or (self.App.time() - self.LastFlushTime) > self.BufferTimeout:
-				asyncio.run_coroutine_threadsafe(self.flush_buffer(), self.Loop)
+				future = asyncio.run_coroutine_threadsafe(self.flush_buffer(), self.Loop)
+				# Wait for the result:
+				future.result()
 				self.LastFlushTime = self.App.time()
 
 
