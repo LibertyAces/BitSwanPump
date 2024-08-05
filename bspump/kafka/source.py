@@ -50,6 +50,20 @@ class KafkaSource(Source):
 	ConfigDefaults = {
 		"topic": "unconfigured",
 		"refresh_topics": 0,
+		# In Kafka, the poll interval refers to the frequency at which a consumer polls the Kafka broker for new messages.
+		# This interval is crucial because it impacts how the consumer interacts with Kafka in terms of fetching messages,
+		# managing offsets, and maintaining group membership.
+		# For a consumer subscribed to 15+ topics, a good starting point for the poll interval would be between 0.5 to 1 second.
+		# This range provides a balance between responsiveness and resource utilization.
+		# If the total number of partitions is very high and/or if the message production rate is significant, you might need to lean towards the lower end of the recommended range (e.g., 0.5 seconds)
+		# or even slightly below, but not too much to avoid excessive overhead.
+		"poll_interval": 0.5,
+		"buffer_size": 1000,
+		"buffer_timeout": 1.0,
+
+		# Storage of the offset is done manually after the buffer of messages is processed
+		"enable.auto.offset.store": "false",
+
 		"enable.auto.commit": "true",
 		"auto.commit.interval.ms": "1000",
 		"auto.offset.reset": "smallest",
@@ -80,9 +94,27 @@ class KafkaSource(Source):
 
 		self.App = app
 		self.Connection = self.Pipeline.locate_connection(app, connection)
-		self.Sleep = 100 / 1000.0
-		self.ConsumerConfig = {}
 
+		# Sleep time after no event was received from Kafka or after an error
+		# The following value should be the same in every deployment/environment
+		self.Sleep = 100 / 1000.0
+
+		# Polling too frequently (e.g., every 0.1 seconds) can introduce significant overhead.
+		# Each poll involves network calls and resource utilization on both the consumer and broker side.
+		# This can lead to higher CPU and network usage without substantial benefits if the message production
+		# rate is not high enough to justify such frequent polls.
+		# A 0.5-second poll interval strikes a better balance between responsiveness and resource utilization.
+		# It is frequent enough to ensure that the consumer remains active, heartbeats are sent regularly,
+		# and messages are fetched in a timely manner. At the same time, it avoids the excessive overhead associated with
+		# very frequent polling.
+		self.PollInterval = float(self.Config.pop("poll_interval", 0.5))
+
+		# Size of the buffer of consumed messages
+		self.BufferSize = int(self.Config.pop("buffer_size", 1000))
+		# Timeout of the buffer if consumed messages size is not reached
+		self.BufferTimeout = float(self.Config.pop("buffer_timeout", 1.0))  # seconds
+
+		self.ConsumerConfig = {}
 		self.SpecialKeys = frozenset(["oauth_cb"])
 
 		# Copy connection options
@@ -97,7 +129,7 @@ class KafkaSource(Source):
 		# Copy configuration options, avoid the topic
 		for key, value in self.Config.items():
 
-			if key == "topic" or key == "refresh_topics":
+			if key in ["topic", "refresh_topics"]:
 				continue
 
 			if key in self.SpecialKeys:
@@ -106,7 +138,10 @@ class KafkaSource(Source):
 			else:
 				self.ConsumerConfig[key.replace("_", ".")] = value
 
-		assert "bootstrap.servers" in self.ConsumerConfig, "Bootstrap Servers must be set in [kafka] section in the configuration."
+		# Simple asserts can be removed after Python optimization,
+		# so we use `if statement` here instead
+		if "bootstrap.servers" not in self.ConsumerConfig:
+			raise RuntimeError("Missing configuration option: [kafka] bootstrap_servers.")
 
 		# Create subscription list
 		self.Subscribe = []
@@ -122,6 +157,93 @@ class KafkaSource(Source):
 		# For refreshing of topics/subscription
 		self.RefreshTopics = int(self.Config["refresh_topics"])
 		self.LastRefreshTopicsTime = self.App.time()
+
+		# To run the poll on a separate thread
+		self.ProactorService = app.get_service("asab.ProactorService")
+		self.Buffer = []
+		self.BufferLock = asyncio.Lock()
+		self.LastFlushTime = self.App.time()
+		self.Loop = asyncio.get_event_loop()
+
+
+	def poll_kafka(self, consumer):
+		"""
+		This method runs on a thread and fills the buffer with the polled messages from the Kafka consumer.
+
+		Running Kafka's poll method on a separate thread in an asynchronous application enhances responsiveness
+		by freeing the main thread for other tasks. It ensures non-blocking processing, improving throughput and
+		scalability, as message fetching and processing are decoupled.
+		This approach also optimizes resource utilization by leveraging multiple CPU cores and enhances error
+		handling, making the application more resilient and maintainable.
+		"""
+		while self.Running:
+			current_time = self.App.time()
+
+			if self.RefreshTopics > 0 and current_time > self.LastRefreshTopicsTime + self.RefreshTopics:
+				L.info("Topics refreshed in '{}'.".format(self.Id))
+				consumer.unsubscribe()
+				self.LastRefreshTopicsTime = current_time
+				return
+
+			m = consumer.poll(self.PollInterval)
+
+			if m is None:
+				continue
+
+			if m.error():
+				L.error("The following error occurred while polling for messages: '{}'.".format(m.error()))
+				consumer.unsubscribe()
+				return
+
+			self.Buffer.append(m)
+
+			if len(self.Buffer) >= self.BufferSize or (current_time - self.LastFlushTime) > self.BufferTimeout:
+
+				try:
+					future = asyncio.run_coroutine_threadsafe(self.flush_buffer(consumer), self.Loop)
+					# Wait for the result:
+					future.result()
+
+				except Exception as e:
+					L.exception("The following error occurred while processing batch of Kafka messages: '{}'.".format(e))
+
+				self.LastFlushTime = self.App.time()
+
+
+	async def flush_buffer(self, consumer):
+		"""
+		This method flushes the buffer to the pipeline.
+		It should be thread safe.
+		"""
+
+		if self.BufferLock.locked():
+			return
+
+		async with self.BufferLock:
+
+			if self.Buffer:
+				messages = self.Buffer
+				self.Buffer = []
+
+				for m in messages:
+					await self.process(m.value(), context={
+						"kafka_key": m.key(),
+						"kafka_headers": m.headers(),
+						"_kafka_topic": m.topic(),
+						"_kafka_partition": m.partition(),
+						"_kafka_offset": m.offset(),
+					})
+
+					# Store the offset associated with msg to a local cache.
+					# Stored offsets are committed to Kafka by a background thread every 'auto.commit.interval.ms'.
+					# Explicitly storing offsets after processing gives at-least once semantics.
+					try:
+						consumer.store_offsets(m)
+
+					except RuntimeError:
+						# There is currently no way to detect if the consumer was closed
+						# https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html#pythonclient-consumer
+						pass
 
 
 	async def main(self):
@@ -139,40 +261,8 @@ class KafkaSource(Source):
 			c.subscribe(self.Subscribe)
 
 			try:
-
-				while 1:
-					await self.Pipeline.ready()
-					current_time = self.App.time()
-
-					if self.RefreshTopics > 0 and current_time > self.LastRefreshTopicsTime + self.RefreshTopics:
-						L.info("Topics refreshed in '{}'.".format(self.Id))
-						c.unsubscribe()
-						c.close()
-						self.LastRefreshTopicsTime = current_time
-						break
-
-					m = c.poll(0.2)
-
-					if m is None:
-						await asyncio.sleep(self.Sleep)
-						continue
-
-					if m.error():
-						L.error("The following error occured while polling for messages: '{}'.".format(m.error()))
-						await asyncio.sleep(self.Sleep)
-
-						# Break the polling cycle and recreate the Kafka consumer again
-						c.unsubscribe()
-						c.close()
-						break
-
-					await self.process(m.value(), context={
-						"kafka_key": m.key(),
-						"kafka_headers": m.headers(),
-						"_kafka_topic": m.topic(),
-						"_kafka_partition": m.partition(),
-						"_kafka_offset": m.offset(),
-					})
+				# Run the poll loop on a separate thread
+				await self.ProactorService.execute(self.poll_kafka, c)
 
 			except asyncio.CancelledError:
 				self.Running = False
@@ -180,3 +270,13 @@ class KafkaSource(Source):
 			except BaseException as e:
 				L.exception("Error when processing Kafka message")
 				self.Pipeline.set_error(None, None, e)
+
+			finally:
+
+				# Flush remaining messages in buffer before exiting
+				await self.flush_buffer(c)
+
+				# Close the consumer
+				c.close()
+
+				await asyncio.sleep(self.Sleep)  # Prevent tight loop on errors
