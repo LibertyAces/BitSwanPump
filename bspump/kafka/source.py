@@ -182,7 +182,6 @@ class KafkaSource(Source):
 			if self.RefreshTopics > 0 and current_time > self.LastRefreshTopicsTime + self.RefreshTopics:
 				L.info("Topics refreshed in '{}'.".format(self.Id))
 				consumer.unsubscribe()
-				consumer.close()
 				self.LastRefreshTopicsTime = current_time
 				return
 
@@ -194,7 +193,6 @@ class KafkaSource(Source):
 			if m.error():
 				L.error("The following error occurred while polling for messages: '{}'.".format(m.error()))
 				consumer.unsubscribe()
-				consumer.close()
 				return
 
 			self.Buffer.append(m)
@@ -235,10 +233,17 @@ class KafkaSource(Source):
 						"_kafka_partition": m.partition(),
 						"_kafka_offset": m.offset(),
 					})
+
 					# Store the offset associated with msg to a local cache.
 					# Stored offsets are committed to Kafka by a background thread every 'auto.commit.interval.ms'.
 					# Explicitly storing offsets after processing gives at-least once semantics.
-					consumer.store_offsets(m)
+					try:
+						consumer.store_offsets(m)
+
+					except RuntimeError:
+						# There is currently no way to detect if the consumer was closed
+						# https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html#pythonclient-consumer
+						pass
 
 
 	async def main(self):
