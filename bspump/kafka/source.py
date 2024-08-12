@@ -246,6 +246,10 @@ class KafkaSource(Source):
 						if consumer:
 							consumer.store_offsets(m)
 
+					except confluent_kafka.KafkaException as err:
+						# https://medium.com/@a.a.halutin/simple-examples-with-confluent-kafka-9b7e58534a88
+						L.warning("The following warning occurred inside Kafka consumer: '{}'".format(err))
+
 					except RuntimeError as e:
 						L.exception("Error storing offsets, possible consumer state issue: '{}'".format(e))
 
