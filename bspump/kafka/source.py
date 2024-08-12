@@ -63,8 +63,8 @@ class KafkaSource(Source):
 
 		# Storage of the offset is done manually after the buffer of messages is processed
 		"enable.auto.offset.store": "false",
+		"enable.auto.commit": "false",
 
-		"enable.auto.commit": "true",
 		"auto.commit.interval.ms": "1000",
 		"auto.offset.reset": "smallest",
 		"group.id": "bspump",
@@ -95,7 +95,7 @@ class KafkaSource(Source):
 		self.App = app
 		self.Connection = self.Pipeline.locate_connection(app, connection)
 
-		# Sleep time after no event was received from Kafka or after an error
+		# Sleep time after an error
 		# The following value should be the same in every deployment/environment
 		self.Sleep = 100 / 1000.0
 
@@ -223,6 +223,10 @@ class KafkaSource(Source):
 
 			if self.Buffer:
 				messages = self.Buffer
+
+				if len(messages) == 0:
+					return
+
 				self.Buffer = []
 
 				for m in messages:
@@ -238,12 +242,21 @@ class KafkaSource(Source):
 					# Stored offsets are committed to Kafka by a background thread every 'auto.commit.interval.ms'.
 					# Explicitly storing offsets after processing gives at-least once semantics.
 					try:
-						consumer.store_offsets(m)
 
-					except RuntimeError:
-						# There is currently no way to detect if the consumer was closed
-						# https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html#pythonclient-consumer
-						pass
+						if consumer:
+							consumer.store_offsets(m)
+
+					except RuntimeError as e:
+						L.exception("Error storing offsets, possible consumer state issue: '{}'".format(e))
+
+				# Manually commit the offsets after processing the batch
+				try:
+
+					if consumer:
+						consumer.commit(asynchronous=False)  # Commit offsets synchronously
+
+				except confluent_kafka.KafkaException as e:
+					L.exception("Failed to commit offsets: '{}'".format(e))
 
 
 	async def main(self):
@@ -277,6 +290,7 @@ class KafkaSource(Source):
 				await self.flush_buffer(c)
 
 				# Close the consumer
-				c.close()
+				if c:
+					c.close()
 
 				await asyncio.sleep(self.Sleep)  # Prevent tight loop on errors
