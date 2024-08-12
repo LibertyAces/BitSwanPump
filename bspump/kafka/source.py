@@ -248,9 +248,9 @@ class KafkaSource(Source):
 
 					except confluent_kafka.KafkaException as err:
 
-						# Reballacing of partitions happens during consuming,
+						# Reballacing of partitions happened during consuming,
 						# so this consumer no longer owns the partition
-						# -> let the other consumer consume the events and just finish
+						# -> let the other consumer consume the events and here just finish
 						# https://medium.com/@a.a.halutin/simple-examples-with-confluent-kafka-9b7e58534a88
 						if err.args[0].code() == confluent_kafka.KafkaError._STATE and err.args[0].val() == -172:
 
