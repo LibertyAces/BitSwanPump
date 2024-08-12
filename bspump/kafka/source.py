@@ -247,11 +247,17 @@ class KafkaSource(Source):
 							consumer.store_offsets(m)
 
 					except confluent_kafka.KafkaException as err:
+
 						# https://medium.com/@a.a.halutin/simple-examples-with-confluent-kafka-9b7e58534a88
+						if err.args[0].code() == confluent_kafka.KafkaError._STATE and err.args[0].val() == -172:
+							break
+
 						L.warning("The following warning occurred inside Kafka consumer: '{}'".format(err))
+						break
 
 					except RuntimeError as e:
 						L.exception("Error storing offsets, possible consumer state issue: '{}'".format(e))
+						break
 
 				# Manually commit the offsets after processing the batch
 				try:
