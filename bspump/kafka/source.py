@@ -268,8 +268,12 @@ class KafkaSource(Source):
 					if consumer:
 						consumer.commit(asynchronous=False)  # Commit offsets synchronously
 
-				except confluent_kafka.KafkaException as e:
-					L.exception("Failed to commit offsets: '{}'".format(e))
+				except confluent_kafka.KafkaException as err:
+
+					if err.args[0].code() == confluent_kafka.KafkaError._NO_OFFSET:
+						return
+
+					L.exception("Failed to commit offsets: '{}'".format(err))
 
 
 	async def main(self):
