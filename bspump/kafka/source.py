@@ -1,5 +1,9 @@
 import asyncio
 import logging
+import time
+
+import concurrent.futures
+import threading
 
 import confluent_kafka
 
@@ -50,6 +54,7 @@ class KafkaSource(Source):
 	ConfigDefaults = {
 		"topic": "unconfigured",
 		"refresh_topics": 0,
+		"consumer_threads": 5,  # Number of consumer threads to be run at once
 		# In Kafka, the poll interval refers to the frequency at which a consumer polls the Kafka broker for new messages.
 		# This interval is crucial because it impacts how the consumer interacts with Kafka in terms of fetching messages,
 		# managing offsets, and maintaining group membership.
@@ -129,7 +134,7 @@ class KafkaSource(Source):
 		# Copy configuration options, avoid the topic
 		for key, value in self.Config.items():
 
-			if key in ["topic", "refresh_topics"]:
+			if key in ["topic", "refresh_topics", "consumer_threads"]:
 				continue
 
 			if key in self.SpecialKeys:
@@ -156,13 +161,19 @@ class KafkaSource(Source):
 
 		# For refreshing of topics/subscription
 		self.RefreshTopics = int(self.Config["refresh_topics"])
-		self.LastRefreshTopicsTime = self.App.time()
+		self.LastRefreshTopicsTime = time.time()
 
 		# To run the poll on a separate thread
-		self.ProactorService = app.get_service("asab.ProactorService")
+		self.ConsumerThreadsSize = int(self.Config["consumer_threads"])
 		self.Buffer = []
 		self.BufferLock = asyncio.Lock()
-		self.LastFlushTime = self.App.time()
+		self.BufferThreadLock = threading.Lock()
+		self.ThreadPoolExecutor = concurrent.futures.ThreadPoolExecutor(
+			# The maximum number of threads that can be used to execute the given calls.
+			max_workers=self.ConsumerThreadsSize,
+			thread_name_prefix=id,
+		)
+		self.LastFlushTime = self.LastRefreshTopicsTime
 		self.Loop = asyncio.get_event_loop()
 
 
@@ -177,7 +188,7 @@ class KafkaSource(Source):
 		handling, making the application more resilient and maintainable.
 		"""
 		while self.Running:
-			current_time = self.App.time()
+			current_time = time.time()
 
 			if self.RefreshTopics > 0 and current_time > self.LastRefreshTopicsTime + self.RefreshTopics:
 				L.info("Topics refreshed in '{}'.".format(self.Id))
@@ -195,19 +206,25 @@ class KafkaSource(Source):
 				consumer.unsubscribe()
 				return
 
-			self.Buffer.append(m)
+			# It is necessary to lock the thread even before appending
+			with self.BufferThreadLock:
 
-			if len(self.Buffer) >= self.BufferSize or (current_time - self.LastFlushTime) > self.BufferTimeout:
+				if m is None:
+					continue
 
-				try:
-					future = asyncio.run_coroutine_threadsafe(self.flush_buffer(consumer), self.Loop)
-					# Wait for the result:
-					future.result()
+				self.Buffer.append(m)
 
-				except Exception as e:
-					L.exception("The following error occurred while processing batch of Kafka messages: '{}'.".format(e))
+				if len(self.Buffer) >= self.BufferSize or (current_time - self.LastFlushTime) > self.BufferTimeout:
 
-				self.LastFlushTime = self.App.time()
+					try:
+						future = asyncio.run_coroutine_threadsafe(self.flush_buffer(consumer), self.Loop)
+						# Wait for the result:
+						future.result()
+
+					except Exception as e:
+						L.exception("The following error occurred while processing batch of Kafka messages: '{}'.".format(e))
+
+					self.LastFlushTime = time.time()
 
 
 	async def flush_buffer(self, consumer):
@@ -290,12 +307,40 @@ class KafkaSource(Source):
 
 			c.subscribe(self.Subscribe)
 
+			consumer_tasks = []
+
 			try:
 				# Run the poll loop on a separate thread
-				await self.ProactorService.execute(self.poll_kafka, c)
+				for _ in range(0, self.ConsumerThreadsSize):
+					consumer_tasks.append(
+						self.Loop.run_in_executor(self.ThreadPoolExecutor, self.poll_kafka, c)
+					)
+
+				# Wait until at least one tasks finishes
+				await asyncio.wait(consumer_tasks, return_when=asyncio.FIRST_COMPLETED)
+
+				# Finish other tasks before recreating the consumer later again
+				for task in consumer_tasks:
+
+					if not task.cancelled():
+						task.cancel()
+
+					await task
+
+				consumer_tasks = []
 
 			except asyncio.CancelledError:
 				self.Running = False
+
+				# Finish other tasks before recreating the consumer later again
+				for task in consumer_tasks:
+
+					if not task.cancelled():
+						task.cancel()
+
+					await task
+
+				consumer_tasks = []
 
 			except BaseException as e:
 				L.exception("Error when processing Kafka message")
@@ -304,6 +349,7 @@ class KafkaSource(Source):
 			finally:
 
 				# Flush remaining messages in buffer before exiting
+				# The threads are cancelled now
 				await self.flush_buffer(c)
 
 				# Close the consumer
