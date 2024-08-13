@@ -54,7 +54,7 @@ class KafkaSource(Source):
 	ConfigDefaults = {
 		"topic": "unconfigured",
 		"refresh_topics": 0,
-		"consumer_threads": 5,  # Number of consumer threads to be run at once
+		"consumer_threads": 2,  # Number of consumer threads to be run at once
 		# In Kafka, the poll interval refers to the frequency at which a consumer polls the Kafka broker for new messages.
 		# This interval is crucial because it impacts how the consumer interacts with Kafka in terms of fetching messages,
 		# managing offsets, and maintaining group membership.
