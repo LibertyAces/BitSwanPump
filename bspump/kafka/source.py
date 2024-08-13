@@ -319,34 +319,24 @@ class KafkaSource(Source):
 				# Wait until at least one tasks finishes
 				await asyncio.wait(consumer_tasks, return_when=asyncio.FIRST_COMPLETED)
 
-				# Finish other tasks before recreating the consumer later again
-				for task in consumer_tasks:
-
-					if not task.cancelled():
-						task.cancel()
-
-					await task
-
-				consumer_tasks = []
-
 			except asyncio.CancelledError:
 				self.Running = False
-
-				# Finish other tasks before recreating the consumer later again
-				for task in consumer_tasks:
-
-					if not task.cancelled():
-						task.cancel()
-
-					await task
-
-				consumer_tasks = []
 
 			except BaseException as e:
 				L.exception("Error when processing Kafka message")
 				self.Pipeline.set_error(None, None, e)
 
 			finally:
+
+				# Finish other tasks before recreating the consumer later again
+				for task in consumer_tasks:
+
+					if not task.cancelled():
+						task.cancel()
+
+					await task
+
+				consumer_tasks = []
 
 				# Flush remaining messages in buffer before exiting
 				# The threads are cancelled now
