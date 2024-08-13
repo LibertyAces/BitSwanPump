@@ -296,27 +296,31 @@ class KafkaSource(Source):
 	async def main(self):
 
 		while self.Running:
-
-			try:
-				c = confluent_kafka.Consumer(self.ConsumerConfig, logger=L)
-
-			except BaseException as e:
-				L.exception("Error when connecting to Kafka")
-				self.Pipeline.set_error(None, None, e)
-				return
-
-			c.subscribe(self.Subscribe)
-
+			consumers = []
 			consumer_tasks = []
 
 			try:
 				# Run the poll loop on a separate thread
 				for _ in range(0, self.ConsumerThreadsSize):
+
+					# Create the consumer for the given thread
+					# Consumers do not support multithreading
+					try:
+						c = confluent_kafka.Consumer(self.ConsumerConfig, logger=L)
+
+					except BaseException as e:
+						L.exception("Error when connecting to Kafka")
+						self.Pipeline.set_error(None, None, e)
+						return
+
+					c.subscribe(self.Subscribe)
+
+					consumers.append(c)
 					consumer_tasks.append(
 						self.Loop.run_in_executor(self.ThreadPoolExecutor, self.poll_kafka, c)
 					)
 
-				# Wait until at least one tasks finishes
+				# Wait until at least one task finishes
 				await asyncio.wait(consumer_tasks, return_when=asyncio.FIRST_COMPLETED)
 
 			except asyncio.CancelledError:
@@ -328,7 +332,7 @@ class KafkaSource(Source):
 
 			finally:
 
-				# Finish other tasks before recreating the consumer later again
+				# Finish tasks before recreating the consumers later again
 				for task in consumer_tasks:
 
 					if not task.cancelled():
@@ -336,14 +340,13 @@ class KafkaSource(Source):
 
 					await task
 
-				consumer_tasks = []
-
 				# Flush remaining messages in buffer before exiting
 				# The threads are cancelled now
-				await self.flush_buffer(c)
+				for c in consumers:
+					await self.flush_buffer(c)
 
-				# Close the consumer
-				if c:
-					c.close()
+					# Close the consumer
+					if c:
+						c.close()
 
 				await asyncio.sleep(self.Sleep)  # Prevent tight loop on errors
