@@ -208,10 +208,6 @@ class KafkaSource(Source):
 
 			# It is necessary to lock the thread even before appending
 			with self.BufferThreadLock:
-
-				if m is None:
-					continue
-
 				self.Buffer.append(m)
 
 				if len(self.Buffer) >= self.BufferSize or (current_time - self.LastFlushTime) > self.BufferTimeout:
