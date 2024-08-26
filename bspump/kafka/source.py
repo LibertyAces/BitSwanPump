@@ -213,7 +213,7 @@ class KafkaSource(Source):
 				if len(self.Buffer) >= self.BufferSize or (current_time - self.LastFlushTime) > self.BufferTimeout:
 
 					try:
-						L.info("Flushing the buffer in KafkaSource.")
+						# L.info("Flushing the buffer in KafkaSource.")
 						future = asyncio.run_coroutine_threadsafe(self.flush_buffer(consumer), self.Loop)
 						# Wait for the result:
 						future.result()
