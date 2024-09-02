@@ -65,6 +65,7 @@ class KafkaSource(Source):
 		"poll_interval": 0.5,
 		"buffer_size": 1000,
 		"buffer_timeout": 1.0,
+		"sleep_on_error": 3.0,
 
 		# Storage of the offset is done manually after the buffer of messages is processed
 		"enable.auto.offset.store": "false",
@@ -100,9 +101,12 @@ class KafkaSource(Source):
 		self.App = app
 		self.Connection = self.Pipeline.locate_connection(app, connection)
 
-		# Sleep time after an error
+		# Sleep time after an error or the consumer being recreated
 		# The following value should be the same in every deployment/environment
 		self.Sleep = 100 / 1000.0
+
+		# Sleep time after an error
+		self.SleepOnError = float(self.Config.pop("sleep_on_error", 3.0))
 
 		# Polling too frequently (e.g., every 0.1 seconds) can introduce significant overhead.
 		# Each poll involves network calls and resource utilization on both the consumer and broker side.
@@ -204,6 +208,7 @@ class KafkaSource(Source):
 			if m.error():
 				L.error("The following error occurred while polling for messages: '{}'.".format(m.error()))
 				consumer.unsubscribe()
+				time.sleep(self.SleepOnError)
 				return
 
 			# It is necessary to lock the thread even before appending
