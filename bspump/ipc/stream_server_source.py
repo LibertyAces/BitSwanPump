@@ -86,7 +86,14 @@ class StreamServerSource(Source):
 				try:
 					addrinfo = socket.getaddrinfo(addr[0], addr[1], family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, flags=socket.AI_PASSIVE)
 				except Exception as e:
-					L.error("Failed to open socket: {}".format(e), struct_data={'host': addr[0], 'port': addr[1]})
+					L.error(
+						"Failed to open socket: {}".format(e),
+						struct_data={
+							'id': self.Id,
+							'host': addr[0],
+							'port': addr[1]
+						}
+					)
 					continue
 
 				for family, socktype, proto, canonname, sockaddr in addrinfo:
@@ -99,7 +106,14 @@ class StreamServerSource(Source):
 					try:
 						s.bind(sockaddr)
 					except OSError as e:
-						L.warning("Failed to start listening: {}".format(e), struct_data={'host': sockaddr[0], 'port': sockaddr[1]})
+						L.warning(
+							"Failed to start listening: {}".format(e),
+							struct_data={
+								'id': self.Id,
+								'host': sockaddr[0],
+								'port': sockaddr[1]
+							}
+						)
 						continue
 
 					backlog = self.Config['backlog']
@@ -109,7 +123,16 @@ class StreamServerSource(Source):
 						s.listen(int(backlog))
 
 					self.AcceptingSockets.append(s)
-					L.log(asab.LOG_NOTICE, "Listening on TCP", struct_data={'host': sockaddr[0], 'port': sockaddr[1], 'family': inet_family_names.get(family, "???")})
+					L.log(
+						asab.LOG_NOTICE,
+						"Listening on TCP",
+						struct_data={
+							'id': self.Id,
+							'host': sockaddr[0],
+							'port': sockaddr[1],
+							'family': inet_family_names.get(family, "???")
+						}
+					)
 
 
 		super().start(loop)
@@ -127,7 +150,10 @@ class StreamServerSource(Source):
 				try:
 					os.unlink(s.getsockname())
 				except Exception:
-					L.exception("Error when removing socket file")
+					L.exception(
+						"Error when removing socket file.",
+						struct_data={'id': self.Id}
+					)
 
 		# The main() will be canceled in the parent class
 		await super().stop()
@@ -135,7 +161,10 @@ class StreamServerSource(Source):
 
 	async def main(self):
 		if len(self.AcceptingSockets) == 0:
-			L.error("No listening socket configured")
+			L.error(
+				"No listening socket configured.",
+				struct_data={'id': self.Id}
+			)
 			return
 
 		await asyncio.gather(
@@ -171,7 +200,14 @@ class StreamServerSource(Source):
 			me = server_addr
 			peer = client_addr
 
-		L.log(asab.LOG_NOTICE, "Connected.", struct_data={'peer': peer})
+		L.log(
+			asab.LOG_NOTICE,
+			"Connected.",
+			struct_data={
+				'id': self.Id,
+				'peer': peer
+			}
+		)
 
 		context = {
 			'stream_type': client_sock.family.name,
@@ -210,9 +246,21 @@ class StreamServerSource(Source):
 			except asyncio.CancelledError:
 				pass
 			except Exception:
-				L.exception("Error when handling client socket")
+				L.exception(
+					"Error when handling client socket.",
+					struct_data={
+						'id': self.Id,
+					}
+				)
 
-		L.log(asab.LOG_NOTICE, "Disconnected.", struct_data={'peer': peer})
+		L.log(
+			asab.LOG_NOTICE,
+			"Disconnected.",
+			struct_data={
+				'id': self.Id,
+				'peer': peer
+			}
+		)
 
 		# Close the stream
 		await stream.close()
@@ -234,4 +282,7 @@ class StreamServerSource(Source):
 				except asyncio.CancelledError:
 					pass
 				except Exception:
-					L.exception("Exception when handling client socket")
+					L.exception(
+						"Exception when handling client socket",
+						struct_data={"id": self.Id}
+					)
