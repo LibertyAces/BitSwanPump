@@ -62,7 +62,7 @@ class DatagramSource(Source):
 					if stat.S_ISSOCK(usstat.st_mode):
 						os.unlink(addrline)
 					else:
-						L.warn("Cannot listen on UNIX socket, path is already occupied", struct_data={'path': addrline})
+						L.warning("Cannot listen on UNIX socket, path is already occupied", struct_data={'path': addrline})
 						continue
 
 				s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
