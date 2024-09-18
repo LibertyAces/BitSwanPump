@@ -20,8 +20,8 @@ class LDAPSource(TriggerSource):
 
 	ConfigDefaults = {
 		"base": "dc=example,dc=org",
-		"filter": "(&(objectClass=inetOrgPerson)(cn=*))",
-		"attributes": "dn objectGUID sAMAccountName email givenName sn UserAccountControl",
+		"filter": "(|(objectClass=organizationalPerson)(objectClass=inetOrgPerson))",  # Retrieve user accounts on most servers
+		"attributes": "sAMAccountName mail givenName sn displayName UserAccountControl",
 		"results_per_page": 1000,
 	}
 
