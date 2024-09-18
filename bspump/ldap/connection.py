@@ -35,9 +35,10 @@ class LDAPConnection(Connection):
 	"""
 
 	ConfigDefaults = {
+		# Either specify "uri", OR "host" (and "port", if non-standard)
+		"uri": "",
 		"host": "localhost",
 		"port": 0,  # = use the default 389 for non-secure and 636 for secure connection
-		"uri": "",
 		"username": "cn=admin,dc=example,dc=org",
 		"password": "admin",
 
