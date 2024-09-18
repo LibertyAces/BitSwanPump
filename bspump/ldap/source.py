@@ -74,7 +74,9 @@ class LDAPSource(TriggerSource):
 					# Skip system entries
 					continue
 
-				event = {}
+				# Include distinguished name (DN) attribute
+				event = {"dn": dn}
+
 				# LDAP returns all attributes as lists of bytestrings, e.g.:
 				#   {"sAMAccountName": [b"vhavel"], ...}
 				# Unpack them
@@ -85,6 +87,7 @@ class LDAPSource(TriggerSource):
 						elif len(v) == 1:
 							v = v[0]
 					event[k] = v
+
 				page.append(event)
 
 			for sc in serverctrls:
