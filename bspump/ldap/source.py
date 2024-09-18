@@ -62,7 +62,13 @@ class LDAPSource(TriggerSource):
 				attrlist=self.Attributes,
 				serverctrls=[paged_results_control],
 			)
-			res_type, res_data, res_msgid, serverctrls = client.result3(msgid)
+			try:
+				res_type, res_data, res_msgid, serverctrls = client.result3(msgid)
+			except Exception as e:
+				L.error("LDAP search failed: {}".format(e.__class__.__name__), struct_data={
+					"base": self.Base, "filter": self.Filter, "err_data": str(e)})
+				return [], None
+
 			for dn, attrs in res_data:
 				if dn is None:
 					# Skip system entries
