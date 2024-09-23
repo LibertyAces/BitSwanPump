@@ -325,7 +325,7 @@ class KafkaSource(Source):
 		while self.Running:
 			consumers = []
 			consumer_tasks = []
-			consumer_storage = []
+			consumer_storages = []
 
 			try:
 				# Run the poll loop on a separate thread
@@ -349,7 +349,7 @@ class KafkaSource(Source):
 					c.subscribe(self.Subscribe)
 
 					consumers.append(c)
-					consumer_storage.append(storage)
+					consumer_storages.append(storage)
 					consumer_tasks.append(
 						self.Loop.run_in_executor(self.ThreadPoolExecutor, self.poll_kafka, c, storage)
 					)
