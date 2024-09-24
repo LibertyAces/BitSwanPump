@@ -20,8 +20,8 @@ class LDAPSource(TriggerSource):
 
 	ConfigDefaults = {
 		"base": "dc=example,dc=org",
-		"filter": "(&(objectClass=inetOrgPerson)(cn=*))",
-		"attributes": "dn objectGUID sAMAccountName email givenName sn UserAccountControl",
+		"filter": "(|(objectClass=organizationalPerson)(objectClass=inetOrgPerson))",  # Retrieve user accounts on most servers
+		"attributes": "sAMAccountName mail givenName sn displayName UserAccountControl",
 		"results_per_page": 1000,
 	}
 
@@ -62,13 +62,21 @@ class LDAPSource(TriggerSource):
 				attrlist=self.Attributes,
 				serverctrls=[paged_results_control],
 			)
-			res_type, res_data, res_msgid, serverctrls = client.result3(msgid)
+			try:
+				res_type, res_data, res_msgid, serverctrls = client.result3(msgid)
+			except Exception as e:
+				L.error("LDAP search failed: {}".format(e.__class__.__name__), struct_data={
+					"base": self.Base, "filter": self.Filter, "err_data": str(e)})
+				return [], None
+
 			for dn, attrs in res_data:
 				if dn is None:
 					# Skip system entries
 					continue
 
-				event = {}
+				# Include distinguished name (DN) attribute
+				event = {"dn": dn}
+
 				# LDAP returns all attributes as lists of bytestrings, e.g.:
 				#   {"sAMAccountName": [b"vhavel"], ...}
 				# Unpack them
@@ -79,6 +87,7 @@ class LDAPSource(TriggerSource):
 						elif len(v) == 1:
 							v = v[0]
 					event[k] = v
+
 				page.append(event)
 
 			for sc in serverctrls:

@@ -35,9 +35,10 @@ class LDAPConnection(Connection):
 	"""
 
 	ConfigDefaults = {
+		# Either specify "uri", OR "host" (and "port", if non-standard)
+		"uri": "",
 		"host": "localhost",
 		"port": 0,  # = use the default 389 for non-secure and 636 for secure connection
-		"uri": "",
 		"username": "cn=admin,dc=example,dc=org",
 		"password": "admin",
 
@@ -81,9 +82,11 @@ class LDAPConnection(Connection):
 
 		try:
 			client.simple_bind_s(self.Config.get("username"), self.Config.get("password"))
-			yield client
 		except Exception as e:
-			L.error("Cannot connect to LDAP server: {}".format(e), exc_info=True, struct_data={"ldap_uri": self.URI})
+			raise RuntimeError("Cannot connect to LDAP server: {}".format(e.__class__.__name__))
+
+		try:
+			yield client
 		finally:
 			client.unbind_s()
 
