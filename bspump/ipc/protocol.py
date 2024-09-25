@@ -98,8 +98,7 @@ class LineSourceProtocol(SourceProtocolABC):
 	def _line_codec_decoder(self, line_bytes):
 		try:
 			line, _ = self.Codec.decode(line_bytes)
-		except UnicodeDecodeError as err:
-			L.warning("Cannot decode line, replacing malformed data with backslash escape sequence: {}".format(err))
+		except UnicodeDecodeError:
 			line, _ = self.Codec.decode(line_bytes, errors="backslashreplace")
 		finally:
 			return line
