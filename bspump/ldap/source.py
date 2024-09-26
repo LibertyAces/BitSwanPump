@@ -43,7 +43,7 @@ class LDAPSource(TriggerSource):
 			page, cookie = await self.ProactorService.execute(
 				self._search_worker, cookie)
 			for entry in page:
-				await self.process(entry, context={})
+				await self.process(entry, context={"base": self.Base})
 			if cookie is None or len(cookie) == 0:
 				break
 
