@@ -62,7 +62,7 @@ class KafkaSource(Source):
 		# This range provides a balance between responsiveness and resource utilization.
 		# If the total number of partitions is very high and/or if the message production rate is significant, you might need to lean towards the lower end of the recommended range (e.g., 0.5 seconds)
 		# or even slightly below, but not too much to avoid excessive overhead.
-		"poll_interval": 0.5,
+		"poll_interval": 0.3,
 		"buffer_size": 1000,
 		"buffer_timeout": 1.0,
 		"sleep_on_error": 3.0,
@@ -73,7 +73,7 @@ class KafkaSource(Source):
 		"enable.auto.commit": "false",
 
 		"auto.commit.interval.ms": "1000",
-		"auto.offset.reset": "smallest",
+		"auto.offset.reset": "earliest",
 		"group.id": "bspump",
 	}
 
@@ -117,7 +117,7 @@ class KafkaSource(Source):
 		# It is frequent enough to ensure that the consumer remains active, heartbeats are sent regularly,
 		# and messages are fetched in a timely manner. At the same time, it avoids the excessive overhead associated with
 		# very frequent polling.
-		self.PollInterval = float(self.Config.pop("poll_interval", 0.5))
+		self.PollInterval = float(self.Config.pop("poll_interval", 0.3))
 
 		# Size of the buffer of consumed messages
 		self.BufferSize = int(self.Config.pop("buffer_size", 1000))
@@ -329,11 +329,13 @@ class KafkaSource(Source):
 
 			try:
 				# Run the poll loop on a separate thread
+				current_time = self.App.time()
+
 				for _ in range(0, self.ConsumerThreadsSize):
 					storage = {
-						"last_refresh_topic_time": 0,
-						"last_assignment_error_check_time": 0,
-						"last_flush_time": 0,
+						"last_refresh_topic_time": current_time,
+						"last_assignment_error_check_time": current_time,
+						"last_flush_time": current_time,
 					}
 
 					# Create the consumer for the given thread
