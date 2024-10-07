@@ -147,7 +147,6 @@ class KafkaSink(Sink):
 				time.sleep(60)  # Sleep one minute (one cycle)
 				continue
 
-			# The loop lost its interactivity
 			L.critical("The watermark.watchdog was exceeded in KafkaSink likely b/c throttling of the pipeline was not effective. Stopping the application!")
 			os.kill(os.getpid(), signal.SIGKILL)  # Works only on Linux
 			os._exit(5)  # Cannot use sys.exit inside the thread
