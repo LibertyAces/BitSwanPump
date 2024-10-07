@@ -62,17 +62,18 @@ class KafkaSource(Source):
 		# This range provides a balance between responsiveness and resource utilization.
 		# If the total number of partitions is very high and/or if the message production rate is significant, you might need to lean towards the lower end of the recommended range (e.g., 0.5 seconds)
 		# or even slightly below, but not too much to avoid excessive overhead.
-		"poll_interval": 0.5,
+		"poll_interval": 0.3,
 		"buffer_size": 1000,
 		"buffer_timeout": 1.0,
 		"sleep_on_error": 3.0,
+		"check_assignment_errors": 5.0,  # How often to check assignment errors
 
 		# Storage of the offset is done manually after the buffer of messages is processed
 		"enable.auto.offset.store": "false",
 		"enable.auto.commit": "false",
 
 		"auto.commit.interval.ms": "1000",
-		"auto.offset.reset": "smallest",
+		"auto.offset.reset": "earliest",
 		"group.id": "bspump",
 	}
 
@@ -116,7 +117,7 @@ class KafkaSource(Source):
 		# It is frequent enough to ensure that the consumer remains active, heartbeats are sent regularly,
 		# and messages are fetched in a timely manner. At the same time, it avoids the excessive overhead associated with
 		# very frequent polling.
-		self.PollInterval = float(self.Config.pop("poll_interval", 0.5))
+		self.PollInterval = float(self.Config.pop("poll_interval", 0.3))
 
 		# Size of the buffer of consumed messages
 		self.BufferSize = int(self.Config.pop("buffer_size", 1000))
@@ -138,7 +139,7 @@ class KafkaSource(Source):
 		# Copy configuration options, avoid the topic
 		for key, value in self.Config.items():
 
-			if key in ["topic", "refresh_topics", "consumer_threads"]:
+			if key in ["topic", "refresh_topics", "consumer_threads", "check_assignment_errors"]:
 				continue
 
 			if key in self.SpecialKeys:
@@ -165,7 +166,9 @@ class KafkaSource(Source):
 
 		# For refreshing of topics/subscription
 		self.RefreshTopics = int(self.Config["refresh_topics"])
-		self.LastRefreshTopicsTime = time.time()
+
+		# For checking error on topic-partition assignments
+		self.CheckAssignmentErrors = float(self.Config["check_assignment_errors"])
 
 		# To run the poll on a separate thread
 		self.ConsumerThreadsSize = int(self.Config["consumer_threads"])
@@ -177,11 +180,10 @@ class KafkaSource(Source):
 			max_workers=self.ConsumerThreadsSize,
 			thread_name_prefix=id,
 		)
-		self.LastFlushTime = self.LastRefreshTopicsTime
 		self.Loop = asyncio.get_event_loop()
 
 
-	def poll_kafka(self, consumer):
+	def poll_kafka(self, consumer, storage):
 		"""
 		This method runs on a thread and fills the buffer with the polled messages from the Kafka consumer.
 
@@ -192,12 +194,34 @@ class KafkaSource(Source):
 		handling, making the application more resilient and maintainable.
 		"""
 		while self.Running:
-			current_time = time.time()
+			current_time = self.App.time()
 
-			if self.RefreshTopics > 0 and current_time > self.LastRefreshTopicsTime + self.RefreshTopics:
+			# Check errors on individual assigned partitions before polling
+			if current_time - storage["last_assignment_error_check_time"] > self.CheckAssignmentErrors:
+				storage["last_assignment_error_check_time"] = current_time
+
+				for topic_partition in consumer.assignment():
+
+					# If the error exists, log it and return to recreate the consumer
+					if topic_partition.error is not None:
+						L.error(
+							"The following error occurred before polling for messages: '{}'.".format(
+								topic_partition.error
+							),
+							struct_data={
+								"topic": topic_partition.topic,
+								"partition": topic_partition.partition,
+								"offset": topic_partition.offset,
+							}
+						)
+						consumer.unsubscribe()
+						time.sleep(self.SleepOnError)
+						return
+
+			if self.RefreshTopics > 0 and current_time > storage["last_refresh_topic_time"] + self.RefreshTopics:
 				L.info("Topics refreshed in '{}'.".format(self.Id))
 				consumer.unsubscribe()
-				self.LastRefreshTopicsTime = current_time
+				storage["last_refresh_topic_time"] = current_time
 				return
 
 			m = consumer.poll(self.PollInterval)
@@ -215,7 +239,7 @@ class KafkaSource(Source):
 			with self.BufferThreadLock:
 				self.Buffer.append(m)
 
-				if len(self.Buffer) >= self.BufferSize or (current_time - self.LastFlushTime) > self.BufferTimeout:
+				if len(self.Buffer) >= self.BufferSize or (current_time - storage["last_flush_time"]) > self.BufferTimeout:
 
 					try:
 						# L.info("Flushing the buffer in KafkaSource.")
@@ -226,7 +250,7 @@ class KafkaSource(Source):
 					except Exception as e:
 						L.exception("The following error occurred while processing batch of Kafka messages: '{}'.".format(e))
 
-					self.LastFlushTime = time.time()
+					storage["last_flush_time"] = current_time
 
 
 	async def flush_buffer(self, consumer):
@@ -247,6 +271,9 @@ class KafkaSource(Source):
 					return
 
 				self.Buffer = []
+
+				# Make sure the pipeline is ready to receive messages
+				await self.Pipeline.ready()
 
 				for m in messages:
 
@@ -301,10 +328,18 @@ class KafkaSource(Source):
 		while self.Running:
 			consumers = []
 			consumer_tasks = []
+			consumer_storages = []
 
 			try:
 				# Run the poll loop on a separate thread
+				current_time = self.App.time()
+
 				for _ in range(0, self.ConsumerThreadsSize):
+					storage = {
+						"last_refresh_topic_time": current_time,
+						"last_assignment_error_check_time": current_time,
+						"last_flush_time": current_time,
+					}
 
 					# Create the consumer for the given thread
 					# Consumers do not support multithreading
@@ -319,8 +354,9 @@ class KafkaSource(Source):
 					c.subscribe(self.Subscribe)
 
 					consumers.append(c)
+					consumer_storages.append(storage)
 					consumer_tasks.append(
-						self.Loop.run_in_executor(self.ThreadPoolExecutor, self.poll_kafka, c)
+						self.Loop.run_in_executor(self.ThreadPoolExecutor, self.poll_kafka, c, storage)
 					)
 
 				# Wait until at least one task finishes
