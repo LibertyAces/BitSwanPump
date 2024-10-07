@@ -69,7 +69,7 @@ class KafkaSink(Sink):
 		"topic": "unconfigured",
 		"watermark.low": "10000",
 		"watermark.high": "20000",
-		"watermark.watchdog": "31000",  # this should be slightly higher than queue.buffering.max.messages
+		"watermark.watchdog": "31500",  # this should be slightly higher than queue.buffering.max.messages
 		# Maximum number of messages allowed on the producer queue.
 		"queue.buffering.max.messages": "30000",
 		# Maximum size (in bytes) of all messages batched in one MessageSet, including protocol framing overhead.
