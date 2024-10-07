@@ -1,5 +1,9 @@
 import asyncio
 import logging
+import threading
+import os
+import signal
+import time
 
 import confluent_kafka
 
@@ -63,10 +67,17 @@ class KafkaSink(Sink):
 
 	ConfigDefaults = {
 		"topic": "unconfigured",
-		"watermark.low": "40000",
-		"watermark.high": "90000",
-		"batch.num.messages": "100000",
+		"watermark.low": "10000",
+		"watermark.high": "20000",
+		"watermark.watchdog": "31000",  # this should be slightly higher than queue.buffering.max.messages
+		# Maximum number of messages allowed on the producer queue.
+		"queue.buffering.max.messages": "30000",
+		# Maximum size (in bytes) of all messages batched in one MessageSet, including protocol framing overhead.
+		"batch.num.messages": "10000",
 		"linger.ms": "500",  # This settings makes a significant impact on the throughtput
+		# Maximum total message size sum allowed on the producer queue. This queue is shared by all topics and partitions.
+		"queue.buffering.max.kbytes": "2561024",
+		# Maximum size (in bytes) of all messages batched in one MessageSet, including protocol framing overhead.
 		"batch.size": "1000000",
 		"poll.timeout": "0.1",
 		# "compression.type": "snappy",
@@ -99,6 +110,7 @@ class KafkaSink(Sink):
 		self.Topic = self.Config["topic"]
 		self.LowWatermark = int(self.Config["watermark.low"])
 		self.HighWatermark = int(self.Config["watermark.high"])
+		self.WatchdogWatermark = int(self.Config["watermark.watchdog"])
 
 		self.IsThrottling = False
 
@@ -114,6 +126,31 @@ class KafkaSink(Sink):
 		self.PollRunning = False
 		pipeline.PubSub.subscribe("bspump.pipeline.start!", self._on_start)
 		pipeline.PubSub.subscribe("bspump.pipeline.stop!", self._on_stop)
+
+		# Run watchdog to check the throttling
+		watchdog_thread = threading.Thread(target=self._watchdog)
+		watchdog_thread.daemon = True  # Daemonize the thread to ensure it exits with the main program
+		watchdog_thread.start()
+
+
+	def _watchdog(self):
+		"""
+		Periodically checks the size of the producer
+		queue in order to determine if the buffer size
+		was exceeded and throttling did not work properly.
+		"""
+
+		while True:
+
+			# Check if the configured threshold passed
+			if len(self.Producer) < self.WatchdogWatermark:
+				time.sleep(60)  # Sleep one minute (one cycle)
+				continue
+
+			# The loop lost its interactivity
+			L.critical("The watermark.watchdog was exceeded in KafkaSink likely b/c throttling of the pipeline was not effective. Stopping the application!")
+			os.kill(os.getpid(), signal.SIGKILL)  # Works only on Linux
+			os._exit(5)  # Cannot use sys.exit inside the thread
 
 
 	@asab.subscribe("Application.tick!")
