@@ -272,6 +272,9 @@ class KafkaSource(Source):
 
 				self.Buffer = []
 
+				# Make sure the pipeline is ready to receive messages
+				await self.Pipeline.ready()
+
 				for m in messages:
 
 					await self.process(m.value(), context={
