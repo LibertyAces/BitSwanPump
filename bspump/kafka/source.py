@@ -182,6 +182,19 @@ class KafkaSource(Source):
 		)
 		self.Loop = asyncio.get_event_loop()
 
+		# Metrics
+		metrics_service = app.get_service('asab.MetricsService')
+		self.ErrorMetrics = metrics_service.create_counter(
+			"kafka_source_errors",
+			tags={
+				'pipeline': pipeline.Id,
+			},
+			init_values={
+				"assignment": 0,
+				"message": 0,
+			}
+		)
+
 
 	def poll_kafka(self, consumer, storage):
 		"""
@@ -193,8 +206,25 @@ class KafkaSource(Source):
 		This approach also optimizes resource utilization by leveraging multiple CPU cores and enhances error
 		handling, making the application more resilient and maintainable.
 		"""
+
 		while self.Running:
 			current_time = self.App.time()
+
+			# Should the buffer be already sent?
+			with self.BufferThreadLock:
+
+				if len(self.Buffer) >= self.BufferSize or (current_time - storage["last_flush_time"]) > self.BufferTimeout:
+
+					try:
+						# L.info("Flushing the buffer in KafkaSource.")
+						future = asyncio.run_coroutine_threadsafe(self.flush_buffer(consumer), self.Loop)
+						# Wait for the result:
+						future.result()
+
+					except Exception as e:
+						L.exception("The following error occurred while processing batch of Kafka messages: '{}'.".format(e))
+
+					storage["last_flush_time"] = current_time
 
 			# Check errors on individual assigned partitions before polling
 			if current_time - storage["last_assignment_error_check_time"] > self.CheckAssignmentErrors:
@@ -215,6 +245,7 @@ class KafkaSource(Source):
 							}
 						)
 						consumer.unsubscribe()
+						self.ErrorMetrics.add("assignment", 1)
 						time.sleep(self.SleepOnError)
 						return
 
@@ -232,25 +263,13 @@ class KafkaSource(Source):
 			if m.error():
 				L.error("The following error occurred while polling for messages: '{}'.".format(m.error()))
 				consumer.unsubscribe()
+				self.ErrorMetrics.add("message", 1)
 				time.sleep(self.SleepOnError)
 				return
 
 			# It is necessary to lock the thread even before appending
 			with self.BufferThreadLock:
 				self.Buffer.append(m)
-
-				if len(self.Buffer) >= self.BufferSize or (current_time - storage["last_flush_time"]) > self.BufferTimeout:
-
-					try:
-						# L.info("Flushing the buffer in KafkaSource.")
-						future = asyncio.run_coroutine_threadsafe(self.flush_buffer(consumer), self.Loop)
-						# Wait for the result:
-						future.result()
-
-					except Exception as e:
-						L.exception("The following error occurred while processing batch of Kafka messages: '{}'.".format(e))
-
-					storage["last_flush_time"] = current_time
 
 
 	async def flush_buffer(self, consumer):
@@ -275,52 +294,56 @@ class KafkaSource(Source):
 				# Make sure the pipeline is ready to receive messages
 				await self.Pipeline.ready()
 
-				for m in messages:
+				try:
 
-					await self.process(m.value(), context={
-						"kafka_key": m.key(),
-						"kafka_headers": m.headers(),
-						"_kafka_topic": m.topic(),
-						"_kafka_partition": m.partition(),
-						"_kafka_offset": m.offset(),
-					})
+					for m in messages:
 
-					# Store the offset associated with msg to a local cache.
-					# Stored offsets are committed to Kafka by a background thread every 'auto.commit.interval.ms'.
-					# Explicitly storing offsets after processing gives at-least once semantics.
+						# Store the offset associated with msg to a local cache.
+						# Stored offsets are committed to Kafka by a background thread every 'auto.commit.interval.ms'.
+						# Explicitly storing offsets after processing gives at-least once semantics.
+						try:
+
+							await self.process(m.value(), context={
+								"kafka_key": m.key(),
+								"kafka_headers": m.headers(),
+								"_kafka_topic": m.topic(),
+								"_kafka_partition": m.partition(),
+								"_kafka_offset": m.offset(),
+							})
+
+							if consumer:
+								consumer.store_offsets(m)
+
+						except confluent_kafka.KafkaException as err:
+
+							# Reballacing of partitions happened during consuming,
+							# so this consumer no longer owns the partition
+							# -> let the other consumer consume the events and here just finish
+							# https://medium.com/@a.a.halutin/simple-examples-with-confluent-kafka-9b7e58534a88
+							if err.args[0].code() == confluent_kafka.KafkaError._STATE:
+								break
+
+							L.warning("The following warning occurred inside Kafka consumer: '{}'".format(err))
+							break
+
+						except RuntimeError as e:
+							L.exception("Error storing offsets, possible consumer state issue: '{}'".format(e))
+							break
+
+				finally:
+
+					# Manually commit the offsets after processing the batch
 					try:
 
 						if consumer:
-							consumer.store_offsets(m)
+							consumer.commit(asynchronous=False)  # Commit offsets synchronously
 
 					except confluent_kafka.KafkaException as err:
 
-						# Reballacing of partitions happened during consuming,
-						# so this consumer no longer owns the partition
-						# -> let the other consumer consume the events and here just finish
-						# https://medium.com/@a.a.halutin/simple-examples-with-confluent-kafka-9b7e58534a88
-						if err.args[0].code() == confluent_kafka.KafkaError._STATE:
-							break
+						if err.args[0].code() == confluent_kafka.KafkaError._NO_OFFSET:
+							return
 
-						L.warning("The following warning occurred inside Kafka consumer: '{}'".format(err))
-						break
-
-					except RuntimeError as e:
-						L.exception("Error storing offsets, possible consumer state issue: '{}'".format(e))
-						break
-
-				# Manually commit the offsets after processing the batch
-				try:
-
-					if consumer:
-						consumer.commit(asynchronous=False)  # Commit offsets synchronously
-
-				except confluent_kafka.KafkaException as err:
-
-					if err.args[0].code() == confluent_kafka.KafkaError._NO_OFFSET:
-						return
-
-					L.exception("Failed to commit offsets: '{}'".format(err))
+						L.exception("Failed to commit offsets: '{}'".format(err))
 
 
 	async def main(self):
