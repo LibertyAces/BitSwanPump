@@ -185,7 +185,7 @@ class KafkaSource(Source):
 		# Metrics
 		metrics_service = app.get_service('asab.MetricsService')
 		self.ErrorMetrics = metrics_service.create_counter(
-			"kafka_errors",
+			"kafka_source_errors",
 			tags={
 				'pipeline': pipeline.Id,
 			},
