@@ -182,6 +182,19 @@ class KafkaSource(Source):
 		)
 		self.Loop = asyncio.get_event_loop()
 
+		# Metrics
+		metrics_service = app.get_service('asab.MetricsService')
+		self.ErrorMetrics = metrics_service.create_counter(
+			"kafka_errors",
+			tags={
+				'pipeline': pipeline.Id,
+			},
+			init_values={
+				"assignment": 0,
+				"message": 0,
+			}
+		)
+
 
 	def poll_kafka(self, consumer, storage):
 		"""
@@ -215,6 +228,7 @@ class KafkaSource(Source):
 							}
 						)
 						consumer.unsubscribe()
+						self.ErrorMetrics.add("assignment", 1)
 						time.sleep(self.SleepOnError)
 						return
 
@@ -232,6 +246,7 @@ class KafkaSource(Source):
 			if m.error():
 				L.error("The following error occurred while polling for messages: '{}'.".format(m.error()))
 				consumer.unsubscribe()
+				self.ErrorMetrics.add("message", 1)
 				time.sleep(self.SleepOnError)
 				return
 
