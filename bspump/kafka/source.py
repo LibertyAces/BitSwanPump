@@ -206,6 +206,7 @@ class KafkaSource(Source):
 		This approach also optimizes resource utilization by leveraging multiple CPU cores and enhances error
 		handling, making the application more resilient and maintainable.
 		"""
+
 		while self.Running:
 			current_time = self.App.time()
 
