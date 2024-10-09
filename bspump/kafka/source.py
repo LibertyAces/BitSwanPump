@@ -293,52 +293,56 @@ class KafkaSource(Source):
 				# Make sure the pipeline is ready to receive messages
 				await self.Pipeline.ready()
 
-				for m in messages:
+				try:
 
-					await self.process(m.value(), context={
-						"kafka_key": m.key(),
-						"kafka_headers": m.headers(),
-						"_kafka_topic": m.topic(),
-						"_kafka_partition": m.partition(),
-						"_kafka_offset": m.offset(),
-					})
+					for m in messages:
 
-					# Store the offset associated with msg to a local cache.
-					# Stored offsets are committed to Kafka by a background thread every 'auto.commit.interval.ms'.
-					# Explicitly storing offsets after processing gives at-least once semantics.
+						# Store the offset associated with msg to a local cache.
+						# Stored offsets are committed to Kafka by a background thread every 'auto.commit.interval.ms'.
+						# Explicitly storing offsets after processing gives at-least once semantics.
+						try:
+
+							await self.process(m.value(), context={
+								"kafka_key": m.key(),
+								"kafka_headers": m.headers(),
+								"_kafka_topic": m.topic(),
+								"_kafka_partition": m.partition(),
+								"_kafka_offset": m.offset(),
+							})
+
+							if consumer:
+								consumer.store_offsets(m)
+
+						except confluent_kafka.KafkaException as err:
+
+							# Reballacing of partitions happened during consuming,
+							# so this consumer no longer owns the partition
+							# -> let the other consumer consume the events and here just finish
+							# https://medium.com/@a.a.halutin/simple-examples-with-confluent-kafka-9b7e58534a88
+							if err.args[0].code() == confluent_kafka.KafkaError._STATE:
+								break
+
+							L.warning("The following warning occurred inside Kafka consumer: '{}'".format(err))
+							break
+
+						except RuntimeError as e:
+							L.exception("Error storing offsets, possible consumer state issue: '{}'".format(e))
+							break
+
+				finally:
+
+					# Manually commit the offsets after processing the batch
 					try:
 
 						if consumer:
-							consumer.store_offsets(m)
+							consumer.commit(asynchronous=False)  # Commit offsets synchronously
 
 					except confluent_kafka.KafkaException as err:
 
-						# Reballacing of partitions happened during consuming,
-						# so this consumer no longer owns the partition
-						# -> let the other consumer consume the events and here just finish
-						# https://medium.com/@a.a.halutin/simple-examples-with-confluent-kafka-9b7e58534a88
-						if err.args[0].code() == confluent_kafka.KafkaError._STATE:
-							break
+						if err.args[0].code() == confluent_kafka.KafkaError._NO_OFFSET:
+							return
 
-						L.warning("The following warning occurred inside Kafka consumer: '{}'".format(err))
-						break
-
-					except RuntimeError as e:
-						L.exception("Error storing offsets, possible consumer state issue: '{}'".format(e))
-						break
-
-				# Manually commit the offsets after processing the batch
-				try:
-
-					if consumer:
-						consumer.commit(asynchronous=False)  # Commit offsets synchronously
-
-				except confluent_kafka.KafkaException as err:
-
-					if err.args[0].code() == confluent_kafka.KafkaError._NO_OFFSET:
-						return
-
-					L.exception("Failed to commit offsets: '{}'".format(err))
+						L.exception("Failed to commit offsets: '{}'".format(err))
 
 
 	async def main(self):
