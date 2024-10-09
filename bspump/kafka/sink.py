@@ -1,9 +1,5 @@
 import asyncio
 import logging
-import threading
-import os
-import signal
-import time
 
 import confluent_kafka
 
