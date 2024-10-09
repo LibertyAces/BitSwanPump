@@ -63,10 +63,16 @@ class KafkaSink(Sink):
 
 	ConfigDefaults = {
 		"topic": "unconfigured",
-		"watermark.low": "40000",
-		"watermark.high": "90000",
-		"batch.num.messages": "100000",
+		"watermark.low": "10000",
+		"watermark.high": "20000",
+		# Maximum number of messages allowed on the producer queue.
+		"queue.buffering.max.messages": "30000",
+		# Maximum size (in bytes) of all messages batched in one MessageSet, including protocol framing overhead.
+		"batch.num.messages": "10000",
 		"linger.ms": "500",  # This settings makes a significant impact on the throughtput
+		# Maximum total message size sum allowed on the producer queue. This queue is shared by all topics and partitions.
+		"queue.buffering.max.kbytes": "2561024",
+		# Maximum size (in bytes) of all messages batched in one MessageSet, including protocol framing overhead.
 		"batch.size": "1000000",
 		"poll.timeout": "0.1",
 		# "compression.type": "snappy",
