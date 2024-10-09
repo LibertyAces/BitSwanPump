@@ -209,6 +209,22 @@ class KafkaSource(Source):
 		while self.Running:
 			current_time = self.App.time()
 
+			# Should the buffer be already sent?
+			with self.BufferThreadLock:
+
+				if len(self.Buffer) >= self.BufferSize or (current_time - storage["last_flush_time"]) > self.BufferTimeout:
+
+					try:
+						# L.info("Flushing the buffer in KafkaSource.")
+						future = asyncio.run_coroutine_threadsafe(self.flush_buffer(consumer), self.Loop)
+						# Wait for the result:
+						future.result()
+
+					except Exception as e:
+						L.exception("The following error occurred while processing batch of Kafka messages: '{}'.".format(e))
+
+					storage["last_flush_time"] = current_time
+
 			# Check errors on individual assigned partitions before polling
 			if current_time - storage["last_assignment_error_check_time"] > self.CheckAssignmentErrors:
 				storage["last_assignment_error_check_time"] = current_time
@@ -253,19 +269,6 @@ class KafkaSource(Source):
 			# It is necessary to lock the thread even before appending
 			with self.BufferThreadLock:
 				self.Buffer.append(m)
-
-				if len(self.Buffer) >= self.BufferSize or (current_time - storage["last_flush_time"]) > self.BufferTimeout:
-
-					try:
-						# L.info("Flushing the buffer in KafkaSource.")
-						future = asyncio.run_coroutine_threadsafe(self.flush_buffer(consumer), self.Loop)
-						# Wait for the result:
-						future.result()
-
-					except Exception as e:
-						L.exception("The following error occurred while processing batch of Kafka messages: '{}'.".format(e))
-
-					storage["last_flush_time"] = current_time
 
 
 	async def flush_buffer(self, consumer):
