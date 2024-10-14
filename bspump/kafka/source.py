@@ -332,18 +332,32 @@ class KafkaSource(Source):
 
 				finally:
 
-					# Manually commit the offsets after processing the batch
-					try:
+					# Retry logic for committing offsets
+					max_retries = 5
+					retry_delay = 5  # seconds
 
-						if consumer:
-							consumer.commit(asynchronous=False)  # Commit offsets synchronously
+					for attempt in range(max_retries):
 
-					except confluent_kafka.KafkaException as err:
+						# Manually commit the offsets after processing the batch
+						try:
 
-						if err.args[0].code() == confluent_kafka.KafkaError._NO_OFFSET:
-							return
+							if consumer:
+								consumer.commit(asynchronous=False)  # Commit offsets synchronously
 
-						L.exception("Failed to commit offsets: '{}'".format(err))
+							break  # Commit succeeded
+
+						except confluent_kafka.KafkaException as err:
+
+							if err.args[0].code() == confluent_kafka.KafkaError.COORDINATOR_LOAD_IN_PROGRESS:
+								L.warning(f"Commit failed, because Coordinator of groups in Kafka is loading. Retry attempt {attempt + 1}/{max_retries} after {retry_delay} seconds.")
+								await asyncio.sleep(retry_delay)
+								continue
+
+							if err.args[0].code() == confluent_kafka.KafkaError._NO_OFFSET:
+								return
+
+							L.exception("Failed to commit offsets: '{}'".format(err))
+							break
 
 
 	async def main(self):
