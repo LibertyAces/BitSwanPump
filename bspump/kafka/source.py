@@ -350,7 +350,7 @@ class KafkaSource(Source):
 
 							if err.args[0].code() == confluent_kafka.KafkaError.COORDINATOR_LOAD_IN_PROGRESS:
 								L.warning("Commit failed, because Coordinator of groups in Kafka is loading. Retry attempt {}/{} after {} seconds.".format(
-									attempt, max_retries, retry_delay
+									attempt + 1, max_retries, retry_delay
 								))
 								await asyncio.sleep(retry_delay)
 								continue
