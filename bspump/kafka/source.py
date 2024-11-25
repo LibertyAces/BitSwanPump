@@ -284,10 +284,10 @@ class KafkaSource(Source):
 						time.sleep(self.SleepOnRetryableError)
 						continue
 
-					L.warning("The following error occurred while polling for messages: '{}'.".format(m.error()))
+					L.warning("Cannot poll messages due to: '{}'.".format(m.error()))
 
 				else:
-					L.error("The following error occurred while polling for messages: '{}'.".format(m.error()))
+					L.error("Cannot poll messages due to: '{}'.".format(m.error()))
 
 				consumer.unsubscribe()
 				self.ErrorMetrics.add("message", 1)
