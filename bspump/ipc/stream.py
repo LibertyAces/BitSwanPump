@@ -145,6 +145,36 @@ class TLSStream(object):
 				continue
 
 
+	async def recv(self, n=-1):
+		"""
+		Receive data from the SSL socket.
+		"""
+		while True:
+			try:
+				data = self.SSLSocket.read(n)
+				if len(data) == 0:
+					# Socket has been closed
+					return b''
+
+				return data
+
+			except ssl.SSLWantReadError:
+
+				if self.OutBuffer.pending > 0:
+					data = self.OutBuffer.read()
+					await self.Loop.sock_sendall(self.Socket, data)
+
+				data = await self.Loop.sock_recv(self.Socket, 4096)
+				if len(data) == 0:
+					# Socket has been closed
+					# TODO: self.Socket.shutdown()
+					return b''
+
+				self.InBuffer.write(data)
+				continue
+
+
+
 	def send(self, data):
 		self.OutboundQueue.put_nowait(data)
 
