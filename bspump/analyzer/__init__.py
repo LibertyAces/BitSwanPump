@@ -1,4 +1,4 @@
-# from .analyzer import Analyzer
+from .analyzer import Analyzer
 # from .timewindowanalyzer import TimeWindowAnalyzer
 # from .timedriftanalyzer import TimeDriftAnalyzer
 # from .sessionanalyzer import SessionAnalyzer
@@ -8,8 +8,8 @@
 # from .threshold import ThresholdAnalyzer
 
 
-# __all__ = (
-# 	'Analyzer',
+__all__ = (
+ 	'Analyzer',
 # 	'TimeWindowAnalyzer',
 # 	'TimeDriftAnalyzer',
 # 	'SessionAnalyzer',
@@ -17,4 +17,4 @@
 # 	'LatchAnalyzer',
 # 	'AnalyzingSource',
 # 	'ThresholdAnalyzer',
-# )
+)
