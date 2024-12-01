@@ -22,7 +22,6 @@ from .tee import TeeProcessor
 from .tee import TeeSource
 from .time import TimeZoneNormalizer
 from .transfr import MappingTransformator
-from .jsonbytes import DictToJsonBytesParser
 
 __all__ = (
 	'BytesToStringParser',
@@ -62,5 +61,4 @@ __all__ = (
 	'ListAggregationStrategy',
 	'ListEventAggregationStrategy',
 	'StringAggregationStrategy',
-	'DictToJsonBytesParser',
 )
