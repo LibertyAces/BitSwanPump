@@ -62,7 +62,7 @@ class DatagramSource(Source):
 					if stat.S_ISSOCK(usstat.st_mode):
 						os.unlink(addrline)
 					else:
-						L.warn("Cannot listen on UNIX socket, path is already occupied", struct_data={'path': addrline})
+						L.warning("Cannot listen on UNIX socket, path is already occupied", struct_data={'path': addrline})
 						continue
 
 				s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
@@ -81,7 +81,14 @@ class DatagramSource(Source):
 				try:
 					addrinfo = socket.getaddrinfo(addr[0], addr[1], family=socket.AF_UNSPEC, type=socket.SOCK_DGRAM, flags=socket.AI_PASSIVE)
 				except Exception as e:
-					L.error("Failed to open socket: {}".format(e), struct_data={'host': addr[0], 'port': addr[1]})
+					L.error(
+						"Failed to open socket: {}".format(e),
+						struct_data={
+							'id': self.Id,
+							'host': addr[0],
+							'port': addr[1]
+						}
+					)
 					continue
 
 				for family, socktype, proto, canonname, sockaddr in addrinfo:
@@ -96,11 +103,20 @@ class DatagramSource(Source):
 					try:
 						s.bind(sockaddr)
 					except OSError as e:
-						L.warning("Failed to start listening: {}".format(e), struct_data={'host': sockaddr[0], 'port': sockaddr[1]})
+						L.warning("Failed to start listening: {}".format(e), struct_data={'id': self.Id, 'host': sockaddr[0], 'port': sockaddr[1]})
 						continue
 
 					self.AcceptingSockets.append(s)
-					L.log(asab.LOG_NOTICE, "Listening on UDP", struct_data={'host': sockaddr[0], 'port': sockaddr[1], 'family': inet_family_names.get(family, "???")})
+					L.log(
+						asab.LOG_NOTICE,
+						"Listening on UDP",
+						struct_data={
+							'id': self.Id,
+							'host': sockaddr[0],
+							'port': sockaddr[1],
+							'family': inet_family_names.get(family, "???")
+						}
+					)
 
 
 		super().start(loop)
@@ -112,8 +128,11 @@ class DatagramSource(Source):
 				# We should remove the UNIX socket when the the collector is not running
 				try:
 					os.unlink(s.getsockname())
-				except Exception:
-					L.exception("Error when removing socket file")
+				except Exception as err:
+					L.exception(
+						"Error when removing socket file: '{}'".format(err),
+						struct_data={"id": self.Id}
+					)
 
 		# The main() will be canceled in the parent class
 		await super().stop()
@@ -141,8 +160,13 @@ class DatagramSource(Source):
 			except asyncio.CancelledError:
 				break
 
-			except Exception:
-				L.exception("Error in datagram source.")
+			except Exception as err:
+				L.exception(
+					"Error in datagram source: '{}'".format(err),
+					struct_data={
+						"id": self.Id
+					}
+				)
 				raise
 
 
@@ -162,8 +186,13 @@ class DatagramSource(Source):
 			except asyncio.CancelledError:
 				break
 
-			except Exception:
-				L.exception("Error in datagram source.")
+			except Exception as err:
+				L.exception(
+					"Error in datagram source: '{}'".format(err),
+					struct_data={
+						"id": self.Id
+					}
+				)
 				raise
 
 
