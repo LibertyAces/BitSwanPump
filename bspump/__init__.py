@@ -17,11 +17,11 @@ from .fileloader import load_json_file
 
 from .analyzer.analyzer import Analyzer
 
-from .matrix.matrix import Matrix, PersistentMatrix
-from .matrix.namedmatrix import NamedMatrix, PersistentNamedMatrix
-from .model.model import Model
+# from .matrix.matrix import Matrix, PersistentMatrix
+# from .matrix.namedmatrix import NamedMatrix, PersistentNamedMatrix
+# from .model.model import Model
 
-from .abc.anomaly import Anomaly
+# from .abc.anomaly import Anomaly
 
 from .__version__ import __version__, __build__
 
@@ -44,12 +44,6 @@ __all__ = (
 	"MappingLookup",
 	"DictionaryLookup",
 	"load_json_file",
-	"Matrix",
-	"PersistentMatrix",
-	"NamedMatrix",
-	"Model",
-	"PersistentNamedMatrix",
-	"Anomaly",
 
 	"__version__",
 	"__build__",

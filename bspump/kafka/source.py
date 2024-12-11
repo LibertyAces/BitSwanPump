@@ -66,7 +66,9 @@ class KafkaSource(Source):
 		"buffer_size": 1000,
 		"buffer_timeout": 1.0,
 		"sleep_on_error": 3.0,
+		"sleep_on_retryable_error": 60.0,
 		"check_assignment_errors": 5.0,  # How often to check assignment errors
+		"errors_max_retry_attempts": 100,  # Maximum attemps for retryable errors (UNKNOWN_TOPIC_OR_PART)
 
 		# Storage of the offset is done manually after the buffer of messages is processed
 		"enable.auto.offset.store": "false",
@@ -108,6 +110,14 @@ class KafkaSource(Source):
 
 		# Sleep time after an error
 		self.SleepOnError = float(self.Config.pop("sleep_on_error", 3.0))
+		self.SleepOnRetryableError = float(self.Config.pop("sleep_on_retryable_error", 60.0))
+
+		# Retryable errors retry attempts
+		self.ErrorsMaxRetryAttemps = int(self.Config.pop("errors_max_retry_attempts", 100))
+
+		self.RetryableErrors = frozenset([
+			confluent_kafka.KafkaError.UNKNOWN_TOPIC_OR_PART,
+		])
 
 		# Polling too frequently (e.g., every 0.1 seconds) can introduce significant overhead.
 		# Each poll involves network calls and resource utilization on both the consumer and broker side.
@@ -206,6 +216,7 @@ class KafkaSource(Source):
 		This approach also optimizes resource utilization by leveraging multiple CPU cores and enhances error
 		handling, making the application more resilient and maintainable.
 		"""
+		kafka_error_retry_attempts = 0
 
 		while self.Running:
 			current_time = self.App.time()
@@ -260,8 +271,24 @@ class KafkaSource(Source):
 			if m is None:
 				continue
 
-			if m.error():
-				L.error("The following error occurred while polling for messages: '{}'.".format(m.error()))
+			kafka_error = m.error()
+
+			if kafka_error:
+
+				# Handle retryable errors
+				# like UNKNOWN_TOPIC_OR_PART
+				if kafka_error.code() in self.RetryableErrors:
+
+					if kafka_error_retry_attempts < self.ErrorsMaxRetryAttemps:
+						kafka_error_retry_attempts += 1
+						time.sleep(self.SleepOnRetryableError)
+						continue
+
+					L.warning("Cannot poll messages due to: '{}'.".format(m.error()))
+
+				else:
+					L.error("Cannot poll messages due to: '{}'.".format(m.error()))
+
 				consumer.unsubscribe()
 				self.ErrorMetrics.add("message", 1)
 				time.sleep(self.SleepOnError)
