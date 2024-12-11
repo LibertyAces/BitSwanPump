@@ -1,4 +1,7 @@
 import codecs
+import logging
+
+L = logging.getLogger(__name__)
 
 
 class SourceProtocolABC(object):
@@ -93,10 +96,12 @@ class LineSourceProtocol(SourceProtocolABC):
 
 
 	def _line_codec_decoder(self, line_bytes):
-		line, _ = self.Codec.decode(
-			line_bytes
-		)
-		return line
+		try:
+			line, _ = self.Codec.decode(line_bytes)
+		except UnicodeDecodeError:
+			line, _ = self.Codec.decode(line_bytes, errors="backslashreplace")
+		finally:
+			return line
 
 	def _line_bytes_decoder(self, line_bytes):
 		return line_bytes
