@@ -380,7 +380,8 @@ class ElasticSearchConnection(Connection):
 			# TODO: Is this correct?
 			# The first url in the list is the preferred one,
 			# the other urls are backups
-			is_preferred = (url_position == 0)
+			is_preferred = True
+			# is_preferred = (url_position == 0)
 
 			for i in range(self._loader_per_url):
 				self._futures.append((url, None, is_preferred))
