@@ -169,8 +169,8 @@ class FileABCSource(TriggerSource):
 		# Read and process the file content
 		try:
 			await self.read(filename, f)
-		except Exception as err:
-			L.exception(err)
+		except Exception:
+			L.exception("Cannot read from file.", struct_data={"filename": filename})
 			try:
 				if self.post == "noop":
 					# When we should stop, rename file back to original
