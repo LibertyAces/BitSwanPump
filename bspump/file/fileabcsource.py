@@ -97,11 +97,10 @@ class FileABCSource(TriggerSource):
 
 		"""
 		filename = None
-
 		start_time = time.time()
+
+		# Find some file matching 'path' criteria which was not already processed.
 		for path in self.path.split(os.pathsep):
-			# Asynchronously call following:
-			# filename = _glob_scan(path, self.Gauge, self.Loop, exclude=self.exclude, include=self.include)
 			filename = await self.ProactorService.execute(
 				_glob_scan,
 				path,
@@ -116,8 +115,9 @@ class FileABCSource(TriggerSource):
 		self.Gauge.set("scan_time", end_time - start_time)
 
 		if filename is None:
+			# No (more) files to read
 			self.Pipeline.PubSub.publish("bspump.file_source.no_files!")
-			return  # No file to read
+			return
 
 		await self.Pipeline.ready()
 
@@ -127,15 +127,17 @@ class FileABCSource(TriggerSource):
 		try:
 			os.rename(filename, locked_filename)
 		except FileNotFoundError:
+			L.warning("Cannot lock file: not found.", struct_data={"filename": filename})
 			return
 		except (OSError, PermissionError):  # OSError - UNIX, PermissionError - Windows
-			L.exception("Error when locking the file '{}'  - will try again".format(filename))
+			L.exception("Cannot lock file - will try again", struct_data={"filename": filename})
 			return
-		except BaseException as e:
-			L.exception("Error when locking the file '{}'".format(filename))
+		except Exception as e:
+			L.exception("Cannot lock file.", struct_data={"filename": filename})
 			self.Pipeline.set_error(None, None, e)
 			return
 
+		# Open the file
 		try:
 			if filename.endswith(".gz"):
 				import gzip
@@ -155,18 +157,20 @@ class FileABCSource(TriggerSource):
 				f = open(locked_filename, self.mode, newline=self.newline, encoding=self.encoding)
 
 		except (OSError, PermissionError):  # OSError - UNIX, PermissionError - Windows
-			L.exception("Error when opening the file '{}' - will try again".format(filename))
+			L.exception("Cannot open file - will try again.", struct_data={"filename": filename})
 			return
 		except BaseException as e:
-			L.exception("Error when opening the file '{}'".format(filename))
+			L.exception("Cannot open file.", struct_data={"filename": filename})
 			self.Pipeline.set_error(None, None, e)
 			return
 
 		L.debug("Processing file '{}'".format(filename))
 
+		# Read and process the file content
 		try:
 			await self.read(filename, f)
-		except Exception:
+		except Exception as err:
+			L.exception(err)
 			try:
 				if self.post == "noop":
 					# When we should stop, rename file back to original
@@ -175,12 +179,10 @@ class FileABCSource(TriggerSource):
 					# Otherwise rename to ...-failed and continue processing
 					os.rename(locked_filename, filename + '-failed')
 			except BaseException:
-				L.exception("Error when renaming the file '{}'  - will try again".format(filename))
+				L.exception("Cannot rename file - will try again.", struct_data={"filename": filename})
 			return
 		finally:
 			f.close()
-
-		L.debug("File '{}' processed {}".format(filename, "succefully"))
 
 		# Finalize
 		try:
@@ -199,10 +201,10 @@ class FileABCSource(TriggerSource):
 
 				os.rename(file_from, file_to)
 		except (OSError, PermissionError):  # OSError - UNIX, PermissionError - Windows
-			L.exception("Error when finalizing the file '{}' - will try again".format(filename))
+			L.exception("Cannot finalize file - will try again", struct_data={"filename": filename})
 			return
 		except BaseException as e:
-			L.exception("Error when finalizing the file '{}'".format(filename))
+			L.exception("Cannot finalize file.", struct_data={"filename": filename})
 			self.Pipeline.set_error(None, None, e)
 			return
 

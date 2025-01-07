@@ -17,7 +17,7 @@ class FileCSVSource(FileABCSource):
 		'dialect': 'excel',
 		'delimiter': ',',
 		'doublequote': True,
-		'escapechar': "",
+		'escapechar': "\n",
 		'lineterminator': os.linesep,
 		'quotechar': '"',
 		'quoting': csv.QUOTE_MINIMAL,
