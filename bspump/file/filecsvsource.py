@@ -17,7 +17,7 @@ class FileCSVSource(FileABCSource):
 		'dialect': 'excel',
 		'delimiter': ',',
 		'doublequote': True,
-		'escapechar': "\n",
+		'escapechar': "\\",  # Python >3.11 does not allow empty value
 		'lineterminator': os.linesep,
 		'quotechar': '"',
 		'quoting': csv.QUOTE_MINIMAL,
