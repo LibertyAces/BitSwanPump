@@ -24,6 +24,9 @@ else:
 
 
 def _glob_scan(path, gauge, loop, exclude='', include=''):
+	"""
+	Find the first file that was not already processed based on `exclude` and `include` filters.
+	"""
 	if path is None:
 		return None
 	if path == "":
