@@ -319,9 +319,12 @@ class ElasticSearchConnection(Connection):
 		self._output_queue = asyncio.Queue()
 
 		url = asab.Config.getmultiline('connection:{}'.format(id), 'url', fallback='')
+
 		if len(url) == 0:
 			url = asab.Config.getmultiline('elasticsearch', 'url', fallback='')
-		self.NodeUrls = get_url_list(url)
+			url_hot = asab.Config.getmultiline('elasticsearch', 'url_hot', fallback=url)
+
+		self.NodeUrls = get_url_list(url_hot)
 
 		if len(self.NodeUrls) == 0:
 			raise RuntimeError("No ElasticSearch URL has been provided.")
