@@ -31,6 +31,24 @@ class Stream(object):
 	async def recv(self, nbytes):
 		return await self.Loop.sock_recv(self.Socket, nbytes)
 
+	async def recv_exactly(self, length):
+
+		# Try to read the requested amount at once go
+		data = await self.recv(length)
+		if len(data) == length:
+			return data
+		elif len(data) == 0:
+			return data  # EOF
+
+		while True:
+			ntor = length - len(data)
+			ndata = await self.recv(ntor)
+			if len(ndata) == 0:
+				raise asyncio.IncompleteReadError(data, length)
+			data += ndata
+			if len(data) == length:
+				return data
+
 
 	def send(self, data):
 		self.OutboundQueue.put_nowait(data)
@@ -173,6 +191,24 @@ class TLSStream(object):
 				self.InBuffer.write(data)
 				continue
 
+
+	async def recv_exactly(self, length):
+
+		# Try to read the requested amount at once go
+		data = await self.recv(length)
+		if len(data) == length:
+			return data
+		elif len(data) == 0:
+			return data  # EOF
+
+		while True:
+			ntor = length - len(data)
+			ndata = await self.recv(ntor)
+			if len(ndata) == 0:
+				raise asyncio.IncompleteReadError(data, length)
+			data += ndata
+			if len(data) == length:
+				return data
 
 
 	def send(self, data):
