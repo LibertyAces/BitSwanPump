@@ -1,5 +1,5 @@
-BSPump: A real-time stream processor for Python 3.5+
-====================================================
+BSPump: A real-time stream processor for Python 3
+=================================================
 
 .. image:: https://readthedocs.org/projects/bspump/badge/?version=latest
     :target: https://docs.libertyaces.com/?badge=latest
@@ -29,7 +29,7 @@ Principles
 * Real-time
 * High performance
 * Simple to use and well documented, so anyone can write their own stream processor
-* Asynchronous via Python 3.5+ ``async``/``await`` and ``asyncio``
+* Asynchronous via Python 3 ``async`` / ``await`` and ``asyncio``
 * `Event driven Architecture <https://en.wikipedia.org/wiki/Event-driven_architecture>`_ / `Reactor pattern <https://en.wikipedia.org/wiki/Reactor_pattern>`_
 * Single-threaded core but compatible with threads
 * Compatible with `pypy <http://pypy.org>`_, Just-In-Time compiler capable of boosting Python code performace by more than 5x

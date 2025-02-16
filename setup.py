@@ -51,7 +51,7 @@ class custom_build_py(build_py):
 setup(
 	name='bspump',
 	version=version,
-	description='BSPump is a real-time stream processor for Python 3.6+',
+	description='BSPump is a real-time stream processor for Python 3',
 	long_description=open('README.rst').read(),
 	url='https://github.com/LibertyAces/BitSwanPump',
 	author='TeskaLabs Ltd',
@@ -60,8 +60,10 @@ setup(
 	platforms='any',
 	classifiers=[
 		'Development Status :: 5 - Production/Stable',
-		'Programming Language :: Python :: 3.6',
-		'Programming Language :: Python :: 3.7',
+		'Programming Language :: Python :: 3.8',
+		'Programming Language :: Python :: 3.9',
+		'Programming Language :: Python :: 3.10',
+		'Programming Language :: Python :: 3.11',
 	],
 	packages=find_packages(),
 	package_data={
@@ -74,35 +76,41 @@ setup(
 		'Source': 'https://github.com/LibertyAces/BitSwanPump'
 	},
 	install_requires=[
-		'pyasn1==0.4.8',  # version 0.5.0 is not compatible with pysnmp
 		'asab>=20.7.28',
 		'aiohttp>=3.6.2',
-		'requests>=2.24.0',
-		'confluent-kafka>=1.8.2',
-		'aiozk>=0.25.0',
-		'aiosmtplib>=1.1.3',
-		'fastavro>=0.23.5',
-		'google-api-python-client>=1.7.10',
-		'numpy>=1.19.0',
-		'pika>=1.1.0',
-		'pymysql>=0.9.2,<=0.9.2',  # aiomysql 0.0.20 requires PyMySQL<=0.9.2
-		'aiomysql>=0.0.20',
-		'mysql-replication>=0.21',
+		'requests>=2.24.0',		
 		'pytz>=2020.1',
 		'netaddr>=0.7.20',
 		'pyyaml>=5.4',
-		'pymongo>=3.10.1',
 		'motor>=2.1.0',
 		'mongoquery>=1.3.6',
 		'pybind11>=2.6.1',
 		'cysimdjson>=21.11',
-		'pywinrm>=0.4.1',
-		'pandas>=0.24.2',
 		'xxhash>=1.4.4',
 		'orjson',
 	],
 	extras_require={
 		'ldap': 'python-ldap',
+		'asn': 'pyasn1==0.4.8',  # version 0.5.0 is not compatible with pysnmp
+		'kafka': 'confluent-kafka>=1.8.2',
+		'zookeeper': 'aiozk>=0.25.0',
+		'smtp': 'aiosmtplib>=1.1.3',
+		'avro': 'fastavro>=0.23.5',
+		'google': 'google-api-python-client>=1.7.10',
+		'numpy': 'numpy>=1.19.0',
+		'amqp': 'pika>=1.1.0',
+		'mysql': [
+			'pymysql>=0.9.2,<=0.9.2',  # aiomysql 0.0.20 requires PyMySQL<=0.9.2
+			'aiomysql>=0.0.20',
+			'mysql-replication>=0.21'
+		],
+		'mongo': [
+			'pymongo>=3.10.1',
+			'motor>=2.1.0',
+			'mongoquery>=1.3.6',
+		],
+		'winrm': 'pywinrm>=0.4.1',
+		'pandas': 'pandas>=0.24.2',
 	},
 	scripts=[
 		'utils/bselastic',
