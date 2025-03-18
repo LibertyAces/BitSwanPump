@@ -128,6 +128,13 @@ class BSPumpService(asab.Service):
 				ID of a pipeline.
 
 		"""
+		# Delete pipeline metrics from asab
+		metrics_svc = self.App.get_service('asab.MetricsService')
+		metrics_svc.del_metric(pipeline.MetricsCounter)
+		metrics_svc.del_metric(pipeline.MetricsEPSCounter)
+		metrics_svc.del_metric(pipeline.MetricsGauge)
+		metrics_svc.del_metric(pipeline.MetricsDutyCycle)
+
 		del self.Pipelines[pipeline.Id]
 
 	# Connections
