@@ -234,7 +234,7 @@ class ElasticSearchBulk(object):
 		|
 
 		"""
-		return False
+		return True
 
 
 class ElasticSearchConnection(Connection):
