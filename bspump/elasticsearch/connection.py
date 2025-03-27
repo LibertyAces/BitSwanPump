@@ -155,7 +155,7 @@ class ElasticSearchBulk(object):
 
 				if self.LogFailedDocuments and counter < self.FailLogMaxSize:
 					L.error(
-						"Failed to insert document into ElasticSearch: '{}'".format(response_item),
+						"Failed to insert document into Elasticsearch: '{}'".format(response_item),
 						struct_data={
 							"status": resp.status,
 							"reason": self.ESResponseCodes.get(resp.status, resp.status),
@@ -168,7 +168,7 @@ class ElasticSearchBulk(object):
 			# Show remaining log messages
 			if self.LogFailedDocuments and counter > self.FailLogMaxSize:
 				L.error(
-					"Failed to insert document into ElasticSearch. Failed insertions",
+					"Failed to insert document into Elasticsearch. Failed insertions",
 					struct_data={
 						"count": counter - self.FailLogMaxSize,
 					}
@@ -180,10 +180,10 @@ class ElasticSearchBulk(object):
 
 		else:
 
-			# The major ElasticSearch error occurred while inserting documents, response was not 200
+			# The major Elasticsearch error occurred while inserting documents, response was not 200
 			self.InsertMetric.add("fail", items_count)
 			L.error(
-				"Failed to insert document into ElasticSearch",
+				"Failed to insert document into Elasticsearch: '{}'".format(resp_body),
 				struct_data={
 					"status": resp.status,
 					"reason": self.ESResponseCodes.get(resp.status, resp.status),
@@ -197,7 +197,7 @@ class ElasticSearchBulk(object):
 
 	def partial_error_callback(self, response_items):
 		"""
-		Description: When an upload to ElasticSearch fails for error items (document could not be inserted),
+		Description: When an upload to Elasticsearch fails for error items (document could not be inserted),
 		this callback is called.
 
 		**Parameters**
@@ -218,7 +218,7 @@ class ElasticSearchBulk(object):
 
 	def full_error_callback(self, bulk_items, return_code):
 		"""
-		Description: When an upload to ElasticSearch fails b/c of ElasticSearch error,
+		Description: When an upload to Elasticsearch fails b/c of Elasticsearch error,
 		this callback is called.
 
 		**Parameters**
@@ -227,7 +227,7 @@ class ElasticSearchBulk(object):
 				list with tuple items: (_id, data)
 
 		return_code :
-				ElasticSearch return code
+				Elasticsearch return code
 
 		:return: False if the bulk is to be resumbitted again
 
@@ -244,7 +244,7 @@ class ElasticSearchConnection(Connection):
 	**Sample Config**
 
 	url : ''http'://{ip/localhost}:{port}'
-			URL of the source. Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster.
+			URL of the source. Could be multi-URL. Each URL should be separated by ';' to a node in Elasticsearch cluster.
 
 	username : 'string' , default = ' '
 			Used when authentication is required
@@ -282,7 +282,7 @@ class ElasticSearchConnection(Connection):
 
 	ConfigDefaults = {
 		'url': '',
-		# Could be multi-URL. Each URL should be separated by ';' to a node in ElasticSearch cluster
+		# Could be multi-URL. Each URL should be separated by ';' to a node in Elasticsearch cluster
 		'username': '',
 		'password': '',
 		'api_key': '',
@@ -521,11 +521,10 @@ class ElasticSearchConnection(Connection):
 				# Ups, _loader() task crashed during runtime, we need to restart it
 				try:
 					future.result()
-					if self._started:
-						L.error("ElasticSearch issue detected, will retry shortly")
+
 				except Exception as e:
 					L.exception(
-						"ElasticSearch issue detected, will retry shortly",
+						"Elasticsearch issue detected, will retry shortly",
 						struct_data={"reason": e},
 					)
 
