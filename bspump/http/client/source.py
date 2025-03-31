@@ -1,4 +1,5 @@
 import csv
+import io
 import os
 
 from .abcsource import HTTPABCClientSource
@@ -118,6 +119,7 @@ class HTTPClientCSVSource(HTTPClientTextSource):
 
 	async def read(self, response):
 		response = await response.text(encoding=self.encoding)
+		response_io = io.StringIO(response)  # Convert string to file-like object
 
-		for line in self.reader(response):
+		for line in self.reader(response_io):
 			await self.process(line)
