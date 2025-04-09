@@ -9,7 +9,7 @@ import bspump.trigger
 
 asab.Config.add_defaults({
 	"mongo": {
-		"host": "localhost"
+		"uri": "localhost"
 	}
 })
 

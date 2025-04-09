@@ -127,7 +127,7 @@ class MongoDBConnection(Connection):
 		host = self.Config.get('host')
 
 		if len(host) == 0:
-			host = asab.Config.get('mongo', 'host', fallback='')
+			host = asab.Config.get('mongo', 'uri', fallback='')
 
 		port = self.Config.get('port')
 
