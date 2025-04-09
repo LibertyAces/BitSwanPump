@@ -94,14 +94,7 @@ class MongoDBBulk(object):
 class MongoDBConnection(Connection):
 
 	ConfigDefaults = {
-		'host': '',  # hostname or IP address or Unix domain socket path of a single mongod or mongos instance to connect to, or a mongodb URI, or a list of hostnames / mongodb URIs.
-		'port': '',
-		'username': '',
-		'password': '',
-
-		'max_pool_size': 100,
-		'min_pool_size': 0,
-		'heartbeat_frequency': 10 * 1000,  # 10 seconds
+		'uri': '',
 
 		'output_queue_max_size': 10,
 		'bulk_out_max_size': 1024,
@@ -114,41 +107,12 @@ class MongoDBConnection(Connection):
 	def __init__(self, app, id=None, config=None):
 		super().__init__(app, id=id, config=config)
 
-		username = self.Config.get('username')
+		uri = self.Config.get('uri')
 
-		if len(username) == 0:
-			username = asab.Config.get('mongo', 'username', fallback='')
+		if len(uri) == 0:
+			uri = asab.Config.get('mongo', 'uri', fallback='')
 
-		password = self.Config.get('password')
-
-		if len(password) == 0:
-			password = asab.Config.get('mongo', 'password', fallback='')
-
-		host = self.Config.get('host')
-
-		if len(host) == 0:
-			host = asab.Config.get('mongo', 'uri', fallback='')
-
-		port = self.Config.get('port')
-
-		if len(port) == 0:
-			port = asab.Config.get('mongo', 'port', fallback=27017)
-
-		self.Client = motor.motor_asyncio.AsyncIOMotorClient(
-			host=host,
-			port=int(port),
-			username=username,
-			password=password,
-			maxPoolSize=int(self.Config["max_pool_size"]),
-			minPoolSize=int(self.Config["min_pool_size"]),
-			heartbeatFrequencyMS=int(self.Config["heartbeat_frequency"]),
-			appname=id,
-			driver=pymongo.driver_info.DriverInfo(
-				name="bspump.MongoDBConnection",
-			),
-			io_loop=app.Loop
-		)
-
+		self.Client = motor.motor_asyncio.AsyncIOMotorClient(uri)
 		self.Database = self.Config['database']
 
 		# The lifespan of bulks (per second)
