@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
+import asab
+
 import bspump
 import bspump.common
 import bspump.mongodb
 import bspump.http
+import bspump.trigger
+
+asab.Config.add_defaults({
+	"mongo": {
+		"host": "localhost"
+	}
+})
+
 
 class MongoDBPipeline(bspump.Pipeline):
 
@@ -10,13 +20,22 @@ class MongoDBPipeline(bspump.Pipeline):
 		super().__init__(app, pipeline_id)
 		self.build(
 			bspump.http.HTTPClientSource(app, self, config={
-				'url': "http://ip.jsontest.com/"
+				'url': "https://raw.githubusercontent.com/standard/standard-packages/refs/heads/master/test.json"
 			}).on(bspump.trigger.PeriodicTrigger(app, 5)),
 			bspump.common.StdJsonToDictParser(app, self),
+			GetFirstElementProcessor(app, self),
 			bspump.common.PPrintProcessor(app, self),
 			# MongoDB sink can accept dict or list of dicts
 			bspump.mongodb.MongoDBSink(app, self, "MongoDBConnection", config={'collection': 'specific_collection'}),
 		)
+
+
+class GetFirstElementProcessor(bspump.Processor):
+
+	def process(self, context, event):
+		element = event[0]
+		element["_id"] = "test"
+		return element
 
 
 if __name__ == '__main__':

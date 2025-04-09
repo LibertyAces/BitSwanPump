@@ -1,9 +1,14 @@
-from bspump import Sink
-import asyncio
 import logging
 
+from ..abc.sink import Sink
+
+from .connection import data_feeder_update, MongoDBBulk
+
+#
 
 L = logging.getLogger(__name__)
+
+#
 
 
 class MongoDBSink(Sink):
@@ -23,97 +28,87 @@ class MongoDBSink(Sink):
 	"""
 
 	ConfigDefaults = {
-		"output_queue_max_size": 100,
-		'collection': 'collection',  # default collection, if not specified inside context
+		"collection": "collection",  # Default collection
 	}
 
-	def __init__(self, app, pipeline, connection, id=None, config=None):
-		super().__init__(app, pipeline, id, config)
-		# We make use of a connection and pipeline, defined in a different place of the pump.
+	def __init__(self, app, pipeline, connection, id=None, config=None, bulk_class=MongoDBBulk, data_feeder=data_feeder_update):
+		"""
+		Description:
+
+		**Parameters**
+
+		app : Application
+				Name of the Application
+
+		pipeline : Pipeline
+				Name of the Pipeline
+
+		connection : Connection
+				Name of the Connection
+
+		id : ID, default= None
+				ID
+
+		config : JSON, default= None
+				Configuration file with additional information.
+
+		bulk_class=MongoDBBulk :
+
+		data_feeder=data_feeder_update :
+		"""
+		super().__init__(app, pipeline, id=id, config=config)
+
 		self.Connection = pipeline.locate_connection(app, connection)
-		self.Pipeline = pipeline
+		self.BulkClass = bulk_class
+		self.CollectionName = self.Config["collection"]
 
-		self._output_queue = asyncio.Queue()
-		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
-		self.Collection = self.Config['collection']
-		assert (self._output_queue_max_size >= 1), "Output queue max size invalid"
-		self._conn_future = None
+		if data_feeder is None:
+			raise RuntimeError("data_feeder must not be None.")
 
-		self._on_health_check("Connection.open!")
-		# This part subscribes to outside events used to control the flow of the whole pump.
-		# Depending on the specific event, a related class method gets called.
-		app.PubSub.subscribe("Application.stop!", self._on_application_stop)
-		app.PubSub.subscribe("Application.tick!", self._on_health_check)
-		app.PubSub.subscribe("Application.exit!", self._on_exit)
+		self.__data_feeder = data_feeder
 
-	def _on_health_check(self, message_type):
-		# At this point we examine the state of the _conn_future instance variable, queueing _outfluxing
-		# in case it is None, returning early if the future is not done and resetting _conn_future to None otherwise.
-		if self._conn_future is not None:
+		app.PubSub.subscribe("MongoDBConnection.pause!", self._connection_throttle)
+		app.PubSub.subscribe("MongoDBConnection.unpause!", self._connection_throttle)
 
-			if not self._conn_future.done():
-				return
-			try:
-				self._conn_future.result()
-			except Exception:
-				# Connection future threw an error
-				L.exception("Unexpected connection future error")
 
-			self._conn_future = None
+	def process(self, context, event):
+		"""
+		Description:
 
-		assert (self._conn_future is None)
+		**Parameters**
 
-		self._conn_future = asyncio.ensure_future(
-			self._insert(),
+		context :
+
+		event : any data type
+				Information with timestamp.
+		"""
+
+		try:
+			_id = event.pop("_id", None)
+
+		except TypeError:
+
+			if isinstance(event, dict) is False:
+				L.error("You are trying to pass event of type: {} to MongoDBConnection, but only dict is supported".format(type(event)))
+			raise
+
+		self.Connection.consume(
+			context.get("collection", self.CollectionName),
+			self.__data_feeder(event, _id),
+			bulk_class=self.BulkClass,
 		)
 
-	def _on_application_stop(self, message_type, counter):
-		# On requested stop, we insert 'None' to the FIFO (first in first out) asyncio Queue this means (see later),
-		# that no task or item inserted after will be processed.
-		self._output_queue.put_nowait((None, None))
 
-	async def _on_exit(self, message_type):
-		# On application exit, we first await completion of all tasks in the queue.
-		if self._conn_future is not None:
-			await asyncio.wait([self._conn_future], return_when=asyncio.ALL_COMPLETED)
+	def _connection_throttle(self, event_name, connection):
 
-	def process(self, context, event: [dict, list]):
-		# This is where we check if the queue is overflowing in which case we apply throttling.
-		if self._output_queue.qsize() >= self._output_queue_max_size:
+		if connection != self.Connection:
+			return
+
+		if event_name == "MongoDBConnection.pause!":
 			self.Pipeline.throttle(self, True)
-		# Here,  we take the event (in this case it should be either a dictionary or a list of dictionaries,
-		# and insert it into the queue to be available to the _outflux method.
-		self._output_queue.put_nowait((context, event))
 
-	async def _insert(self):
+		elif event_name == "MongoDBConnection.unpause!":
+			self.Pipeline.throttle(self, False)
 
-		db = self.Connection.Client[self.Connection.Database]
-
-		while True:
-			# Here is where we await the event (which in this case contains the data we want to save to the database)
-			# to be pulled out of the queue and saved to a local variable.
-			context, event = await self._output_queue.get()
-
-			if event is None:
-				break
-
-			# We check the queue size and remove throttling if the size is smaller than its defined max size.
-			if self._output_queue.qsize() == self._output_queue_max_size - 1:
-				self.Pipeline.throttle(self, False)
-
-			# Obtain the collection to put the obtained item to
-			collection = db[context.get("collection", self.Collection)]
-
-			# At this point, we check what kind of item we pulled from the queue. If its None, it means we
-			# reached what was inserted by _on_application_stop and we break the loop immediately.
-			# If this is not the case we continue determining the type of the item and proceed accordingly,
-			# including raising a type error, if the type is unexpected.
-
-			if isinstance(event, dict):
-				await collection.insert_one(event)
-				self._output_queue.task_done()
-			elif isinstance(event, list) and len(event) > 0:
-				await collection.insert_many(event)
-				self._output_queue.task_done()
-			else:
-				raise TypeError(f"Only dict or list of dicts allowed, {type(event)} supplied")
+		else:
+			raise RuntimeError("Unexpected event name '{}'".format(event_name))
