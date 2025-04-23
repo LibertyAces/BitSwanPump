@@ -37,7 +37,7 @@ class HTTPClientLineSource(HTTPClientTextSource):
 		response = await response.text(encoding=self.encoding)
 
 		for line in response.split('\n'):
-			await self.process(line)
+			await self.process(line.rstrip())
 
 
 class HTTPClientCSVSource(HTTPClientTextSource):
