@@ -31,7 +31,14 @@ Example:
 		context['webservicesource.headers'] = request.headers
 		context['webservicesource.secure'] = request.secure
 		context['webservicesource.method'] = request.method
-		context['webservicesource.url'] = request.url
+
+		try:
+			context['webservicesource.url'] = request.url
+
+		except ValueError:
+			# Store the URL only if in the correct format
+			pass
+
 		context['webservicesource.scheme'] = request.scheme
 		context['webservicesource.forwarded'] = request.forwarded
 		context['webservicesource.host'] = request.host
