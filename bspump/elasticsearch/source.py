@@ -95,12 +95,33 @@ class ElasticSearchSource(TriggerSource):
 			if scroll_id is None:
 				break
 
-			hits = msg['hits']['hits']
+			hits = msg["hits"]["hits"]
+
 			if len(hits) == 0:
 				break
 
 			# Feed messages into a pipeline
 			for hit in hits:
+
+				if self.Source not in hit:
+					continue
+
+				source = hit[self.Source]
+
+				# Is there some additional nested info?
+				if "inner_hits" in hit:
+
+					try:
+						for inner_hit in hit["inner_hits"]["hits"]["hits"]:
+
+							if self.Source not in inner_hit:
+								continue
+
+							source.update(inner_hit[self.Source])
+
+					except KeyError:
+						pass
+
 				await self.process(hit[self.Source])
 
 			if not self.Paging:
