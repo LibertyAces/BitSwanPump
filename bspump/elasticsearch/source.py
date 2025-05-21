@@ -129,11 +129,12 @@ class ElasticSearchSource(TriggerSource):
 					msg = await response.json()
 
 			hits = msg["hits"]["hits"]
-			last_hit = hits[-1] if hits else None
-			last_hit_sort = last_hit['sort'] if last_hit else None
 
 			if len(hits) == 0:
 				break
+
+			last_hit = hits[-1] if hits else None
+			last_hit_sort = last_hit['sort'] if last_hit else None
 
 			# Feed messages into a pipeline
 			for hit in hits:
