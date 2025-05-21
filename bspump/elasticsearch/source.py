@@ -10,7 +10,10 @@ class ElasticSearchSource(TriggerSource):
 		'index': 'index-*',
 		'scroll_timeout': '1m',
 		'source': '_source',
-
+		'sort_by': '_id',
+		# Start getting the documents from the given time
+		'timestamp': '@timestamp',
+		'start_from': 'now-1h',
 	}
 
 	def __init__(self, app, pipeline, connection, request_body=None, paging=True, id=None, config=None):
@@ -45,10 +48,29 @@ class ElasticSearchSource(TriggerSource):
 		self.Index = self.Config['index']
 		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Source = self.Config['source']
+		self.SortBy = self.Config['sort_by']
 		self.Paging = paging
 
 		if request_body is not None:
 			self.RequestBody = request_body
+
+		elif len(self.Config["timestamp"]) > 0:
+			self.RequestBody = {
+				'query': {
+					'bool': {
+						'filter': [
+							{
+								'range': {
+									self.Config['timestamp']: {
+										'gte': self.Config['start_from']
+									}
+								}
+							}
+						]
+					}
+				}
+			}
+
 		else:
 			self.RequestBody = {
 				'query': {
@@ -64,15 +86,18 @@ class ElasticSearchSource(TriggerSource):
 		Gets data from Elastic and injects them into the pipeline.
 
 		"""
-		scroll_id = None
+		last_hit_sort = None
+		request_body = self.RequestBody
 
 		while True:
-			if scroll_id is None:
-				path = '{}/_search?scroll={}'.format(self.Index, self.ScrollTimeout)
-				request_body = self.RequestBody
-			else:
-				path = "_search/scroll"
-				request_body = {"scroll": self.ScrollTimeout, "scroll_id": scroll_id}
+			path = '{}/_search'.format(self.Index)
+
+			if last_hit_sort:
+				request_body['search_after'] = last_hit_sort
+
+			# https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html#search-after
+			if 'sort' not in request_body:
+				request_body['sort'] = [{self.SortBy: 'asc'}]  # Always need a consistent sort order for deep pagination
 
 			url = self.Connection.get_url() + path
 
@@ -91,11 +116,9 @@ class ElasticSearchSource(TriggerSource):
 
 					msg = await response.json()
 
-			scroll_id = msg.get('_scroll_id')
-			if scroll_id is None:
-				break
-
 			hits = msg["hits"]["hits"]
+			last_hit = hits[-1] if hits else None
+			last_hit_sort = last_hit['sort'] if last_hit else None
 
 			if len(hits) == 0:
 				break
