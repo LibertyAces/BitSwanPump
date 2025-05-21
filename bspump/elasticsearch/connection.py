@@ -318,11 +318,14 @@ class ElasticSearchConnection(Connection):
 		self._output_queue_max_size = int(self.Config['output_queue_max_size'])
 		self._output_queue = asyncio.Queue()
 
-		url = asab.Config.getmultiline('connection:{}'.format(id), 'url', fallback='')
+		url = self.Config["url"]
 
 		if len(url) == 0:
 			url = asab.Config.getmultiline('elasticsearch', 'url', fallback='')
 			url_hot = asab.Config.getmultiline('elasticsearch', 'url_hot', fallback=url)
+
+		else:
+			url_hot = [url]
 
 		self.NodeUrls = get_url_list(url_hot)
 

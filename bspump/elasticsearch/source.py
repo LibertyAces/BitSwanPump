@@ -9,6 +9,7 @@ class ElasticSearchSource(TriggerSource):
 	ConfigDefaults = {
 		'index': 'index-*',
 		'scroll_timeout': '1m',
+		'source': '_source',
 
 	}
 
@@ -43,6 +44,7 @@ class ElasticSearchSource(TriggerSource):
 
 		self.Index = self.Config['index']
 		self.ScrollTimeout = self.Config['scroll_timeout']
+		self.Source = self.Config['source']
 		self.Paging = paging
 
 		if request_body is not None:
@@ -99,7 +101,7 @@ class ElasticSearchSource(TriggerSource):
 
 			# Feed messages into a pipeline
 			for hit in hits:
-				await self.process(hit['_source'])
+				await self.process(hit[self.Source])
 
 			if not self.Paging:
 				break
