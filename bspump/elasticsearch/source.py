@@ -1,19 +1,24 @@
 import logging
+import json
 
 from ..abc.source import TriggerSource
 
+#
+
 L = logging.getLogger(__name__)
+
+#
 
 
 class ElasticSearchSource(TriggerSource):
 	ConfigDefaults = {
 		'index': 'index-*',
-		'scroll_timeout': '1m',
 		'source': '_source',
 		'sort_by': '_id',
 		# Start getting the documents from the given time
 		'timestamp': '@timestamp',
 		'start_from': 'now-1h',
+		'request_body': '',
 	}
 
 	def __init__(self, app, pipeline, connection, request_body=None, paging=True, id=None, config=None):
@@ -46,13 +51,20 @@ class ElasticSearchSource(TriggerSource):
 		self.Connection = pipeline.locate_connection(app, connection)
 
 		self.Index = self.Config['index']
-		self.ScrollTimeout = self.Config['scroll_timeout']
 		self.Source = self.Config['source']
 		self.SortBy = self.Config['sort_by']
 		self.Paging = paging
 
 		if request_body is not None:
 			self.RequestBody = request_body
+
+		elif len(self.Config["request_body"]) > 0:
+
+			if isinstance(self.Config["request_body"], str):
+				self.RequestBody = json.loads(self.Config["request_body"])
+
+			else:
+				self.RequestBody = self.Config["request_body"]
 
 		elif len(self.Config["timestamp"]) > 0:
 			self.RequestBody = {
