@@ -55,6 +55,10 @@ class ElasticSearchSource(TriggerSource):
 		self.SortBy = self.Config['sort_by']
 		self.Paging = paging
 
+		# Flgas
+		self.Running = False
+		self.LastHitSort = None
+
 		if request_body is not None:
 			self.RequestBody = request_body
 
@@ -93,75 +97,86 @@ class ElasticSearchSource(TriggerSource):
 					}
 				}}
 
+
 	async def cycle(self):
 		"""
 		Gets data from Elastic and injects them into the pipeline.
 
 		"""
-		last_hit_sort = None
-		request_body = self.RequestBody
 
-		while True:
-			path = '{}/_search'.format(self.Index)
+		if self.Running:
+			return
 
-			if last_hit_sort:
-				request_body['search_after'] = last_hit_sort
+		try:
+			self.Running = True
+			last_hit_sort = self.LastHitSort
+			request_body = self.RequestBody
 
-			# https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html#search-after
-			if 'sort' not in request_body:
-				request_body['sort'] = [{self.SortBy: 'asc'}]  # Always need a consistent sort order for deep pagination
+			while True:
+				path = '{}/_search'.format(self.Index)
 
-			url = self.Connection.get_url() + path
+				if last_hit_sort:
+					request_body['search_after'] = last_hit_sort
 
-			async with self.Connection.get_session() as session:
-				async with session.post(
-					url=url,
-					json=request_body,
-					headers=self.Connection.Headers,
-					ssl=self.Connection.SSLContext,
-				) as response:
+				# https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html#search-after
+				if 'sort' not in request_body:
+					request_body['sort'] = [{self.SortBy: 'asc'}]  # Always need a consistent sort order for deep pagination
 
-					if response.status != 200:
-						data = await response.text()
-						L.error("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(response.status, url, data))
-						break
+				url = self.Connection.get_url() + path
 
-					msg = await response.json()
+				async with self.Connection.get_session() as session:
+					async with session.post(
+						url=url,
+						json=request_body,
+						headers=self.Connection.Headers,
+						ssl=self.Connection.SSLContext,
+					) as response:
 
-			hits = msg["hits"]["hits"]
+						if response.status != 200:
+							data = await response.text()
+							L.error("Failed to fetch data from ElasticSearch: {} from {}\n{}".format(response.status, url, data))
+							break
 
-			if len(hits) == 0:
-				break
+						msg = await response.json()
 
-			last_hit = hits[-1] if hits else None
-			last_hit_sort = last_hit['sort'] if last_hit else None
+				hits = msg["hits"]["hits"]
 
-			# Feed messages into a pipeline
-			for hit in hits:
+				if len(hits) == 0:
+					break
 
-				if self.Source not in hit:
-					continue
+				last_hit = hits[-1] if hits else None
+				last_hit_sort = last_hit['sort'] if last_hit else None
+				self.LastHitSort = last_hit_sort
 
-				source = hit[self.Source]
+				# Feed messages into a pipeline
+				for hit in hits:
 
-				# Is there some additional nested info?
-				if "inner_hits" in hit:
+					if self.Source not in hit:
+						continue
 
-					try:
-						for inner_hit in hit["inner_hits"]["hits"]["hits"]:
+					source = hit[self.Source]
 
-							if self.Source not in inner_hit:
-								continue
+					# Is there some additional nested info?
+					if "inner_hits" in hit:
 
-							source.update(inner_hit[self.Source])
+						try:
+							for inner_hit in hit["inner_hits"]["hits"]["hits"]:
 
-					except KeyError:
-						pass
+								if self.Source not in inner_hit:
+									continue
 
-				await self.process(hit[self.Source])
+								source.update(inner_hit[self.Source])
 
-			if not self.Paging:
-				break
+						except KeyError:
+							pass
+
+					await self.process(hit[self.Source])
+
+				if not self.Paging:
+					break
+
+		finally:
+			self.Running = False
 
 
 class ElasticSearchAggsSource(TriggerSource):
