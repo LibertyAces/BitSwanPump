@@ -30,25 +30,6 @@ class HTTPClientTextSource(HTTPABCClientSource):
 		await self.process(response)
 
 
-class HTTPClientJSONListSource(HTTPABCClientSource):
-
-	ConfigDefaults = {
-		'encoding': '',
-	}
-
-	def __init__(self, app, pipeline, id=None, config=None, headers={}):
-		super().__init__(app, pipeline, id=id, config=config, headers={})
-
-		self.encoding = self.Config['encoding']
-		if self.encoding == '':
-			self.encoding = None
-
-	async def read(self, response):
-		response = await response.text(encoding=self.encoding)
-		await self.process(response)
-
-
-
 class HTTPClientLineSource(HTTPClientTextSource):
 
 
